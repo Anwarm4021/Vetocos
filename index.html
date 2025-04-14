@@ -19,6 +19,46 @@
   <script src="js/skel.min.js"></script>
   <script src="js/skel-panels.min.js"></script>
   <script src="js/init.js"></script>
+  <style>
+    #logo h1 {
+      font-size: 2.5em;
+      margin: 0;
+    }
+    .sticky-about {
+      position: sticky;
+      top: 80px;
+      background: white;
+      z-index: 999;
+      padding: 10px 0;
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: 700;
+    }
+    nav#nav {
+      display: flex;
+      justify-content: flex-end;
+    }
+    nav#nav ul {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    nav#nav ul li {
+      display: inline-block;
+    }
+    nav#nav ul li a {
+      text-decoration: none;
+      padding: 10px;
+      font-weight: 500;
+      color: #333;
+    }
+    nav#nav ul li.active a {
+      font-weight: 700;
+      color: #007bff;
+    }
+  </style>
 </head>
 
 <body class="homepage">
@@ -37,56 +77,78 @@
     </div>
     <div class="container">
       <div id="logo">
-        <h1>Welcome to VetoCos</h1>
-        <span class="tag">Innovative Veterinary Solutions Since 2015</span>
+        <div class="sticky-about">About Us!</div>
+        <span class="tag">Get to know who we are, what we stand for, and the passion behind everything we do.</span>
       </div>
     </div>
   </div>
 
-  <!-- Featured Hero Section -->
-  <div id="featured" style="background: url('images/header.jpg') no-repeat center center; background-size: cover;">
+  <!-- Featured -->
+  <div id="featured">
     <div class="container">
-      <header>
-        <h2>Veterinary Care You Can Trust</h2>
-      </header>
-      <p><strong>VetoCos</strong> is committed to animal health with a focus on innovative, reliable products for pets and livestock. Explore our world of veterinary excellence. <a href="http://VetoCos.com">Visit our website</a> or follow us on <a href="http://twitter.com/">Twitter</a>.</p>
+      <header><h2>Welcome to VetoCos</h2></header>
+      <p>This is <strong>VetoCos</strong>, a company specializing in animal medicine, founded in 2015. We are committed to providing innovative and reliable health solutions for animal well-being. Check out more of our stuff at <a href="http://VetoCos.com">our site</a> or follow us on <a href="http://twitter.com/">Twitter</a>.</p>
+      <hr>
+      <div class="row">
+        <section class="4u">
+          <span class="pennant"><span class="fa fa-briefcase"></span></span>
+          <h3>Advanced Medical Solutions for Dogs & Cats</h3>
+          <p>We provide high-quality veterinary medicines and health products specially formulated for dogs and cats.</p>
+          <a href="#" class="button button-style1">Read More</a>
+        </section>
+        <section class="4u">
+          <span class="pennant"><span class="fa fa-lock"></span></span>
+          <h3>Sales & Marketing</h3>
+          <p>We are proud to have a dedicated team of experienced professionals who support our clients at every stage from expert consultation and product implementation to personalized training and ongoing aftercare.</p>
+          <a href="#" class="button button-style1">Read More</a>
+        </section>
+        <section class="4u">
+          <span class="pennant"><span class="fa fa-globe"></span></span>
+          <h3>Nationwide Veterinary Solutions</h3>
+          <p>Widely established across Morocco, we supply veterinary medicines to a broad network of professionals and clinics dedicated to companion animal care.</p>
+          <a href="#" class="button button-style1">Read More</a>
+        </section>
+      </div>
     </div>
   </div>
 
-  <!-- Main Content -->
+  <!-- Main -->
   <div id="main">
     <div id="content" class="container">
       <div class="row">
-        <section class="4u">
-          <h3>Dogs & Cats</h3>
-          <p>High-quality veterinary health solutions for dogs and cats. Discover our safe, effective products.</p>
+        <section class="6u">
+          <a href="#" class="image full"><img src="images/pic01.jpg" alt=""></a>
+          <header><h2>Cattle</h2></header>
+          <p>We offer a comprehensive range of veterinary medicines and health solutions tailored to the needs of cattle...</p>
         </section>
-        <section class="4u">
-          <h3>Livestock</h3>
-          <p>Comprehensive range of veterinary solutions for cattle, sheep, and goats to support farm productivity.</p>
+        <section class="6u">
+          <a href="#" class="image full"><img src="images/pic02.jpg" alt=""></a>
+          <header><h2>Sheep & Goats</h2></header>
+          <p>We provide a specialized selection of veterinary medicines and health products designed to meet the unique needs of sheep and goats...</p>
         </section>
-        <section class="4u">
-          <h3>Equine Care</h3>
-          <p>Advanced treatments tailored to the needs of horses, including parasite control and wellness support.</p>
+      </div>
+
+      <div class="row">
+        <section class="6u">
+          <a href="#" class="image full"><img src="images/pic03.jpg" alt=""></a>
+          <header><h2>Equine</h2></header>
+          <p>We offer high-quality veterinary medicines and care solutions specifically formulated for horses...</p>
+        </section>
+        <section class="6u">
+          <a href="#" class="image full"><img src="images/pic04.jpg" alt=""></a>
+          <header><h2>Pets</h2></header>
+          <p>At Vetocos, we take pride in offering premium veterinary products for dogs and cats...</p>
         </section>
       </div>
     </div>
   </div>
 
-  <!-- Scroll-based About Section -->
-  <div id="about" class="container" style="margin-top: 50px;">
-    <header>
-      <h2>About VetoCos</h2>
-    </header>
-    <p>Founded in 2015, VetoCos specializes in veterinary medicines dedicated to improving animal health across Morocco and beyond. Our mission is to deliver safe, effective solutions for a healthier future in veterinary care.</p>
-  </div>
-
-  <!-- Tweet Banner -->
+  <!-- Tweet -->
   <div id="tweet">
     <div class="container">
       <section>
         <blockquote>
-          “At Vetocos, we specialize in high-quality veterinary medicines for dogs and cats. Trusted since 2015, we deliver effective, reliable solutions for your pet’s health.
+          “At Vetocos, we specialize in high-quality veterinary medicines for dogs and cats. Trusted since 2015, we deliver effective, reliable solutions for your pet’s health because your companions deserve expert care.
           #Vetocos #PetHealth #Dogs #Cats #VetCare”
         </blockquote>
       </section>
@@ -97,13 +159,12 @@
   <div id="footer">
     <div class="container">
       <section>
-        <header>
-          <h2>Contact Us</h2>
-          <span class="byline">We’re here to answer your questions and help with veterinary solutions that fit your needs.</span>
+        <header><h2>Get in touch</h2>
+          <span class="byline">We’ll be more than happy to answer any questions you may have, our team is here to support you with expert guidance and personalized assistance.</span>
         </header>
         <ul class="contact">
           <li><a href="#" class="fa fa-twitter"><span>Twitter</span></a></li>
-          <li><a href="#" class="fa fa-facebook"><span>Facebook</span></a></li>
+          <li class="active"><a href="#" class="fa fa-facebook"><span>Facebook</span></a></li>
           <li><a href="#" class="fa fa-dribbble"><span>Pinterest</span></a></li>
           <li><a href="#" class="fa fa-tumblr"><span>Google+</span></a></li>
         </ul>
