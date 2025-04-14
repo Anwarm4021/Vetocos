@@ -44,10 +44,60 @@
       font-weight: 700;
       color: #007bff;
     }
+    #featured {
+      background: url('images/header.jpg') no-repeat center center;
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: white;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+    }
+    #featured .container {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 40px;
+      border-radius: 10px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 60%;
+      background: white;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      border-radius: 10px;
+    }
+    .modal-content {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .modal-close {
+      float: right;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 9998;
+    }
   </style>
 </head>
 
 <body class="homepage">
+  <div class="overlay" id="overlay"></div>
 
   <!-- Header -->
   <div id="header">
@@ -63,6 +113,7 @@
     </div>
     <div class="container">
       <div id="logo">
+        <h1>Welcome to VetoCos</h1>
       </div>
     </div>
   </div>
@@ -70,29 +121,8 @@
   <!-- Featured -->
   <div id="featured">
     <div class="container">
-      <header><h2>Welcome to VetoCos</h2></header>
-      <p>This is <strong>VetoCos</strong>, a company specializing in animal medicine, founded in 2015. We are committed to providing innovative and reliable health solutions for animal well-being. Check out more of our stuff at <a href="http://VetoCos.com">our site</a> or follow us on <a href="http://twitter.com/">Twitter</a>.</p>
-      <hr>
-      <div class="row">
-        <section class="4u">
-          <span class="pennant"><span class="fa fa-briefcase"></span></span>
-          <h3>Advanced Medical Solutions for Dogs & Cats</h3>
-          <p>We provide high-quality veterinary medicines and health products specially formulated for dogs and cats.</p>
-          <a href="#" class="button button-style1">Read More</a>
-        </section>
-        <section class="4u">
-          <span class="pennant"><span class="fa fa-lock"></span></span>
-          <h3>Sales & Marketing</h3>
-          <p>We are proud to have a dedicated team of experienced professionals who support our clients at every stage from expert consultation and product implementation to personalized training and ongoing aftercare.</p>
-          <a href="#" class="button button-style1">Read More</a>
-        </section>
-        <section class="4u">
-          <span class="pennant"><span class="fa fa-globe"></span></span>
-          <h3>Nationwide Veterinary Solutions</h3>
-          <p>Widely established across Morocco, we supply veterinary medicines to a broad network of professionals and clinics dedicated to companion animal care.</p>
-          <a href="#" class="button button-style1">Read More</a>
-        </section>
-      </div>
+      <header><h2>Veterinary Care You Can Trust</h2></header>
+      <p>This is <strong>VetoCos</strong>, a company specializing in animal medicine, founded in 2015. We are committed to providing innovative and reliable health solutions for animal well-being. Check out more of our stuff at <a href="http://VetoCos.com" style="color:#ffd">our site</a> or follow us on <a href="http://twitter.com/" style="color:#ffd">Twitter</a>.</p>
     </div>
   </div>
 
@@ -101,12 +131,12 @@
     <div id="content" class="container">
       <div class="row">
         <section class="6u">
-          <a href="#" class="image full"><img src="images/pic01.jpg" alt=""></a>
+          <a href="#" class="image full" onclick="openModal('modalCattle')"><img src="images/pic01.jpg" alt=""></a>
           <header><h2>Cattle</h2></header>
           <p>We offer a comprehensive range of veterinary medicines and health solutions tailored to the needs of cattle...</p>
         </section>
         <section class="6u">
-          <a href="#" class="image full"><img src="images/pic02.jpg" alt=""></a>
+          <a href="#" class="image full" onclick="openModal('modalSheep')"><img src="images/pic02.jpg" alt=""></a>
           <header><h2>Sheep & Goats</h2></header>
           <p>We provide a specialized selection of veterinary medicines and health products designed to meet the unique needs of sheep and goats...</p>
         </section>
@@ -114,18 +144,59 @@
 
       <div class="row">
         <section class="6u">
-          <a href="#" class="image full"><img src="images/pic03.jpg" alt=""></a>
+          <a href="#" class="image full" onclick="openModal('modalEquine')"><img src="images/pic03.jpg" alt=""></a>
           <header><h2>Equine</h2></header>
           <p>We offer high-quality veterinary medicines and care solutions specifically formulated for horses...</p>
         </section>
         <section class="6u">
-          <a href="#" class="image full"><img src="images/pic04.jpg" alt=""></a>
+          <a href="#" class="image full" onclick="openModal('modalPets')"><img src="images/pic04.jpg" alt=""></a>
           <header><h2>Pets</h2></header>
           <p>At Vetocos, we take pride in offering premium veterinary products for dogs and cats...</p>
         </section>
       </div>
     </div>
   </div>
+
+  <!-- Modals -->
+  <div id="modalCattle" class="modal">
+    <span class="modal-close" onclick="closeModal('modalCattle')">&times;</span>
+    <div class="modal-content">
+      <h2>Cattle</h2>
+      <p>Detailed content about our cattle veterinary solutions...</p>
+    </div>
+  </div>
+  <div id="modalSheep" class="modal">
+    <span class="modal-close" onclick="closeModal('modalSheep')">&times;</span>
+    <div class="modal-content">
+      <h2>Sheep & Goats</h2>
+      <p>Detailed content about our sheep and goats veterinary solutions...</p>
+    </div>
+  </div>
+  <div id="modalEquine" class="modal">
+    <span class="modal-close" onclick="closeModal('modalEquine')">&times;</span>
+    <div class="modal-content">
+      <h2>Equine</h2>
+      <p>Detailed content about our equine veterinary solutions...</p>
+    </div>
+  </div>
+  <div id="modalPets" class="modal">
+    <span class="modal-close" onclick="closeModal('modalPets')">&times;</span>
+    <div class="modal-content">
+      <h2>Pets</h2>
+      <p>Detailed content about our pets veterinary solutions...</p>
+    </div>
+  </div>
+
+  <script>
+    function openModal(id) {
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById(id).style.display = 'block';
+    }
+    function closeModal(id) {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById(id).style.display = 'none';
+    }
+  </script>
 
   <!-- Tweet -->
   <div id="tweet">
