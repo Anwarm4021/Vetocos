@@ -45,15 +45,32 @@
       font-weight: 700;
       color: #007bff;
     }
-  #featured {
-  background: #f2f2f2;
-  min-height: 600px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #333;
-}
+
+    #header {
+      background: url('images/header.jpg') no-repeat center center;
+      background-size: cover;
+      height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: white;
+    }
+
+    #logo h1 {
+      font-size: 3em;
+      margin: 0;
+    }
+
+    #featured {
+      background: #f2f2f2;
+      min-height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #333;
+    }
 
     #featured .container {
       padding: 40px;
@@ -109,13 +126,18 @@
         </ul>
       </nav>
     </div>
+    <div class="container">
+      <div id="logo">
+        <h1>Welcome to VetoCos</h1>
+      </div>
+    </div>
   </div>
 
   <!-- Featured -->
   <div id="featured">
     <div class="container">
       <header><h2>Veterinary Care You Can Trust</h2></header>
-      <p>This is <strong>VetoCos</strong>, a company specializing in animal medicine, founded in 2015. We are committed to providing innovative and reliable health solutions for animal well-being. Visit <a href="http://VetoCos.com" style="color:#ffd">our site</a> or follow us on <a href="http://twitter.com/" style="color:#ffd">Twitter</a>.</p>
+      <p>This is <strong>VetoCos</strong>, a company specializing in animal medicine, founded in 2015. We are committed to providing innovative and reliable health solutions for animal well-being. Visit <a href="http://VetoCos.com" style="color:#007bff">our site</a> or follow us on <a href="http://twitter.com/" style="color:#007bff">Twitter</a>.</p>
     </div>
   </div>
 
@@ -134,7 +156,6 @@
           <p>We provide a specialized selection of veterinary medicines and health products designed to meet the unique needs of sheep and goats...</p>
         </section>
       </div>
-
       <div class="row">
         <section class="6u">
           <a href="#" class="image full" onclick="openModal('modalEquine')"><img src="images/pic03.jpg" alt=""></a>
