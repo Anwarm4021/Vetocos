@@ -4,145 +4,122 @@
   <meta charset="utf-8" />
   <title>VetoCos | Products</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Browse VetoCos complementary feed products for dogs & cats." />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta name="description" content="VetoCos complementary feed for dogs & cats.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg:#0b1020; --card:#0f162f; --muted:#8ea0c8; --text:#f6f7fb;
-      --brand:#6dd5ff; --brand2:#83f0a5;
-      --radius:16px; --shadow:0 8px 20px rgba(0,0,0,0.3);
-      --max:1200px;
+    :root{
+      --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;
+      --brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;
+      --shadow:0 10px 30px rgba(0,0,0,.25)
     }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      font-family:Inter,system-ui,sans-serif;
-      background:linear-gradient(135deg,var(--bg),#101835);
-      color:var(--text); line-height:1.6;
-    }
+    *{box-sizing:border-box}
+    body{margin:0;padding:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif;line-height:1.6}
     a{text-decoration:none;color:inherit}
-    header.site{position:sticky;top:0;z-index:40;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
-    .nav{max-width:var(--max);margin:auto;display:flex;justify-content:space-between;align-items:center;padding:14px 20px}
-    .brand{font-weight:700;display:flex;align-items:center;gap:8px}
-    .logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand2))}
-    .links{display:flex;gap:18px;list-style:none}
-    .links a{padding:8px 12px;border-radius:8px;color:var(--text)}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+    /* Header */
+    header.site{position:sticky;top:0;z-index:50;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:var(--shadow)}
+    .links{display:flex;gap:18px}
+    .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
     .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
-    h1{text-align:center;padding:40px 20px;font-size:2.2rem;color:var(--brand)}
-    .intro{text-align:center;max-width:700px;margin:0 auto 30px;color:var(--muted)}
-
-    .product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;max-width:var(--max);margin:0 auto;padding:0 20px 60px}
-    .product-card{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:transform .2s,border .2s}
-    .product-card:hover{transform:translateY(-3px);border:1px solid rgba(131,240,165,.3)}
-    .product-card img{width:100%;height:180px;object-fit:cover;display:block}
-    .product-card h3{font-size:1.1rem;margin:12px 0 4px;padding:0 12px;color:#fff}
-    .product-card p{font-size:.9rem;padding:0 12px 16px;color:var(--muted)}
-
-    footer{border-top:1px solid rgba(141,158,199,.18);padding:24px 0;text-align:center;color:var(--muted);font-size:.9rem}
+    .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
+    @media(max-width:820px){
+      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:200px}
+      .links.open{display:flex}
+      .hamb{display:block}
+    }
+    /* Hero */
+    .hero{padding:40px 0 20px;text-align:center}
+    .badge{display:inline-flex;gap:8px;align-items:center;background:rgba(141,158,199,.15);border:1px solid rgba(141,158,199,.25);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
+    h1{font-size:clamp(28px,5vw,42px);margin:14px 0}
+    .lead{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:700px;margin:0 auto 18px}
+    /* Product grid */
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
+    @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.grid{grid-template-columns:1fr}}
+    .p-card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:.2s}
+    .p-card:hover{transform:translateY(-3px);border-color:rgba(131,240,165,.3)}
+    .p-card img{width:100%;height:170px;object-fit:cover}
+    .px{padding:12px}
+    .px h4{margin:.2rem 0 .1rem}
+    .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+    /* Footer */
+    footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
   </style>
 </head>
 <body>
-
 <header class="site">
-  <div class="nav">
+  <div class="wrap nav">
     <div class="brand"><span class="logo"></span> VetoCos</div>
-    <ul class="links">
-      <li><a href="index.html">Homepage</a></li>
-      <li><a href="World Wide.html">World Wide</a></li>
-      <li><a href="Products.html" class="active">Products</a></li>
-      <li><a href="News.html">News</a></li>
-    </ul>
+    <nav class="links" id="navlinks">
+      <a href="index.html">Home</a>
+      <a class="active" href="Products.html">Products</a>
+      <a href="World Wide.html">World&nbsp;Wide</a>
+      <a href="News.html">News</a>
+    </nav>
+    <button class="hamb" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
   </div>
 </header>
 
-<main>
-  <h1>Our Products</h1>
-  <p class="intro">Complementary feed for dogs & cats. Carefully designed to support health and well-being, with clear labelling and trusted quality.</p>
+<main class="wrap">
+  <div class="hero">
+    <span class="badge">Complementary feed — not medicine</span>
+    <h1>Our Product Range</h1>
+    <p class="lead">Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.</p>
+  </div>
 
-  <div class="product-grid">
-    <div class="product-card">
-      <a href="Product1.html">
-        <img src="images/Product1.jpg" alt="Urocline Chien">
-        <h3>Urocline Chien</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
-    <div class="product-card">
-      <a href="Product2.html">
-        <img src="images/Product2.jpg" alt="Hepatiale">
-        <h3>Hepatiale</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
-    <div class="product-card">
-      <a href="Product3.html">
-        <img src="images/Product3.jpg" alt="Neuroview">
-        <h3>Neuroview</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
-    <div class="product-card">
-      <a href="Product4.html">
-        <img src="images/Product4.jpg" alt="Munisan">
-        <h3>Munisan</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
-    <div class="product-card">
-      <a href="Product5.html">
-        <img src="images/Product5.jpg" alt="Pilosan">
-        <h3>Pilosan</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
-    <div class="product-card">
-      <a href="Product6.html">
-        <img src="images/Product6.jpg" alt="HemoVet">
-        <h3>HemoVet</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
-    <div class="product-card">
-      <a href="Product7.html">
-        <img src="images/Product7.jpg" alt="Urocline-Stones">
-        <h3>Urocline-Stones</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
-    <div class="product-card">
-      <a href="Product8.html">
-        <img src="images/Product8.jpg" alt="Vit&Min">
-        <h3>Vit&Min</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
-    <div class="product-card">
-      <a href="Product9.html">
-        <img src="images/Product9.jpg" alt="Art-Asuh">
-        <h3>Art-Asuh</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
-    <div class="product-card">
-      <a href="Product10.html">
-        <img src="images/Product10.jpg" alt="Carbo Digest">
-        <h3>Carbo Digest</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
-    <div class="product-card">
-      <a href="Product11.html">
-        <img src="images/Product11.jpg" alt="Renosan">
-        <h3>Renosan</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
-    <div class="product-card">
-      <a href="Product12.html">
-        <img src="images/Product12.jpg" alt="Qalmil">
-        <h3>Qalmil</h3>
-        <p>Complementary feed for cats & dogs.</p>
-      </a>
-    </div>
+  <div class="grid">
+    <a class="p-card" href="Product1.html">
+      <img src="images/Product1.jpg" alt="Urocline Chien">
+      <div class="px"><h4>Urocline Chien</h4><div class="p-meta"><span>Urinary care</span><span>Dogs & Cats</span></div></div>
+    </a>
+    <a class="p-card" href="Product2.html">
+      <img src="images/Product2.jpg" alt="Hepatiale">
+      <div class="px"><h4>Hepatiale</h4><div class="p-meta"><span>Liver support</span><span>Dogs & Cats</span></div></div>
+    </a>
+    <a class="p-card" href="Product3.html">
+      <img src="images/Product3.jpg" alt="Neuroview">
+      <div class="px"><h4>Neuroview</h4><div class="p-meta"><span>Cognitive</span><span>Dogs & Cats</span></div></div>
+    </a>
+    <a class="p-card" href="Product4.html">
+      <img src="images/Product4.jpg" alt="Munisan">
+      <div class="px"><h4>Munisan</h4><div class="p-meta"><span>Immune</span><span>Dogs & Cats</span></div></div>
+    </a>
+    <a class="p-card" href="Product5.html">
+      <img src="images/Product5.jpg" alt="Pilosan">
+      <div class="px"><h4>Pilosan</h4><div class="p-meta"><span>Skin & coat</span><span>Dogs & Cats</span></div></div>
+    </a>
+    <a class="p-card" href="Product6.html">
+      <img src="images/Product6.jpg" alt="HemoVet">
+      <div class="px"><h4>HemoVet</h4><div class="p-meta"><span>Vitamins & minerals</span></div></div>
+    </a>
+    <a class="p-card" href="Product7.html">
+      <img src="images/Product7.jpg" alt="Urocline-Stones">
+      <div class="px"><h4>Urocline-Stones</h4><div class="p-meta"><span>Urinary care</span></div></div>
+    </a>
+    <a class="p-card" href="Product8.html">
+      <img src="images/Product8.jpg" alt="Vit&Min">
+      <div class="px"><h4>Vit&Min</h4><div class="p-meta"><span>Vitamins & minerals</span></div></div>
+    </a>
+    <a class="p-card" href="Product9.html">
+      <img src="images/Product9.jpg" alt="Art-Asuh">
+      <div class="px"><h4>Art-Asuh</h4><div class="p-meta"><span>Mobility</span></div></div>
+    </a>
+    <a class="p-card" href="Product10.html">
+      <img src="images/Product10.jpg" alt="Carbo Digest">
+      <div class="px"><h4>Carbo Digest</h4><div class="p-meta"><span>Digestive comfort</span></div></div>
+    </a>
+    <a class="p-card" href="Product11.html">
+      <img src="images/Product11.jpg" alt="Renosan">
+      <div class="px"><h4>Renosan</h4><div class="p-meta"><span>Renal support</span></div></div>
+    </a>
+    <a class="p-card" href="Product12.html">
+      <img src="images/Product12.jpg" alt="Qalmil">
+      <div class="px"><h4>Qalmil</h4><div class="p-meta"><span>Calming</span></div></div>
+    </a>
   </div>
 </main>
 
@@ -150,6 +127,6 @@
   © <span id="y"></span> VetoCos · Complementary feed for companion animals
 </footer>
 
-<script>document.getElementById("y").textContent = new Date().getFullYear();</script>
+<script>document.getElementById("y").textContent=new Date().getFullYear();</script>
 </body>
 </html>
