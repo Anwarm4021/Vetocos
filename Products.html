@@ -4,36 +4,194 @@
   <meta charset="utf-8" />
   <title>VetoCos | Products</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Browse VetoCos complementary feed products for dogs & cats.">
+  <meta name="description" content="Browse VetoCos complementary feed products for dogs & cats." />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.25)}
-    *{box-sizing:border-box} html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    :root{
+      --bg:#0b1020; --card:#0f162f; --muted:#8ea0c8; --text:#f6f7fb;
+      --brand:#6dd5ff; --brand2:#83f0a5; --radius:18px; --max:1200px;
+      --shadow:0 10px 30px rgba(0,0,0,.25)
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
     a{color:var(--text);text-decoration:none}
     .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
-    header.site{position:sticky;top:0;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+
+    /* Header */
+    header.site{position:sticky;top:0;z-index:40;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:10px;font-weight:700}
     .brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:var(--shadow)}
     .links{display:flex;gap:18px}
-    .links a{padding:8px 12px;border-radius:10px;color:var(--text)} .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
+    .links a{padding:8px 12px;border-radius:10px}
+    .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
     .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
-    @media(max-width:820px){.links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:200px}.links.open{display:flex}.hamb{display:block}}
-    h1{font-size:clamp(26px,4.5vw,40px)}
-    .muted{color:var(--muted)}
-    .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px}
+    @media(max-width:820px){
+      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:220px}
+      .links.open{display:flex}
+      .hamb{display:block}
+    }
+
+    /* Hero banner */
+    .hero{
+      position:relative; overflow:hidden; border-bottom:1px solid rgba(141,158,199,.15);
+      background:var(--card)
+    }
+    .hero img{
+      width:100%; height:min(58vh,560px); object-fit:cover; display:block;
+      filter:contrast(1.03) saturate(1.03)
+    }
+    .hero .title{
+      position:absolute; inset:auto 0 0 0; padding:18px 18px 22px;
+      background:linear-gradient(180deg, rgba(16,24,53,0) 0%, rgba(16,24,53,.85) 65%, rgba(16,24,53,1) 100%);
+    }
+    .hero h1{margin:0; font-size:clamp(26px,4.8vw,44px)}
+    .badge{display:inline-flex;gap:8px;align-items:center;background:rgba(141,158,199,.15);border:1px solid rgba(141,158,199,.25);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--muted);margin-top:8px}
+
+    /* Toolbar */
+    .section{padding:22px 0}
+    .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
     .search{flex:1;min-width:220px}
-    input[type="search"]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text)}
-    select{padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text)}
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:14px}
+    input[type="search"], select{
+      width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(141,158,199,.28);
+      background:rgba(255,255,255,.03); color:var(--text)
+    }
+    select{flex:0 0 220px}
+    .btn{padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer}
+
+    /* Grid */
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:16px}
     @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:520px){.grid{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
-    .card img{width:100%;height:170px;object-fit:cover}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .18s ease, box-shadow .18s ease}
+    .card:hover{transform:translateY(-2px); box-shadow:var(--shadow)}
+    .thumb{width:100%;height:170px;object-fit:cover;background:#0c1330}
     .px{padding:12px}
-    .px h3{margin:.2rem 0 .1rem}
-    .tag{display:inline-flex;gap:8px;align-items:center;font-size:12px;color:var(--muted);margin-right:10px}
+    .px h3{margin:.2rem 0 .1rem;font-size:18px}
+    .tags{display:flex;gap:8px;flex-wrap:wrap}
+    .tag{display:inline-flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
     .tag .dot{width:10px;height:10px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2))}
     .foot{display:flex;justify-content:space-between;align-items:center;padding:12px;border-top:1px solid rgba(141,158,199,.12);font-size:14px;color:var(--muted)}
-    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.04);color:var(--tex
+
+    /* Footer */
+    footer{border-top:1px solid rgba(141,158,199,.18);padding:24px 0;color:#8ea0c8}
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site">
+    <div class="wrap nav">
+      <div class="brand"><span class="logo"></span> VetoCos</div>
+      <nav class="links" id="navlinks">
+        <a href="index.html">Home</a>
+        <a class="active" href="Products.html">Products</a>
+        <a href="World Wide.html">World&nbsp;Wide</a>
+        <a href="News.html">News</a>
+      </nav>
+      <button class="hamb" aria-label="Open menu" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
+    </div>
+  </header>
+
+  <!-- Big hero image -->
+  <div class="hero">
+    <img src="images/products-hero.jpg" alt="VetoCos complementary feed range" onerror="this.src='images/Product1.jpg'">
+    <div class="title wrap">
+      <h1>Complementary feed range</h1>
+      <span class="badge">Complementary feed — not medicine</span>
+    </div>
+  </div>
+
+  <!-- Controls + Grid -->
+  <main class="wrap section">
+    <div class="toolbar">
+      <div class="search">
+        <input id="q" type="search" placeholder="Search by name or category…">
+      </div>
+      <select id="cat" aria-label="Filter by category">
+        <option value="">All categories</option>
+        <option>Urinary care</option>
+        <option>Liver support</option>
+        <option>Mobility</option>
+        <option>Digestive comfort</option>
+        <option>Renal support</option>
+        <option>Vitamins & minerals</option>
+        <option>Calming</option>
+        <option>Skin & coat</option>
+        <option>Immune</option>
+        <option>Cognitive</option>
+      </select>
+      <button class="btn" type="button" onclick="clearFilters()">Reset</button>
+    </div>
+
+    <div id="grid" class="grid" aria-live="polite"></div>
+
+    <p style="margin-top:12px;color:#8ea0c8">All products are complementary feed (alimentary) for companion animals and are not intended to diagnose, treat, cure, or prevent disease.</p>
+  </main>
+
+  <footer class="wrap">© <span id="y"></span> VetoCos</footer>
+
+  <script>
+    // ---- Product Data (uses your existing image files & product pages) ----
+    const products = [
+      {name:"Urocline Chien", img:"images/Product1.jpg", href:"Product1.html", cats:["Urinary care","Dogs & Cats"]},
+      {name:"Hepatiale", img:"images/Product2.jpg", href:"Product2.html", cats:["Liver support","Dogs & Cats"]},
+      {name:"Neuroview", img:"images/Product3.jpg", href:"Product3.html", cats:["Cognitive","Dogs & Cats"]},
+      {name:"Munisan", img:"images/Product4.jpg", href:"Product4.html", cats:["Immune","Dogs & Cats"]},
+      {name:"Pilosan", img:"images/Product5.jpg", href:"Product5.html", cats:["Skin & coat","Dogs & Cats"]},
+      {name:"HemoVet", img:"images/Product6.jpg", href:"Product6.html", cats:["Vitamins & minerals","Dogs & Cats"]},
+      {name:"Urocline-Stones", img:"images/Product7.jpg", href:"Product7.html", cats:["Urinary care","Dogs & Cats"]},
+      {name:"Vit&Min", img:"images/Product8.jpg", href:"Product8.html", cats:["Vitamins & minerals","Dogs & Cats"]},
+      {name:"Art-Asuh", img:"images/Product9.jpg", href:"Product9.html", cats:["Mobility","Dogs & Cats"]},
+      {name:"Carbo Digest", img:"images/Product10.jpg", href:"Product10.html", cats:["Digestive comfort","Dogs & Cats"]},
+      {name:"Renosan", img:"images/Product11.jpg", href:"Product11.html", cats:["Renal support","Dogs & Cats"]},
+      {name:"Qalmil", img:"images/Product12.jpg", href:"Product12.html", cats:["Calming","Dogs & Cats"]},
+    ];
+
+    // ---- Elements
+    const grid = document.getElementById('grid');
+    const q = document.getElementById('q');
+    const cat = document.getElementById('cat');
+
+    // ---- Render
+    function render(){
+      const term = (q.value || '').toLowerCase().trim();
+      const sel = cat.value;
+
+      const visible = products.filter(p => {
+        const matchesCat = !sel || p.cats.includes(sel);
+        const hay = (p.name + ' ' + p.cats.join(' ')).toLowerCase();
+        const matchesTerm = !term || hay.includes(term);
+        return matchesCat && matchesTerm;
+      });
+
+      grid.innerHTML = visible.map(p => `
+        <a class="card" href="${p.href}" aria-label="${p.name}">
+          <img class="thumb" loading="lazy" src="${p.img}" alt="${p.name}" onerror="this.style.display='none'">
+          <div class="px">
+            <h3>${p.name}</h3>
+            <div class="tags">
+              ${p.cats.map(c => `<span class="tag"><span class="dot"></span>${c}</span>`).join('')}
+            </div>
+          </div>
+          <div class="foot"><span>Complementary feed</span><span>Learn more →</span></div>
+        </a>
+      `).join('');
+
+      if(!visible.length){
+        grid.innerHTML = '<div class="card" style="padding:16px;color:#8ea0c8">No products match your filters.</div>';
+      }
+    }
+
+    function clearFilters(){ q.value=''; cat.value=''; render(); }
+
+    // ---- Init
+    document.addEventListener('DOMContentLoaded', () => {
+      render();
+      q.addEventListener('input', render);
+      cat.addEventListener('change', render);
+      document.getElementById('y').textContent = new Date().getFullYear();
+    });
+  </script>
+</body>
+</html>
