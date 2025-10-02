@@ -8,17 +8,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.25)}
-    *{box-sizing:border-box} html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    *{box-sizing:border-box}
+    html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
     a{color:var(--brand);text-decoration:none}
     .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
-    header.site{position:sticky;top:0;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+
+    header.site{position:sticky;top:0;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15);z-index:50}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:10px;font-weight:700}
     .brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:var(--shadow)}
-    .links{display:flex;gap:18px}
-    .links a{padding:8px 12px;border-radius:10px;color:var(--text)} .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
+    .links{display:flex;gap:18px;align-items:center}
+    .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
+    .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
+    .contact-btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
+    #lang-switch{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer}
     .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
-    @media(max-width:820px){.links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:200px}.links.open{display:flex}.hamb{display:block}}
+    @media(max-width:820px){
+      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:200px}
+      .links.open{display:flex}
+      .hamb{display:block}
+      .contact-btn,#lang-switch{width:100%;text-align:left}
+    }
+
     .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
     h1{font-size:clamp(26px,4.5vw,40px)}
     .muted{color:var(--muted)}
@@ -27,6 +38,35 @@
     .store{display:flex;gap:14px;align-items:flex-start}
     .store .dot{width:14px;height:14px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2))}
     .store h3{margin:.1rem 0 .2rem}
+
+    /* Footer */
+    footer.wrap{border-top:1px solid rgba(141,158,199,.18);padding:24px 0;color:#8ea0c8}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+    .footer-links a{color:var(--muted)}
+
+    /* Modals (Contact & Policy) */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(4px);z-index:60}
+    .modal.open{display:flex}
+    .sheet{width:min(720px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
+    .sheet-title{margin:0;font-size:1.1rem}
+    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+    .sheet-body{padding:16px}
+    .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:720px){.cols{grid-template-columns:1fr}}
+    .info-card{background:rgba(16,24,53,.55);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:14px}
+    .info-card h3{margin:.2rem 0 .5rem}
+    .socials{display:flex;gap:10px;flex-wrap:wrap}
+    .socials a{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.04);color:var(--text)}
+    form .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:720px){form .row{grid-template-columns:1fr}}
+    input, textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text)}
+    textarea{min-height:120px;resize:vertical}
+    .form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
+    .btn-secondary{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer}
+
+    /* Optional RTL helpers */
+    body.rtl .links a{text-align:right}
   </style>
 </head>
 <body>
@@ -34,26 +74,33 @@
     <div class="wrap nav">
       <div class="brand"><span class="logo"></span> VetoCos</div>
       <nav class="links" id="navlinks">
-        <a href="index.html">Home</a>
-        <a href="Products.html">Products</a>
-        <a class="active" href="World Wide.html">World&nbsp;Wide</a>
-        <a href="News.html">News</a>
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a href="Products.html" data-i18n="nav.products">Products</a>
+        <a class="active" href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
+        <a href="News.html" data-i18n="nav.news">News</a>
+        <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
+        <select id="lang-switch" aria-label="Language">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="ar">العربية</option>
+        </select>
       </nav>
       <button class="hamb" aria-label="Open menu" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
     </div>
   </header>
 
   <main class="wrap" style="padding:32px 0 24px">
-    <h1>Where to buy</h1>
-    <p class="muted">VetoCos complementary feed is available through veterinary clinics and selected partners. Contact a local distributor below.</p>
+    <h1 data-i18n="ww.title">Where to buy</h1>
+    <p class="muted" data-i18n="ww.lead">VetoCos complementary feed is available through veterinary clinics and selected partners. Contact a local distributor below.</p>
+
     <div class="grid">
       <div class="card">
         <div class="store">
           <div class="dot"></div>
           <div>
-            <h3>Europe</h3>
-            <p class="muted">United Kingdom, France, Spain, Italy, Germany, Poland.</p>
-            <p><strong>Email:</strong> sales.eu@vetocos.com</p>
+            <h3 data-i18n="ww.eu.title">Europe</h3>
+            <p class="muted" data-i18n="ww.eu.countries">United Kingdom, France, Spain, Italy, Germany, Poland.</p>
+            <p><strong data-i18n="ww.email">Email:</strong> <span>sales.eu@vetocos.com</span></p>
           </div>
         </div>
       </div>
@@ -61,9 +108,9 @@
         <div class="store">
           <div class="dot"></div>
           <div>
-            <h3>Middle East & North Africa</h3>
-            <p class="muted">Morocco, Algeria, Tunisia, Egypt, GCC region.</p>
-            <p><strong>Email:</strong> mena@vetocos.com</p>
+            <h3 data-i18n="ww.mena.title">Middle East & North Africa</h3>
+            <p class="muted" data-i18n="ww.mena.countries">Morocco, Algeria, Tunisia, Egypt, GCC region.</p>
+            <p><strong data-i18n="ww.email">Email:</strong> <span>mena@vetocos.com</span></p>
           </div>
         </div>
       </div>
@@ -71,23 +118,212 @@
         <div class="store">
           <div class="dot"></div>
           <div>
-            <h3>Americas</h3>
-            <p class="muted">USA, Canada, Mexico, Brazil.</p>
-            <p><strong>Email:</strong> americas@vetocos.com</p>
+            <h3 data-i18n="ww.amer.title">Americas</h3>
+            <p class="muted" data-i18n="ww.amer.countries">USA, Canada, Mexico, Brazil.</p>
+            <p><strong data-i18n="ww.email">Email:</strong> <span>americas@vetocos.com</span></p>
           </div>
         </div>
       </div>
     </div>
 
     <div class="card" style="margin-top:18px">
-      <h3 style="margin-top:0">Regulatory note</h3>
-      <p class="muted">Our products are complementary feed (alimentary) and are not medicines. Availability and labelling may vary by country in line with local feed regulations.</p>
+      <h3 style="margin-top:0" data-i18n="ww.reg.title">Regulatory note</h3>
+      <p class="muted" data-i18n="ww.reg.text">Our products are complementary feed (alimentary) and are not medicines. Availability and labelling may vary by country in line with local feed regulations.</p>
     </div>
   </main>
 
-  <footer class="wrap" style="border-top:1px solid rgba(141,158,199,.18);padding:24px 0;color:#8ea0c8">
+  <footer class="wrap">
     © <span id="y"></span> VetoCos
+    <div class="footer-links">
+      <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
+      <a href="#" onclick="openContact();return false;" data-i18n="nav.contact">Contact</a>
+    </div>
   </footer>
-  <script>document.getElementById('y').textContent=new Date().getFullYear();</script>
+
+  <!-- CONTACT MODAL -->
+  <div id="contactModal" class="modal" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+      <div class="sheet-head">
+        <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
+        <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
+      </div>
+      <div class="sheet-body">
+        <div class="cols">
+          <div class="info-card">
+            <h3 data-i18n="contact.reach">Reach us</h3>
+            <p class="muted" style="margin:4px 0 10px" data-i18n="contact.blurb">We’re happy to help with product questions, availability, or feedback.</p>
+            <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+2120537742213">+212 0537742213</a></p>
+            <div class="socials" aria-label="Social links">
+              <a href="https://facebook.com/yourpage" target="_blank" rel="noopener">Facebook</a>
+              <a href="https://instagram.com/yourpage" target="_blank" rel="noopener">Instagram</a>
+              <a href="https://www.tiktok.com/@yourpage" target="_blank" rel="noopener">TikTok</a>
+            </div>
+          </div>
+          <div class="info-card">
+            <h3 data-i18n="contact.help">Help message & Comments</h3>
+            <form id="contactForm" onsubmit="return sendMailto(event)">
+              <div class="row">
+                <div><label for="name" data-i18n="contact.name">Name</label><br><input id="name" name="name" required></div>
+                <div><label for="email" data-i18n="contact.email">Email</label><br><input id="email" name="email" type="email" required></div>
+              </div>
+              <div style="margin-top:10px">
+                <label for="subject" data-i18n="contact.subject">Subject</label><br>
+                <input id="subject" name="subject" placeholder="Question about a product…">
+              </div>
+              <div style="margin-top:10px">
+                <label for="message" data-i18n="contact.message">Message / Comments</label><br>
+                <textarea id="message" name="message" placeholder="Write your help request or comment…" required></textarea>
+              </div>
+              <div class="form-actions">
+                <button class="btn-secondary" type="button" onclick="closeContact()" data-i18n="contact.cancel">Cancel</button>
+                <button class="contact-btn" type="submit" data-i18n="contact.send">Send</button>
+              </div>
+              <p class="muted" style="margin-top:8px" data-i18n="contact.note">This sends via your email app (no account needed).</p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVACY & POLICY MODAL -->
+  <div id="policyModal" class="modal" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+      <div class="sheet-head">
+        <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
+        <button class="close" type="button" onclick="closePolicy()" data-i18n="contact.close">Close</button>
+      </div>
+      <div class="sheet-body" style="max-height:60vh;overflow:auto;color:var(--muted);font-size:14px">
+        <h3 style="color:var(--text)" data-i18n="policy.overview">Overview</h3>
+        <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.</p>
+
+        <h3 style="color:var(--text)" data-i18n="policy.dataWeReceive">Data we may receive</h3>
+        <ul>
+          <li data-i18n="policy.data.item1">Messages you send via the contact form (your name, email, and message content).</li>
+          <li data-i18n="policy.data.item2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
+        </ul>
+
+        <h3 style="color:var(--text)" data-i18n="policy.howUse">How we use data</h3>
+        <ul>
+          <li data-i18n="policy.use.item1">To respond to your requests and improve our products and site experience.</li>
+          <li data-i18n="policy.use.item2">We do not sell personal data.</li>
+        </ul>
+
+        <h3 style="color:var(--text)" data-i18n="policy.cookies">Cookies</h3>
+        <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
+
+        <h3 style="color:var(--text)" data-i18n="policy.choices">Your choices</h3>
+        <ul>
+          <li data-i18n="policy.choices.item1">You can request that we delete your message and contact details at any time.</li>
+          <li data-i18n="policy.choices.item2">You can disable cookies in your browser settings.</li>
+        </ul>
+
+        <h3 style="color:var(--text)" data-i18n="policy.contact">Contact</h3>
+        <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:info@vetocos.com">info@vetocos.com</a>.</p>
+
+        <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Footer year + policy date
+    const y=document.getElementById('y'); if(y){ y.textContent=new Date().getFullYear(); }
+    (function(){ const d=new Date(); const month=d.toLocaleString('default',{month:'long'}); const el=document.getElementById('policyDate'); if(el){ el.textContent = month+' '+d.getFullYear(); } })();
+
+    // Modals
+    const contactModal=document.getElementById('contactModal');
+    const policyModal=document.getElementById('policyModal');
+    function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+    function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+    function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+    function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+    [contactModal, policyModal].forEach(m=>{ m && m.addEventListener('click', (ev)=>{ if(ev.target===m) m.classList.remove('open'); }); });
+
+    // Mailto
+    function sendMailto(e){
+      e.preventDefault();
+      const name=encodeURIComponent(document.getElementById('name').value.trim());
+      const email=encodeURIComponent(document.getElementById('email').value.trim());
+      const subject=encodeURIComponent(document.getElementById('subject').value.trim() || 'Website enquiry');
+      const message=encodeURIComponent(document.getElementById('message').value.trim());
+      const body=`Name: ${name}%0AEmail: ${email}%0A%0A${message}`;
+      const to='info@vetocos.com';
+      window.location.href=`mailto:${to}?subject=${subject}&body=${body}`;
+      return false;
+    }
+
+    /* =========================
+       Simple i18n (EN/FR/AR)
+       ========================= */
+    const I18N={
+      en:{
+        "nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact",
+        "ww.title":"Where to buy",
+        "ww.lead":"VetoCos complementary feed is available through veterinary clinics and selected partners. Contact a local distributor below.",
+        "ww.email":"Email:",
+        "ww.eu.title":"Europe","ww.eu.countries":"United Kingdom, France, Spain, Italy, Germany, Poland.",
+        "ww.mena.title":"Middle East & North Africa","ww.mena.countries":"Morocco, Algeria, Tunisia, Egypt, GCC region.",
+        "ww.amer.title":"Americas","ww.amer.countries":"USA, Canada, Mexico, Brazil.",
+        "ww.reg.title":"Regulatory note",
+        "ww.reg.text":"Our products are complementary feed (alimentary) and are not medicines. Availability and labelling may vary by country in line with local feed regulations.",
+        "footer.policy":"Privacy & Policy",
+        "contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.blurb":"We’re happy to help with product questions, availability, or feedback.","contact.phone":"Phone:","contact.help":"Help message & Comments","contact.name":"Name","contact.email":"Email","contact.subject":"Subject","contact.message":"Message / Comments","contact.cancel":"Cancel","contact.send":"Send","contact.note":"This sends via your email app (no account needed).",
+        "policy.title":"Privacy & Policy","policy.overview":"Overview","policy.overviewText":"VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.","policy.dataWeReceive":"Data we may receive","policy.data.item1":"Messages you send via the contact form (your name, email, and message content).","policy.data.item2":"Basic, anonymized analytics (page views, device type) to improve the site.","policy.howUse":"How we use data","policy.use.item1":"To respond to your requests and improve our products and site experience.","policy.use.item2":"We do not sell personal data.","policy.cookies":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.","policy.choices":"Your choices","policy.choices.item1":"You can request that we delete your message and contact details at any time.","policy.choices.item2":"You can disable cookies in your browser settings.","policy.contact":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:info@vetocos.com\">info@vetocos.com</a>.","policy.updated":"Last updated:"
+      },
+      fr:{
+        "nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact",
+        "ww.title":"Où acheter",
+        "ww.lead":"Les aliments complémentaires VetoCos sont disponibles via des cliniques vétérinaires et des partenaires sélectionnés. Contactez un distributeur local ci-dessous.",
+        "ww.email":"E-mail :",
+        "ww.eu.title":"Europe","ww.eu.countries":"Royaume-Uni, France, Espagne, Italie, Allemagne, Pologne.",
+        "ww.mena.title":"Moyen-Orient & Afrique du Nord","ww.mena.countries":"Maroc, Algérie, Tunisie, Égypte, région du CCG.",
+        "ww.amer.title":"Amériques","ww.amer.countries":"États-Unis, Canada, Mexique, Brésil.",
+        "ww.reg.title":"Note réglementaire",
+        "ww.reg.text":"Nos produits sont des aliments complémentaires (alimentaires) et ne sont pas des médicaments. La disponibilité et l’étiquetage peuvent varier selon les pays conformément aux réglementations locales.",
+        "footer.policy":"Confidentialité & Politique",
+        "contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.blurb":"Nous répondons volontiers à vos questions sur les produits, la disponibilité ou vos retours.","contact.phone":"Téléphone :","contact.help":"Message d’aide & Commentaires","contact.name":"Nom","contact.email":"E-mail","contact.subject":"Objet","contact.message":"Message / Commentaires","contact.cancel":"Annuler","contact.send":"Envoyer","contact.note":"L’envoi se fait via votre application e-mail (sans compte).",
+        "policy.title":"Confidentialité & Politique","policy.overview":"Aperçu","policy.overviewText":"VetoCos propose des aliments complémentaires. Ce site est compatible ordinateur et mobile. Nous ne collectons pas de données personnelles sauf si vous nous contactez.","policy.dataWeReceive":"Données susceptibles d’être reçues","policy.data.item1":"Messages envoyés via le formulaire (nom, e-mail, contenu du message).","policy.data.item2":"Statistiques anonymisées (vues, type d’appareil) pour améliorer le site.","policy.howUse":"Utilisation des données","policy.use.item1":"Répondre à vos demandes et améliorer nos produits et le site.","policy.use.item2":"Nous ne vendons pas de données personnelles.","policy.cookies":"Cookies","policy.cookiesText":"Nous utilisons des cookies essentiels et minimaux si nécessaire.","policy.choices":"Vos choix","policy.choices.item1":"Vous pouvez demander la suppression de vos messages et coordonnées à tout moment.","policy.choices.item2":"Vous pouvez désactiver les cookies dans votre navigateur.","policy.contact":"Contact","policy.contactText":"Pour toute question, utilisez le lien Contact ou écrivez à <a href=\"mailto:info@vetocos.com\">info@vetocos.com</a>.","policy.updated":"Dernière mise à jour :"
+      },
+      ar:{
+        "nav.home":"الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا",
+        "ww.title":"أماكن الشراء",
+        "ww.lead":"تتوفر منتجات VetoCos الغذائية التكميلية عبر العيادات البيطرية وشركاء مختارين. تواصل مع الموزع المحلي أدناه.",
+        "ww.email":"البريد الإلكتروني:",
+        "ww.eu.title":"أوروبا","ww.eu.countries":"المملكة المتحدة، فرنسا، إسبانيا، إيطاليا، ألمانيا، بولندا.",
+        "ww.mena.title":"الشرق الأوسط وشمال إفريقيا","ww.mena.countries":"المغرب، الجزائر، تونس، مصر، دول مجلس التعاون.",
+        "ww.amer.title":"الأمريكتان","ww.amer.countries":"الولايات المتحدة، كندا، المكسيك، البرازيل.",
+        "ww.reg.title":"ملاحظة تنظيمية",
+        "ww.reg.text":"منتجاتنا غذاء تكميلي (غذائي) وليست أدوية. قد تختلف الإتاحة ووضع العلامات حسب البلد وفقًا للوائح المحلية.",
+        "footer.policy":"الخصوصية والسياسة",
+        "contact.title":"اتصل بنا","contact.close":"إغلاق","contact.reach":"معلومات التواصل","contact.blurb":"نسعد بمساعدتك في أسئلة المنتجات أو التوفر أو الملاحظات.","contact.phone":"الهاتف:","contact.help":"رسالة مساعدة وتعليقات","contact.name":"الاسم","contact.email":"البريد الإلكتروني","contact.subject":"الموضوع","contact.message":"الرسالة / التعليقات","contact.cancel":"إلغاء","contact.send":"إرسال","contact.note":"سيتم الإرسال عبر تطبيق بريدك الإلكتروني (بدون تسجيل).",
+        "policy.title":"الخصوصية والسياسة","policy.overview":"نظرة عامة","policy.overviewText":"تقدّم VetoCos منتجات غذائية تكميلية. هذا الموقع متوافق مع الحاسوب والهاتف. لا نجمع بيانات شخصية إلا إذا تواصلت معنا.","policy.dataWeReceive":"البيانات التي قد نستلمها","policy.data.item1":"الرسائل التي ترسلها عبر نموذج الاتصال (الاسم، البريد الإلكتروني، محتوى الرسالة).","policy.data.item2":"تحليلات مجهولة (عدد الزيارات، نوع الجهاز) لتحسين الموقع.","policy.howUse":"كيفية استخدام البيانات","policy.use.item1":"للرد على طلباتك وتحسين منتجاتنا وتجربة الموقع.","policy.use.item2":"لا نبيع البيانات الشخصية.","policy.cookies":"ملفات تعريف الارتباط","policy.cookiesText":"نستخدم ملفات ضرورية وبالحد الأدنى لوظائف الموقع والتحليلات المجهولة.","policy.choices":"اختياراتك","policy.choices.item1":"يمكنك طلب حذف رسالتك وبياناتك في أي وقت.","policy.choices.item2":"يمكنك تعطيل ملفات تعريف الارتباط من إعدادات المتصفح.","policy.contact":"تواصل","policy.contactText":"لاستفسارات الخصوصية، استخدم رابط الاتصال أو راسلنا على <a href=\"mailto:info@vetocos.com\">info@vetocos.com</a>.","policy.updated":"آخر تحديث:"
+      }
+    };
+
+    function applyLang(lang){
+      const dict=I18N[lang]||I18N.en;
+      document.querySelectorAll("[data-i18n]").forEach(el=>{
+        const key=el.getAttribute("data-i18n");
+        if(dict[key]){
+          if(dict[key].includes("<a")) el.innerHTML=dict[key];
+          else el.textContent=dict[key];
+        }
+      });
+      const html=document.documentElement;
+      html.setAttribute("lang",lang);
+      if(lang==="ar"){ html.setAttribute("dir","rtl"); document.body.classList.add("rtl"); }
+      else { html.setAttribute("dir","ltr"); document.body.classList.remove("rtl"); }
+      localStorage.setItem("lang",lang);
+      const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
+    }
+
+    document.addEventListener("DOMContentLoaded", ()=>{
+      const saved=localStorage.getItem("lang")||"en";
+      applyLang(saved);
+      const sel=document.getElementById("lang-switch");
+      if(sel) sel.addEventListener("change",(e)=>applyLang(e.target.value));
+    });
+  </script>
 </body>
 </html>
