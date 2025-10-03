@@ -190,16 +190,21 @@
     }
 
     /* ======================= Checkout flow: ALWAYS go to login first ======================= */
-    async function proceedCheckout(){
-      // keep a backup in case the auth flow opens a new tab/window
-      const cart = readCart();
-      localStorage.setItem('cart_backup', JSON.stringify(cart));
+    <script>
+  async function proceedCheckout(){
+    const cart = readCart();
 
-      // pass cart via URL so login/checkout can merge it
-      const cartParam = encodeURIComponent(JSON.stringify(cart));
-      const loginUrl  = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}`;
-      location.href = loginUrl; // always route through login (name+surname+email -> OTP/magic link)
-    }
+    // keep a backup in case the auth flow opens a new tab/window
+    localStorage.setItem('cart_backup', JSON.stringify(cart));
+
+    // also pass cart via URL so login/checkout can merge it
+    const cartParam = encodeURIComponent(JSON.stringify(cart));
+
+    // force re-auth flow every time from cart
+    const loginUrl  = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}&force=1`;
+    location.href = loginUrl;
+  }
+</script>
 
     /* ======================= Boot ======================= */
     document.addEventListener('DOMContentLoaded', async () => {
