@@ -98,11 +98,12 @@ function removeItem(sku){
 /* ===== Checkout flow ===== */
 async function proceedCheckout(){
   const { data:{user} } = await supa.auth.getUser();
-  if(!user){
-    // redirect to login
-    location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`;
-    return;
-  }
+    if(!user){
+      backupCart();
+      location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`;
+      return;
+}
+
   // TODO: later add vet approval check
   alert("Proceeding to checkout (placeholder)");
 }
