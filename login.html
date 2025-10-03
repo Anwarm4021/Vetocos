@@ -16,12 +16,15 @@
   input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text);margin-top:6px}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .btn{margin-top:14px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
+  .btn.inline{width:auto;display:inline-block;margin-right:8px}
   .btn[disabled]{opacity:.6;cursor:not-allowed}
   .muted{color:var(--muted);font-size:.9rem;margin-top:10px}
   .success{color:#83f0a5}
   .error{color:#ffb4b4}
   #codeBox{display:none}
+  #sessionPanel{display:none;margin-bottom:10px}
   .tiny{font-size:.85rem;color:var(--muted);margin-top:8px}
+  hr.sep{border:0;border-top:1px solid rgba(141,158,199,.18);margin:14px 0}
 </style>
 </head>
 <body>
@@ -30,34 +33,48 @@
       <h1>Login</h1>
       <p class="muted">Enter your details. We’ll email you a magic link and, if enabled, a 6-digit code.</p>
 
-      <div class="row">
+      <!-- Signed-in panel (shows when a session exists and force=0) -->
+      <div id="sessionPanel">
+        <p class="muted" id="sessionText">You are signed in.</p>
         <div>
-          <label for="first">First name
-            <input id="first" autocomplete="given-name" required />
-          </label>
+          <button class="btn inline" id="continueBtn">Continue</button>
+          <button class="btn inline" id="logoutBtn" type="button">Logout</button>
         </div>
-        <div>
-          <label for="last">Last name
-            <input id="last" autocomplete="family-name" required />
-          </label>
-        </div>
+        <hr class="sep">
       </div>
 
-      <label for="email" style="margin-top:10px">Email
-        <input id="email" type="email" autocomplete="email" required />
-      </label>
+      <!-- Login form -->
+      <div id="formPanel">
+        <div class="row">
+          <div>
+            <label for="first">First name
+              <input id="first" autocomplete="given-name" required />
+            </label>
+          </div>
+          <div>
+            <label for="last">Last name
+              <input id="last" autocomplete="family-name" required />
+            </label>
+          </div>
+        </div>
 
-      <button class="btn" id="send">Send login email</button>
-
-      <div id="codeBox" aria-live="polite">
-        <label for="otp" style="margin-top:10px">Enter 6-digit code (if your email shows one)
-          <input id="otp" inputmode="numeric" pattern="[0-9]*" maxlength="6" />
+        <label for="email" style="margin-top:10px">Email
+          <input id="email" type="email" autocomplete="email" required />
         </label>
-        <button class="btn" id="verify">Verify & continue</button>
+
+        <button class="btn" id="send">Send login email</button>
+
+        <div id="codeBox" aria-live="polite">
+          <label for="otp" style="margin-top:10px">Enter 6-digit code (if your email shows one)
+            <input id="otp" inputmode="numeric" pattern="[0-9]*" maxlength="6" />
+          </label>
+          <button class="btn" id="verify">Verify & continue</button>
+        </div>
+
+        <p class="tiny">Tip: open the magic link in the <strong>same browser</strong> where you started the login.</p>
       </div>
 
       <p id="msg" class="muted" aria-live="polite"></p>
-      <p class="tiny">Tip: open the magic link in the <strong>same browser</strong> where you started the login.</p>
     </div>
   </main>
 
@@ -77,11 +94,20 @@
 
     // ===== UI helpers =====
     const msgEl = document.getElementById("msg");
+    const sessionPanel = document.getElementById("sessionPanel");
+    const sessionText  = document.getElementById("sessionText");
+    const formPanel    = document.getElementById("formPanel");
+    const continueBtn  = document.getElementById("continueBtn");
+    const logoutBtn    = document.getElementById("logoutBtn");
+
     function show(t, kind = "") {
       msgEl.textContent = t || "";
       msgEl.className = "muted " + (kind || "");
     }
     function disable(el, on=true){ if(!el) return; el.disabled = !!on; }
+    function showPanel(panel, visible){
+      panel.style.display = visible ? "block" : "none";
+    }
 
     // ===== Cart safety (restore + merge from URL once) =====
     (function restoreCartIfMissing() {
@@ -117,24 +143,53 @@
       return Object.values(base).filter(x => Number(x.qty) > 0);
     }
 
-    // ===== On load: if force=1, sign out to ensure the form shows (no auto-redirect)
+    // ===== Session-aware UI =====
+    async function renderSessionUI() {
+      const { data: { session } } = await supa.auth.getSession();
+
+      if (session?.user && !force) {
+        // User is already signed in → show session panel (Continue/Logout), hide form
+        showPanel(sessionPanel, true);
+        showPanel(formPanel,    false);
+        sessionText.textContent = `You are signed in as ${session.user.email || session.user.id}.`;
+      } else {
+        // Not signed in (or forced re-auth) → show form
+        showPanel(sessionPanel, false);
+        showPanel(formPanel,    true);
+      }
+    }
+
+    // ===== force=1 → sign out first so user can login with a different email
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         if (force) {
-          await supa.auth.signOut(); // clear any existing session
+          await supa.auth.signOut(); // ensure clean slate
         }
       } catch {}
-      // Do NOT auto-redirect on existing session here.
-      // We want the user to see the form and re-auth.
+      await renderSessionUI();
     });
 
-    // After successful sign-in (OTP or magic link), we will redirect
+    // ===== Auth state reactions (after magic link/OTP) =====
     supa.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
         await saveNamesToProfileIfAny(session.user.id);
         goNext();
+      } else if (event === "SIGNED_OUT") {
+        // After logout, show the form again
+        await renderSessionUI();
+        show("You have been logged out.", "success");
+        // Reset OTP panel
+        document.getElementById("codeBox").style.display = "none";
       }
     });
+
+    // ===== Continue & Logout buttons =====
+    continueBtn.onclick = () => goNext();
+    logoutBtn.onclick = async () => {
+      show("Signing out…");
+      try { await supa.auth.signOut(); } catch(e){ show(e.message || "Sign out failed", "error"); return; }
+      // Session UI will be re-rendered by onAuthStateChange handler
+    };
 
     function goNext(){ location.replace(redirect); }
 
