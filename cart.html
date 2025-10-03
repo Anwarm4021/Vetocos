@@ -28,83 +28,207 @@
 </main>
 
 <script>
-/* ===== Supabase client ===== */
+/* =======================
+   Supabase client
+   ======================= */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
 
-/* ===== Cart in localStorage ===== */
+/* =======================
+   Local cart helpers
+   ======================= */
 function readCart(){
   try { return JSON.parse(localStorage.getItem("cart")||"[]"); }
   catch { return []; }
 }
-function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items)); renderCart(); }
 
-/* ===== Render cart ===== */
+async function writeCart(items){
+  localStorage.setItem("cart", JSON.stringify(items));
+  renderCart(); // update UI immediately
+
+  // If logged in, persist to DB so other devices see it
+  const { data: { user } } = await supa.auth.getUser();
+  if (user) {
+    await supa.from('carts').upsert({
+      user_id: user.id,
+      items,
+      updated_at: new Date().toISOString()
+    });
+  }
+}
+
+/* Merge arrays of {sku, qty, name?} by sku */
+function mergeCarts(a, b){
+  const map = {};
+  [...a, ...b].forEach(it => {
+    const sku = it.sku;
+    if (!sku) return;
+    if (!map[sku]) map[sku] = { sku, qty: 0 };
+    map[sku].qty += Number(it.qty || 0);
+    if (it.name) map[sku].name = it.name; // keep any name present
+  });
+  return Object.values(map).filter(x => x.qty > 0);
+}
+
+/* =======================
+   Cross-device sync
+   ======================= */
+async function syncCartFromDB(){
+  const { data: { user } } = await supa.auth.getUser();
+  if (!user) return; // nothing to sync if not logged in
+
+  const { data: row, error } = await supa
+    .from('carts')
+    .select('items')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('carts select error:', error);
+    return;
+  }
+
+  const local = readCart();
+
+  if (row && Array.isArray(row.items)) {
+    // Merge DB + local, save both sides
+    const merged = mergeCarts(local, row.items);
+    localStorage.setItem("cart", JSON.stringify(merged));
+    await supa.from('carts').upsert({
+      user_id: user.id,
+      items: merged,
+      updated_at: new Date().toISOString()
+    });
+  } else {
+    // No row yet → push local (if any) to DB
+    if (local.length > 0) {
+      await supa.from('carts').upsert({
+        user_id: user.id,
+        items: local,
+        updated_at: new Date().toISOString()
+      });
+    }
+  }
+
+  renderCart();
+}
+
+/* If login.html redirected with ?cart=..., merge it in once */
+(function mergeCartFromURL(){
+  const params = new URLSearchParams(location.search);
+  const raw = params.get('cart');
+  if (!raw) return;
+  try {
+    const fromURL = JSON.parse(decodeURIComponent(raw));
+    if (Array.isArray(fromURL)) {
+      const merged = mergeCarts(readCart(), fromURL);
+      localStorage.setItem("cart", JSON.stringify(merged));
+      // Clean the URL (no reload)
+      history.replaceState({}, "", location.pathname);
+    }
+  } catch(e){ console.warn('Invalid cart param'); }
+})();
+
+/* =======================
+   Rendering
+   ======================= */
 async function renderCart(){
   const cart = readCart();
   const box = document.getElementById("cartBox");
-  if(cart.length===0){ 
+
+  if(cart.length===0){
     box.innerHTML = `<div class="empty">Your cart is empty</div>`;
     return;
   }
 
-  // Build table
-  let rows = cart.map(item=>{
-    return `
-      <tr>
-        <td>${item.name || item.sku}</td>
-        <td>
-          <button class="qty-btn" onclick="changeQty('${item.sku}',-1)">-</button>
-          ${item.qty}
-          <button class="qty-btn" onclick="changeQty('${item.sku}',1)">+</button>
-        </td>
-        <td><span class="remove" onclick="removeItem('${item.sku}')">Remove</span></td>
-      </tr>`;
-  }).join("");
+  // Ensure product names exist (fetch by SKU if missing)
+  const missingNames = cart.filter(i => !i.name).map(i => i.sku);
+  if (missingNames.length > 0) {
+    const { data: products, error } = await supa
+      .from("products")
+      .select("sku,name")
+      .in("sku", missingNames);
+
+    if (!error && Array.isArray(products)) {
+      const nameMap = Object.fromEntries(products.map(p => [p.sku, p.name]));
+      cart.forEach(i => { if (!i.name && nameMap[i.sku]) i.name = nameMap[i.sku]; });
+      // save enriched cart (so future renders are instant)
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  }
+
+  const rows = cart.map(item => `
+    <tr>
+      <td>${item.name || item.sku}</td>
+      <td>
+        <button class="qty-btn" onclick="changeQty('${item.sku}',-1)">-</button>
+        ${item.qty}
+        <button class="qty-btn" onclick="changeQty('${item.sku}',1)">+</button>
+      </td>
+      <td><span class="remove" onclick="removeItem('${item.sku}')">Remove</span></td>
+    </tr>
+  `).join("");
 
   box.innerHTML = `
     <table>
       <tr><th>Product</th><th>Quantity</th><th>Action</th></tr>
       ${rows}
     </table>
-    <div class="summary">Total items: ${cart.reduce((n,x)=>n+x.qty,0)}</div>
+    <div class="summary">Total items: ${cart.reduce((n,x)=>n+Number(x.qty||0),0)}</div>
     <button class="btn" onclick="proceedCheckout()">Proceed to Checkout</button>
   `;
 }
 
-/* ===== Cart operations ===== */
-function changeQty(sku,delta){
-  let cart = readCart();
-  const i = cart.findIndex(x=>x.sku===sku);
-  if(i>-1){
+/* =======================
+   Cart operations
+   ======================= */
+function changeQty(sku, delta){
+  const cart = readCart();
+  const i = cart.findIndex(x => x.sku === sku);
+  if (i > -1) {
     cart[i].qty += delta;
-    if(cart[i].qty<=0) cart.splice(i,1);
+    if (cart[i].qty <= 0) cart.splice(i, 1);
     writeCart(cart);
   }
 }
+
 function removeItem(sku){
-  let cart = readCart().filter(x=>x.sku!==sku);
+  const cart = readCart().filter(x => x.sku !== sku);
   writeCart(cart);
 }
 
-/* ===== Checkout flow ===== */
+/* =======================
+   Checkout flow
+   ======================= */
 async function proceedCheckout(){
   const { data:{user} } = await supa.auth.getUser();
   const cart = readCart();
   const cartParam = encodeURIComponent(JSON.stringify(cart));
-
-  if(!user){
-    // redirect to login and pass the cart
-    location.href = `login.html?redirect=cart.html&cart=${cartParam}`;
+  if (!user) {
+    // Send user to login, include this page and the cart payload
+    location.href = `login.html?redirect=${encodeURIComponent('cart.html')}&cart=${cartParam}`;
     return;
   }
+  // (Optional) enforce vet approval before proceeding, etc.
   alert("Proceeding to checkout (placeholder)");
 }
 
-/* ===== Start ===== */
-renderCart();
+/* =======================
+   Boot
+   ======================= */
+document.addEventListener('DOMContentLoaded', async () => {
+  // Fast UI from local storage
+  renderCart();
+  // Pull/merge server-side if already logged in (e.g., magic-link return)
+  await syncCartFromDB();
+});
+
+// Keep listening for auth changes (user clicks magic link and returns)
+supa.auth.onAuthStateChange((_event, session) => {
+  if (session?.user) syncCartFromDB();
+});
 </script>
 </body>
 </html>
