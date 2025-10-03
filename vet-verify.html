@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><title>VetoCos | Vet verification</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px}
+body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
+.wrap{max-width:520px;margin:6vh auto;padding:0 18px}
+.card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
+input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text)}
+.btn{margin-top:14px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;font-weight:600}
+.muted{color:#8ea0c8;margin-top:10px} .success{color:#83f0a5} .error{color:#ffb4b4}
+</style>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<main class="wrap">
+  <div class="card">
+    <h1>Vet verification</h1>
+    <p class="muted">Provide your identity number and upload a scan of your veterinary diploma or professional card.</p>
+
+    <label>Identity number</label>
+    <input id="idnum" type="text" placeholder="e.g., 123456789" />
+
+    <label style="display:block;margin-top:10px">Diploma / professional card (PDF/JPG/PNG)</label>
+    <input id="file" type="file" accept=".pdf,.png,.jpg,.jpeg" />
+
+    <button class="btn" id="submit">Submit for review</button>
+    <p id="msg" class="muted"></p>
+  </div>
+</main>
+
+<script>
+const supa = supabase.createClient(
+  "https://qdepgviimbcdlozjpbhm.supabase.co",
+  "PASTE_YOUR_ANON_PUBLIC_KEY"
+);
+
+document.getElementById('submit').onclick = async () => {
+  const { data: { user } } = await supa.auth.getUser();
+  if(!user){ return location.replace('login.html?redirect=vet-verify.html'); }
+
+  const idnum = document.getElementById('idnum').value.trim();
+  const f = document.getElementById('file').files[0];
+  if(!idnum || !f) return msg('Please enter ID number and choose a file','error');
+
+  const path = `${user.id}/${Date.now()}_${f.name}`.replace(/\s+/g,'_');
+  const up = await supa.storage.from('documents').upload(path, f, { upsert:false });
+  if(up.error) return msg(up.error.message,'error');
+
+  const ins = await supa.from('vet_applications').insert({
+    user_id: user.id,
+    identity_number: idnum,
+    diploma_path: up.data.path
+  });
+  if(ins.error) return msg(ins.error.message,'error');
+
+  msg('Submitted. We will review and approve your account.','success');
+};
+
+function msg(t,kind=''){ const p=document.getElementById('msg'); p.textContent=t; p.className='muted '+kind; }
+</script>
+</body>
+</html>
