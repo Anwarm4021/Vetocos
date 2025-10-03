@@ -9,17 +9,30 @@
     body{margin:0;font-family:Inter,sans-serif;background:#0b1020;color:#f6f7fb}
     main{max-width:960px;margin:40px auto;padding:0 18px}
     .card{background:#0f162f;border:1px solid rgba(141,158,199,.18);border-radius:14px;padding:16px;margin-bottom:14px}
-    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:#f6f7fb;font-weight:600;cursor:pointer}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:#f6f7fb;font-weight:600;cursor:pointer}
     .row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
     .muted{color:#8ea0c8}
+    .hidden{display:none}
+    .center{display:flex;align-items:center;justify-content:center;height:30vh}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <main>
     <h1>Admin – Vet Applications</h1>
-    <div id="msg" class="muted"></div>
-    <div id="list"></div>
+
+    <div id="authGate" class="card">
+      <div id="authMsg" class="muted">Checking session…</div>
+      <div style="margin-top:10px">
+        <button id="loginBtn" class="btn hidden">Login as Admin</button>
+        <button id="logoutBtn" class="btn hidden">Logout</button>
+      </div>
+    </div>
+
+    <div id="listWrap" class="card hidden">
+      <div id="msg" class="muted"></div>
+      <div id="list"></div>
+    </div>
   </main>
 
 <script>
@@ -28,15 +41,67 @@ const supa = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
 
-const BUCKET = 'Documents'; // change to 'Documents' if that's your bucket
+// IMPORTANT: Your bucket name (case-sensitive)
+const BUCKET = 'Documents';
 
-function show(t){ document.getElementById('msg').textContent = t || ''; }
+const authMsg = document.getElementById('authMsg');
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const listWrap = document.getElementById('listWrap');
+const msgEl = document.getElementById('msg');
 
-async function requireAdmin(){
+function show(t){ msgEl.textContent = t || ''; }
+function setGate(text, opts={}) {
+  authMsg.textContent = text;
+  loginBtn.classList.toggle('hidden', !opts.showLogin);
+  logoutBtn.classList.toggle('hidden', !opts.showLogout);
+}
+
+loginBtn.onclick = () => {
+  // Send to your login flow and come back to admin.html
+  location.href = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
+};
+
+logoutBtn.onclick = async () => {
+  await supa.auth.signOut();
+  location.reload();
+};
+
+async function checkAdmin() {
+  setGate('Checking session…', { showLogin:false, showLogout:false });
   const { data: { session } } = await supa.auth.getSession();
-  if (!session?.user) { show("Not signed in. Please login as admin."); return false; }
-  const { data: prof } = await supa.from('profiles').select('is_admin').eq('id', session.user.id).maybeSingle();
-  if (!prof?.is_admin) { show("Access denied. Admins only."); return false; }
+
+  if (!session?.user) {
+    setGate('You are not signed in.', { showLogin:true });
+    listWrap.classList.add('hidden');
+    return false;
+  }
+
+  // Show logout for signed-in users
+  setGate(`Signed in as ${session.user.email || session.user.id}`, { showLogout:true });
+
+  // Need to read is_admin from profiles
+  // Policies must allow user to select own profile (already added)
+  const { data: prof, error } = await supa
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', session.user.id)
+    .maybeSingle();
+
+  if (error) {
+    setGate('Could not read profile: ' + error.message, { showLogout:true });
+    listWrap.classList.add('hidden');
+    return false;
+  }
+
+  if (!prof?.is_admin) {
+    setGate('Access denied. Admins only.', { showLogout:true });
+    listWrap.classList.add('hidden');
+    return false;
+  }
+
+  // Admin OK
+  listWrap.classList.remove('hidden');
   return true;
 }
 
@@ -46,13 +111,16 @@ async function loadApps(){
     .from('vet_applications')
     .select('id, user_id, identity_number, diploma_path, status, created_at')
     .order('created_at', { ascending: true });
+
   if (error) return show(error.message);
 
   const wrap = document.getElementById('list');
   wrap.innerHTML = '';
+
   (apps || []).forEach(a => {
     const card = document.createElement('div');
     card.className = 'card';
+    card.style.marginBottom = '12px';
     card.innerHTML = `
       <div class="row">
         <div>
@@ -68,7 +136,8 @@ async function loadApps(){
     `;
     wrap.appendChild(card);
   });
-  show(apps?.length ? "" : "No applications yet.");
+
+  show((apps?.length ?? 0) ? "" : "No applications yet.");
 }
 
 async function viewDiploma(path){
@@ -89,8 +158,20 @@ async function reject(id){
   await loadApps();
 }
 
+// React to sign-in events (e.g., after magic link)
+supa.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN') {
+    setGate(`Signed in as ${session.user.email || session.user.id}`, { showLogout:true });
+    if (await checkAdmin()) await loadApps();
+  } else if (event === 'SIGNED_OUT') {
+    setGate('You are not signed in.', { showLogin:true });
+    listWrap.classList.add('hidden');
+  }
+});
+
+// Boot
 document.addEventListener('DOMContentLoaded', async () => {
-  if (await requireAdmin()) await loadApps();
+  if (await checkAdmin()) await loadApps();
 });
 </script>
 </body>
