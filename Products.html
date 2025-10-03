@@ -85,6 +85,19 @@
     .form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
     .btn-secondary{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer}
 
+    /* Buy button */
+    .btn{
+      display:inline-block;
+      margin-top:10px;
+      padding:10px 14px;
+      border-radius:10px;
+      border:1px solid rgba(141,158,199,.25);
+      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));
+      color:var(--text);
+      cursor:pointer;
+      font-weight:600
+    }
+
     /* Optional RTL helpers */
     body.rtl .links a{text-align:right}
   </style>
@@ -118,52 +131,53 @@
     <p class="lead" data-i18n="products.lead">Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.</p>
   </div>
 
+  <!-- Added data-sku attributes to each product card -->
   <div class="grid">
-    <a class="p-card" href="Product1.html">
+    <a class="p-card" href="Product1.html" data-sku="URO-CHIEN">
       <img src="images/Product1.jpg" alt="Urocline Chien">
       <div class="px"><h4>Urocline Chien</h4><div class="p-meta"><span data-i18n="cat.urinary">Urinary care</span><span data-i18n="cat.dc">Dogs & Cats</span></div></div>
     </a>
-    <a class="p-card" href="Product2.html">
+    <a class="p-card" href="Product2.html" data-sku="HEP-AT">
       <img src="images/Product2.jpg" alt="Hepatiale">
       <div class="px"><h4>Hepatiale</h4><div class="p-meta"><span data-i18n="cat.liver">Liver support</span><span data-i18n="cat.dc">Dogs & Cats</span></div></div>
     </a>
-    <a class="p-card" href="Product3.html">
+    <a class="p-card" href="Product3.html" data-sku="NEU-VIEW">
       <img src="images/Product3.jpg" alt="Neuroview">
       <div class="px"><h4>Neuroview</h4><div class="p-meta"><span data-i18n="cat.cognitive">Cognitive</span><span data-i18n="cat.dc">Dogs & Cats</span></div></div>
     </a>
-    <a class="p-card" href="Product4.html">
+    <a class="p-card" href="Product4.html" data-sku="MUNI-SAN">
       <img src="images/Product4.jpg" alt="Munisan">
       <div class="px"><h4>Munisan</h4><div class="p-meta"><span data-i18n="cat.immune">Immune</span><span data-i18n="cat.dc">Dogs & Cats</span></div></div>
     </a>
-    <a class="p-card" href="Product5.html">
+    <a class="p-card" href="Product5.html" data-sku="PILO-SAN">
       <img src="images/Product5.jpg" alt="Pilosan">
       <div class="px"><h4>Pilosan</h4><div class="p-meta"><span data-i18n="cat.skin">Skin & coat</span><span data-i18n="cat.dc">Dogs & Cats</span></div></div>
     </a>
-    <a class="p-card" href="Product6.html">
+    <a class="p-card" href="Product6.html" data-sku="HEMO-VET">
       <img src="images/Product6.jpg" alt="HemoVet">
       <div class="px"><h4>HemoVet</h4><div class="p-meta"><span data-i18n="cat.vitamins">Vitamins & minerals</span></div></div>
     </a>
-    <a class="p-card" href="Product7.html">
+    <a class="p-card" href="Product7.html" data-sku="URO-STONES">
       <img src="images/Product7.jpg" alt="Urocline-Stones">
       <div class="px"><h4>Urocline-Stones</h4><div class="p-meta"><span data-i18n="cat.urinary">Urinary care</span></div></div>
     </a>
-    <a class="p-card" href="Product8.html">
+    <a class="p-card" href="Product8.html" data-sku="VIT-MIN">
       <img src="images/Product8.jpg" alt="Vit&Min">
       <div class="px"><h4>Vit&Min</h4><div class="p-meta"><span data-i18n="cat.vitamins">Vitamins & minerals</span></div></div>
     </a>
-    <a class="p-card" href="Product9.html">
+    <a class="p-card" href="Product9.html" data-sku="ART-ASUH">
       <img src="images/Product9.jpg" alt="Art-Asuh">
       <div class="px"><h4>Art-Asuh</h4><div class="p-meta"><span data-i18n="cat.mobility">Mobility</span></div></div>
     </a>
-    <a class="p-card" href="Product10.html">
+    <a class="p-card" href="Product10.html" data-sku="CARBO-DIG">
       <img src="images/Product10.jpg" alt="Carbo Digest">
       <div class="px"><h4>Carbo Digest</h4><div class="p-meta"><span data-i18n="cat.digestive">Digestive comfort</span></div></div>
     </a>
-    <a class="p-card" href="Product11.html">
+    <a class="p-card" href="Product11.html" data-sku="RENO-SAN">
       <img src="images/Product11.jpg" alt="Renosan">
       <div class="px"><h4>Renosan</h4><div class="p-meta"><span data-i18n="cat.renal">Renal support</span></div></div>
     </a>
-    <a class="p-card" href="Product12.html">
+    <a class="p-card" href="Product12.html" data-sku="QAL-MIL">
       <img src="images/Product12.jpg" alt="Qalmil">
       <div class="px"><h4>Qalmil</h4><div class="p-meta"><span data-i18n="cat.calming">Calming</span></div></div>
     </a>
@@ -384,7 +398,6 @@
     document.querySelectorAll("[data-i18n]").forEach(el=>{
       const key = el.getAttribute("data-i18n");
       if (dict[key]) {
-        // Support simple HTML (for policy contact email)
         if (dict[key].includes("<a")) el.innerHTML = dict[key];
         else el.textContent = dict[key];
       }
@@ -405,8 +418,38 @@
     if (sel) sel.addEventListener("change", (e)=>applyLang(e.target.value));
   });
 </script>
+
+<!-- Supabase + Buy button logic -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+const supa = supabase.createClient(
+  "https://qdepgviimbcdlozjpbhm.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+);
+
+// Add a Buy button to each card that has a data-sku
+document.querySelectorAll('.p-card[data-sku]').forEach(card=>{
+  const sku = card.getAttribute('data-sku');
+  const btn = document.createElement('a');
+  btn.className = 'btn';
+  btn.href = 'javascript:void(0)';
+  btn.textContent = 'Buy';
+  btn.onclick = ()=> ensureAuthThenGo(sku);
+
+  const px = card.querySelector('.px') || card;
+  px.appendChild(btn);
+});
+
+async function ensureAuthThenGo(sku){
+  const { data: { user } } = await supa.auth.getUser();
+  if(!user){
+    // Not logged in → go to login, then back to checkout
+    location.href = `login.html?redirect=${encodeURIComponent('checkout.html?sku='+sku)}`;
+    return;
+  }
+  // Logged in → go to checkout
+  location.href = `checkout.html?sku=${encodeURIComponent(sku)}`;
+}
+</script>
 </body>
 </html>
-
-
-
