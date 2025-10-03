@@ -130,6 +130,8 @@
         <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
         <a href="News.html" data-i18n="nav.news">News</a>
         <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
+        <!-- Admin button -->
+        <button class="contact-btn" type="button" id="adminBtn">Admin</button>
         <select id="lang-switch" aria-label="Language">
           <option value="en">English</option>
           <option value="fr">Français</option>
@@ -307,6 +309,9 @@
     </div>
   </div>
 
+  <!-- Supabase SDK (needed for Admin button logic) -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
   <script>
     // i18n dictionary
     const I18N={en:{"nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact",
@@ -412,10 +417,47 @@
       window.location.href=`mailto:${to}?subject=${subject}&body=${body}`;
       return false;
     }
+
+    // ===== Supabase Admin Button Logic =====
+    const supa = supabase.createClient(
+      "https://qdepgviimbcdlozjpbhm.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+    );
+
+    async function goToAdmin() {
+      // 1) Check session
+      const { data: { session } } = await supa.auth.getSession();
+
+      // 2) If not logged in → go to login and come back to admin
+      if (!session?.user) {
+        const url = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
+        location.href = url;
+        return;
+      }
+
+      // 3) Logged in → check is_admin in profiles
+      const { data: prof, error } = await supa
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (error) {
+        alert('Could not read admin status: ' + error.message);
+        return;
+      }
+
+      if (prof?.is_admin) {
+        location.href = 'admin.html';
+      } else {
+        alert('This account is not an admin.');
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const adminBtn = document.getElementById("adminBtn");
+      if (adminBtn) adminBtn.addEventListener("click", goToAdmin);
+    });
   </script>
 </body>
 </html>
-
-
-
-
