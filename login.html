@@ -47,119 +47,124 @@
 
       <button class="btn" id="send">Send login email</button>
 
-      <div id="codeBox">
+      <div id="codeBox" aria-live="polite">
         <label style="margin-top:10px">Enter 6-digit code
           <input id="otp" inputmode="numeric" pattern="[0-9]*" maxlength="6" />
         </label>
         <button class="btn" id="verify">Verify & continue</button>
       </div>
 
-      <p id="msg" class="muted"></p>
+      <p id="msg" class="muted" aria-live="polite"></p>
     </div>
   </main>
 
   <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
-    // 🔧 Supabase config (your values)
+    // ===== Supabase config =====
     const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
-
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-    // where to send the user after successful auth
-    const params   = new URLSearchParams(location.search);
-    const redirect = params.get('redirect') || 'Products.html';
-
-    // helper to show inline messages
-    function show(t, kind = '') {
-      const p = document.getElementById('msg');
+    // ===== Helpers =====
+    function show(t, kind = "") {
+      const p = document.getElementById("msg");
       p.textContent = t;
-      p.className = 'muted ' + kind; // e.g. "muted error" or "muted success"
+      p.className = "muted " + kind;
     }
 
-    // If the user returns from a magic link already authenticated, go on.
+    // Read redirect target (default: products)
+    const q = new URLSearchParams(location.search);
+    const redirect = q.get("redirect") || "Products.html";
+
+    // If cart disappeared due to cross-origin auth open, restore from backup
+    (function restoreCartIfMissing() {
+      try {
+        const cart = localStorage.getItem("cart");
+        const backup = localStorage.getItem("cart_backup");
+        if ((!cart || cart === "[]") && backup) {
+          const parsed = JSON.parse(backup);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            localStorage.setItem("cart", backup);
+          }
+        }
+      } catch {}
+    })();
+
+    // If user already authenticated (e.g., returned via magic link), finish flow
     (async () => {
       const { data } = await supa.auth.getSession();
-      if (data?.session) {
-        // Save profile names if we have them stored from the form
-        const first = localStorage.getItem('pending_first') || null;
-        const last  = localStorage.getItem('pending_last')  || null;
-        if (first || last) {
-          await supa.from('profiles').update({ first_name:first, last_name:last }).eq('id', data.session.user.id);
-          localStorage.removeItem('pending_first');
-          localStorage.removeItem('pending_last');
-        }
+      if (data?.session?.user) {
+        await saveNamesToProfileIfAny(data.session.user.id);
         location.replace(redirect);
       }
     })();
 
-    // Send email (magic link and/or OTP depending on your Supabase Email settings)
-    document.getElementById('send').onclick = async () => {
-      const email = document.getElementById('email').value.trim();
-      const first = document.getElementById('first').value.trim();
-      const last  = document.getElementById('last').value.trim();
-
-      if (!email) {
-        show('Please enter your email.', 'error');
-        return;
+    // Also listen for auth state change (covers hash-processing after magic link click)
+    supa.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        await saveNamesToProfileIfAny(session.user.id);
+        location.replace(redirect);
       }
+    });
 
-      // temporarily store names; we’ll write them to the profile after auth
-      localStorage.setItem('pending_first', first);
-      localStorage.setItem('pending_last',  last);
+    // Write first/last name to profile if we saved them pre-auth
+    async function saveNamesToProfileIfAny(userId) {
+      const first = localStorage.getItem("pending_first") || null;
+      const last  = localStorage.getItem("pending_last")  || null;
+      if (first || last) {
+        try {
+          await supa.from("profiles").update({ first_name:first, last_name:last }).eq("id", userId);
+        } catch {}
+        localStorage.removeItem("pending_first");
+        localStorage.removeItem("pending_last");
+      }
+    }
+
+    // ===== Send login email (magic link and/or OTP depending on your settings) =====
+    document.getElementById("send").onclick = async () => {
+      const email = document.getElementById("email").value.trim();
+      const first = document.getElementById("first").value.trim();
+      const last  = document.getElementById("last").value.trim();
+
+      if (!email) return show("Please enter your email.", "error");
+
+      // Store names to write after auth
+      localStorage.setItem("pending_first", first);
+      localStorage.setItem("pending_last",  last);
+
+      // IMPORTANT: use your canonical domain (match EXACTLY what your site uses)
+      const absoluteRedirect = `https://vetocos.com/login.html?redirect=${encodeURIComponent(redirect)}`;
 
       const { error } = await supa.auth.signInWithOtp({
         email,
         options: {
-          // make sure this URL is allowed in Supabase Auth → URL Configuration
-          emailRedirectTo: location.origin + '/login.html?redirect=' + encodeURIComponent(redirect)
+          emailRedirectTo: absoluteRedirect
         }
       });
 
-      if (error) {
-        show(error.message, 'error');
-        return;
-      }
+      if (error) return show(error.message, "error");
 
-      // Show both instructions; your Supabase setting will decide what arrives.
-      show('Email sent. Check your inbox (and spam). Use the magic link, or enter the 6-digit code if the email includes one.', 'success');
-      // Reveal OTP box so users can enter a code if your template sends it.
-      document.getElementById('codeBox').style.display = 'block';
+      show("Email sent. Open the magic link (same browser). If your email contains a 6-digit code, you can enter it below.", "success");
+      document.getElementById("codeBox").style.display = "block";
     };
 
-    // Verify 6-digit code (works only if Email OTP is enabled and your template includes the token)
-    document.getElementById('verify').onclick = async () => {
-      const email = document.getElementById('email').value.trim();
-      const token = document.getElementById('otp').value.trim();
+    // ===== Verify 6-digit code (only works if Email OTP is enabled) =====
+    document.getElementById("verify").onclick = async () => {
+      const email = document.getElementById("email").value.trim();
+      const token = document.getElementById("otp").value.trim();
 
-      if (!email || token.length !== 6) {
-        show('Enter the 6-digit code from your email.', 'error');
-        return;
-      }
+      if (!email || token.length !== 6) return show("Enter the 6-digit code from your email.", "error");
 
       const { data, error } = await supa.auth.verifyOtp({
         email,
         token,
-        type: 'email' // email OTP
+        type: "email"
       });
 
-      if (error) {
-        show(error.message, 'error');
-        return;
-      }
+      if (error) return show(error.message, "error");
 
-      // Save profile names after we have a user
-      const first = localStorage.getItem('pending_first') || null;
-      const last  = localStorage.getItem('pending_last')  || null;
-      if (first || last) {
-        try {
-          await supa.from('profiles').update({ first_name:first, last_name:last }).eq('id', data.user.id);
-        } catch (_) {}
-        localStorage.removeItem('pending_first');
-        localStorage.removeItem('pending_last');
-      }
-
+      await saveNamesToProfileIfAny(data.user.id);
       location.replace(redirect);
     };
   </script>
