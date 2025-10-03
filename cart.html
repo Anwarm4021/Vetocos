@@ -27,6 +27,7 @@
     <div id="cartBox"></div>
   </main>
 
+  <!-- ONE script tag only -->
   <script>
     /* ======================= Supabase client ======================= */
     const supa = supabase.createClient(
@@ -190,21 +191,19 @@
     }
 
     /* ======================= Checkout flow: ALWAYS go to login first ======================= */
-    <script>
-  async function proceedCheckout(){
-    const cart = readCart();
+    async function proceedCheckout(){
+      const cart = readCart();
 
-    // keep a backup in case the auth flow opens a new tab/window
-    localStorage.setItem('cart_backup', JSON.stringify(cart));
+      // keep a backup in case the auth flow opens a new tab/window
+      localStorage.setItem('cart_backup', JSON.stringify(cart));
 
-    // also pass cart via URL so login/checkout can merge it
-    const cartParam = encodeURIComponent(JSON.stringify(cart));
+      // also pass cart via URL so login/checkout can merge it
+      const cartParam = encodeURIComponent(JSON.stringify(cart));
 
-    // force re-auth flow every time from cart
-    const loginUrl  = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}&force=1`;
-    location.href = loginUrl;
-  }
-</script>
+      // force re-auth flow every time from cart
+      const loginUrl  = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}&force=1`;
+      location.href = loginUrl;
+    }
 
     /* ======================= Boot ======================= */
     document.addEventListener('DOMContentLoaded', async () => {
