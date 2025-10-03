@@ -201,7 +201,7 @@ async function submitApplication(e){
   const ext = (file.name.split('.').pop() || 'pdf').toLowerCase();
   const path = `${user.id}/diploma_${Date.now()}.${ext}`;
 
-  const { error: upErr } = await supa.storage.from('documents').upload(path, file, {
+  const { error: upErr } = await supa.storage.from('Documents').upload(path, file, {
     upsert: true,
     contentType: file.type || (ext==='pdf'?'application/pdf':'image/'+ext)
   });
