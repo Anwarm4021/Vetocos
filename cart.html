@@ -44,40 +44,28 @@
         return { items: [], updated_at: null };
       }
     }
-
     function setLocalBundle(items, updatedAt = null) {
       const stamp = updatedAt || new Date().toISOString();
       localStorage.setItem("cart", JSON.stringify(items || []));
       localStorage.setItem("cart_updated_at", stamp);
     }
-
-    function readCart() {
-      return getLocalBundle().items;
-    }
+    function readCart() { return getLocalBundle().items; }
 
     async function writeCart(items) {
       const updated_at = new Date().toISOString();
       setLocalBundle(items, updated_at);
-      renderCart(); // instant UI update
-
+      renderCart();
       const { data: { user } } = await supa.auth.getUser();
       if (user) {
-        await supa.from('carts').upsert({
-          user_id: user.id,
-          items,
-          updated_at
-        });
+        await supa.from('carts').upsert({ user_id: user.id, items, updated_at });
       }
     }
 
-    // Override quantities by sku (no summing → prevents doubling)
+    // Override quantities by sku (no summing)
     function overlayCarts(baseArr, overrideArr) {
       const base = {};
       (baseArr || []).forEach(it => { if (it?.sku) base[it.sku] = { ...it, qty: Number(it.qty || 0) }; });
-      (overrideArr || []).forEach(it => {
-        if (!it?.sku) return;
-        base[it.sku] = { ...base[it.sku], ...it, qty: Number(it.qty || 0) };
-      });
+      (overrideArr || []).forEach(it => { if (it?.sku) base[it.sku] = { ...base[it.sku], ...it, qty: Number(it.qty || 0) }; });
       return Object.values(base).filter(x => Number(x.qty) > 0);
     }
 
@@ -91,11 +79,7 @@
         .select('items, updated_at')
         .eq('user_id', user.id)
         .maybeSingle();
-
-      if (error) {
-        console.error('carts select error:', error);
-        return;
-      }
+      if (error) { console.error('carts select error:', error); return; }
 
       const local = getLocalBundle();
       const serverItems = Array.isArray(row?.items) ? row.items : null;
@@ -144,9 +128,7 @@
           setLocalBundle(merged, new Date().toISOString());
           history.replaceState({}, "", location.pathname);
         }
-      } catch (e) {
-        console.warn('Invalid cart param');
-      }
+      } catch {}
     })();
 
     /* ======================= Rendering ======================= */
@@ -159,15 +141,11 @@
         return;
       }
 
-      // fetch missing product names by SKU
+      // Fill missing product names
       const missing = cart.filter(i => !i.name).map(i => i.sku);
       if (missing.length > 0) {
-        const { data: products, error } = await supa
-          .from("products")
-          .select("sku,name")
-          .in("sku", missing);
-
-        if (!error && Array.isArray(products)) {
+        const { data: products } = await supa.from("products").select("sku,name").in("sku", missing);
+        if (Array.isArray(products)) {
           const nameMap = Object.fromEntries(products.map(p => [p.sku, p.name]));
           cart.forEach(i => { if (!i.name && nameMap[i.sku]) i.name = nameMap[i.sku]; });
           setLocalBundle(cart, new Date().toISOString());
@@ -206,49 +184,28 @@
         writeCart(cart);
       }
     }
-
     function removeItem(sku) {
       const cart = readCart().filter(x => x.sku !== sku);
       writeCart(cart);
     }
 
-    /* ======================= Checkout flow (login -> checkout) ======================= */
+    /* ======================= Checkout flow: ALWAYS go to login first ======================= */
     async function proceedCheckout(){
-      const { data: { session } } = await supa.auth.getSession();
-
-      // keep a backup of cart in case auth flow opens a new context
+      // keep a backup in case the auth flow opens a new tab/window
       const cart = readCart();
       localStorage.setItem('cart_backup', JSON.stringify(cart));
 
-      // also pass cart via URL so checkout.html can merge it
+      // pass cart via URL so login/checkout can merge it
       const cartParam = encodeURIComponent(JSON.stringify(cart));
-      const checkoutUrl = `checkout.html?cart=${cartParam}`;
-
-      if (!session?.user) {
-        // not logged in → go to login; it will redirect to checkout after auth
-        const loginUrl = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}`;
-        location.href = loginUrl;
-        return;
-      }
-
-      // already logged in → persist latest cart, then go to checkout
-      try {
-        await supa.from('carts').upsert({
-          user_id: session.user.id,
-          items: cart,
-          updated_at: new Date().toISOString()
-        });
-      } catch (_) { /* non-blocking */ }
-
-      location.href = checkoutUrl;
+      const loginUrl  = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}`;
+      location.href = loginUrl; // always route through login (name+surname+email -> OTP/magic link)
     }
 
     /* ======================= Boot ======================= */
     document.addEventListener('DOMContentLoaded', async () => {
-      renderCart();            // fast local render
-      await syncCartFromDB();  // resolve with server if signed in
+      renderCart();
+      await syncCartFromDB();
     });
-
     supa.auth.onAuthStateChange((_event, session) => {
       if (session?.user) syncCartFromDB();
     });
