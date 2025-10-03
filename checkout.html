@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><title>VetoCos | Checkout</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px}
+body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
+.wrap{max-width:540px;margin:6vh auto;padding:0 18px}
+.card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
+.row{display:flex;gap:10px;align-items:center}
+select,input{padding:10px;border-radius:10px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text)}
+.btn{margin-top:14px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;font-weight:600}
+.muted{color:#8ea0c8;margin-top:8px}
+.price{font-size:1.2rem;font-weight:700}
+.hidden{display:none}
+</style>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<main class="wrap">
+  <div class="card">
+    <h1 id="title">Checkout</h1>
+    <div class="row" style="margin:8px 0">
+      <label>Quantity <input id="qty" type="number" min="1" value="1" style="width:90px"></label>
+    </div>
+    <div id="priceRow" class="hidden">Price: <span class="price" id="priceTxt"></span></div>
+    <p id="note" class="muted"></p>
+    <div class="row" style="margin-top:8px;gap:8px">
+      <button class="btn" id="proceed">Proceed</button>
+      <a class="btn" href="vet-verify.html" style="text-align:center">Verify as Vet</a>
+    </div>
+  </div>
+</main>
+
+<script>
+const supa = supabase.createClient(
+  "https://qdepgviimbcdlozjpbhm.supabase.co",
+  "PASTE_YOUR_ANON_PUBLIC_KEY"
+);
+const params = new URLSearchParams(location.search);
+const sku = params.get('sku');
+
+let priceCents = null, currency = 'EUR';
+
+document.getElementById('title').textContent = sku ? `Checkout — ${sku}` : 'Checkout';
+
+(async function init(){
+  const { data:{ user } } = await supa.auth.getUser();
+  if(!user){ return location.replace(`login.html?redirect=checkout.html?sku=${encodeURIComponent(sku||'')}`); }
+
+  const { data:prod } = await supa.from('products').select('id,name').eq('sku', sku).maybeSingle();
+  if(!prod){ document.getElementById('note').textContent = 'Product not found.'; return; }
+
+  const { data:price, error } = await supa.from('prices')
+    .select('amount_cents,currency').eq('product_id', prod.id).maybeSingle();
+
+  if(price && !error){
+    priceCents = price.amount_cents; currency = price.currency;
+    document.getElementById('priceRow').classList.remove('hidden');
+    updatePrice();
+    document.getElementById('note').textContent = 'Approved veterinary account detected.';
+  } else {
+    document.getElementById('note').textContent =
+      'Price is available only to approved veterinary professionals. Please complete verification.';
+  }
+})();
+
+document.getElementById('qty').addEventListener('input', updatePrice);
+function updatePrice(){
+  if(priceCents==null) return;
+  const qty = Math.max(1, parseInt(document.getElementById('qty').value||'1',10));
+  const total = (priceCents*qty)/100;
+  document.getElementById('priceTxt').textContent =
+    new Intl.NumberFormat(undefined,{style:'currency',currency}).format(total);
+}
+
+document.getElementById('proceed').onclick = async ()=>{
+  const { data:{ user } } = await supa.auth.getUser();
+  if(!user) return location.replace(`login.html?redirect=checkout.html?sku=${encodeURIComponent(sku||'')}`);
+  if(priceCents==null){ alert('You must be an approved veterinary professional to purchase.'); return; }
+  alert('Proceeding to payment/shipping…'); // hook your payment later
+};
+</script>
+</body>
+</html>
