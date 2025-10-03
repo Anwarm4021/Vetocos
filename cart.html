@@ -1,48 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>VetoCos | Cart</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<style>
-  body{font-family:Inter,sans-serif;background:#0b1020;color:#f6f7fb;padding:20px}
-  .btn{padding:10px 14px;margin:5px;border-radius:8px;border:1px solid #6dd5ff;background:#0f162f;color:#fff;cursor:pointer}
-</style>
+  <meta charset="utf-8" />
+  <title>VetoCos | Cart</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;font-family:Inter,sans-serif;background:#0b1020;color:#f6f7fb}
+    main{max-width:800px;margin:40px auto;padding:0 18px}
+    h1{margin-bottom:20px}
+    table{width:100%;border-collapse:collapse;background:#0f162f;border:1px solid rgba(141,158,199,.18);border-radius:10px;overflow:hidden}
+    th,td{padding:12px;text-align:left}
+    th{background:rgba(141,158,199,.15);color:#8ea0c8}
+    tr:not(:last-child){border-bottom:1px solid rgba(141,158,199,.18)}
+    .qty-btn{padding:4px 8px;border:none;border-radius:6px;background:rgba(255,255,255,.1);color:white;cursor:pointer}
+    .remove{color:#ff8080;cursor:pointer}
+    .summary{margin-top:20px;text-align:right;font-weight:600}
+    .btn{margin-top:20px;display:inline-block;padding:12px 18px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:#f6f7fb;font-weight:600;cursor:pointer}
+    .empty{text-align:center;padding:40px;background:#0f162f;border-radius:10px;color:#8ea0c8}
+  </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<h1>Your Cart</h1>
-<div id="cartItems"></div>
-<button class="btn" onclick="proceedCheckout()">Proceed to Checkout</button>
+<main>
+  <h1>Your Cart</h1>
+  <div id="cartBox"></div>
+</main>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
+/* ===== Supabase client ===== */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
 
-function loadCart(){
-  const cart=JSON.parse(localStorage.getItem("cart")||"[]");
-  const div=document.getElementById("cartItems");
-  if(cart.length===0){div.innerHTML="<p>Cart is empty</p>";return;}
-  div.innerHTML=cart.map(sku=>`<p>${sku}</p>`).join("");
+/* ===== Cart in localStorage ===== */
+function readCart(){
+  try { return JSON.parse(localStorage.getItem("cart")||"[]"); }
+  catch { return []; }
 }
-loadCart();
+function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items)); renderCart(); }
 
-async function proceedCheckout(){
-  const { data:{user} }=await supa.auth.getUser();
-  if(!user){
-    location.href=`login.html?redirect=cart.html`;
+/* ===== Render cart ===== */
+async function renderCart(){
+  const cart = readCart();
+  const box = document.getElementById("cartBox");
+  if(cart.length===0){ 
+    box.innerHTML = `<div class="empty">Your cart is empty</div>`;
     return;
   }
-  const { data } = await supa.from("vet_applications").select("status").eq("user_id",user.id).maybeSingle();
-  if(!data || data.status!=="approved"){
-    alert("You must be an approved veterinarian to checkout.");
-    location.href="vet-verify.html";
-    return;
-  }
-  location.href="checkout.html";
+
+  // Fetch product names from Supabase
+  const skus = cart.map(x=>x.sku);
+  let { data: products, error } = await supa.from("products").select("*").in("sku", skus);
+  if(error){ console.error(error); products=[]; }
+
+  // Build table
+  let rows = cart.map(item=>{
+    const product = products.find(p=>p.sku===item.sku) || {name:item.sku};
+    return `
+      <tr>
+        <td>${product.name}</td>
+        <td>
+          <button class="qty-btn" onclick="changeQty('${item.sku}',-1)">-</button>
+          ${item.qty}
+          <button class="qty-btn" onclick="changeQty('${item.sku}',1)">+</button>
+        </td>
+        <td><span class="remove" onclick="removeItem('${item.sku}')">Remove</span></td>
+      </tr>`;
+  }).join("");
+
+  box.innerHTML = `
+    <table>
+      <tr><th>Product</th><th>Quantity</th><th>Action</th></tr>
+      ${rows}
+    </table>
+    <div class="summary">Total items: ${cart.reduce((n,x)=>n+x.qty,0)}</div>
+    <button class="btn" onclick="proceedCheckout()">Proceed to Checkout</button>
+  `;
 }
+
+/* ===== Cart operations ===== */
+function changeQty(sku,delta){
+  let cart = readCart();
+  const i = cart.findIndex(x=>x.sku===sku);
+  if(i>-1){
+    cart[i].qty += delta;
+    if(cart[i].qty<=0) cart.splice(i,1);
+    writeCart(cart);
+  }
+}
+function removeItem(sku){
+  let cart = readCart().filter(x=>x.sku!==sku);
+  writeCart(cart);
+}
+
+/* ===== Checkout flow ===== */
+async function proceedCheckout(){
+  const { data:{user} } = await supa.auth.getUser();
+  if(!user){
+    // redirect to login
+    location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`;
+    return;
+  }
+  // TODO: later add vet approval check
+  alert("Proceeding to checkout (placeholder)");
+}
+
+/* ===== Start ===== */
+renderCart();
 </script>
 </body>
 </html>
