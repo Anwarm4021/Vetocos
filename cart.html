@@ -207,10 +207,12 @@ async function proceedCheckout(){
   const cart = readCart();
   const cartParam = encodeURIComponent(JSON.stringify(cart));
   if (!user) {
-    // Send user to login, include this page and the cart payload
-    location.href = `login.html?redirect=${encodeURIComponent('cart.html')}&cart=${cartParam}`;
+    location.href = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}`;
     return;
   }
+  location.href = `checkout.html?cart=${cartParam}`;
+}
+
   // (Optional) enforce vet approval before proceeding, etc.
   alert("Proceeding to checkout (placeholder)");
 }
