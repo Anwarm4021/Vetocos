@@ -18,13 +18,15 @@
     .summary{margin-top:20px;text-align:right;font-weight:600}
     .btn{margin-top:20px;display:inline-block;padding:12px 18px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:#f6f7fb;font-weight:600;cursor:pointer}
     .empty{text-align:center;padding:40px;background:#0f162f;border-radius:10px;color:#8ea0c8}
+    .note{font-size:12px;color:#8ea0c8;margin-top:8px}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <main>
   <h1>Your Cart</h1>
-  <div id="cartBox"></div>
+  <div id="cartBox"><div class="empty">Loading your cart…</div></div>
+  <p class="note" id="status"></p>
 </main>
 
 <script>
@@ -36,6 +38,9 @@ const supa = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
 
+const $ = sel => document.querySelector(sel);
+function setStatus(t){ const el=$("#status"); if(el) el.textContent=t||""; }
+
 /* =======================
    Local cart helpers
    ======================= */
@@ -44,22 +49,23 @@ function readCart(){
   catch { return []; }
 }
 
-async function writeCart(items){
+async function writeCart(items, {alsoPushToDB=true} = {}){
   localStorage.setItem("cart", JSON.stringify(items));
   renderCart(); // update UI immediately
 
-  // If logged in, persist to DB so other devices see it
+  if (!alsoPushToDB) return;
+
   const { data: { user } } = await supa.auth.getUser();
   if (user) {
-    await supa.from('carts').upsert({
+    const { error } = await supa.from('carts').upsert({
       user_id: user.id,
       items,
       updated_at: new Date().toISOString()
     });
+    if (error) console.error('[carts upsert]', error);
   }
 }
 
-/* Utility: shallow equal carts (order-insensitive) */
 function sameCart(a = [], b = []) {
   const m = x => Object.fromEntries(x.map(i => [i.sku, Number(i.qty||0)]));
   const A = m(a), B = m(b);
@@ -69,14 +75,44 @@ function sameCart(a = [], b = []) {
 }
 
 /* =======================
-   Cross-device sync (NO auto-summing)
-   Strategy:
-   - If a DB cart exists → take DB as source of truth (avoid doubles).
-   - If no DB cart → push local to DB (first-time user on server).
+   Merge ?cart= param ONCE (from magic link)
+   ======================= */
+function mergeCartFromURLOnce(){
+  const params = new URLSearchParams(location.search);
+  const raw = params.get('cart');
+  if (!raw) return false;
+
+  try {
+    const fromURL = JSON.parse(decodeURIComponent(raw));
+    if (Array.isArray(fromURL) && fromURL.length) {
+      const local = readCart();
+      const map = {};
+      [...local, ...fromURL].forEach(it=>{
+        if (!it || !it.sku) return;
+        const q = Number(it.qty||0);
+        if (!map[it.sku]) map[it.sku] = { sku: it.sku, qty: q, name: it.name };
+        else map[it.sku].qty = Math.max(map[it.sku].qty, q); // avoid double-add
+        if (it.name && !map[it.sku].name) map[it.sku].name = it.name;
+      });
+      const merged = Object.values(map).filter(x=>x.qty>0);
+      localStorage.setItem("cart", JSON.stringify(merged));
+      // Clean the URL (no reload)
+      history.replaceState({}, "", location.pathname);
+      return true;
+    }
+  } catch(e){ console.warn('Invalid cart param'); }
+  return false;
+}
+
+/* =======================
+   Cross-device sync
+   - If DB has a cart → take DB (source of truth)
+   - If no DB cart → push local to DB
+   Run BEFORE first render to avoid empty flash
    ======================= */
 async function syncCartFromDB(){
   const { data: { user } } = await supa.auth.getUser();
-  if (!user) return; // nothing to sync if not logged in
+  if (!user) { setStatus('Not logged in (local cart only).'); return; }
 
   const { data: row, error } = await supa
     .from('carts')
@@ -84,60 +120,41 @@ async function syncCartFromDB(){
     .eq('user_id', user.id)
     .maybeSingle();
 
-  if (error) { console.error('carts select error:', error); return; }
+  if (error) {
+    console.error('carts select error:', error);
+    setStatus('Could not load server cart.');
+    return;
+  }
 
   const local = readCart();
 
   if (row && Array.isArray(row.items)) {
-    // If DB already has a cart, prefer DB (unless identical)
     if (!sameCart(local, row.items)) {
       localStorage.setItem("cart", JSON.stringify(row.items));
-      renderCart();
+      setStatus('Cart loaded from your account.');
+    } else {
+      setStatus('Cart is up to date.');
     }
   } else {
-    // No row yet → push local (if any) to DB
     if (local.length > 0) {
       await supa.from('carts').upsert({
         user_id: user.id,
         items: local,
         updated_at: new Date().toISOString()
       });
+      setStatus('Saved your local cart to your account.');
+    } else {
+      setStatus('Your cart is empty.');
     }
   }
 }
-
-/* If login.html redirected with ?cart=..., merge it in ONCE (without duplicating) */
-(function mergeCartFromURLOnce(){
-  const params = new URLSearchParams(location.search);
-  const raw = params.get('cart');
-  if (!raw) return;
-  try {
-    const fromURL = JSON.parse(decodeURIComponent(raw));
-    if (Array.isArray(fromURL) && fromURL.length) {
-      // Merge without summing duplicates blindly: take max qty per sku
-      const local = readCart();
-      const map = {};
-      [...local, ...fromURL].forEach(it=>{
-        if (!it || !it.sku) return;
-        const q = Number(it.qty||0);
-        if (!map[it.sku]) map[it.sku] = { sku: it.sku, qty: q, name: it.name };
-        else map[it.sku].qty = Math.max(map[it.sku].qty, q);
-        if (it.name && !map[it.sku].name) map[it.sku].name = it.name;
-      });
-      const merged = Object.values(map).filter(x=>x.qty>0);
-      localStorage.setItem("cart", JSON.stringify(merged));
-      // Clean the URL (no reload)
-      history.replaceState({}, "", location.pathname);
-    }
-  } catch(e){ console.warn('Invalid cart param'); }
-})();
 
 /* =======================
    Rendering
    ======================= */
 async function renderCart(){
   const cart = readCart();
-  const box = document.getElementById("cartBox");
+  const box = $("#cartBox");
 
   if(cart.length===0){
     box.innerHTML = `<div class="empty">Your cart is empty</div>`;
@@ -194,7 +211,6 @@ function changeQty(sku, delta){
     writeCart(cart);
   }
 }
-
 function removeItem(sku){
   const cart = readCart().filter(x => x.sku !== sku);
   writeCart(cart);
@@ -212,21 +228,24 @@ async function proceedCheckout(){
     location.href = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}`;
     return;
   }
-  // Go straight to verification page (checkout.html you added earlier)
+  // Already logged in → go to verification/checkout
   location.href = `checkout.html?cart=${cartParam}`;
 }
 
 /* =======================
-   Boot
+   Boot: 1) merge query cart, 2) sync from DB, 3) render
    ======================= */
 document.addEventListener('DOMContentLoaded', async () => {
-  renderCart();          // 1) fast UI from local
-  await syncCartFromDB(); // 2) then align with server (no doubling)
+  const merged = mergeCartFromURLOnce(); // if magic link carried cart
+  if (merged) setStatus('Imported cart from your login link.');
+
+  await syncCartFromDB(); // finish DB sync BEFORE first render
+  await renderCart();
 });
 
-// If auth state changes, refresh from DB once
+// If auth state changes while page is open, refresh from DB
 supa.auth.onAuthStateChange((_event, session) => {
-  if (session?.user) syncCartFromDB();
+  if (session?.user) syncCartFromDB().then(renderCart);
 });
 </script>
 </body>
