@@ -57,7 +57,7 @@
       </div>
 
       <p id="msg" class="muted" aria-live="polite"></p>
-      <p class="tiny">Having trouble? Open the magic link in the <strong>same browser</strong> where you started the login.</p>
+      <p class="tiny">Tip: open the magic link in the <strong>same browser</strong> where you started the login.</p>
     </div>
   </main>
 
@@ -71,10 +71,9 @@
 
     // ===== Query params =====
     const qs = new URLSearchParams(location.search);
-    // Default redirect to checkout.html if not provided
     const redirect = qs.get("redirect") || "checkout.html";
-    // Cart may be passed along (encoded JSON)
-    const cartParamFromURL = qs.get("cart");
+    const cartParamFromURL = qs.get("cart") || null;
+    const force = qs.get("force") === "1"; // force re-auth
 
     // ===== UI helpers =====
     const msgEl = document.getElementById("msg");
@@ -84,25 +83,22 @@
     }
     function disable(el, on=true){ if(!el) return; el.disabled = !!on; }
 
-    // ===== Cart safety: keep a backup across auth flow =====
+    // ===== Cart safety (restore + merge from URL once) =====
     (function restoreCartIfMissing() {
       try {
         const cart = localStorage.getItem("cart");
         const backup = localStorage.getItem("cart_backup");
         if ((!cart || cart === "[]") && backup) {
           const parsed = JSON.parse(backup);
-          if (Array.isArray(parsed)) {
-            localStorage.setItem("cart", JSON.stringify(parsed));
-          }
+          if (Array.isArray(parsed)) localStorage.setItem("cart", JSON.stringify(parsed));
         }
-        // If a cart came via URL (?cart=...), merge/overlay it once
         if (cartParamFromURL) {
           try {
             const fromURL = JSON.parse(decodeURIComponent(cartParamFromURL));
             const local = JSON.parse(localStorage.getItem("cart") || "[]");
             const merged = overlayCarts(local, Array.isArray(fromURL) ? fromURL : []);
             localStorage.setItem("cart", JSON.stringify(merged));
-            // clean the URL (keep redirect only)
+            // clean cart from URL
             const newQS = new URLSearchParams(location.search);
             newQS.delete("cart");
             history.replaceState({}, "", location.pathname + (newQS.toString() ? "?" + newQS.toString() : ""));
@@ -111,7 +107,6 @@
       } catch {}
     })();
 
-    // Overlay carts: override quantities by sku (no summing → prevents doubling)
     function overlayCarts(baseArr, overrideArr) {
       const base = {};
       (baseArr || []).forEach(it => { if (it?.sku) base[it.sku] = { ...it, qty: Number(it.qty || 0) }; });
@@ -122,22 +117,18 @@
       return Object.values(base).filter(x => Number(x.qty) > 0);
     }
 
-    // ===== Pre-fill email if it came in via intent links
-    (function prefill() {
-      const email = qs.get("email");
-      if (email) document.getElementById("email").value = email;
-    })();
+    // ===== On load: if force=1, sign out to ensure the form shows (no auto-redirect)
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        if (force) {
+          await supa.auth.signOut(); // clear any existing session
+        }
+      } catch {}
+      // Do NOT auto-redirect on existing session here.
+      // We want the user to see the form and re-auth.
+    });
 
-    // ===== If already authenticated (returned via magic link), finish flow =====
-    (async () => {
-      const { data } = await supa.auth.getSession();
-      if (data?.session?.user) {
-        await saveNamesToProfileIfAny(data.session.user.id);
-        goNext();
-      }
-    })();
-
-    // Also listen for auth state changes (covers magic-link hash processing)
+    // After successful sign-in (OTP or magic link), we will redirect
     supa.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
         await saveNamesToProfileIfAny(session.user.id);
@@ -145,26 +136,20 @@
       }
     });
 
-    function goNext(){
-      // Preserve redirect (and re-attach cart if you want to re-pass it)
-      location.replace(redirect);
-    }
+    function goNext(){ location.replace(redirect); }
 
-    // ===== Persist name fields after auth =====
+    // ===== Persist name fields into profile after auth
     async function saveNamesToProfileIfAny(userId) {
       const first = localStorage.getItem("pending_first") || document.getElementById("first").value.trim();
       const last  = localStorage.getItem("pending_last")  || document.getElementById("last").value.trim();
-
       if (first || last) {
-        try {
-          await supa.from("profiles").update({ first_name:first || null, last_name:last || null }).eq("id", userId);
-        } catch {}
+        try { await supa.from("profiles").update({ first_name:first || null, last_name:last || null }).eq("id", userId); } catch {}
         localStorage.removeItem("pending_first");
         localStorage.removeItem("pending_last");
       }
     }
 
-    // ===== Send login email (magic link and/or OTP depending on your settings) =====
+    // ===== Send login email (OTP / magic link)
     const sendBtn = document.getElementById("send");
     sendBtn.onclick = async () => {
       show("");
@@ -179,11 +164,12 @@
       localStorage.setItem("pending_first", first);
       localStorage.setItem("pending_last",  last);
 
-      // Build absolute redirect back to THIS login page so Supabase can hand control here,
-      // then we forward to the final ?redirect page once signed in.
+      // Extra safety: keep a backup of cart
       const cartNow = localStorage.getItem("cart") || "[]";
-      localStorage.setItem("cart_backup", cartNow); // extra safety
+      localStorage.setItem("cart_backup", cartNow);
 
+      // Redirect back to THIS login page after magic link,
+      // then we'll forward to redirect page when SIGNED_IN fires.
       const url = new URL(location.href);
       const absoluteLoginUrl = `${url.origin}${url.pathname}?redirect=${encodeURIComponent(redirect)}`;
 
@@ -201,13 +187,12 @@
 
       if (error) return show(error.message, "error");
 
-      show("Email sent. Open the magic link in this browser. If the email shows a 6-digit code, you can enter it below.", "success");
+      show("Email sent. Open the magic link in this browser. If the email shows a 6-digit code, enter it below.", "success");
       document.getElementById("codeBox").style.display = "block";
-      // Move focus to OTP for convenience
       setTimeout(() => document.getElementById("otp").focus(), 50);
     };
 
-    // ===== Verify 6-digit code (if Email OTP is enabled) =====
+    // ===== Verify 6-digit code (if Email OTP is enabled)
     const verifyBtn = document.getElementById("verify");
     verifyBtn.onclick = async () => {
       show("");
@@ -223,7 +208,7 @@
       const { data, error } = await supa.auth.verifyOtp({
         email,
         token,
-        type: "email" // one-time passcode from email
+        type: "email"
       });
 
       disable(verifyBtn, false);
@@ -236,4 +221,3 @@
   </script>
 </body>
 </html>
-
