@@ -39,10 +39,29 @@ function readCart(){
   try { return JSON.parse(localStorage.getItem("cart")||"[]"); }
   catch { return []; }
 }
-function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items)); renderCart(); }
+function writeCart(items){
+  localStorage.setItem("cart", JSON.stringify(items));
+  renderCart();
+}
+function backupCart(){
+  localStorage.setItem("cart_backup", JSON.stringify(readCart()));
+}
+function restoreCartIfMissing(){
+  const cart = readCart();
+  const backup = localStorage.getItem("cart_backup");
+  if((!cart || cart.length===0) && backup){
+    try {
+      const parsed = JSON.parse(backup);
+      if(Array.isArray(parsed) && parsed.length>0){
+        localStorage.setItem("cart", backup);
+      }
+    } catch {}
+  }
+}
 
 /* ===== Render cart ===== */
 async function renderCart(){
+  restoreCartIfMissing(); // ensure cart is not lost
   const cart = readCart();
   const box = document.getElementById("cartBox");
   if(cart.length===0){ 
@@ -52,7 +71,7 @@ async function renderCart(){
 
   // Fetch product names from Supabase
   const skus = cart.map(x=>x.sku);
-  let { data: products, error } = await supa.from("products").select("*").in("sku", skus);
+  let { data: products, error } = await supa.from("products").select("sku,name").in("sku", skus);
   if(error){ console.error(error); products=[]; }
 
   // Build table
@@ -98,13 +117,13 @@ function removeItem(sku){
 /* ===== Checkout flow ===== */
 async function proceedCheckout(){
   const { data:{user} } = await supa.auth.getUser();
-    if(!user){
-      backupCart();
-      location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`;
-      return;
-}
-
-  // TODO: later add vet approval check
+  if(!user){
+    // backup cart before redirecting
+    backupCart();
+    location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`;
+    return;
+  }
+  // Here you could check vet approval before allowing checkout
   alert("Proceeding to checkout (placeholder)");
 }
 
