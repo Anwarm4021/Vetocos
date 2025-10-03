@@ -59,21 +59,20 @@ async function writeCart(items){
   }
 }
 
-/* Merge arrays of {sku, qty, name?} by sku */
-function mergeCarts(a, b){
-  const map = {};
-  [...a, ...b].forEach(it => {
-    const sku = it.sku;
-    if (!sku) return;
-    if (!map[sku]) map[sku] = { sku, qty: 0 };
-    map[sku].qty += Number(it.qty || 0);
-    if (it.name) map[sku].name = it.name; // keep any name present
-  });
-  return Object.values(map).filter(x => x.qty > 0);
+/* Utility: shallow equal carts (order-insensitive) */
+function sameCart(a = [], b = []) {
+  const m = x => Object.fromEntries(x.map(i => [i.sku, Number(i.qty||0)]));
+  const A = m(a), B = m(b);
+  const keys = new Set([...Object.keys(A), ...Object.keys(B)]);
+  for (const k of keys) if ((A[k]||0) !== (B[k]||0)) return false;
+  return true;
 }
 
 /* =======================
-   Cross-device sync
+   Cross-device sync (NO auto-summing)
+   Strategy:
+   - If a DB cart exists → take DB as source of truth (avoid doubles).
+   - If no DB cart → push local to DB (first-time user on server).
    ======================= */
 async function syncCartFromDB(){
   const { data: { user } } = await supa.auth.getUser();
@@ -85,22 +84,16 @@ async function syncCartFromDB(){
     .eq('user_id', user.id)
     .maybeSingle();
 
-  if (error) {
-    console.error('carts select error:', error);
-    return;
-  }
+  if (error) { console.error('carts select error:', error); return; }
 
   const local = readCart();
 
   if (row && Array.isArray(row.items)) {
-    // Merge DB + local, save both sides
-    const merged = mergeCarts(local, row.items);
-    localStorage.setItem("cart", JSON.stringify(merged));
-    await supa.from('carts').upsert({
-      user_id: user.id,
-      items: merged,
-      updated_at: new Date().toISOString()
-    });
+    // If DB already has a cart, prefer DB (unless identical)
+    if (!sameCart(local, row.items)) {
+      localStorage.setItem("cart", JSON.stringify(row.items));
+      renderCart();
+    }
   } else {
     // No row yet → push local (if any) to DB
     if (local.length > 0) {
@@ -111,19 +104,27 @@ async function syncCartFromDB(){
       });
     }
   }
-
-  renderCart();
 }
 
-/* If login.html redirected with ?cart=..., merge it in once */
-(function mergeCartFromURL(){
+/* If login.html redirected with ?cart=..., merge it in ONCE (without duplicating) */
+(function mergeCartFromURLOnce(){
   const params = new URLSearchParams(location.search);
   const raw = params.get('cart');
   if (!raw) return;
   try {
     const fromURL = JSON.parse(decodeURIComponent(raw));
-    if (Array.isArray(fromURL)) {
-      const merged = mergeCarts(readCart(), fromURL);
+    if (Array.isArray(fromURL) && fromURL.length) {
+      // Merge without summing duplicates blindly: take max qty per sku
+      const local = readCart();
+      const map = {};
+      [...local, ...fromURL].forEach(it=>{
+        if (!it || !it.sku) return;
+        const q = Number(it.qty||0);
+        if (!map[it.sku]) map[it.sku] = { sku: it.sku, qty: q, name: it.name };
+        else map[it.sku].qty = Math.max(map[it.sku].qty, q);
+        if (it.name && !map[it.sku].name) map[it.sku].name = it.name;
+      });
+      const merged = Object.values(map).filter(x=>x.qty>0);
       localStorage.setItem("cart", JSON.stringify(merged));
       // Clean the URL (no reload)
       history.replaceState({}, "", location.pathname);
@@ -207,22 +208,23 @@ async function proceedCheckout(){
   const cart = readCart();
   const cartParam = encodeURIComponent(JSON.stringify(cart));
   if (!user) {
-    // Send user to login, include this page and the cart payload
-    location.href = `login.html?redirect=${encodeURIComponent('cart.html')}&cart=${cartParam}`;
+    // Send user to login, then directly to verification/checkout page
+    location.href = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}`;
     return;
   }
+  // Go straight to verification page (checkout.html you added earlier)
+  location.href = `checkout.html?cart=${cartParam}`;
+}
 
 /* =======================
    Boot
    ======================= */
 document.addEventListener('DOMContentLoaded', async () => {
-  // Fast UI from local storage
-  renderCart();
-  // Pull/merge server-side if already logged in (e.g., magic-link return)
-  await syncCartFromDB();
+  renderCart();          // 1) fast UI from local
+  await syncCartFromDB(); // 2) then align with server (no doubling)
 });
 
-// Keep listening for auth changes (user clicks magic link and returns)
+// If auth state changes, refresh from DB once
 supa.auth.onAuthStateChange((_event, session) => {
   if (session?.user) syncCartFromDB();
 });
