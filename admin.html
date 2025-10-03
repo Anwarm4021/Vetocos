@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>VetoCos | Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;font-family:Inter,sans-serif;background:#0b1020;color:#f6f7fb}
+    main{max-width:960px;margin:40px auto;padding:0 18px}
+    .card{background:#0f162f;border:1px solid rgba(141,158,199,.18);border-radius:14px;padding:16px;margin-bottom:14px}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:#f6f7fb;font-weight:600;cursor:pointer}
+    .row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
+    .muted{color:#8ea0c8}
+  </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <main>
+    <h1>Admin – Vet Applications</h1>
+    <div id="msg" class="muted"></div>
+    <div id="list"></div>
+  </main>
+
+<script>
+const supa = supabase.createClient(
+  "https://qdepgviimbcdlozjpbhm.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+);
+
+const BUCKET = 'Documents'; // change to 'Documents' if that's your bucket
+
+function show(t){ document.getElementById('msg').textContent = t || ''; }
+
+async function requireAdmin(){
+  const { data: { session } } = await supa.auth.getSession();
+  if (!session?.user) { show("Not signed in. Please login as admin."); return false; }
+  const { data: prof } = await supa.from('profiles').select('is_admin').eq('id', session.user.id).maybeSingle();
+  if (!prof?.is_admin) { show("Access denied. Admins only."); return false; }
+  return true;
+}
+
+async function loadApps(){
+  show("Loading applications...");
+  const { data: apps, error } = await supa
+    .from('vet_applications')
+    .select('id, user_id, identity_number, diploma_path, status, created_at')
+    .order('created_at', { ascending: true });
+  if (error) return show(error.message);
+
+  const wrap = document.getElementById('list');
+  wrap.innerHTML = '';
+  (apps || []).forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="row">
+        <div>
+          <div><strong>ID#:</strong> ${a.identity_number || '-'}</div>
+          <div class="muted">User: ${a.user_id}</div>
+          <div class="muted">Status: ${a.status}</div>
+          <div class="muted">Submitted: ${new Date(a.created_at).toLocaleString()}</div>
+        </div>
+        <div><button class="btn" onclick="viewDiploma('${a.diploma_path||''}')">View diploma</button></div>
+        <div><button class="btn" onclick="approve('${a.id}')">Approve</button></div>
+        <div><button class="btn" onclick="reject('${a.id}')">Reject</button></div>
+      </div>
+    `;
+    wrap.appendChild(card);
+  });
+  show(apps?.length ? "" : "No applications yet.");
+}
+
+async function viewDiploma(path){
+  if (!path) return alert("No file path saved.");
+  const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(path, 60 * 5);
+  if (error) return alert(error.message);
+  window.open(data.signedUrl, '_blank');
+}
+
+async function approve(id){
+  const { error } = await supa.from('vet_applications').update({ status: 'approved' }).eq('id', id);
+  if (error) return alert(error.message);
+  await loadApps();
+}
+async function reject(id){
+  const { error } = await supa.from('vet_applications').update({ status: 'rejected' }).eq('id', id);
+  if (error) return alert(error.message);
+  await loadApps();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (await requireAdmin()) await loadApps();
+});
+</script>
+</body>
+</html>
