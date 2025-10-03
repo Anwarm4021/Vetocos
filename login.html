@@ -45,7 +45,7 @@ input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,
 <script>
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
-  "PASTE_YOUR_ANON_PUBLIC_KEY"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
 const q = new URLSearchParams(location.search);
 const redirect = q.get('redirect') || 'Products.html';
@@ -81,6 +81,11 @@ document.getElementById('verify').onclick = async () => {
   }
   location.replace(redirect);
 };
+
+function show(t,kind=''){ const p=document.getElementById('msg'); p.textContent=t; p.className='muted '+kind; }
+</script>
+</body>
+</html>
 
 function show(t,kind=''){ const p=document.getElementById('msg'); p.textContent=t; p.className='muted '+kind; }
 </script>
