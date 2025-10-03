@@ -6,35 +6,51 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px}
-*{box-sizing:border-box} body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
-.wrap{max-width:460px;margin:6vh auto;padding:0 18px}
-.card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
-h1{margin:.2rem 0 1rem}
-label{font-size:.9rem;color:var(--muted)}
-input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text);margin-top:6px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.btn{margin-top:14px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
-.muted{color:var(--muted);font-size:.9rem;margin-top:10px}
-.success{color:#83f0a5} .error{color:#ffb4b4}
+  :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
+  .wrap{max-width:460px;margin:6vh auto;padding:0 18px}
+  .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
+  h1{margin:.2rem 0 1rem}
+  label{font-size:.9rem;color:var(--muted);display:block}
+  input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text);margin-top:6px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .btn{margin-top:14px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
+  .muted{color:var(--muted);font-size:.9rem;margin-top:10px}
+  .success{color:#83f0a5}
+  .error{color:#ffb4b4}
+  #codeBox{display:none}
 </style>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <main class="wrap">
     <div class="card">
       <h1>Login</h1>
-      <p class="muted">Enter your details. We’ll email you a 6-digit code.</p>
+      <p class="muted">Enter your details. We’ll email you a magic link and, if enabled, a 6-digit code.</p>
 
       <div class="row">
-        <div><label>First name<input id="first" autocomplete="given-name"></label></div>
-        <div><label>Last name<input id="last" autocomplete="family-name"></label></div>
+        <div>
+          <label>First name
+            <input id="first" autocomplete="given-name" />
+          </label>
+        </div>
+        <div>
+          <label>Last name
+            <input id="last" autocomplete="family-name" />
+          </label>
+        </div>
       </div>
-      <label style="display:block;margin-top:10px">Email<input id="email" type="email" autocomplete="email" required></label>
-      <button class="btn" id="send">Send code</button>
 
-      <div id="codeBox" style="display:none">
-        <label style="display:block;margin-top:10px">Enter code<input id="otp" inputmode="numeric" pattern="[0-9]*" maxlength="6"></label>
+      <label style="margin-top:10px">Email
+        <input id="email" type="email" autocomplete="email" required />
+      </label>
+
+      <button class="btn" id="send">Send login email</button>
+
+      <div id="codeBox">
+        <label style="margin-top:10px">Enter 6-digit code
+          <input id="otp" inputmode="numeric" pattern="[0-9]*" maxlength="6" />
+        </label>
         <button class="btn" id="verify">Verify & continue</button>
       </div>
 
@@ -42,52 +58,110 @@ input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,
     </div>
   </main>
 
-<script>
-const supa = supabase.createClient(
-  "https://qdepgviimbcdlozjpbhm.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
-);
-const q = new URLSearchParams(location.search);
-const redirect = q.get('redirect') || 'Products.html';
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    // 🔧 Supabase config (your values)
+    const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
 
-document.getElementById('send').onclick = async () => {
-  const email = document.getElementById('email').value.trim();
-  const first = document.getElementById('first').value.trim();
-  const last  = document.getElementById('last').value.trim();
-  if(!email) return show('Please enter your email','error');
+    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-  localStorage.setItem('pending_first', first);
-  localStorage.setItem('pending_last',  last);
+    // where to send the user after successful auth
+    const params   = new URLSearchParams(location.search);
+    const redirect = params.get('redirect') || 'Products.html';
 
-  const { error } = await supa.auth.signInWithOtp({
-    email,
-    options:{ emailRedirectTo: location.href }
-  });
-  if(error) return show(error.message,'error');
-  show('Code sent to your email. Check inbox (and spam).','success');
-  document.getElementById('codeBox').style.display='block';
-};
+    // helper to show inline messages
+    function show(t, kind = '') {
+      const p = document.getElementById('msg');
+      p.textContent = t;
+      p.className = 'muted ' + kind; // e.g. "muted error" or "muted success"
+    }
 
-document.getElementById('verify').onclick = async () => {
-  const email = document.getElementById('email').value.trim();
-  const token = document.getElementById('otp').value.trim();
-  const { data, error } = await supa.auth.verifyOtp({ email, token, type:'email' });
-  if(error) return show(error.message,'error');
+    // If the user returns from a magic link already authenticated, go on.
+    (async () => {
+      const { data } = await supa.auth.getSession();
+      if (data?.session) {
+        // Save profile names if we have them stored from the form
+        const first = localStorage.getItem('pending_first') || null;
+        const last  = localStorage.getItem('pending_last')  || null;
+        if (first || last) {
+          await supa.from('profiles').update({ first_name:first, last_name:last }).eq('id', data.session.user.id);
+          localStorage.removeItem('pending_first');
+          localStorage.removeItem('pending_last');
+        }
+        location.replace(redirect);
+      }
+    })();
 
-  const first = localStorage.getItem('pending_first')||null;
-  const last  = localStorage.getItem('pending_last')||null;
-  if(first || last){
-    await supa.from('profiles').update({ first_name:first, last_name:last }).eq('id', data.user.id);
-  }
-  location.replace(redirect);
-};
+    // Send email (magic link and/or OTP depending on your Supabase Email settings)
+    document.getElementById('send').onclick = async () => {
+      const email = document.getElementById('email').value.trim();
+      const first = document.getElementById('first').value.trim();
+      const last  = document.getElementById('last').value.trim();
 
-function show(t,kind=''){ const p=document.getElementById('msg'); p.textContent=t; p.className='muted '+kind; }
-</script>
-</body>
-</html>
+      if (!email) {
+        show('Please enter your email.', 'error');
+        return;
+      }
 
-function show(t,kind=''){ const p=document.getElementById('msg'); p.textContent=t; p.className='muted '+kind; }
-</script>
+      // temporarily store names; we’ll write them to the profile after auth
+      localStorage.setItem('pending_first', first);
+      localStorage.setItem('pending_last',  last);
+
+      const { error } = await supa.auth.signInWithOtp({
+        email,
+        options: {
+          // make sure this URL is allowed in Supabase Auth → URL Configuration
+          emailRedirectTo: location.origin + '/login.html?redirect=' + encodeURIComponent(redirect)
+        }
+      });
+
+      if (error) {
+        show(error.message, 'error');
+        return;
+      }
+
+      // Show both instructions; your Supabase setting will decide what arrives.
+      show('Email sent. Check your inbox (and spam). Use the magic link, or enter the 6-digit code if the email includes one.', 'success');
+      // Reveal OTP box so users can enter a code if your template sends it.
+      document.getElementById('codeBox').style.display = 'block';
+    };
+
+    // Verify 6-digit code (works only if Email OTP is enabled and your template includes the token)
+    document.getElementById('verify').onclick = async () => {
+      const email = document.getElementById('email').value.trim();
+      const token = document.getElementById('otp').value.trim();
+
+      if (!email || token.length !== 6) {
+        show('Enter the 6-digit code from your email.', 'error');
+        return;
+      }
+
+      const { data, error } = await supa.auth.verifyOtp({
+        email,
+        token,
+        type: 'email' // email OTP
+      });
+
+      if (error) {
+        show(error.message, 'error');
+        return;
+      }
+
+      // Save profile names after we have a user
+      const first = localStorage.getItem('pending_first') || null;
+      const last  = localStorage.getItem('pending_last')  || null;
+      if (first || last) {
+        try {
+          await supa.from('profiles').update({ first_name:first, last_name:last }).eq('id', data.user.id);
+        } catch (_) {}
+        localStorage.removeItem('pending_first');
+        localStorage.removeItem('pending_last');
+      }
+
+      location.replace(redirect);
+    };
+  </script>
 </body>
 </html>
