@@ -39,29 +39,10 @@ function readCart(){
   try { return JSON.parse(localStorage.getItem("cart")||"[]"); }
   catch { return []; }
 }
-function writeCart(items){
-  localStorage.setItem("cart", JSON.stringify(items));
-  renderCart();
-}
-function backupCart(){
-  localStorage.setItem("cart_backup", JSON.stringify(readCart()));
-}
-function restoreCartIfMissing(){
-  const cart = readCart();
-  const backup = localStorage.getItem("cart_backup");
-  if((!cart || cart.length===0) && backup){
-    try {
-      const parsed = JSON.parse(backup);
-      if(Array.isArray(parsed) && parsed.length>0){
-        localStorage.setItem("cart", backup);
-      }
-    } catch {}
-  }
-}
+function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items)); renderCart(); }
 
 /* ===== Render cart ===== */
 async function renderCart(){
-  restoreCartIfMissing(); // ensure cart is not lost
   const cart = readCart();
   const box = document.getElementById("cartBox");
   if(cart.length===0){ 
@@ -69,17 +50,11 @@ async function renderCart(){
     return;
   }
 
-  // Fetch product names from Supabase
-  const skus = cart.map(x=>x.sku);
-  let { data: products, error } = await supa.from("products").select("sku,name").in("sku", skus);
-  if(error){ console.error(error); products=[]; }
-
   // Build table
   let rows = cart.map(item=>{
-    const product = products.find(p=>p.sku===item.sku) || {name:item.sku};
     return `
       <tr>
-        <td>${product.name}</td>
+        <td>${item.name || item.sku}</td>
         <td>
           <button class="qty-btn" onclick="changeQty('${item.sku}',-1)">-</button>
           ${item.qty}
@@ -117,13 +92,14 @@ function removeItem(sku){
 /* ===== Checkout flow ===== */
 async function proceedCheckout(){
   const { data:{user} } = await supa.auth.getUser();
+  const cart = readCart();
+  const cartParam = encodeURIComponent(JSON.stringify(cart));
+
   if(!user){
-    // backup cart before redirecting
-    backupCart();
-    location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`;
+    // redirect to login and pass the cart
+    location.href = `login.html?redirect=cart.html&cart=${cartParam}`;
     return;
   }
-  // Here you could check vet approval before allowing checkout
   alert("Proceeding to checkout (placeholder)");
 }
 
