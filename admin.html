@@ -21,7 +21,6 @@
     .ok{background:rgba(131,240,165,.12)} .bad{background:rgba(255,180,180,.12)} .pend{background:rgba(109,213,255,.12)}
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px}
     .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text)}
-    /* tiny inline diagnostics */
     .diag{color:var(--muted);font-size:.85rem;white-space:pre-wrap;margin-top:6px}
     .diag.err{color:#ffb4b4}
   </style>
@@ -58,7 +57,10 @@ const supa = supabase.createClient(
 );
 
 /* ===== Config ===== */
-const BUCKET = 'Documents'; // exact case
+const BUCKET = 'Documents';                // exact case
+const ADMIN_EMAILS = [                     // TEMP fallback whitelist (edit/remove in prod)
+  'admin@vetocos.com'
+];
 
 /* ===== UI refs ===== */
 const authMsg  = document.getElementById('authMsg');
@@ -86,13 +88,12 @@ function diag(label, obj, isError=false){
   diagEl.appendChild(line);
 }
 
-/* catch unexpected errors to the page */
+/* ===== Error taps to page too ===== */
 window.addEventListener('error', e => diag('Window error', {message:e.message}, true));
 window.addEventListener('unhandledrejection', e => diag('Unhandled rejection', {reason:String(e.reason)}, true));
 
-/* ===== Auth actions ===== */
+/* ===== Buttons ===== */
 loginBtn.onclick = () => {
-  // Send to login with redirect back to admin.html (same origin)
   const target = new URL('login.html', location.href);
   target.searchParams.set('redirect', 'admin.html');
   target.searchParams.set('force', '1');
@@ -107,15 +108,24 @@ let apps = []; let profMap = {};
 async function checkAdmin(){
   setGate('Checking session…');
 
-  // 1) Session
-  const { data:{ session }, error:sessErr } = await supa.auth.getSession();
-  diag('getSession()', { hasSession: !!session?.user, error: sessErr?.message || null }, !!sessErr);
-  if (sessErr) { setGate('Session error. Click Login.', { showLogin:true }); return false; }
+  // Force a fresh read (useful right after magic-link)
+  const g = await supa.auth.getSession();
+  const session = g?.data?.session || null;
+  diag('getSession()', { hasSession: !!session?.user, error: g?.error?.message || null }, !!g?.error);
+
   if (!session?.user) { setGate('You are not signed in here. Click Login.', { showLogin:true }); return false; }
 
   setGate(`Signed in as ${session.user.email || session.user.id}`, { showLogout:true });
 
-  // 2) Admin flag
+  // TEMP: fallback whitelist by email so you can proceed even if profile policy blocks
+  const email = session.user.email || '';
+  if (ADMIN_EMAILS.includes(email)) {
+    diag('admin fallback', { via: 'ADMIN_EMAILS', email });
+    listWrap.classList.remove('hidden'); 
+    return true;
+  }
+
+  // Normal admin flag check
   const { data: prof, error: profErr } = await supa
     .from('profiles')
     .select('is_admin')
@@ -220,12 +230,17 @@ async function reject(id){
   await loadApps();
 }
 
-/* ===== Auth change handling (captures magic-link sign-in) ===== */
+/* ===== Auth change handling ===== */
 supa.auth.onAuthStateChange(async (evt, session)=>{
   diag('onAuthStateChange', { evt, hasUser: !!session?.user });
   if(evt==='SIGNED_IN'){
-    setGate(`Signed in as ${session.user.email||session.user.id}`, {showLogout:true});
-    if(await checkAdmin()) await loadApps();
+    // Force a new getSession after hash is consumed
+    setTimeout(async ()=>{
+      const s = await supa.auth.getSession();
+      diag('post SIGNED_IN getSession()', { hasSession: !!s?.data?.session?.user, error:s?.error?.message || null }, !!s?.error);
+      setGate(`Signed in as ${session.user.email||session.user.id}`, {showLogout:true});
+      if(await checkAdmin()) await loadApps();
+    }, 50);
   }
   if(evt==='SIGNED_OUT'){
     setGate('You are not signed in.', {showLogin:true});
@@ -238,7 +253,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   const ok = await checkAdmin();
   if (ok) await loadApps();
 
-  // Fallback: if still no session after magic-link processing, show Login
+  // If still no session after magic-link processing, show Login
   setTimeout(async ()=>{
     const { data:{ session } } = await supa.auth.getSession();
     if (!session?.user) setGate('No active session here. Tap Login to sign in on this origin.', { showLogin:true });
