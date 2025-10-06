@@ -6,28 +6,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#0b1020; --card:#0f162f; --muted:#8ea0c8; --text:#f6f7fb; --border:rgba(141,158,199,.18); }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:Inter,sans-serif; background:#0b1020; color:#f6f7fb; }
-    main { max-width:1080px; margin:40px auto; padding:0 18px; }
-    h1 { margin:0 0 16px; }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:14px; }
-    .btn { padding:10px 14px; border-radius:10px; border:1px solid rgba(141,158,199,.25);
-           background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12)); color:var(--text);
-           font-weight:600; cursor:pointer }
-    .btn[disabled] { opacity:.55; cursor:not-allowed; }
-    .row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:10px; }
-    .muted { color:var(--muted); }
-    .hidden { display:none; }
-    .pill { display:inline-block; padding:4px 10px; border-radius:999px; border:1px solid rgba(141,158,199,.25); }
-    .status-approved { background:rgba(131,240,165,.12); }
-    .status-rejected { background:rgba(255,180,180,.10); }
-    .status-pending { background:rgba(109,213,255,.10); }
-    .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:10px; }
-    .search { width:280px; padding:10px 12px; border-radius:10px; border:1px solid rgba(141,158,199,.25); background:rgba(255,255,255,.04); color:var(--text); }
-    .grid { display:flex; flex-direction:column; gap:12px; }
-    .kv { display:flex; gap:6px; align-items:center; }
-    .kv small { color:var(--muted); }
+    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
+    main{max-width:1080px;margin:40px auto;padding:0 18px}
+    h1{margin:0 0 14px}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer}
+    .btn[disabled]{opacity:.55;cursor:not-allowed}
+    .muted{color:var(--muted)}
+    .hidden{display:none}
+    .row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
+    .ok{background:rgba(131,240,165,.12)} .bad{background:rgba(255,180,180,.12)} .pend{background:rgba(109,213,255,.12)}
+    .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text)}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -35,20 +28,20 @@
   <main>
     <h1>Admin – Vet Applications</h1>
 
-    <div id="authGate" class="card">
+    <div class="card" id="authGate">
       <div id="authMsg" class="muted">Checking session…</div>
-      <div style="margin-top:10px; display:flex; gap:8px">
+      <div style="margin-top:10px;display:flex;gap:8px">
         <button id="loginBtn" class="btn hidden">Login as Admin</button>
         <button id="logoutBtn" class="btn hidden">Logout</button>
       </div>
     </div>
 
-    <div id="listWrap" class="card hidden">
+    <div class="card hidden" id="listWrap">
       <div class="toolbar">
         <div id="msg" class="muted"></div>
-        <input id="search" class="search" placeholder="Search by name, email or ID number">
+        <input id="search" class="search" placeholder="Search by name / email / ID#">
       </div>
-      <div id="list" class="grid"></div>
+      <div id="list"></div>
     </div>
   </main>
 
@@ -58,208 +51,130 @@ const supa = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
 
-// IMPORTANT: unified, case-sensitive bucket name
-const BUCKET = 'documents';
+// exact case!
+const BUCKET = 'Documents';
 
 const authMsg  = document.getElementById('authMsg');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn= document.getElementById('logoutBtn');
 const listWrap = document.getElementById('listWrap');
 const msgEl    = document.getElementById('msg');
+const listEl   = document.getElementById('list');
 const searchEl = document.getElementById('search');
 
-let appsCache = [];
-let profilesCache = {};
-let isAdmin = false;
-
-function show(t){ msgEl.textContent = t || ''; }
-function setGate(text, opts={}) {
+function setGate(text,{showLogin=false,showLogout=false}={}) {
   authMsg.textContent = text;
-  loginBtn.classList.toggle('hidden', !opts.showLogin);
-  logoutBtn.classList.toggle('hidden', !opts.showLogout);
+  loginBtn.classList.toggle('hidden', !showLogin);
+  logoutBtn.classList.toggle('hidden', !showLogout);
 }
+function show(t){ msgEl.textContent = t || ''; }
+function fullName(p){ return p?.full_name || [p?.first_name,p?.last_name].filter(Boolean).join(' ') || '(unknown)'; }
+function pill(s){ return `<span class="pill ${s==='approved'?'ok':s==='rejected'?'bad':'pend'}">${s||'pending'}</span>`; }
 
-loginBtn.onclick = () => {
-  location.href = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
-};
-logoutBtn.onclick = async () => {
-  await supa.auth.signOut();
-  location.reload();
-};
+loginBtn.onclick = () => location.href = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
+logoutBtn.onclick = async () => { await supa.auth.signOut(); location.reload(); };
 
-async function checkAdmin() {
-  setGate('Checking session…', { showLogin:false, showLogout:false });
+let apps = []; let profMap = {};
 
-  const { data: { session }, error: sessErr } = await supa.auth.getSession();
-  if (sessErr) {
-    setGate('Error reading session. Please retry.', { showLogin:true });
-    listWrap.classList.add('hidden');
-    return false;
+async function checkAdmin(){
+  setGate('Checking session…');
+  const { data:{ session } } = await supa.auth.getSession();
+  if(!session?.user){
+    setGate('You are not signed in.', { showLogin:true }); listWrap.classList.add('hidden'); return false;
   }
-  if (!session?.user) {
-    setGate('You are not signed in.', { showLogin:true });
-    listWrap.classList.add('hidden');
-    return false;
-  }
-
-  // Show logout for signed-in users
   setGate(`Signed in as ${session.user.email || session.user.id}`, { showLogout:true });
 
-  // Read is_admin from profiles
-  const { data: prof, error } = await supa
-    .from('profiles')
-    .select('is_admin, full_name, first_name, last_name')
-    .eq('id', session.user.id)
-    .maybeSingle();
-
-  if (error) {
-    setGate('Could not read profile: ' + error.message, { showLogout:true });
-    listWrap.classList.add('hidden');
-    return false;
-  }
-
-  isAdmin = !!prof?.is_admin;
-  if (!isAdmin) {
-    setGate('Access denied. Admins only.', { showLogout:true });
-    listWrap.classList.add('hidden');
-    return false;
-  }
+  const { data: prof, error } = await supa.from('profiles')
+    .select('is_admin').eq('id', session.user.id).maybeSingle();
+  if(error){ setGate('Could not read profile: '+error.message, { showLogout:true }); return false; }
+  if(!prof?.is_admin){ setGate('Access denied. Admins only.', { showLogout:true }); return false; }
 
   listWrap.classList.remove('hidden');
   return true;
 }
 
-function fmtDate(s){
-  try { return new Date(s).toLocaleString(); } catch { return s || '-'; }
-}
-function fullName(p){
-  return p?.full_name || [p?.first_name, p?.last_name].filter(Boolean).join(' ') || '(unknown)';
-}
-function statusPill(status){
-  const cls = status === 'approved' ? 'status-approved' : status === 'rejected' ? 'status-rejected' : 'status-pending';
-  return `<span class="pill ${cls}">${status || 'pending'}</span>`;
-}
-
 async function loadApps(){
-  show("Loading applications...");
-  const { data: apps, error } = await supa
-    .from('vet_applications')
-    .select('id, user_id, identity_number, diploma_path, status, created_at')
-    .order('created_at', { ascending: true });
+  show('Loading applications…');
+  const { data, error } = await supa.from('vet_applications')
+    .select('id,user_id,identity_number,diploma_path,status,created_at')
+    .order('created_at',{ascending:true});
+  if(error){ show(error.message); return; }
 
-  if (error) { show(error.message); return; }
+  apps = data || [];
 
-  appsCache = apps || [];
-
-  // fetch all referenced profiles in one go
-  const userIds = appsCache.map(a => a.user_id);
-  profilesCache = {};
-  if (userIds.length) {
-    const { data: profs, error: pErr } = await supa
-      .from('profiles')
-      .select('id, first_name, last_name, full_name, email')
-      .in('id', userIds);
-
-    if (!pErr && profs) profs.forEach(p => { profilesCache[p.id] = p; });
+  const ids = [...new Set(apps.map(a=>a.user_id))];
+  profMap = {};
+  if(ids.length){
+    const { data: profs } = await supa.from('profiles')
+      .select('id,first_name,last_name,full_name,email').in('id', ids);
+    (profs||[]).forEach(p=>profMap[p.id]=p);
   }
-
-  renderList();
-  show(appsCache.length ? "" : "No applications yet.");
+  render();
+  show(apps.length ? '' : 'No applications yet.');
 }
 
-function renderList() {
-  const wrap = document.getElementById('list');
-  wrap.innerHTML = '';
+function render(){
+  const q = (searchEl.value||'').toLowerCase().trim();
+  listEl.innerHTML = '';
 
-  const q = (searchEl.value || '').toLowerCase().trim();
-
-  const filtered = appsCache.filter(a => {
-    const p = profilesCache[a.user_id] || {};
-    const name = fullName(p).toLowerCase();
-    const email = (p.email || '').toLowerCase();
-    const idn = (a.identity_number || '').toLowerCase();
-    if (!q) return true;
-    return name.includes(q) || email.includes(q) || idn.includes(q);
-  });
-
-  filtered.forEach(a => {
-    const p = profilesCache[a.user_id] || {};
-    const name = fullName(p);
-    const email = p.email || '';
-    const created = fmtDate(a.created_at);
-    const disA = a.status === 'approved';
-    const disR = a.status === 'rejected';
-
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
+  (apps||[]).filter(a=>{
+    if(!q) return true;
+    const p = profMap[a.user_id]||{};
+    return (fullName(p).toLowerCase().includes(q) ||
+            (p.email||'').toLowerCase().includes(q) ||
+            (a.identity_number||'').toLowerCase().includes(q));
+  }).forEach(a=>{
+    const p = profMap[a.user_id]||{};
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
       <div class="row">
         <div>
-          <div style="font-weight:600">${name}</div>
-          <div class="muted">${email}</div>
-          <div class="kv"><small>User:</small><span>${a.user_id}</span></div>
-          <div class="kv"><small>ID#:</small><span>${a.identity_number || '-'}</span></div>
-          <div class="kv"><small>Status:</small><span>${statusPill(a.status)}</span></div>
-          <div class="muted">Submitted: ${created}</div>
+          <div style="font-weight:600">${fullName(p)}</div>
+          <div class="muted">${p.email||''}</div>
+          <div><strong>ID#:</strong> ${a.identity_number||'-'}</div>
+          <div class="muted">User: ${a.user_id}</div>
+          <div class="muted">Status: ${pill(a.status)}</div>
+          <div class="muted">Submitted: ${new Date(a.created_at).toLocaleString()}</div>
         </div>
         <div><button class="btn" onclick="viewDiploma('${a.diploma_path||''}')">View diploma</button></div>
-        <div><button class="btn" ${disA?'disabled':''} onclick="approve('${a.id}')">Approve</button></div>
-        <div><button class="btn" ${disR?'disabled':''} onclick="reject('${a.id}')">Reject</button></div>
-      </div>
-    `;
-    wrap.appendChild(card);
+        <div><button class="btn" ${a.status==='approved'?'disabled':''} onclick="approve('${a.id}')">Approve</button></div>
+        <div><button class="btn" ${a.status==='rejected'?'disabled':''} onclick="reject('${a.id}')">Reject</button></div>
+      </div>`;
+    listEl.appendChild(div);
   });
-
-  if (!filtered.length) {
-    const empty = document.createElement('div');
-    empty.className = 'muted';
-    empty.textContent = 'No results.';
-    wrap.appendChild(empty);
-  }
 }
 
 async function viewDiploma(path){
-  if (!path) return alert("No file path saved.");
-  const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(path, 60 * 5);
-  if (error) return alert(error.message);
+  if(!path) return alert('No file path saved.');
+  const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(path, 60*5);
+  if(error) return alert(error.message);
   window.open(data.signedUrl, '_blank');
 }
 
 async function approve(id){
-  // fetch user_id for logging
-  const { data: appRow, error: selErr } = await supa
-    .from('vet_applications').select('user_id').eq('id', id).maybeSingle();
-  if (selErr || !appRow) return alert(selErr?.message || 'Application not found.');
-
-  const { error } = await supa.from('vet_applications').update({ status: 'approved' }).eq('id', id);
-  if (error) return alert(error.message);
-
-  // optional buyers log (ignore error if table not present)
-  await supa.from('buyers_log').insert({ application_id: id, user_id: appRow.user_id }).catch(()=>{});
+  const { data: row, error: e1 } = await supa.from('vet_applications').select('user_id').eq('id', id).maybeSingle();
+  if(e1 || !row) return alert(e1?.message || 'Not found');
+  const { error } = await supa.from('vet_applications').update({status:'approved'}).eq('id', id);
+  if(error) return alert(error.message);
+  // optional log (ignore failure if table not present)
+  try { await supa.from('buyers_log').insert({application_id:id,user_id:row.user_id}); } catch(e){}
   await loadApps();
 }
-
 async function reject(id){
-  const { error } = await supa.from('vet_applications').update({ status: 'rejected' }).eq('id', id);
-  if (error) return alert(error.message);
+  const { error } = await supa.from('vet_applications').update({status:'rejected'}).eq('id', id);
+  if(error) return alert(error.message);
   await loadApps();
 }
 
-// Sign-in events (e.g., after magic link)
-supa.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_IN') {
-    setGate(`Signed in as ${session.user.email || session.user.id}`, { showLogout:true });
-    if (await checkAdmin()) await loadApps();
-  } else if (event === 'SIGNED_OUT') {
-    setGate('You are not signed in.', { showLogin:true });
-    listWrap.classList.add('hidden');
-  }
+supa.auth.onAuthStateChange(async (evt, session)=>{
+  if(evt==='SIGNED_IN'){ setGate(`Signed in as ${session.user.email||session.user.id}`, {showLogout:true}); if(await checkAdmin()) await loadApps(); }
+  if(evt==='SIGNED_OUT'){ setGate('You are not signed in.', {showLogin:true}); listWrap.classList.add('hidden'); }
 });
 
-// Boot
-document.addEventListener('DOMContentLoaded', async () => {
-  if (await checkAdmin()) await loadApps();
-  searchEl.addEventListener('input', renderList);
+document.addEventListener('DOMContentLoaded', async ()=>{
+  if(await checkAdmin()) await loadApps();
+  searchEl.addEventListener('input', render);
 });
 </script>
 </body>
