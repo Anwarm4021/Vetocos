@@ -21,6 +21,9 @@
     .ok{background:rgba(131,240,165,.12)} .bad{background:rgba(255,180,180,.12)} .pend{background:rgba(109,213,255,.12)}
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px}
     .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text)}
+    /* tiny inline diagnostics */
+    .diag{color:var(--muted);font-size:.85rem;white-space:pre-wrap;margin-top:6px}
+    .diag.err{color:#ffb4b4}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -34,6 +37,7 @@
         <button id="loginBtn" class="btn hidden">Login as Admin</button>
         <button id="logoutBtn" class="btn hidden">Logout</button>
       </div>
+      <div id="diag" class="diag"></div>
     </div>
 
     <div class="card hidden" id="listWrap">
@@ -46,15 +50,17 @@
   </main>
 
 <script>
+/* ===== Supabase client ===== */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
-// exact case
-const BUCKET = 'Documents';
+/* ===== Config ===== */
+const BUCKET = 'Documents'; // exact case
 
+/* ===== UI refs ===== */
 const authMsg  = document.getElementById('authMsg');
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn= document.getElementById('logoutBtn');
@@ -62,7 +68,9 @@ const listWrap = document.getElementById('listWrap');
 const msgEl    = document.getElementById('msg');
 const listEl   = document.getElementById('list');
 const searchEl = document.getElementById('search');
+const diagEl   = document.getElementById('diag');
 
+/* ===== Helpers ===== */
 function setGate(text,{showLogin=false,showLogout=false}={}) {
   authMsg.textContent = text;
   loginBtn.classList.toggle('hidden', !showLogin);
@@ -71,54 +79,90 @@ function setGate(text,{showLogin=false,showLogout=false}={}) {
 function show(t){ msgEl.textContent = t || ''; }
 function fullName(p){ return p?.full_name || [p?.first_name,p?.last_name].filter(Boolean).join(' ') || '(unknown)'; }
 function pill(s){ return `<span class="pill ${s==='approved'?'ok':s==='rejected'?'bad':'pend'}">${s||'pending'}</span>`; }
+function diag(label, obj, isError=false){
+  const line = document.createElement('div');
+  line.className = 'diag' + (isError ? ' err' : '');
+  line.textContent = `${isError ? '✗' : '✓'} ${label}: ${JSON.stringify(obj, null, 2)}`;
+  diagEl.appendChild(line);
+}
 
+/* catch unexpected errors to the page */
+window.addEventListener('error', e => diag('Window error', {message:e.message}, true));
+window.addEventListener('unhandledrejection', e => diag('Unhandled rejection', {reason:String(e.reason)}, true));
+
+/* ===== Auth actions ===== */
 loginBtn.onclick = () => {
-  // IMPORTANT: we pass redirect=admin.html so the magic link returns here
-  location.href = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
+  // Send to login with redirect back to admin.html (same origin)
+  const target = new URL('login.html', location.href);
+  target.searchParams.set('redirect', 'admin.html');
+  target.searchParams.set('force', '1');
+  location.href = target.toString();
 };
 logoutBtn.onclick = async () => { await supa.auth.signOut(); location.reload(); };
 
+/* ===== State ===== */
 let apps = []; let profMap = {};
 
+/* ===== Admin check ===== */
 async function checkAdmin(){
   setGate('Checking session…');
+
+  // 1) Session
   const { data:{ session }, error:sessErr } = await supa.auth.getSession();
-  if (sessErr) { setGate('Session error. Reload or login.', { showLogin:true }); return false; }
-  if(!session?.user){
-    setGate('You are not signed in.', { showLogin:true }); listWrap.classList.add('hidden'); return false;
-  }
+  diag('getSession()', { hasSession: !!session?.user, error: sessErr?.message || null }, !!sessErr);
+  if (sessErr) { setGate('Session error. Click Login.', { showLogin:true }); return false; }
+  if (!session?.user) { setGate('You are not signed in here. Click Login.', { showLogin:true }); return false; }
+
   setGate(`Signed in as ${session.user.email || session.user.id}`, { showLogout:true });
 
-  const { data: prof, error } = await supa.from('profiles')
-    .select('is_admin').eq('id', session.user.id).maybeSingle();
-  if(error){ setGate('Could not read profile: '+error.message, { showLogout:true }); return false; }
-  if(!prof?.is_admin){ setGate('Access denied. Admins only.', { showLogout:true }); return false; }
+  // 2) Admin flag
+  const { data: prof, error: profErr } = await supa
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', session.user.id)
+    .maybeSingle();
+
+  diag('profiles (admin check)', { is_admin: prof?.is_admin ?? null, error: profErr?.message || null }, !!profErr);
+
+  if (profErr) { setGate('Cannot read profile (RLS/policy).', { showLogout:true }); return false; }
+  if (!prof?.is_admin) { setGate('Access denied. Admins only.', { showLogout:true }); return false; }
 
   listWrap.classList.remove('hidden');
   return true;
 }
 
+/* ===== Load + render apps ===== */
 async function loadApps(){
   show('Loading applications…');
-  const { data, error } = await supa.from('vet_applications')
+
+  const { data, error } = await supa
+    .from('vet_applications')
     .select('id,user_id,identity_number,diploma_path,status,created_at')
     .order('created_at',{ascending:true});
-  if(error){ show(error.message); return; }
 
+  diag('vet_applications select', { count: data?.length || 0, error: error?.message || null }, !!error);
+
+  if (error) { show(error.message); return; }
   apps = data || [];
+
   const ids = [...new Set(apps.map(a=>a.user_id))];
   profMap = {};
-  if(ids.length){
-    const { data: profs } = await supa.from('profiles')
-      .select('id,first_name,last_name,full_name,email').in('id', ids);
+  if (ids.length){
+    const { data: profs, error: pErr } = await supa
+      .from('profiles')
+      .select('id,first_name,last_name,full_name,email')
+      .in('id', ids);
+
+    diag('profiles batch', { count: profs?.length || 0, error: pErr?.message || null }, !!pErr);
     (profs||[]).forEach(p=>profMap[p.id]=p);
   }
+
   render();
   show(apps.length ? '' : 'No applications yet.');
 }
 
 function render(){
-  const q = (searchEl.value||'').toLowerCase().trim();
+  const q = (searchEl?.value||'').toLowerCase().trim();
   listEl.innerHTML = '';
 
   (apps||[]).filter(a=>{
@@ -149,43 +193,58 @@ function render(){
   });
 }
 
+/* ===== Actions ===== */
 async function viewDiploma(path){
   if(!path) return alert('No file path saved.');
   const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(path, 60*5);
+  diag('createSignedUrl', { ok: !error, error: error?.message || null }, !!error);
   if(error) return alert(error.message);
   window.open(data.signedUrl, '_blank');
 }
 
 async function approve(id){
   const { data: row, error: e1 } = await supa.from('vet_applications').select('user_id').eq('id', id).maybeSingle();
+  diag('approve: fetch row', { ok: !!row, error: e1?.message || null }, !!e1);
   if(e1 || !row) return alert(e1?.message || 'Not found');
   const { error } = await supa.from('vet_applications').update({status:'approved'}).eq('id', id);
+  diag('approve: update', { ok: !error, error: error?.message || null }, !!error);
   if(error) return alert(error.message);
   try { await supa.from('buyers_log').insert({application_id:id,user_id:row.user_id}); } catch(e){}
   await loadApps();
 }
+
 async function reject(id){
   const { error } = await supa.from('vet_applications').update({status:'rejected'}).eq('id', id);
+  diag('reject: update', { ok: !error, error: error?.message || null }, !!error);
   if(error) return alert(error.message);
   await loadApps();
 }
 
-// React to magic-link auth in this page too
+/* ===== Auth change handling (captures magic-link sign-in) ===== */
 supa.auth.onAuthStateChange(async (evt, session)=>{
-  if(evt==='SIGNED_IN'){ setGate(`Signed in as ${session.user.email||session.user.id}`, {showLogout:true}); if(await checkAdmin()) await loadApps(); }
-  if(evt==='SIGNED_OUT'){ setGate('You are not signed in.', {showLogin:true}); listWrap.classList.add('hidden'); }
+  diag('onAuthStateChange', { evt, hasUser: !!session?.user });
+  if(evt==='SIGNED_IN'){
+    setGate(`Signed in as ${session.user.email||session.user.id}`, {showLogout:true});
+    if(await checkAdmin()) await loadApps();
+  }
+  if(evt==='SIGNED_OUT'){
+    setGate('You are not signed in.', {showLogin:true});
+    listWrap.classList.add('hidden');
+  }
 });
 
+/* ===== Boot ===== */
 document.addEventListener('DOMContentLoaded', async ()=>{
-  if(await checkAdmin()) await loadApps();
+  const ok = await checkAdmin();
+  if (ok) await loadApps();
 
-  // Safety: if opened via email app viewer with no session, show Login button
+  // Fallback: if still no session after magic-link processing, show Login
   setTimeout(async ()=>{
     const { data:{ session } } = await supa.auth.getSession();
-    if(!session?.user) setGate('You are not signed in.', { showLogin:true });
-  }, 1200);
+    if (!session?.user) setGate('No active session here. Tap Login to sign in on this origin.', { showLogin:true });
+  }, 1500);
 
-  searchEl.addEventListener('input', render);
+  searchEl?.addEventListener('input', render);
 });
 </script>
 </body>
