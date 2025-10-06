@@ -1,41 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><title>VetoCos | Vet verification</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px}
-*{box-sizing:border-box}
-body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
-.wrap{max-width:560px;margin:6vh auto;padding:0 18px}
-.card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
-label{display:block;margin:10px 0 6px}
-input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text)}
-.btn{margin-top:14px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;font-weight:600}
-.btn[disabled]{opacity:.6;cursor:not-allowed}
-.muted{color:#8ea0c8;margin-top:10px}
-.success{color:#83f0a5} .error{color:#ffb4b4}
-.small{font-size:.92rem}
-</style>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <meta charset="utf-8"/>
+  <title>VetoCos | Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0b1020; --card:#0f162f; --muted:#8ea0c8; --text:#f6f7fb; --border:rgba(141,158,199,.18); }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:Inter,sans-serif; background:#0b1020; color:#f6f7fb; }
+    main { max-width:1080px; margin:40px auto; padding:0 18px; }
+    h1 { margin:0 0 16px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:14px; }
+    .btn { padding:10px 14px; border-radius:10px; border:1px solid rgba(141,158,199,.25);
+           background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12)); color:var(--text);
+           font-weight:600; cursor:pointer }
+    .btn[disabled] { opacity:.55; cursor:not-allowed; }
+    .row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:10px; }
+    .muted { color:var(--muted); }
+    .hidden { display:none; }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; border:1px solid rgba(141,158,199,.25); }
+    .status-approved { background:rgba(131,240,165,.12); }
+    .status-rejected { background:rgba(255,180,180,.10); }
+    .status-pending { background:rgba(109,213,255,.10); }
+    .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .search { width:280px; padding:10px 12px; border-radius:10px; border:1px solid rgba(141,158,199,.25); background:rgba(255,255,255,.04); color:var(--text); }
+    .grid { display:flex; flex-direction:column; gap:12px; }
+    .kv { display:flex; gap:6px; align-items:center; }
+    .kv small { color:var(--muted); }
+  </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<main class="wrap">
-  <div class="card">
-    <h1>Vet verification</h1>
-    <p class="muted small">Provide your identity number and upload a scan of your veterinary diploma or professional card.</p>
+  <main>
+    <h1>Admin – Vet Applications</h1>
 
-    <label for="idnum">Identity number</label>
-    <input id="idnum" type="text" placeholder="e.g., 123456789" autocomplete="off"/>
+    <div id="authGate" class="card">
+      <div id="authMsg" class="muted">Checking session…</div>
+      <div style="margin-top:10px; display:flex; gap:8px">
+        <button id="loginBtn" class="btn hidden">Login as Admin</button>
+        <button id="logoutBtn" class="btn hidden">Logout</button>
+      </div>
+    </div>
 
-    <label for="file">Diploma / professional card (PDF/JPG/PNG)</label>
-    <input id="file" type="file" accept=".pdf,.png,.jpg,.jpeg" />
-
-    <button class="btn" id="submit">Submit for review</button>
-    <p id="msg" class="muted"></p>
-  </div>
-</main>
+    <div id="listWrap" class="card hidden">
+      <div class="toolbar">
+        <div id="msg" class="muted"></div>
+        <input id="search" class="search" placeholder="Search by name, email or ID number">
+      </div>
+      <div id="list" class="grid"></div>
+    </div>
+  </main>
 
 <script>
 const supa = supabase.createClient(
@@ -43,50 +58,209 @@ const supa = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
 
-// unified bucket name
+// IMPORTANT: unified, case-sensitive bucket name
 const BUCKET = 'documents';
 
-const btn = document.getElementById('submit');
-btn.onclick = async () => {
-  btn.disabled = true;
-  setMsg('Checking sign-in…');
+const authMsg  = document.getElementById('authMsg');
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn= document.getElementById('logoutBtn');
+const listWrap = document.getElementById('listWrap');
+const msgEl    = document.getElementById('msg');
+const searchEl = document.getElementById('search');
 
-  const { data: { user }, error: uErr } = await supa.auth.getUser();
-  if (uErr) { setMsg(uErr.message, 'error'); btn.disabled=false; return; }
-  if (!user) { location.replace('login.html?redirect=vet-verify.html'); return; }
+let appsCache = [];
+let profilesCache = {};
+let isAdmin = false;
 
-  const idnum = document.getElementById('idnum').value.trim();
-  const f = document.getElementById('file').files[0];
+function show(t){ msgEl.textContent = t || ''; }
+function setGate(text, opts={}) {
+  authMsg.textContent = text;
+  loginBtn.classList.toggle('hidden', !opts.showLogin);
+  logoutBtn.classList.toggle('hidden', !opts.showLogout);
+}
 
-  if(!idnum || !f) { setMsg('Please enter ID number and choose a file','error'); btn.disabled=false; return; }
-
-  // Restrict file size a bit (e.g. 10 MB)
-  if (f.size > 10 * 1024 * 1024) { setMsg('File too large (max 10 MB).','error'); btn.disabled=false; return; }
-
-  // Path: <user_id>/<timestamp>_<sanitized_name>
-  const cleanName = f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'');
-  const path = `${user.id}/${Date.now()}_${cleanName}`;
-
-  setMsg('Uploading document…');
-  const up = await supa.storage.from(BUCKET).upload(path, f, { upsert:false });
-  if(up.error) { setMsg(up.error.message,'error'); btn.disabled=false; return; }
-
-  setMsg('Saving application…');
-  const ins = await supa.from('vet_applications').insert({
-    user_id: user.id,
-    identity_number: idnum,
-    diploma_path: up.data.path,
-    status: 'pending'
-  });
-  if(ins.error) { setMsg(ins.error.message,'error'); btn.disabled=false; return; }
-
-  setMsg('Submitted. We will review and approve your account.','success');
-  // Optional: disable form after submission
-  document.getElementById('idnum').disabled = true;
-  document.getElementById('file').disabled = true;
+loginBtn.onclick = () => {
+  location.href = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
+};
+logoutBtn.onclick = async () => {
+  await supa.auth.signOut();
+  location.reload();
 };
 
-function setMsg(t,kind=''){ const p=document.getElementById('msg'); p.textContent=t; p.className='muted '+kind; }
+async function checkAdmin() {
+  setGate('Checking session…', { showLogin:false, showLogout:false });
+
+  const { data: { session }, error: sessErr } = await supa.auth.getSession();
+  if (sessErr) {
+    setGate('Error reading session. Please retry.', { showLogin:true });
+    listWrap.classList.add('hidden');
+    return false;
+  }
+  if (!session?.user) {
+    setGate('You are not signed in.', { showLogin:true });
+    listWrap.classList.add('hidden');
+    return false;
+  }
+
+  // Show logout for signed-in users
+  setGate(`Signed in as ${session.user.email || session.user.id}`, { showLogout:true });
+
+  // Read is_admin from profiles
+  const { data: prof, error } = await supa
+    .from('profiles')
+    .select('is_admin, full_name, first_name, last_name')
+    .eq('id', session.user.id)
+    .maybeSingle();
+
+  if (error) {
+    setGate('Could not read profile: ' + error.message, { showLogout:true });
+    listWrap.classList.add('hidden');
+    return false;
+  }
+
+  isAdmin = !!prof?.is_admin;
+  if (!isAdmin) {
+    setGate('Access denied. Admins only.', { showLogout:true });
+    listWrap.classList.add('hidden');
+    return false;
+  }
+
+  listWrap.classList.remove('hidden');
+  return true;
+}
+
+function fmtDate(s){
+  try { return new Date(s).toLocaleString(); } catch { return s || '-'; }
+}
+function fullName(p){
+  return p?.full_name || [p?.first_name, p?.last_name].filter(Boolean).join(' ') || '(unknown)';
+}
+function statusPill(status){
+  const cls = status === 'approved' ? 'status-approved' : status === 'rejected' ? 'status-rejected' : 'status-pending';
+  return `<span class="pill ${cls}">${status || 'pending'}</span>`;
+}
+
+async function loadApps(){
+  show("Loading applications...");
+  const { data: apps, error } = await supa
+    .from('vet_applications')
+    .select('id, user_id, identity_number, diploma_path, status, created_at')
+    .order('created_at', { ascending: true });
+
+  if (error) { show(error.message); return; }
+
+  appsCache = apps || [];
+
+  // fetch all referenced profiles in one go
+  const userIds = appsCache.map(a => a.user_id);
+  profilesCache = {};
+  if (userIds.length) {
+    const { data: profs, error: pErr } = await supa
+      .from('profiles')
+      .select('id, first_name, last_name, full_name, email')
+      .in('id', userIds);
+
+    if (!pErr && profs) profs.forEach(p => { profilesCache[p.id] = p; });
+  }
+
+  renderList();
+  show(appsCache.length ? "" : "No applications yet.");
+}
+
+function renderList() {
+  const wrap = document.getElementById('list');
+  wrap.innerHTML = '';
+
+  const q = (searchEl.value || '').toLowerCase().trim();
+
+  const filtered = appsCache.filter(a => {
+    const p = profilesCache[a.user_id] || {};
+    const name = fullName(p).toLowerCase();
+    const email = (p.email || '').toLowerCase();
+    const idn = (a.identity_number || '').toLowerCase();
+    if (!q) return true;
+    return name.includes(q) || email.includes(q) || idn.includes(q);
+  });
+
+  filtered.forEach(a => {
+    const p = profilesCache[a.user_id] || {};
+    const name = fullName(p);
+    const email = p.email || '';
+    const created = fmtDate(a.created_at);
+    const disA = a.status === 'approved';
+    const disR = a.status === 'rejected';
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="row">
+        <div>
+          <div style="font-weight:600">${name}</div>
+          <div class="muted">${email}</div>
+          <div class="kv"><small>User:</small><span>${a.user_id}</span></div>
+          <div class="kv"><small>ID#:</small><span>${a.identity_number || '-'}</span></div>
+          <div class="kv"><small>Status:</small><span>${statusPill(a.status)}</span></div>
+          <div class="muted">Submitted: ${created}</div>
+        </div>
+        <div><button class="btn" onclick="viewDiploma('${a.diploma_path||''}')">View diploma</button></div>
+        <div><button class="btn" ${disA?'disabled':''} onclick="approve('${a.id}')">Approve</button></div>
+        <div><button class="btn" ${disR?'disabled':''} onclick="reject('${a.id}')">Reject</button></div>
+      </div>
+    `;
+    wrap.appendChild(card);
+  });
+
+  if (!filtered.length) {
+    const empty = document.createElement('div');
+    empty.className = 'muted';
+    empty.textContent = 'No results.';
+    wrap.appendChild(empty);
+  }
+}
+
+async function viewDiploma(path){
+  if (!path) return alert("No file path saved.");
+  const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(path, 60 * 5);
+  if (error) return alert(error.message);
+  window.open(data.signedUrl, '_blank');
+}
+
+async function approve(id){
+  // fetch user_id for logging
+  const { data: appRow, error: selErr } = await supa
+    .from('vet_applications').select('user_id').eq('id', id).maybeSingle();
+  if (selErr || !appRow) return alert(selErr?.message || 'Application not found.');
+
+  const { error } = await supa.from('vet_applications').update({ status: 'approved' }).eq('id', id);
+  if (error) return alert(error.message);
+
+  // optional buyers log (ignore error if table not present)
+  await supa.from('buyers_log').insert({ application_id: id, user_id: appRow.user_id }).catch(()=>{});
+  await loadApps();
+}
+
+async function reject(id){
+  const { error } = await supa.from('vet_applications').update({ status: 'rejected' }).eq('id', id);
+  if (error) return alert(error.message);
+  await loadApps();
+}
+
+// Sign-in events (e.g., after magic link)
+supa.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN') {
+    setGate(`Signed in as ${session.user.email || session.user.id}`, { showLogout:true });
+    if (await checkAdmin()) await loadApps();
+  } else if (event === 'SIGNED_OUT') {
+    setGate('You are not signed in.', { showLogin:true });
+    listWrap.classList.add('hidden');
+  }
+});
+
+// Boot
+document.addEventListener('DOMContentLoaded', async () => {
+  if (await checkAdmin()) await loadApps();
+  searchEl.addEventListener('input', renderList);
+});
 </script>
 </body>
 </html>
