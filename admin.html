@@ -6,10 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px;
-      --ok:#83f0a5;--bad:#ff9d9d;
-    }
+    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px}
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
     main{max-width:1100px;margin:40px auto;padding:0 18px}
@@ -17,21 +14,21 @@
     .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px}
     .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
          background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));
-         color:var(--text);font-weight:600;cursor:pointer;transition:all .2s}
-    .btn.small{padding:6px 10px;font-size:.9rem}
-    .btn.danger{background:rgba(255,50,50,.15);border-color:rgba(255,50,50,.4)}
-    .btn:hover{transform:scale(1.03)}
-    .btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
+         color:var(--text);font-weight:600;cursor:pointer}
+    .btn.small{padding:6px 10px;font-size:0.9rem}
+    .btn[disabled]{opacity:.55;cursor:not-allowed}
     .muted{color:var(--muted)}
     .hidden{display:none}
+    .row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
+    .ok{background:rgba(131,240,165,.12)}
+    .bad{background:rgba(255,180,180,.12)}
+    .pend{background:rgba(109,213,255,.12)}
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap}
     .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
             background:rgba(255,255,255,.05);color:var(--text)}
-    .row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px}
-    input.qty-input{width:70px;text-align:center;padding:4px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.25);
-                    background:rgba(255,255,255,.05);color:white}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
-    .ok{background:rgba(131,240,165,.12)} .bad{background:rgba(255,180,180,.12)} .pend{background:rgba(109,213,255,.12)}
+    input.qty-edit{width:70px;padding:4px;border-radius:8px;border:1px solid rgba(255,255,255,.15);
+                   background:rgba(255,255,255,.05);color:white;text-align:center}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -39,162 +36,213 @@
 <main>
   <h1>Admin Dashboard</h1>
 
-  <!-- Auth -->
+  <!-- Auth gate -->
   <div class="card" id="authGate">
     <div id="authMsg" class="muted">Checking session…</div>
     <div style="margin-top:10px;display:flex;gap:8px">
       <button id="loginBtn" class="btn hidden">Login as Admin</button>
       <button id="logoutBtn" class="btn hidden">Logout</button>
     </div>
+    <div id="diag" class="muted" style="font-size:.85rem;white-space:pre-wrap;margin-top:6px"></div>
   </div>
 
   <!-- Vet applications -->
-  <div class="card hidden" id="appsWrap">
+  <div class="card hidden" id="listWrap">
     <div class="toolbar">
       <h2>Vet Applications</h2>
-      <input id="searchApp" class="search" placeholder="Search by email / ID#">
+      <input id="search" class="search" placeholder="Search by name / email / ID#">
     </div>
-    <div id="appsList"></div>
+    <div id="msg" class="muted"></div>
+    <div id="list"></div>
   </div>
 
-  <!-- Orders -->
-  <div class="card hidden" id="ordersWrap">
+  <!-- Orders (quantity control) -->
+  <div class="card hidden" id="orderWrap">
     <div class="toolbar">
-      <h2>Orders</h2>
-      <input id="searchOrder" class="search" placeholder="Search by email / product">
+      <h2>Client Orders</h2>
+      <input id="orderSearch" class="search" placeholder="Search by client / product SKU">
     </div>
-    <div id="ordersList"></div>
+    <div id="orderMsg" class="muted"></div>
+    <div id="orderList"></div>
   </div>
 </main>
 
 <script>
-/* ===== Supabase init ===== */
+/* ===== Supabase client ===== */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
-const ADMIN_EMAILS = ['Anwar.moumenjamai19@gmail.com'];
-const BUCKET = 'Documents';
 
-/* ===== Auth check ===== */
-const authMsg=document.getElementById('authMsg');
-const loginBtn=document.getElementById('loginBtn');
-const logoutBtn=document.getElementById('logoutBtn');
-const appsWrap=document.getElementById('appsWrap');
-const ordersWrap=document.getElementById('ordersWrap');
+/* ===== Config ===== */
+const BUCKET = "Documents";
+const ADMIN_EMAILS = ["Anwar.moumenjamai19@gmail.com"];
 
-loginBtn.onclick=()=>{
-  const u=new URL('login.html',location.href);
-  u.searchParams.set('redirect','admin.html');
-  location.href=u.toString();
-};
+/* ===== UI ===== */
+const authMsg  = document.getElementById("authMsg");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn= document.getElementById("logoutBtn");
+const listWrap = document.getElementById("listWrap");
+const msgEl    = document.getElementById("msg");
+const listEl   = document.getElementById("list");
+const searchEl = document.getElementById("search");
+const orderWrap= document.getElementById("orderWrap");
+const orderList= document.getElementById("orderList");
+const orderMsg = document.getElementById("orderMsg");
+const orderSearch = document.getElementById("orderSearch");
+
+/* ===== Helpers ===== */
+function setGate(t,{showLogin=false,showLogout=false}={}) {
+  authMsg.textContent=t;
+  loginBtn.classList.toggle("hidden",!showLogin);
+  logoutBtn.classList.toggle("hidden",!showLogout);
+}
+function fullName(p){return p?.full_name||[p?.first_name,p?.last_name].filter(Boolean).join(" ")||"(unknown)";}
+function pill(s){return `<span class="pill ${s==="approved"?"ok":s==="rejected"?"bad":"pend"}">${s||"pending"}</span>`;}
+function diag(m,o){document.getElementById("diag").textContent+=`\n${m}: ${JSON.stringify(o)}`}
+
+/* ===== Auth ===== */
+loginBtn.onclick=()=>{const u=new URL("login.html",location.href);u.searchParams.set("redirect","admin.html");location.href=u.toString();};
 logoutBtn.onclick=async()=>{await supa.auth.signOut();location.reload();};
 
 async function checkAdmin(){
-  authMsg.textContent='Checking session…';
-  const { data:{ session } } = await supa.auth.getSession();
-  if(!session?.user){
-    authMsg.textContent='Not signed in.';
-    loginBtn.classList.remove('hidden');
-    return false;
-  }
-  authMsg.textContent='Signed in as '+session.user.email;
-  logoutBtn.classList.remove('hidden');
-  if(!ADMIN_EMAILS.includes(session.user.email)){
-    authMsg.textContent='Access denied.';
-    return false;
-  }
-  appsWrap.classList.remove('hidden');
-  ordersWrap.classList.remove('hidden');
+  setGate("Checking session…");
+  const {data:{session}}=await supa.auth.getSession();
+  if(!session?.user){setGate("Not signed in.",{showLogin:true});return false;}
+  setGate(`Signed in as ${session.user.email}`,{showLogout:true});
+  if(ADMIN_EMAILS.includes(session.user.email)){listWrap.classList.remove("hidden");orderWrap.classList.remove("hidden");return true;}
+  const {data:prof}=await supa.from("profiles").select("is_admin").eq("id",session.user.id).maybeSingle();
+  if(!prof?.is_admin){setGate("Access denied.",{showLogout:true});return false;}
+  listWrap.classList.remove("hidden");orderWrap.classList.remove("hidden");
   return true;
 }
 
 /* ===== Vet Applications ===== */
+let apps=[], profMap={};
 async function loadApps(){
-  const { data, error } = await supa.from('vet_applications').select('*').order('created_at',{ascending:false});
-  const container=document.getElementById('appsList');
-  container.innerHTML='';
-  if(error){container.innerHTML='<p class="muted">'+error.message+'</p>';return;}
-  if(!data.length){container.innerHTML='<p class="muted">No applications yet.</p>';return;}
-  data.forEach(a=>{
-    const div=document.createElement('div');
-    div.className='card';
+  const {data}=await supa.from("vet_applications")
+    .select("id,user_id,identity_number,diploma_path,status,created_at")
+    .order("created_at",{ascending:true});
+  apps=data||[];
+  const ids=[...new Set(apps.map(a=>a.user_id))];
+  if(ids.length){
+    const {data:profs}=await supa.from("profiles").select("id,first_name,last_name,full_name,email").in("id",ids);
+    profMap={};(profs||[]).forEach(p=>profMap[p.id]=p);
+  }
+  renderApps();
+}
+function renderApps(){
+  const q=(searchEl.value||"").toLowerCase();
+  listEl.innerHTML="";
+  apps.filter(a=>{
+    if(!q)return true;
+    const p=profMap[a.user_id]||{};
+    return fullName(p).toLowerCase().includes(q)||(p.email||"").toLowerCase().includes(q)||(a.identity_number||"").toLowerCase().includes(q);
+  }).forEach(a=>{
+    const p=profMap[a.user_id]||{};
+    const div=document.createElement("div");
+    div.className="card";
     div.innerHTML=`
-      <div class="row" style="align-items:center">
+      <div class="row">
         <div>
-          <div><strong>User:</strong> ${a.user_id}</div>
-          <div><strong>ID#:</strong> ${a.identity_number||'-'}</div>
-          <div><strong>Status:</strong> <span class="pill ${a.status==='approved'?'ok':a.status==='rejected'?'bad':'pend'}">${a.status}</span></div>
-          <div class="muted">${new Date(a.created_at).toLocaleString()}</div>
+          <div style="font-weight:600">${fullName(p)}</div>
+          <div class="muted">${p.email||""}</div>
+          <div><strong>ID#:</strong> ${a.identity_number||"-"}</div>
+          <div class="muted">Status: ${pill(a.status)}</div>
+          <div class="muted">Submitted: ${new Date(a.created_at).toLocaleString()}</div>
         </div>
-        <div><button class="btn small" onclick="viewDiploma('${a.diploma_path}')">📄 View</button></div>
-        <div><button class="btn small" onclick="updateAppStatus('${a.id}','approved')">✅ Approve</button></div>
-        <div><button class="btn small" onclick="updateAppStatus('${a.id}','rejected')">🚫 Reject</button></div>
-        <div><button class="btn small danger" onclick="deleteApp('${a.id}')">🗑️ Delete</button></div>
+        <div><button class="btn" onclick="viewDiploma('${a.diploma_path||""}')">Diploma</button></div>
+        <div><button class="btn" onclick="approve('${a.id}')">Approve</button></div>
+        <div><button class="btn" onclick="reject('${a.id}')">Reject</button></div>
+        <div><button class="btn bad small" onclick="deleteApp('${a.id}')">Delete</button></div>
       </div>`;
-    container.appendChild(div);
+    listEl.appendChild(div);
   });
 }
 async function viewDiploma(path){
-  const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(path,300);
+  const {data,error}=await supa.storage.from(BUCKET).createSignedUrl(path,300);
   if(error)return alert(error.message);
-  window.open(data.signedUrl,'_blank');
+  window.location.assign(data.signedUrl);
 }
-async function updateAppStatus(id,status){
-  await supa.from('vet_applications').update({status}).eq('id',id);
-  loadApps();
-}
+async function approve(id){await supa.from("vet_applications").update({status:"approved"}).eq("id",id);loadApps();}
+async function reject(id){await supa.from("vet_applications").update({status:"rejected"}).eq("id",id);loadApps();}
 async function deleteApp(id){
-  if(!confirm('Delete this application permanently?'))return;
-  await supa.from('vet_applications').delete().eq('id',id);
-  loadApps();
+  if(confirm("Delete this application permanently?")){
+    await supa.from("vet_applications").delete().eq("id",id);
+    await loadApps();
+  }
 }
 
-/* ===== Orders Management ===== */
+/* ===== Orders (quantity management) ===== */
+let orders=[], ordProfiles={}, ordProducts={};
 async function loadOrders(){
-  const { data, error } = await supa.from('orders').select('*').order('created_at',{ascending:false});
-  const wrap=document.getElementById('ordersList');
-  wrap.innerHTML='';
-  if(error){wrap.innerHTML='<p class="muted">'+error.message+'</p>';return;}
-  if(!data.length){wrap.innerHTML='<p class="muted">No orders yet.</p>';return;}
-  data.forEach(o=>{
-    const div=document.createElement('div');
-    div.className='card';
+  const {data,error}=await supa.from("orders")
+    .select("id,user_id,product_sku,quantity,status,created_at")
+    .order("created_at",{ascending:false});
+  if(error){orderMsg.textContent=error.message;return;}
+  orders=data||[];
+  const uids=[...new Set(orders.map(o=>o.user_id))];
+  const skus=[...new Set(orders.map(o=>o.product_sku))];
+  if(uids.length){
+    const {data:p}=await supa.from("profiles").select("id,full_name,email").in("id",uids);
+    (p||[]).forEach(x=>ordProfiles[x.id]=x);
+  }
+  if(skus.length){
+    const {data:p}=await supa.from("products").select("sku,name").in("sku",skus);
+    (p||[]).forEach(x=>ordProducts[x.sku]=x.name);
+  }
+  renderOrders();
+}
+function renderOrders(){
+  const q=(orderSearch.value||"").toLowerCase();
+  orderList.innerHTML="";
+  orders.filter(o=>{
+    const p=ordProfiles[o.user_id]||{};
+    const prod=ordProducts[o.product_sku]||o.product_sku;
+    return !q || fullName(p).toLowerCase().includes(q)||(p.email||"").toLowerCase().includes(q)||prod.toLowerCase().includes(q);
+  }).forEach(o=>{
+    const p=ordProfiles[o.user_id]||{};
+    const prod=ordProducts[o.product_sku]||o.product_sku;
+    const div=document.createElement("div");
+    div.className="card";
     div.innerHTML=`
       <div style="display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1fr;gap:10px;align-items:center">
         <div>
-          <div><strong>User:</strong> ${o.user_email||o.user_id}</div>
-          <div class="muted">${new Date(o.created_at).toLocaleString()}</div>
+          <div style="font-weight:600">${fullName(p)}</div>
+          <div class="muted">${p.email||""}</div>
         </div>
-        <div><strong>${o.product_name||o.product_sku}</strong></div>
+        <div>${prod} <span class="muted">(${o.product_sku})</span></div>
         <div>
-          <input type="number" min="1" class="qty-input" id="qty-${o.id}" value="${o.quantity||1}">
+          <input class="qty-edit" id="q_${o.id}" type="number" min="1" value="${o.quantity}">
         </div>
-        <div>
-          <button class="btn small" onclick="saveQty('${o.id}')">💾 Save</button>
-        </div>
-        <div>
-          <button class="btn small danger" onclick="deleteOrder('${o.id}')">🗑️ Delete</button>
+        <div>${pill(o.status)}</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn small" onclick="updateQty('${o.id}')">Save</button>
+          <button class="btn small" onclick="deleteOrder('${o.id}')">Delete</button>
         </div>
       </div>`;
-    wrap.appendChild(div);
+    orderList.appendChild(div);
   });
 }
-async function saveQty(id){
-  const val=document.getElementById('qty-'+id).value;
-  await supa.from('orders').update({quantity:Number(val)}).eq('id',id);
-  alert('Quantity updated.');
+async function updateQty(id){
+  const val=document.getElementById("q_"+id)?.value;
+  if(!val||val<=0)return alert("Invalid quantity");
+  await supa.from("orders").update({quantity:val}).eq("id",id);
+  loadOrders();
 }
 async function deleteOrder(id){
-  if(!confirm('Delete this order?'))return;
-  await supa.from('orders').delete().eq('id',id);
-  loadOrders();
+  if(confirm("Delete this order permanently?")){
+    await supa.from("orders").delete().eq("id",id);
+    loadOrders();
+  }
 }
 
 /* ===== Boot ===== */
-document.addEventListener('DOMContentLoaded', async ()=>{
+document.addEventListener("DOMContentLoaded", async ()=>{
   const ok=await checkAdmin();
-  if(ok){ await loadApps(); await loadOrders(); }
+  if(ok){await loadApps();await loadOrders();}
+  searchEl.addEventListener("input",renderApps);
+  orderSearch.addEventListener("input",renderOrders);
 });
 </script>
 </body>
