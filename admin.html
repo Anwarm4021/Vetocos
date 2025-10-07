@@ -28,7 +28,7 @@
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap}
     .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
             background:rgba(255,255,255,.05);color:var(--text)}
-    input.qty-edit{width:80px;padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,.15);
+    input.qty-edit{width:84px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
                    background:rgba(255,255,255,.05);color:white;text-align:center}
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
            border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
@@ -135,14 +135,18 @@ function setGate(t,{showLogin=false,showLogout=false}={}) {
   loginBtn.classList.toggle("hidden", !showLogin);
   logoutBtn.classList.toggle("hidden", !showLogout);
 }
-function fullName(p){ return p?.full_name || [p?.first_name,p?.last_name].filter(Boolean).join(" ") || "(unknown)"; }
-function pill(s){ return `<span class="pill ${s==="approved"?"ok":s==="rejected"?"bad":"pend"}">${s||"pending"}</span>`; }
+function fullName(p){
+  return [p?.first_name, p?.last_name].filter(Boolean).join(" ") || "(unknown)";
+}
+function pill(s){
+  return `<span class="pill ${s==="approved"?"ok":s==="rejected"?"bad":"pend"}">${s||"pending"}</span>`;
+}
 function diag(label, obj){ diagEl.textContent += `\n${label}: ${JSON.stringify(obj)}`; }
 function toast(msg, isErr=false){
   toastEl.textContent = msg;
   toastEl.style.display = "block";
   toastEl.style.borderColor = isErr ? "rgba(255,120,120,.4)" : "rgba(141,158,199,.25)";
-  setTimeout(()=> toastEl.style.display="none", 2400);
+  setTimeout(()=> toastEl.style.display="none", 2200);
 }
 
 /* ===== Auth buttons ===== */
@@ -162,13 +166,21 @@ async function checkAdmin(){
   if (!session?.user){ setGate("Not signed in.", { showLogin:true }); return false; }
   setGate(`Signed in as ${session.user.email}`, { showLogout:true });
 
-  if (ADMIN_EMAILS.includes(session.user.email)){ appsWrap.classList.remove("hidden"); vpaWrap.classList.remove("hidden"); orderWrap.classList.remove("hidden"); return true; }
+  if (ADMIN_EMAILS.includes(session.user.email)){
+    appsWrap.classList.remove("hidden");
+    vpaWrap.classList.remove("hidden");
+    orderWrap.classList.remove("hidden");
+    return true;
+  }
 
-  const { data: prof, error: pe } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
+  const { data: prof, error: pe } = await supa
+    .from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (pe){ setGate("Profile read error.", { showLogout:true }); toast(pe.message, true); return false; }
   if (!prof?.is_admin){ setGate("Access denied.", { showLogout:true }); return false; }
 
-  appsWrap.classList.remove("hidden"); vpaWrap.classList.remove("hidden"); orderWrap.classList.remove("hidden");
+  appsWrap.classList.remove("hidden");
+  vpaWrap.classList.remove("hidden");
+  orderWrap.classList.remove("hidden");
   return true;
 }
 
@@ -186,7 +198,8 @@ async function loadApps(){
   const ids = [...new Set(apps.map(a=>a.user_id))];
   profMap = {};
   if (ids.length){
-    const { data: profs, error: pe } = await supa.from("profiles").select("id,first_name,last_name,full_name,email").in("id", ids);
+    const { data: profs, error: pe } = await supa
+      .from("profiles").select("id,first_name,last_name,email").in("id", ids);
     if (pe) toast(pe.message, true);
     (profs||[]).forEach(p=> profMap[p.id]=p);
   }
@@ -247,14 +260,15 @@ async function deleteApp(id){
 }
 
 /* =======================================================================
-   PER-PRODUCT APPROVALS (from checkout “Request approval”)
+   PER-PRODUCT APPROVALS (with quantity edit)
+   Make sure table has: quantity integer not null default 1
 ======================================================================= */
 let vpaRows=[], vpaProfiles={}, vpaProducts={};
 async function loadProductApprovals(){
   vpaMsg.textContent = "Loading…";
   const { data, error } = await supa
     .from("vet_product_approvals")
-    .select("id,user_id,product_sku,status,created_at")
+    .select("id,user_id,product_sku,quantity,status,created_at")
     .order("created_at",{ascending:true});
   if (error){ vpaMsg.textContent = error.message; toast(error.message, true); return; }
   vpaRows = data || [];
@@ -264,7 +278,7 @@ async function loadProductApprovals(){
 
   if (uids.length){
     const { data: profs, error: pe } = await supa
-      .from("profiles").select("id,first_name,last_name,full_name,email").in("id", uids);
+      .from("profiles").select("id,first_name,last_name,email").in("id", uids);
     if (pe) toast(pe.message, true);
     vpaProfiles={}; (profs||[]).forEach(p=> vpaProfiles[p.id]=p);
   }
@@ -295,14 +309,27 @@ function renderVPA(){
     const el=document.createElement("div");
     el.className="card";
     el.innerHTML=`
-      <div style="display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:10px;align-items:center">
+      <div style="display:grid;grid-template-columns:2fr 2fr 1.6fr 1fr 1.6fr;gap:10px;align-items:center">
         <div>
           <div style="font-weight:600">${fullName(p)}</div>
           <div class="muted">${p.email||""}</div>
         </div>
+
         <div>${prod} <span class="muted">(${r.product_sku})</span></div>
+
+        <div>
+          <label class="muted" style="display:block;font-size:.85rem">Quantity</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="btn small" onclick="vpaDecQty('${r.id}')">−</button>
+            <input id="qty-${r.id}" class="qty-edit" type="number" min="1" value="${Number(r.quantity)||1}">
+            <button class="btn small" onclick="vpaIncQty('${r.id}')">+</button>
+          </div>
+        </div>
+
         <div>${pill(r.status)}</div>
-        <div style="display:flex;gap:6px">
+
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn small" onclick="saveVpaQty('${r.id}')">Save qty</button>
           <button class="btn small" onclick="approveSku('${r.id}')">Approve</button>
           <button class="btn small" onclick="rejectSku('${r.id}')">Reject</button>
           <button class="btn danger small" onclick="deleteSkuReq('${r.id}')">Delete</button>
@@ -310,6 +337,24 @@ function renderVPA(){
       </div>`;
     vpaList.appendChild(el);
   });
+}
+function vpaIncQty(id){
+  const el = document.getElementById(`qty-${id}`);
+  if (!el) return;
+  el.value = Math.max(1, Number(el.value || 1) + 1);
+}
+function vpaDecQty(id){
+  const el = document.getElementById(`qty-${id}`);
+  if (!el) return;
+  el.value = Math.max(1, Number(el.value || 1) - 1);
+}
+async function saveVpaQty(id){
+  const el = document.getElementById(`qty-${id}`);
+  if (!el) return alert('Quantity input not found.');
+  const qty = Math.max(1, Number(el.value || 1));
+  const { error } = await supa.from('vet_product_approvals').update({ quantity: qty }).eq('id', id);
+  if (error) toast(error.message, true); else toast('Quantity saved');
+  await loadProductApprovals();
 }
 async function approveSku(id){
   const { error } = await supa.from("vet_product_approvals").update({status:"approved"}).eq("id",id);
@@ -330,8 +375,8 @@ async function deleteSkuReq(id){
 
 /* =======================================================================
    ORDERS (Admin quantity control)
-   Table expected: public.orders(id uuid/serial, user_id uuid, product_sku text,
-                                 quantity int, status text, created_at timestamptz)
+   Expected: public.orders(id uuid/serial, user_id uuid, product_sku text,
+                           quantity int, status text, created_at timestamptz)
 ======================================================================= */
 let orders=[], ordProfiles={}, ordProducts={};
 async function loadOrders(){
@@ -346,7 +391,7 @@ async function loadOrders(){
   const skus=[...new Set(orders.map(o=>o.product_sku))];
 
   if(uids.length){
-    const { data:p, error:pe } = await supa.from("profiles").select("id,full_name,email").in("id",uids);
+    const { data:p, error:pe } = await supa.from("profiles").select("id,first_name,last_name,email").in("id",uids);
     if (pe) toast(pe.message, true);
     (p||[]).forEach(x=>ordProfiles[x.id]=x);
   }
