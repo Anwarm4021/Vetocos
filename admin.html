@@ -19,7 +19,7 @@
     .btn[disabled]{opacity:.55;cursor:not-allowed}
     .muted{color:var(--muted)}
     .hidden{display:none}
-    .row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
+    .row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px}
     .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
     .ok{background:rgba(131,240,165,.12)} .bad{background:rgba(255,180,180,.12)} .pend{background:rgba(109,213,255,.12)}
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap}
@@ -131,16 +131,15 @@ async function checkAdmin(){
   return true;
 }
 
-/* ===== Load Vet Applications ===== */
+/* ===== Vet Applications ===== */
 let apps=[]; let profMap={};
 async function loadApps(){
   show('Loading applications…');
   const { data, error } = await supa.from('vet_applications')
-    .select('id,user_id,identity_number,diploma_path,status,created_at')
+    .select('id,user_id,identity_number,diploma_path,status,created_at,archived')
     .order('created_at',{ascending:true});
-  diag('vet_applications select',{count:data?.length||0,error:error?.message||null},!!error);
   if(error){ show(error.message);return; }
-  apps=data||[];
+  apps=(data||[]).filter(a=>!a.archived); // hide archived
   const ids=[...new Set(apps.map(a=>a.user_id))];
   profMap={};
   if(ids.length){
@@ -175,10 +174,13 @@ function renderApps(){
         <div><button class="btn" onclick="viewDiploma('${a.diploma_path||''}')">View diploma</button></div>
         <div><button class="btn" ${a.status==='approved'?'disabled':''} onclick="approve('${a.id}')">Approve</button></div>
         <div><button class="btn" ${a.status==='rejected'?'disabled':''} onclick="reject('${a.id}')">Reject</button></div>
+        <div><button class="btn bad small" onclick="removeApp('${a.id}')">Remove</button></div>
       </div>`;
     listEl.appendChild(div);
   });
 }
+
+/* ===== Application actions ===== */
 async function viewDiploma(path){
   if(!path)return alert('No file path.');
   const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(path,300);
@@ -193,6 +195,14 @@ async function reject(id){
   await supa.from('vet_applications').update({status:'rejected'}).eq('id',id);
   await loadApps();
 }
+/* mark archived instead of delete */
+async function removeApp(id){
+  if(!confirm('Remove this application from admin view?'))return;
+  await supa.from('vet_applications').update({archived:true}).eq('id',id);
+  // If you really want to delete instead:
+  // await supa.from('vet_applications').delete().eq('id',id);
+  await loadApps();
+}
 
 /* ===== Per-product Approvals ===== */
 let vpaRows=[], vpaProfiles={}, vpaProducts={};
@@ -204,10 +214,8 @@ async function loadProductApprovals(){
     .from('vet_product_approvals')
     .select('id,user_id,product_sku,status,created_at')
     .order('created_at',{ascending:true});
-  diag('vet_product_approvals select',{count:data?.length||0,error:error?.message||null},!!error);
   if(error){ vshow(error.message);return; }
   vpaRows=data||[];
-
   const uids=[...new Set(vpaRows.map(r=>r.user_id))];
   const skus=[...new Set(vpaRows.map(r=>r.product_sku))];
   if(uids.length){
