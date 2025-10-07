@@ -9,13 +9,14 @@
     :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px}
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
-    main{max-width:1100px;margin:40px auto;padding:0 18px}
+    main{max-width:1120px;margin:40px auto;padding:0 18px}
     h1,h2{margin:0 0 14px}
     .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px}
     .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
          background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));
          color:var(--text);font-weight:600;cursor:pointer}
-    .btn.small{padding:6px 10px;font-size:0.9rem}
+    .btn.small{padding:6px 10px;font-size:.9rem}
+    .btn.danger{background:linear-gradient(135deg,rgba(255,120,120,.18),rgba(255,80,80,.16))}
     .btn[disabled]{opacity:.55;cursor:not-allowed}
     .muted{color:var(--muted)}
     .hidden{display:none}
@@ -27,8 +28,11 @@
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap}
     .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
             background:rgba(255,255,255,.05);color:var(--text)}
-    input.qty-edit{width:70px;padding:4px;border-radius:8px;border:1px solid rgba(255,255,255,.15);
+    input.qty-edit{width:80px;padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,.15);
                    background:rgba(255,255,255,.05);color:white;text-align:center}
+    #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
+           border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
+    #diag{color:var(--muted);font-size:.85rem;white-space:pre-wrap;margin-top:6px}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -43,106 +47,166 @@
       <button id="loginBtn" class="btn hidden">Login as Admin</button>
       <button id="logoutBtn" class="btn hidden">Logout</button>
     </div>
-    <div id="diag" class="muted" style="font-size:.85rem;white-space:pre-wrap;margin-top:6px"></div>
+    <div id="diag"></div>
   </div>
 
   <!-- Vet applications -->
-  <div class="card hidden" id="listWrap">
+  <div class="card hidden" id="appsWrap">
     <div class="toolbar">
       <h2>Vet Applications</h2>
-      <input id="search" class="search" placeholder="Search by name / email / ID#">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="search" class="search" placeholder="Search by name / email / ID#">
+        <button class="btn small" id="appsRefresh">Refresh</button>
+      </div>
     </div>
-    <div id="msg" class="muted"></div>
-    <div id="list"></div>
+    <div id="appsMsg" class="muted"></div>
+    <div id="appsList"></div>
   </div>
 
-  <!-- Orders (quantity control) -->
+  <!-- Per-product approvals -->
+  <div class="card hidden" id="vpaWrap">
+    <div class="toolbar">
+      <h2>Per-product Approvals</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="vpaSearch" class="search" placeholder="Search by name / email / SKU">
+        <button class="btn small" id="vpaRefresh">Refresh</button>
+      </div>
+    </div>
+    <div id="vpaMsg" class="muted"></div>
+    <div id="vpaList"></div>
+  </div>
+
+  <!-- Orders (admin quantity control) -->
   <div class="card hidden" id="orderWrap">
     <div class="toolbar">
       <h2>Client Orders</h2>
-      <input id="orderSearch" class="search" placeholder="Search by client / product SKU">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="orderSearch" class="search" placeholder="Search by client / product SKU">
+        <button class="btn small" id="ordersRefresh">Refresh</button>
+      </div>
     </div>
     <div id="orderMsg" class="muted"></div>
     <div id="orderList"></div>
   </div>
 </main>
 
+<div id="toast"></div>
+
 <script>
 /* ===== Supabase client ===== */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+  { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
 /* ===== Config ===== */
-const BUCKET = "Documents";
+const BUCKET       = "Documents";
 const ADMIN_EMAILS = ["Anwar.moumenjamai19@gmail.com"];
 
-/* ===== UI ===== */
+/* ===== UI refs ===== */
 const authMsg  = document.getElementById("authMsg");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
-const listWrap = document.getElementById("listWrap");
-const msgEl    = document.getElementById("msg");
-const listEl   = document.getElementById("list");
-const searchEl = document.getElementById("search");
-const orderWrap= document.getElementById("orderWrap");
-const orderList= document.getElementById("orderList");
-const orderMsg = document.getElementById("orderMsg");
-const orderSearch = document.getElementById("orderSearch");
+const diagEl   = document.getElementById("diag");
+const toastEl  = document.getElementById("toast");
+
+const appsWrap = document.getElementById("appsWrap");
+const appsList = document.getElementById("appsList");
+const appsMsg  = document.getElementById("appsMsg");
+const appsSearch = document.getElementById("search");
+const appsRefresh = document.getElementById("appsRefresh");
+
+const vpaWrap  = document.getElementById("vpaWrap");
+const vpaList  = document.getElementById("vpaList");
+const vpaMsg   = document.getElementById("vpaMsg");
+const vpaSearch= document.getElementById("vpaSearch");
+const vpaRefresh = document.getElementById("vpaRefresh");
+
+const orderWrap  = document.getElementById("orderWrap");
+const orderList  = document.getElementById("orderList");
+const orderMsg   = document.getElementById("orderMsg");
+const orderSearch= document.getElementById("orderSearch");
+const ordersRefresh = document.getElementById("ordersRefresh");
 
 /* ===== Helpers ===== */
 function setGate(t,{showLogin=false,showLogout=false}={}) {
-  authMsg.textContent=t;
-  loginBtn.classList.toggle("hidden",!showLogin);
-  logoutBtn.classList.toggle("hidden",!showLogout);
+  authMsg.textContent = t;
+  loginBtn.classList.toggle("hidden", !showLogin);
+  logoutBtn.classList.toggle("hidden", !showLogout);
 }
-function fullName(p){return p?.full_name||[p?.first_name,p?.last_name].filter(Boolean).join(" ")||"(unknown)";}
-function pill(s){return `<span class="pill ${s==="approved"?"ok":s==="rejected"?"bad":"pend"}">${s||"pending"}</span>`;}
-function diag(m,o){document.getElementById("diag").textContent+=`\n${m}: ${JSON.stringify(o)}`}
+function fullName(p){ return p?.full_name || [p?.first_name,p?.last_name].filter(Boolean).join(" ") || "(unknown)"; }
+function pill(s){ return `<span class="pill ${s==="approved"?"ok":s==="rejected"?"bad":"pend"}">${s||"pending"}</span>`; }
+function diag(label, obj){ diagEl.textContent += `\n${label}: ${JSON.stringify(obj)}`; }
+function toast(msg, isErr=false){
+  toastEl.textContent = msg;
+  toastEl.style.display = "block";
+  toastEl.style.borderColor = isErr ? "rgba(255,120,120,.4)" : "rgba(141,158,199,.25)";
+  setTimeout(()=> toastEl.style.display="none", 2400);
+}
 
-/* ===== Auth ===== */
-loginBtn.onclick=()=>{const u=new URL("login.html",location.href);u.searchParams.set("redirect","admin.html");location.href=u.toString();};
-logoutBtn.onclick=async()=>{await supa.auth.signOut();location.reload();};
+/* ===== Auth buttons ===== */
+loginBtn.onclick = () => {
+  const u = new URL("login.html", location.href);
+  u.searchParams.set("redirect", "admin.html");
+  u.searchParams.set("force", "1");
+  location.href = u.toString();
+};
+logoutBtn.onclick = async () => { await supa.auth.signOut(); location.reload(); };
 
+/* ===== Admin check ===== */
 async function checkAdmin(){
   setGate("Checking session…");
-  const {data:{session}}=await supa.auth.getSession();
-  if(!session?.user){setGate("Not signed in.",{showLogin:true});return false;}
-  setGate(`Signed in as ${session.user.email}`,{showLogout:true});
-  if(ADMIN_EMAILS.includes(session.user.email)){listWrap.classList.remove("hidden");orderWrap.classList.remove("hidden");return true;}
-  const {data:prof}=await supa.from("profiles").select("is_admin").eq("id",session.user.id).maybeSingle();
-  if(!prof?.is_admin){setGate("Access denied.",{showLogout:true});return false;}
-  listWrap.classList.remove("hidden");orderWrap.classList.remove("hidden");
+  const { data:{ session }, error } = await supa.auth.getSession();
+  if (error) diag("getSession error", error);
+  if (!session?.user){ setGate("Not signed in.", { showLogin:true }); return false; }
+  setGate(`Signed in as ${session.user.email}`, { showLogout:true });
+
+  if (ADMIN_EMAILS.includes(session.user.email)){ appsWrap.classList.remove("hidden"); vpaWrap.classList.remove("hidden"); orderWrap.classList.remove("hidden"); return true; }
+
+  const { data: prof, error: pe } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
+  if (pe){ setGate("Profile read error.", { showLogout:true }); toast(pe.message, true); return false; }
+  if (!prof?.is_admin){ setGate("Access denied.", { showLogout:true }); return false; }
+
+  appsWrap.classList.remove("hidden"); vpaWrap.classList.remove("hidden"); orderWrap.classList.remove("hidden");
   return true;
 }
 
-/* ===== Vet Applications ===== */
-let apps=[], profMap={};
+/* =======================================================================
+   VET APPLICATIONS
+======================================================================= */
+let apps = [], profMap = {};
 async function loadApps(){
-  const {data}=await supa.from("vet_applications")
+  appsMsg.textContent = "Loading…";
+  const { data, error } = await supa.from("vet_applications")
     .select("id,user_id,identity_number,diploma_path,status,created_at")
     .order("created_at",{ascending:true});
-  apps=data||[];
-  const ids=[...new Set(apps.map(a=>a.user_id))];
-  if(ids.length){
-    const {data:profs}=await supa.from("profiles").select("id,first_name,last_name,full_name,email").in("id",ids);
-    profMap={};(profs||[]).forEach(p=>profMap[p.id]=p);
+  if (error){ appsMsg.textContent = error.message; toast(error.message, true); return; }
+  apps = data || [];
+  const ids = [...new Set(apps.map(a=>a.user_id))];
+  profMap = {};
+  if (ids.length){
+    const { data: profs, error: pe } = await supa.from("profiles").select("id,first_name,last_name,full_name,email").in("id", ids);
+    if (pe) toast(pe.message, true);
+    (profs||[]).forEach(p=> profMap[p.id]=p);
   }
   renderApps();
+  appsMsg.textContent = apps.length ? "" : "No applications.";
 }
 function renderApps(){
-  const q=(searchEl.value||"").toLowerCase();
-  listEl.innerHTML="";
+  const q = (appsSearch.value||"").toLowerCase();
+  appsList.innerHTML = "";
   apps.filter(a=>{
-    if(!q)return true;
-    const p=profMap[a.user_id]||{};
-    return fullName(p).toLowerCase().includes(q)||(p.email||"").toLowerCase().includes(q)||(a.identity_number||"").toLowerCase().includes(q);
+    if(!q) return true;
+    const p = profMap[a.user_id]||{};
+    return fullName(p).toLowerCase().includes(q) ||
+           (p.email||"").toLowerCase().includes(q) ||
+           (a.identity_number||"").toLowerCase().includes(q);
   }).forEach(a=>{
-    const p=profMap[a.user_id]||{};
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`
+    const p = profMap[a.user_id]||{};
+    const el = document.createElement("div");
+    el.className = "card";
+    el.innerHTML = `
       <div class="row">
         <div>
           <div style="font-weight:600">${fullName(p)}</div>
@@ -154,44 +218,146 @@ function renderApps(){
         <div><button class="btn" onclick="viewDiploma('${a.diploma_path||""}')">Diploma</button></div>
         <div><button class="btn" onclick="approve('${a.id}')">Approve</button></div>
         <div><button class="btn" onclick="reject('${a.id}')">Reject</button></div>
-        <div><button class="btn bad small" onclick="deleteApp('${a.id}')">Delete</button></div>
+        <div><button class="btn danger small" onclick="deleteApp('${a.id}')">Delete</button></div>
       </div>`;
-    listEl.appendChild(div);
+    appsList.appendChild(el);
   });
 }
 async function viewDiploma(path){
-  const {data,error}=await supa.storage.from(BUCKET).createSignedUrl(path,300);
-  if(error)return alert(error.message);
+  if(!path) return alert("No file path.");
+  const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(path, 300);
+  if (error){ toast(error.message, true); return; }
   window.location.assign(data.signedUrl);
 }
-async function approve(id){await supa.from("vet_applications").update({status:"approved"}).eq("id",id);loadApps();}
-async function reject(id){await supa.from("vet_applications").update({status:"rejected"}).eq("id",id);loadApps();}
+async function approve(id){
+  const { error } = await supa.from("vet_applications").update({status:"approved"}).eq("id", id);
+  if (error) toast(error.message, true); else toast("Application approved");
+  await loadApps();
+}
+async function reject(id){
+  const { error } = await supa.from("vet_applications").update({status:"rejected"}).eq("id", id);
+  if (error) toast(error.message, true); else toast("Application rejected");
+  await loadApps();
+}
 async function deleteApp(id){
-  if(confirm("Delete this application permanently?")){
-    await supa.from("vet_applications").delete().eq("id",id);
-    await loadApps();
-  }
+  if(!confirm("Delete this application permanently?")) return;
+  const { error } = await supa.from("vet_applications").delete().eq("id", id);
+  if (error) toast(error.message, true); else toast("Application deleted");
+  await loadApps();
 }
 
-/* ===== Orders (quantity management) ===== */
+/* =======================================================================
+   PER-PRODUCT APPROVALS (from checkout “Request approval”)
+======================================================================= */
+let vpaRows=[], vpaProfiles={}, vpaProducts={};
+async function loadProductApprovals(){
+  vpaMsg.textContent = "Loading…";
+  const { data, error } = await supa
+    .from("vet_product_approvals")
+    .select("id,user_id,product_sku,status,created_at")
+    .order("created_at",{ascending:true});
+  if (error){ vpaMsg.textContent = error.message; toast(error.message, true); return; }
+  vpaRows = data || [];
+
+  const uids = [...new Set(vpaRows.map(r=>r.user_id))];
+  const skus = [...new Set(vpaRows.map(r=>r.product_sku))];
+
+  if (uids.length){
+    const { data: profs, error: pe } = await supa
+      .from("profiles").select("id,first_name,last_name,full_name,email").in("id", uids);
+    if (pe) toast(pe.message, true);
+    vpaProfiles={}; (profs||[]).forEach(p=> vpaProfiles[p.id]=p);
+  }
+  if (skus.length){
+    const { data: prods, error: prErr } = await supa
+      .from("products").select("sku,name").in("sku", skus);
+    if (prErr) toast(prErr.message, true);
+    vpaProducts={}; (prods||[]).forEach(p=> vpaProducts[p.sku]=p.name);
+  }
+
+  renderVPA();
+  vpaMsg.textContent = vpaRows.length ? "" : "No per-product requests.";
+}
+function renderVPA(){
+  const q=(vpaSearch.value||"").toLowerCase();
+  vpaList.innerHTML = "";
+  vpaRows.filter(r=>{
+    if(!q) return true;
+    const p=vpaProfiles[r.user_id]||{};
+    const prod=vpaProducts[r.product_sku]||r.product_sku;
+    return fullName(p).toLowerCase().includes(q) ||
+           (p.email||"").toLowerCase().includes(q) ||
+           prod.toLowerCase().includes(q) ||
+           (r.product_sku||"").toLowerCase().includes(q);
+  }).forEach(r=>{
+    const p=vpaProfiles[r.user_id]||{};
+    const prod=vpaProducts[r.product_sku]||r.product_sku;
+    const el=document.createElement("div");
+    el.className="card";
+    el.innerHTML=`
+      <div style="display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:10px;align-items:center">
+        <div>
+          <div style="font-weight:600">${fullName(p)}</div>
+          <div class="muted">${p.email||""}</div>
+        </div>
+        <div>${prod} <span class="muted">(${r.product_sku})</span></div>
+        <div>${pill(r.status)}</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn small" onclick="approveSku('${r.id}')">Approve</button>
+          <button class="btn small" onclick="rejectSku('${r.id}')">Reject</button>
+          <button class="btn danger small" onclick="deleteSkuReq('${r.id}')">Delete</button>
+        </div>
+      </div>`;
+    vpaList.appendChild(el);
+  });
+}
+async function approveSku(id){
+  const { error } = await supa.from("vet_product_approvals").update({status:"approved"}).eq("id",id);
+  if (error) toast(error.message, true); else toast("SKU approved");
+  await loadProductApprovals();
+}
+async function rejectSku(id){
+  const { error } = await supa.from("vet_product_approvals").update({status:"rejected"}).eq("id",id);
+  if (error) toast(error.message, true); else toast("SKU rejected");
+  await loadProductApprovals();
+}
+async function deleteSkuReq(id){
+  if(!confirm("Delete this approval request?")) return;
+  const { error } = await supa.from("vet_product_approvals").delete().eq("id",id);
+  if (error) toast(error.message, true); else toast("Request deleted");
+  await loadProductApprovals();
+}
+
+/* =======================================================================
+   ORDERS (Admin quantity control)
+   Table expected: public.orders(id uuid/serial, user_id uuid, product_sku text,
+                                 quantity int, status text, created_at timestamptz)
+======================================================================= */
 let orders=[], ordProfiles={}, ordProducts={};
 async function loadOrders(){
-  const {data,error}=await supa.from("orders")
+  orderMsg.textContent = "Loading…";
+  const { data, error } = await supa.from("orders")
     .select("id,user_id,product_sku,quantity,status,created_at")
     .order("created_at",{ascending:false});
-  if(error){orderMsg.textContent=error.message;return;}
-  orders=data||[];
+  if (error){ orderMsg.textContent = error.message; toast(error.message, true); return; }
+  orders = data || [];
+
   const uids=[...new Set(orders.map(o=>o.user_id))];
   const skus=[...new Set(orders.map(o=>o.product_sku))];
+
   if(uids.length){
-    const {data:p}=await supa.from("profiles").select("id,full_name,email").in("id",uids);
+    const { data:p, error:pe } = await supa.from("profiles").select("id,full_name,email").in("id",uids);
+    if (pe) toast(pe.message, true);
     (p||[]).forEach(x=>ordProfiles[x.id]=x);
   }
   if(skus.length){
-    const {data:p}=await supa.from("products").select("sku,name").in("sku",skus);
-    (p||[]).forEach(x=>ordProducts[x.sku]=x.name);
+    const { data:p2, error:pe2 } = await supa.from("products").select("sku,name").in("sku",skus);
+    if (pe2) toast(pe2.message, true);
+    (p2||[]).forEach(x=>ordProducts[x.sku]=x.name);
   }
+
   renderOrders();
+  orderMsg.textContent = orders.length ? "" : "No orders.";
 }
 function renderOrders(){
   const q=(orderSearch.value||"").toLowerCase();
@@ -199,50 +365,62 @@ function renderOrders(){
   orders.filter(o=>{
     const p=ordProfiles[o.user_id]||{};
     const prod=ordProducts[o.product_sku]||o.product_sku;
-    return !q || fullName(p).toLowerCase().includes(q)||(p.email||"").toLowerCase().includes(q)||prod.toLowerCase().includes(q);
+    return !q || fullName(p).toLowerCase().includes(q) ||
+                 (p.email||"").toLowerCase().includes(q) ||
+                 prod.toLowerCase().includes(q) ||
+                 (o.product_sku||"").toLowerCase().includes(q);
   }).forEach(o=>{
     const p=ordProfiles[o.user_id]||{};
     const prod=ordProducts[o.product_sku]||o.product_sku;
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`
+    const el=document.createElement("div");
+    el.className="card";
+    el.innerHTML=`
       <div style="display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1fr;gap:10px;align-items:center">
         <div>
           <div style="font-weight:600">${fullName(p)}</div>
           <div class="muted">${p.email||""}</div>
         </div>
         <div>${prod} <span class="muted">(${o.product_sku})</span></div>
-        <div>
-          <input class="qty-edit" id="q_${o.id}" type="number" min="1" value="${o.quantity}">
-        </div>
+        <div><input class="qty-edit" id="q_${o.id}" type="number" min="1" value="${o.quantity}"></div>
         <div>${pill(o.status)}</div>
         <div style="display:flex;gap:6px">
           <button class="btn small" onclick="updateQty('${o.id}')">Save</button>
-          <button class="btn small" onclick="deleteOrder('${o.id}')">Delete</button>
+          <button class="btn danger small" onclick="deleteOrder('${o.id}')">Delete</button>
         </div>
       </div>`;
-    orderList.appendChild(div);
+    orderList.appendChild(el);
   });
 }
 async function updateQty(id){
-  const val=document.getElementById("q_"+id)?.value;
-  if(!val||val<=0)return alert("Invalid quantity");
-  await supa.from("orders").update({quantity:val}).eq("id",id);
-  loadOrders();
+  const input = document.getElementById("q_"+id);
+  const val = Number(input?.value||0);
+  if(!val || val<1) return toast("Invalid quantity", true);
+  const { error } = await supa.from("orders").update({ quantity: val }).eq("id", id);
+  if (error) toast(error.message, true); else toast("Quantity updated");
+  await loadOrders();
 }
 async function deleteOrder(id){
-  if(confirm("Delete this order permanently?")){
-    await supa.from("orders").delete().eq("id",id);
-    loadOrders();
-  }
+  if(!confirm("Delete this order permanently?")) return;
+  const { error } = await supa.from("orders").delete().eq("id", id);
+  if (error) toast(error.message, true); else toast("Order deleted");
+  await loadOrders();
 }
 
 /* ===== Boot ===== */
 document.addEventListener("DOMContentLoaded", async ()=>{
-  const ok=await checkAdmin();
-  if(ok){await loadApps();await loadOrders();}
-  searchEl.addEventListener("input",renderApps);
-  orderSearch.addEventListener("input",renderOrders);
+  const ok = await checkAdmin();
+  if (ok){
+    await loadApps();
+    await loadProductApprovals();
+    await loadOrders();
+  }
+  appsSearch.addEventListener("input", renderApps);
+  vpaSearch.addEventListener("input", renderVPA);
+  orderSearch.addEventListener("input", renderOrders);
+
+  appsRefresh.onclick   = () => loadApps();
+  vpaRefresh.onclick    = () => loadProductApprovals();
+  ordersRefresh.onclick = () => loadOrders();
 });
 </script>
 </body>
