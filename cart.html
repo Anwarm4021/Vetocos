@@ -27,19 +27,23 @@
     <div id="cartBox"></div>
   </main>
 
-  <!-- ONE script tag only -->
   <script>
     /* ======================= Supabase client ======================= */
     const supa = supabase.createClient(
       "https://qdepgviimbcdlozjpbhm.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+      { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
 
-    /* ======================= Local cart (with timestamps) ======================= */
+    /* ======================= Cart utils (idempotent) ======================= */
+    const CART_KEY = 'cart';
+    const CART_UPDATED_KEY = 'cart_updated_at';
+    const CART_RESTORED_KEY = 'cart_restored_v2'; // per-tab session guard
+
     function getLocalBundle() {
       try {
-        const items = JSON.parse(localStorage.getItem("cart") || "[]");
-        const updated_at = localStorage.getItem("cart_updated_at") || null;
+        const items = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+        const updated_at = localStorage.getItem(CART_UPDATED_KEY) || null;
         return { items: Array.isArray(items) ? items : [], updated_at };
       } catch {
         return { items: [], updated_at: null };
@@ -47,12 +51,62 @@
     }
     function setLocalBundle(items, updatedAt = null) {
       const stamp = updatedAt || new Date().toISOString();
-      localStorage.setItem("cart", JSON.stringify(items || []));
-      localStorage.setItem("cart_updated_at", stamp);
+      const cleaned = (items || [])
+        .filter(it => it && it.sku && Number(it.qty) > 0)
+        .map(it => ({ ...it, qty: Number(it.qty) }));
+      localStorage.setItem(CART_KEY, JSON.stringify(cleaned));
+      localStorage.setItem(CART_UPDATED_KEY, stamp);
     }
-    function readCart() { return getLocalBundle().items; }
+    function readCart(){ return getLocalBundle().items; }
 
-    async function writeCart(items) {
+    // Overwrite quantities by SKU (no summing!)
+    function overlayBySku(baseArr, incomingArr){
+      const map = {};
+      (baseArr || []).forEach(it => { if (it?.sku) map[it.sku] = { ...it, qty: Number(it.qty || 0) }; });
+      (incomingArr || []).forEach(it => {
+        if (!it?.sku) return;
+        map[it.sku] = { ...map[it.sku], ...it, qty: Number(it.qty || 0) }; // overwrite qty
+      });
+      return Object.values(map).filter(x => x.qty > 0);
+    }
+
+    // Adopt ?cart= exactly once per tab session, then strip from URL
+    function adoptQueryCartOnce(){
+      if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
+      const qs = new URLSearchParams(location.search);
+      const raw = qs.get('cart');
+      if (!raw) return;
+      try {
+        const incoming = JSON.parse(decodeURIComponent(raw));
+        const merged = overlayBySku(readCart(), Array.isArray(incoming) ? incoming : []);
+        setLocalBundle(merged, new Date().toISOString());
+      } catch(e){ console.warn('cart restore from URL failed', e); }
+      finally {
+        qs.delete('cart');
+        const newUrl = location.pathname + (qs.toString() ? '?' + qs.toString() : '');
+        history.replaceState({}, '', newUrl);
+        sessionStorage.setItem(CART_RESTORED_KEY, '1');
+      }
+    }
+
+    // Adopt cart_backup once (used after auth redirects), then clear it
+    function adoptBackupCartOnce(){
+      if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
+      const backup = localStorage.getItem('cart_backup');
+      if (!backup) return;
+      try {
+        const incoming = JSON.parse(backup);
+        const merged = overlayBySku(readCart(), Array.isArray(incoming) ? incoming : []);
+        setLocalBundle(merged, new Date().toISOString());
+      } catch(e){ console.warn('cart restore from backup failed', e); }
+      finally {
+        localStorage.removeItem('cart_backup');
+        sessionStorage.setItem(CART_RESTORED_KEY, '1');
+      }
+    }
+
+    // Write + upsert (last-writer-wins)
+    async function writeCart(items){
       const updated_at = new Date().toISOString();
       setLocalBundle(items, updated_at);
       renderCart();
@@ -60,14 +114,6 @@
       if (user) {
         await supa.from('carts').upsert({ user_id: user.id, items, updated_at });
       }
-    }
-
-    // Override quantities by sku (no summing)
-    function overlayCarts(baseArr, overrideArr) {
-      const base = {};
-      (baseArr || []).forEach(it => { if (it?.sku) base[it.sku] = { ...it, qty: Number(it.qty || 0) }; });
-      (overrideArr || []).forEach(it => { if (it?.sku) base[it.sku] = { ...base[it.sku], ...it, qty: Number(it.qty || 0) }; });
-      return Object.values(base).filter(x => Number(x.qty) > 0);
     }
 
     /* ======================= Cross-device sync (last-writer-wins) ======================= */
@@ -117,20 +163,9 @@
       renderCart();
     }
 
-    /* ======================= Merge cart from URL once ======================= */
-    (function mergeCartFromURL() {
-      const params = new URLSearchParams(location.search);
-      const raw = params.get('cart');
-      if (!raw) return;
-      try {
-        const fromURL = JSON.parse(decodeURIComponent(raw));
-        if (Array.isArray(fromURL)) {
-          const merged = overlayCarts(readCart(), fromURL);
-          setLocalBundle(merged, new Date().toISOString());
-          history.replaceState({}, "", location.pathname);
-        }
-      } catch {}
-    })();
+    /* ======================= Boot: adopt once, then sync ======================= */
+    adoptQueryCartOnce();
+    adoptBackupCartOnce();
 
     /* ======================= Rendering ======================= */
     async function renderCart() {
@@ -148,12 +183,13 @@
         const { data: products } = await supa.from("products").select("sku,name").in("sku", missing);
         if (Array.isArray(products)) {
           const nameMap = Object.fromEntries(products.map(p => [p.sku, p.name]));
-          cart.forEach(i => { if (!i.name && nameMap[i.sku]) i.name = nameMap[i.sku]; });
-          setLocalBundle(cart, new Date().toISOString());
+          const updated = cart.map(i => ({ ...i, name: i.name || nameMap[i.sku] || i.sku }));
+          setLocalBundle(updated, new Date().toISOString());
         }
       }
 
-      const rows = cart.map(item => `
+      const current = readCart(); // re-read in case names were set
+      const rows = current.map(item => `
         <tr>
           <td>${item.name || item.sku}</td>
           <td>
@@ -170,7 +206,7 @@
           <tr><th>Product</th><th>Quantity</th><th>Action</th></tr>
           ${rows}
         </table>
-        <div class="summary">Total items: ${cart.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
+        <div class="summary">Total items: ${current.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
         <button class="btn" onclick="proceedCheckout()">Proceed to Checkout</button>
       `;
     }
@@ -186,26 +222,21 @@
       }
     }
     function removeItem(sku) {
-      const cart = readCart().filter(x => x.sku !== sku);
-      writeCart(cart);
+      writeCart(readCart().filter(x => x.sku !== sku));
     }
 
-    /* ======================= Checkout flow: ALWAYS go to login first ======================= */
+    /* ======================= Checkout flow ======================= */
     async function proceedCheckout(){
       const cart = readCart();
-
-      // keep a backup in case the auth flow opens a new tab/window
+      // Save a one-time backup for auth redirects
       localStorage.setItem('cart_backup', JSON.stringify(cart));
-
-      // also pass cart via URL so login/checkout can merge it
+      // Pass cart via URL once; receiving page will adopt-once and strip it
       const cartParam = encodeURIComponent(JSON.stringify(cart));
-
-      // force re-auth flow every time from cart
       const loginUrl  = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}&force=1`;
       location.href = loginUrl;
     }
 
-    /* ======================= Boot ======================= */
+    /* ======================= Boot sequence ======================= */
     document.addEventListener('DOMContentLoaded', async () => {
       renderCart();
       await syncCartFromDB();
