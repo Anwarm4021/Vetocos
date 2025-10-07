@@ -17,13 +17,14 @@
     label{display:block;color:var(--muted);font-size:.95rem}
     input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text);margin-top:6px}
     .btn{display:inline-block;margin-top:12px;padding:12px 16px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer}
+    .btn.small{padding:6px 10px}
     .muted{color:var(--muted)}
-    .status{padding:10px 12px;border-radius:10px;display:inline-block}
-    .pending{background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.25)}
-    .approved{background:rgba(131,240,165,.1);border:1px solid rgba(131,240,165,.35)}
-    .rejected{background:rgba(255,157,157,.08);border:1px solid rgba(255,157,157,.28)}
+    .status{padding:8px 10px;border-radius:10px;display:inline-block;border:1px solid rgba(141,158,199,.25)}
+    .pending{background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.25)}
+    .approved{background:rgba(131,240,165,.1);border-color:rgba(131,240,165,.35)}
+    .rejected{background:rgba(255,157,157,.08);border-color:rgba(255,157,157,.28)}
     table{width:100%;border-collapse:collapse;margin-top:8px}
-    th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left}
+    th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
     .qty-btn{padding:4px 8px;border:none;border-radius:6px;background:rgba(255,255,255,.1);color:white;cursor:pointer}
     .right{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
     .error{color:var(--bad)}
@@ -182,7 +183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await renderCartForCheckout();
 });
 
-/* ===== Vet application status & submission ===== */
+/* ===== Vet application status & submission (account-level identity only) ===== */
 async function loadVetStatus(){
   const { data:{ user } } = await supa.auth.getUser();
   if(!user) return;
@@ -263,7 +264,32 @@ async function submitApplication(e){
   return false;
 }
 
-/* ===== Cart table + price visibility ===== */
+/* ===== Per-product approvals ===== */
+async function fetchApprovalsForCart(userId, skus){
+  if (!skus.length) return {};
+  const { data, error } = await supa
+    .from('vet_product_approvals')
+    .select('product_sku,status')
+    .eq('user_id', userId)
+    .in('product_sku', skus);
+  if (error) { console.warn('approvals fetch error', error); return {}; }
+  const map = {};
+  (data||[]).forEach(r => { map[r.product_sku] = r.status; });
+  return map;
+}
+
+async function requestApprovalForSku(sku){
+  const { data:{ user } } = await supa.auth.getUser();
+  if(!user) return alert('Please login first.');
+  // upsert unique (user_id, product_sku)
+  const { error } = await supa
+    .from('vet_product_approvals')
+    .upsert({ user_id: user.id, product_sku: sku, status: 'pending' }, { onConflict: 'user_id,product_sku' });
+  if (error) return alert(error.message);
+  await renderCartForCheckout(); // refresh UI to show Pending
+}
+
+/* ===== Cart table + price visibility (per-product approval gating) ===== */
 async function renderCartForCheckout(){
   const cartWrap = document.getElementById('cartBox');
   const tbl      = document.getElementById('cartTbl');
@@ -287,57 +313,87 @@ async function renderCartForCheckout(){
     writeCart(updated);
   }
 
-  // Fetch prices (RLS may hide for non-approved)
-  const { data: priceRows, error: priceErr } = await supa
+  // Fetch prices (RLS may hide for non-approved account; we also gate per-product below)
+  const { data: priceRows } = await supa
     .from('prices')
     .select('product_id, amount_cents, currency, products!inner(sku)');
 
   const priceMap = {};
-  if (!priceErr && Array.isArray(priceRows)) {
-    priceRows.forEach(r => { if (r.products?.sku) priceMap[r.products.sku] = r; });
-  }
+  (priceRows||[]).forEach(r => { if (r.products?.sku) priceMap[r.products.sku] = r; });
 
-  // Build table
-  const current = readCart(); // read again in case names were filled
+  // Fetch per-product approvals for items in cart
+  const { data:{ user } } = await supa.auth.getUser();
+  const skus = items.map(i => i.sku);
+  const approvals = user ? await fetchApprovalsForCart(user.id, skus) : {};
+
+  // Build table with Approval column; only show price when approved
+  const current = readCart(); // re-read in case names were filled
   const rows = current.map(it=>{
+    const status = approvals[it.sku] || 'missing';
+    const statusCell = (status === 'approved')
+      ? `<span class="status approved">Approved</span>`
+      : (status === 'pending')
+        ? `<span class="status pending">Pending</span>`
+        : `<button class="btn small" onclick="requestApprovalForSku('${it.sku}')">Request approval</button>`;
+
     const price = priceMap[it.sku];
-    const line  = price ? (price.amount_cents/100 * it.qty) : null;
+    const line  = (price && status==='approved') ? (price.amount_cents/100 * it.qty) : null;
+
     return `
       <tr>
         <td>${it.name || it.sku}</td>
         <td>${it.qty}</td>
-        <td>${price ? (price.amount_cents/100).toFixed(2)+' '+price.currency : '—'}</td>
-        <td>${price ? (line).toFixed(2)+' '+price.currency : '—'}</td>
+        <td>${statusCell}</td>
+        <td>${price && status==='approved' ? (price.amount_cents/100).toFixed(2)+' '+price.currency : '—'}</td>
+        <td>${price && status==='approved' ? (line).toFixed(2)+' '+price.currency : '—'}</td>
       </tr>
     `;
   }).join('');
 
   const total = current.reduce((sum, it)=>{
     const p = priceMap[it.sku];
-    return sum + (p ? (p.amount_cents/100)*it.qty : 0);
+    const st = approvals[it.sku] || 'missing';
+    return sum + (p && st==='approved' ? (p.amount_cents/100)*it.qty : 0);
   }, 0);
 
   tbl.innerHTML = `
     <table>
-      <tr><th>Product</th><th>Qty</th><th>Unit</th><th>Total</th></tr>
+      <tr><th>Product</th><th>Qty</th><th>Approval</th><th>Unit</th><th>Total</th></tr>
       ${rows}
       <tr>
-        <td colspan="3" style="text-align:right;font-weight:600">Grand Total</td>
+        <td colspan="4" style="text-align:right;font-weight:600">Grand Total</td>
         <td style="font-weight:600">${total>0 ? total.toFixed(2)+' '+(priceRows?.[0]?.currency || '') : '—'}</td>
       </tr>
     </table>
   `;
 
-  if (!priceRows || priceRows.length === 0) {
-    note.textContent = "Prices are visible only for approved professionals. Submit your verification above and we’ll notify you once approved.";
+  if (skus.some(s => (approvals[s] !== 'approved'))) {
+    note.textContent = "Each item requires approval. Click “Request approval” for unapproved items. Prices and checkout unlock per approved product.";
+  } else if (!priceRows || priceRows.length === 0) {
+    note.textContent = "Prices are visible only for approved professionals.";
   } else {
     note.textContent = "";
   }
 }
 
-/* ===== Place order (stub) ===== */
-function placeOrder(){
-  alert('Order placement flow goes here (payment/invoice/shipping). Since verification passed, you can proceed.');
+/* ===== Place order: block if any item unapproved ===== */
+async function placeOrder(){
+  const items = readCart();
+  if (!items.length) return alert('Your cart is empty.');
+
+  const { data:{ user } } = await supa.auth.getUser();
+  if(!user) return alert('Please login first.');
+
+  const approvals = await fetchApprovalsForCart(user.id, items.map(i=>i.sku));
+  const unapproved = items.filter(it => approvals[it.sku] !== 'approved');
+
+  if (unapproved.length) {
+    const names = unapproved.map(x => x.name || x.sku).join(', ');
+    return alert('These items need approval before checkout: ' + names);
+  }
+
+  // proceed with payment flow (all items approved)
+  alert('All items approved — proceed to payment/invoice flow.');
 }
 </script>
 </body>
