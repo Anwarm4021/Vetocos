@@ -12,25 +12,26 @@
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
-    main{max-width:1080px;margin:40px auto;padding:0 18px}
+    main{max-width:1100px;margin:40px auto;padding:0 18px}
     h1,h2{margin:0 0 14px}
     .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px}
     .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
          background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));
-         color:var(--text);font-weight:600;cursor:pointer}
+         color:var(--text);font-weight:600;cursor:pointer;transition:all .2s}
     .btn.small{padding:6px 10px;font-size:.9rem}
     .btn.danger{background:rgba(255,50,50,.15);border-color:rgba(255,50,50,.4)}
-    .btn[disabled]{opacity:.55;cursor:not-allowed}
+    .btn:hover{transform:scale(1.03)}
+    .btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
     .muted{color:var(--muted)}
     .hidden{display:none}
-    .row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
-    .ok{background:rgba(131,240,165,.12)} .bad{background:rgba(255,180,180,.12)} .pend{background:rgba(109,213,255,.12)}
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap}
     .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
             background:rgba(255,255,255,.05);color:var(--text)}
+    .row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px}
     input.qty-input{width:70px;text-align:center;padding:4px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.25);
                     background:rgba(255,255,255,.05);color:white}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
+    .ok{background:rgba(131,240,165,.12)} .bad{background:rgba(255,180,180,.12)} .pend{background:rgba(109,213,255,.12)}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -38,7 +39,7 @@
 <main>
   <h1>Admin Dashboard</h1>
 
-  <!-- Auth gate -->
+  <!-- Auth -->
   <div class="card" id="authGate">
     <div id="authMsg" class="muted">Checking session…</div>
     <div style="margin-top:10px;display:flex;gap:8px">
@@ -48,97 +49,114 @@
   </div>
 
   <!-- Vet applications -->
-  <div class="card hidden" id="listWrap">
+  <div class="card hidden" id="appsWrap">
     <div class="toolbar">
       <h2>Vet Applications</h2>
-      <input id="search" class="search" placeholder="Search by name / email / ID#">
+      <input id="searchApp" class="search" placeholder="Search by email / ID#">
     </div>
-    <div id="msg" class="muted"></div>
-    <div id="list"></div>
+    <div id="appsList"></div>
   </div>
 
   <!-- Orders -->
   <div class="card hidden" id="ordersWrap">
     <div class="toolbar">
       <h2>Orders</h2>
-      <input id="orderSearch" class="search" placeholder="Search by name / product / email">
+      <input id="searchOrder" class="search" placeholder="Search by email / product">
     </div>
-    <div id="ordersMsg" class="muted"></div>
     <div id="ordersList"></div>
   </div>
 </main>
 
 <script>
-/* ===== Supabase client ===== */
+/* ===== Supabase init ===== */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
-
-/* ===== Config ===== */
-const BUCKET = 'Documents';
 const ADMIN_EMAILS = ['Anwar.moumenjamai19@gmail.com'];
+const BUCKET = 'Documents';
 
-/* ===== Auth ===== */
+/* ===== Auth check ===== */
 const authMsg=document.getElementById('authMsg');
 const loginBtn=document.getElementById('loginBtn');
 const logoutBtn=document.getElementById('logoutBtn');
-const listWrap=document.getElementById('listWrap');
+const appsWrap=document.getElementById('appsWrap');
 const ordersWrap=document.getElementById('ordersWrap');
 
-loginBtn.onclick=()=>{const u=new URL('login.html',location.href);u.searchParams.set('redirect','admin.html');location.href=u.toString();}
+loginBtn.onclick=()=>{
+  const u=new URL('login.html',location.href);
+  u.searchParams.set('redirect','admin.html');
+  location.href=u.toString();
+};
 logoutBtn.onclick=async()=>{await supa.auth.signOut();location.reload();};
 
 async function checkAdmin(){
   authMsg.textContent='Checking session…';
   const { data:{ session } } = await supa.auth.getSession();
-  if(!session?.user){ authMsg.textContent='Not signed in'; loginBtn.classList.remove('hidden'); return false; }
+  if(!session?.user){
+    authMsg.textContent='Not signed in.';
+    loginBtn.classList.remove('hidden');
+    return false;
+  }
   authMsg.textContent='Signed in as '+session.user.email;
   logoutBtn.classList.remove('hidden');
-  if(!ADMIN_EMAILS.includes(session.user.email)){ authMsg.textContent='Access denied'; return false; }
-  listWrap.classList.remove('hidden');
+  if(!ADMIN_EMAILS.includes(session.user.email)){
+    authMsg.textContent='Access denied.';
+    return false;
+  }
+  appsWrap.classList.remove('hidden');
   ordersWrap.classList.remove('hidden');
   return true;
 }
 
 /* ===== Vet Applications ===== */
 async function loadApps(){
-  const { data, error } = await supa.from('vet_applications').select('*').order('created_at');
-  const list=document.getElementById('list'); list.innerHTML='';
-  if(error){ list.innerHTML='<p class="muted">'+error.message+'</p>'; return;}
+  const { data, error } = await supa.from('vet_applications').select('*').order('created_at',{ascending:false});
+  const container=document.getElementById('appsList');
+  container.innerHTML='';
+  if(error){container.innerHTML='<p class="muted">'+error.message+'</p>';return;}
+  if(!data.length){container.innerHTML='<p class="muted">No applications yet.</p>';return;}
   data.forEach(a=>{
     const div=document.createElement('div');
     div.className='card';
     div.innerHTML=`
-      <div class="row">
+      <div class="row" style="align-items:center">
         <div>
           <div><strong>User:</strong> ${a.user_id}</div>
           <div><strong>ID#:</strong> ${a.identity_number||'-'}</div>
-          <div><strong>Status:</strong> ${a.status}</div>
-          <div><small>${new Date(a.created_at).toLocaleString()}</small></div>
+          <div><strong>Status:</strong> <span class="pill ${a.status==='approved'?'ok':a.status==='rejected'?'bad':'pend'}">${a.status}</span></div>
+          <div class="muted">${new Date(a.created_at).toLocaleString()}</div>
         </div>
-        <div><button class="btn small" onclick="viewDiploma('${a.diploma_path}')">View</button></div>
-        <div><button class="btn small" onclick="updateStatus('${a.id}','approved')">Approve</button></div>
-        <div><button class="btn small" onclick="updateStatus('${a.id}','rejected')">Reject</button></div>
-        <div><button class="btn small danger" onclick="deleteApp('${a.id}')">Delete</button></div>
+        <div><button class="btn small" onclick="viewDiploma('${a.diploma_path}')">📄 View</button></div>
+        <div><button class="btn small" onclick="updateAppStatus('${a.id}','approved')">✅ Approve</button></div>
+        <div><button class="btn small" onclick="updateAppStatus('${a.id}','rejected')">🚫 Reject</button></div>
+        <div><button class="btn small danger" onclick="deleteApp('${a.id}')">🗑️ Delete</button></div>
       </div>`;
-    list.appendChild(div);
+    container.appendChild(div);
   });
 }
-async function updateStatus(id,s){await supa.from('vet_applications').update({status:s}).eq('id',id);loadApps();}
-async function deleteApp(id){if(confirm('Delete this application permanently?')){await supa.from('vet_applications').delete().eq('id',id);loadApps();}}
 async function viewDiploma(path){
   const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(path,300);
   if(error)return alert(error.message);
   window.open(data.signedUrl,'_blank');
 }
+async function updateAppStatus(id,status){
+  await supa.from('vet_applications').update({status}).eq('id',id);
+  loadApps();
+}
+async function deleteApp(id){
+  if(!confirm('Delete this application permanently?'))return;
+  await supa.from('vet_applications').delete().eq('id',id);
+  loadApps();
+}
 
-/* ===== Orders ===== */
+/* ===== Orders Management ===== */
 async function loadOrders(){
-  const { data, error } = await supa.from('orders').select('*').order('created_at');
+  const { data, error } = await supa.from('orders').select('*').order('created_at',{ascending:false});
   const wrap=document.getElementById('ordersList');
-  if(error){wrap.innerHTML='<p class="muted">'+error.message+'</p>';return;}
   wrap.innerHTML='';
+  if(error){wrap.innerHTML='<p class="muted">'+error.message+'</p>';return;}
+  if(!data.length){wrap.innerHTML='<p class="muted">No orders yet.</p>';return;}
   data.forEach(o=>{
     const div=document.createElement('div');
     div.className='card';
@@ -148,8 +166,10 @@ async function loadOrders(){
           <div><strong>User:</strong> ${o.user_email||o.user_id}</div>
           <div class="muted">${new Date(o.created_at).toLocaleString()}</div>
         </div>
-        <div>${o.product_name||o.product_sku}</div>
-        <div><input type="number" class="qty-input" min="1" value="${o.quantity||1}" id="qty-${o.id}"></div>
+        <div><strong>${o.product_name||o.product_sku}</strong></div>
+        <div>
+          <input type="number" min="1" class="qty-input" id="qty-${o.id}" value="${o.quantity||1}">
+        </div>
         <div>
           <button class="btn small" onclick="saveQty('${o.id}')">💾 Save</button>
         </div>
@@ -162,11 +182,13 @@ async function loadOrders(){
 }
 async function saveQty(id){
   const val=document.getElementById('qty-'+id).value;
-  await supa.from('orders').update({quantity:val}).eq('id',id);
+  await supa.from('orders').update({quantity:Number(val)}).eq('id',id);
   alert('Quantity updated.');
 }
 async function deleteOrder(id){
-  if(confirm('Delete this order?')){await supa.from('orders').delete().eq('id',id);loadOrders();}
+  if(!confirm('Delete this order?'))return;
+  await supa.from('orders').delete().eq('id',id);
+  loadOrders();
 }
 
 /* ===== Boot ===== */
@@ -177,4 +199,3 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 </script>
 </body>
 </html>
-
