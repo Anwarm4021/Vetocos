@@ -39,7 +39,7 @@
 
   <div id="verifyBox" class="card" style="display:none">
     <h2 style="margin:0 0 8px">Professional Verification</h2>
-    <p class="muted">To purchase, please verify you are a caprofessional by submitting your identity number and diploma.</p>
+    <p class="muted">To purchase, please verify you are a professional by submitting your identity number and diploma.</p>
 
     <div id="statusLine" style="margin:8px 0 12px"></div>
 
@@ -75,51 +75,92 @@
 /* ===== Supabase client ===== */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+  { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
-/* ===== Local cart helpers (shared with cart.html) ===== */
+/* ===== Cart utils (idempotent; prevents doubling) ===== */
+const CART_KEY = 'cart';
+const CART_RESTORED_KEY = 'cart_restored_v2'; // per-tab-session flag
+
 function readCart(){
-  try { return JSON.parse(localStorage.getItem("cart")||"[]"); }
-  catch { return []; }
+  try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; }
 }
-function mergeCarts(a, b){
+function writeCart(arr){
+  const cleaned = (arr||[])
+    .filter(it => it && it.sku && Number(it.qty) > 0)
+    .map(it => ({ ...it, qty: Number(it.qty) }));
+  localStorage.setItem(CART_KEY, JSON.stringify(cleaned));
+  return cleaned;
+}
+// Overwrite by SKU (do NOT sum)
+function overlayBySku(baseArr, incomingArr){
   const map = {};
-  [...(a||[]), ...(b||[])].forEach(it=>{
-    if(!it || !it.sku) return;
-    if(!map[it.sku]) map[it.sku] = { sku: it.sku, qty: 0, name: it.name };
-    map[it.sku].qty += Number(it.qty||0);
-    if (it.name && !map[it.sku].name) map[it.sku].name = it.name;
+  (baseArr||[]).forEach(it => { if (it?.sku) map[it.sku] = { ...it, qty: Number(it.qty||0) }; });
+  (incomingArr||[]).forEach(it => {
+    if (!it?.sku) return;
+    map[it.sku] = { ...map[it.sku], ...it, qty: Number(it.qty||0) }; // overwrite qty
   });
-  return Object.values(map).filter(x=>x.qty>0);
+  return Object.values(map).filter(x => x.qty > 0);
 }
-async function syncCartFromDB(){
-  const { data:{ user } } = await supa.auth.getUser();
-  if(!user) return;
-  const { data: row } = await supa.from('carts').select('items').eq('user_id', user.id).maybeSingle();
-  const local = readCart();
-  const merged = mergeCarts(local, row?.items||[]);
-  localStorage.setItem('cart', JSON.stringify(merged));
-  await supa.from('carts').upsert({ user_id: user.id, items: merged, updated_at: new Date().toISOString() });
+// Adopt ?cart= (once) and strip from URL
+function adoptQueryCartOnce(){
+  if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
+  const qs = new URLSearchParams(location.search);
+  const raw = qs.get('cart');
+  if (!raw) return;
+  try {
+    const incoming = JSON.parse(decodeURIComponent(raw));
+    const merged = overlayBySku(readCart(), Array.isArray(incoming) ? incoming : []);
+    writeCart(merged);
+  } catch(e) { console.warn('cart restore failed', e); }
+  finally {
+    qs.delete('cart');
+    const newUrl = location.pathname + (qs.toString() ? '?' + qs.toString() : '');
+    history.replaceState({}, '', newUrl);
+    sessionStorage.setItem(CART_RESTORED_KEY, '1');
+  }
 }
+// Adopt cart_backup after login redirects (once)
+function adoptBackupCartOnce(){
+  if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
+  const backup = localStorage.getItem('cart_backup');
+  if (!backup) return;
+  try {
+    const incoming = JSON.parse(backup);
+    const merged = overlayBySku(readCart(), Array.isArray(incoming) ? incoming : []);
+    writeCart(merged);
+  } catch(e) { console.warn('backup restore failed', e); }
+  finally {
+    localStorage.removeItem('cart_backup'); // important to prevent re-apply
+    sessionStorage.setItem(CART_RESTORED_KEY, '1');
+  }
+}
+function setQty(sku, qty, extra = {}){
+  const cart = readCart();
+  const map = {};
+  cart.forEach(it => { if (it?.sku) map[it.sku] = it; });
+  map[sku] = { ...(map[sku] || { sku }), ...extra, qty: Math.max(0, Number(qty)||0) };
+  return writeCart(Object.values(map));
+}
+function incQty(sku, delta, extra = {}){
+  const cart = readCart();
+  const map = {};
+  cart.forEach(it => { if (it?.sku) map[it.sku] = it; });
+  const curr = Number(map[sku]?.qty || 0);
+  map[sku] = { ...(map[sku] || { sku }), ...extra, qty: Math.max(0, curr + Number(delta||0)) };
+  return writeCart(Object.values(map));
+}
+// Run once per load (prevents doubling)
+adoptQueryCartOnce();
+adoptBackupCartOnce();
 
 /* ===== UI helpers ===== */
 function msg(elId, text, cls=''){ const el = document.getElementById(elId); if(!el) return; el.textContent = text; el.className = 'muted '+cls; }
 
 /* ===== Load (auth + cart + vet status) ===== */
 document.addEventListener('DOMContentLoaded', async () => {
-  // If not logged in, send to login and bring cart along
   const { data:{ session } } = await supa.auth.getSession();
-  const params = new URLSearchParams(location.search);
-  const incoming = params.get('cart');
-  if (incoming) {
-    try {
-      const fromURL = JSON.parse(decodeURIComponent(incoming));
-      const merged = mergeCarts(readCart(), Array.isArray(fromURL)?fromURL:[]);
-      localStorage.setItem('cart', JSON.stringify(merged));
-      history.replaceState({}, "", location.pathname);
-    } catch {}
-  }
 
   const authBox = document.getElementById('authBox');
   if (!session?.user) {
@@ -134,13 +175,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   authBox.innerHTML = `<strong>Logged in:</strong> <span class="muted">${session.user.email}</span>`;
 
-  // Keep carts in sync
-  await syncCartFromDB();
-
   // Show/handle vet verification
   await loadVetStatus();
 
-  // If approved, show the cart & (optionally) prices
+  // Render cart
   await renderCartForCheckout();
 });
 
@@ -175,7 +213,7 @@ async function loadVetStatus(){
   } else if (app.status === 'pending') {
     statusLine.innerHTML = `<span class="status pending">Status: Pending review</span><div class="muted" style="margin-top:6px">We’ll notify you by email once reviewed.</div>`;
     form.style.display = 'none';
-  } else { // rejected
+  } else {
     statusLine.innerHTML = `<span class="status rejected">Status: Rejected</span><div class="muted" style="margin-top:6px">You may resubmit your information below.</div>`;
     form.style.display = 'block';
   }
@@ -197,9 +235,14 @@ async function submitApplication(e){
     return false;
   }
 
-  // Upload file to Storage bucket `documents` under user-id folder
+  if (file.size > 10 * 1024 * 1024) { msg('vfMsg','File too large (max 10 MB).','error'); return false; }
+  const okTypes = ['application/pdf','image/jpeg','image/png'];
+  if (file.type && !okTypes.includes(file.type)) { msg('vfMsg','Unsupported file type.','error'); return false; }
+
+  // Upload to Documents/<uid>/...
   const ext = (file.name.split('.').pop() || 'pdf').toLowerCase();
-  const path = `${user.id}/diploma_${Date.now()}.${ext}`;
+  const safe = file.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
+  const path = `${user.id}/diploma_${Date.now()}_${safe || 'file'}.${ext}`;
 
   const { error: upErr } = await supa.storage.from('Documents').upload(path, file, {
     upsert: true,
@@ -207,17 +250,15 @@ async function submitApplication(e){
   });
   if (upErr){ msg('vfMsg', upErr.message, 'error'); return false; }
 
-  // Create vet application (status will be pending by default per your SQL)
   const { error: insErr } = await supa.from('vet_applications').insert({
     user_id: user.id,
     identity_number: identity,
-    diploma_path: path
+    diploma_path: path,
+    status: 'pending'
   });
-
   if (insErr){ msg('vfMsg', insErr.message, 'error'); return false; }
 
   msg('vfMsg','Submitted successfully. Status set to pending.','success');
-  // Refresh status UI
   await loadVetStatus();
   return false;
 }
@@ -229,24 +270,24 @@ async function renderCartForCheckout(){
   const note     = document.getElementById('priceNote');
 
   const items = readCart();
+  cartWrap.style.display = 'block';
+
   if (items.length === 0){
-    cartWrap.style.display = 'block';
     tbl.innerHTML = `<p class="muted">Your cart is empty.</p>`;
     note.textContent = '';
     return;
   }
 
-  // Try to fetch product names for any missing
+  // Fill missing names from products
   const missing = items.filter(i=>!i.name).map(i=>i.sku);
   if (missing.length){
     const { data: prods } = await supa.from('products').select('sku,name').in('sku', missing);
     const map = Object.fromEntries((prods||[]).map(p=>[p.sku,p.name]));
-    items.forEach(i=>{ if(!i.name && map[i.sku]) i.name = map[i.sku]; });
-    localStorage.setItem('cart', JSON.stringify(items));
+    const updated = items.map(i => ({ ...i, name: i.name || map[i.sku] || i.sku }));
+    writeCart(updated);
   }
 
-  // Try to fetch prices — NOTE: your RLS only allows SELECT on prices for approved vets.
-  // If not approved, this returns [] and we’ll show a friendly note.
+  // Fetch prices (RLS may hide for non-approved)
   const { data: priceRows, error: priceErr } = await supa
     .from('prices')
     .select('product_id, amount_cents, currency, products!inner(sku)');
@@ -257,7 +298,8 @@ async function renderCartForCheckout(){
   }
 
   // Build table
-  const rows = items.map(it=>{
+  const current = readCart(); // read again in case names were filled
+  const rows = current.map(it=>{
     const price = priceMap[it.sku];
     const line  = price ? (price.amount_cents/100 * it.qty) : null;
     return `
@@ -270,12 +312,11 @@ async function renderCartForCheckout(){
     `;
   }).join('');
 
-  const total = items.reduce((sum, it)=>{
+  const total = current.reduce((sum, it)=>{
     const p = priceMap[it.sku];
     return sum + (p ? (p.amount_cents/100)*it.qty : 0);
   }, 0);
 
-  cartWrap.style.display = 'block';
   tbl.innerHTML = `
     <table>
       <tr><th>Product</th><th>Qty</th><th>Unit</th><th>Total</th></tr>
