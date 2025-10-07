@@ -38,15 +38,58 @@ input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius
 </main>
 
 <script>
+/* ===== Supabase ===== */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+  { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
-// unified bucket name
-const BUCKET = 'Documents';
+/* ===== Cart utils (same as checkout; avoids doubling if you pass ?cart= to this page) ===== */
+const CART_KEY = 'cart';
+const CART_RESTORED_KEY = 'cart_restored_v2';
+function readCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; } }
+function writeCart(arr){
+  const cleaned = (arr||[]).filter(it=>it&&it.sku&&Number(it.qty)>0).map(it=>({ ...it, qty:Number(it.qty)}));
+  localStorage.setItem(CART_KEY, JSON.stringify(cleaned));
+  return cleaned;
+}
+function overlayBySku(baseArr,incomingArr){
+  const map={}; (baseArr||[]).forEach(it=>{ if(it?.sku) map[it.sku]={...it, qty:Number(it.qty||0)}; });
+  (incomingArr||[]).forEach(it=>{ if(it?.sku) map[it.sku]={...map[it.sku], ...it, qty:Number(it.qty||0)}; });
+  return Object.values(map).filter(x=>x.qty>0);
+}
+(function adoptOnce(){
+  if (!sessionStorage.getItem(CART_RESTORED_KEY)) {
+    const qs = new URLSearchParams(location.search);
+    const raw = qs.get('cart');
+    if (raw) {
+      try {
+        const incoming = JSON.parse(decodeURIComponent(raw));
+        writeCart(overlayBySku(readCart(), Array.isArray(incoming)?incoming:[]));
+      } catch(e){ console.warn('cart restore failed', e); }
+      finally {
+        qs.delete('cart');
+        history.replaceState({}, '', location.pathname + (qs.toString()?('?'+qs.toString()):''));
+        sessionStorage.setItem(CART_RESTORED_KEY,'1');
+      }
+    } else {
+      const backup = localStorage.getItem('cart_backup');
+      if (backup) {
+        try {
+          const incoming = JSON.parse(backup);
+          writeCart(overlayBySku(readCart(), Array.isArray(incoming)?incoming:[]));
+        } catch(e){ console.warn('backup restore failed', e); }
+        finally { localStorage.removeItem('cart_backup'); sessionStorage.setItem(CART_RESTORED_KEY,'1'); }
+      }
+    }
+  }
+})();
 
+/* ===== Verification submit ===== */
+const BUCKET = 'Documents';
 const btn = document.getElementById('submit');
+
 btn.onclick = async () => {
   btn.disabled = true;
   setMsg('Checking sign-in…');
@@ -57,18 +100,21 @@ btn.onclick = async () => {
 
   const idnum = document.getElementById('idnum').value.trim();
   const f = document.getElementById('file').files[0];
-
   if(!idnum || !f) { setMsg('Please enter ID number and choose a file','error'); btn.disabled=false; return; }
 
-  // Restrict file size a bit (e.g. 10 MB)
   if (f.size > 10 * 1024 * 1024) { setMsg('File too large (max 10 MB).','error'); btn.disabled=false; return; }
+  const okTypes = ['application/pdf','image/jpeg','image/png'];
+  if (f.type && !okTypes.includes(f.type)) { setMsg('Unsupported file type.','error'); btn.disabled=false; return; }
 
-  // Path: <user_id>/<timestamp>_<sanitized_name>
-  const cleanName = f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'');
-  const path = `${user.id}/${Date.now()}_${cleanName}`;
+  const cleanName = f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
+  const path = `${user.id}/${Date.now()}_${cleanName || 'diploma'}`;
 
   setMsg('Uploading document…');
-  const up = await supa.storage.from(BUCKET).upload(path, f, { upsert:false });
+  const up = await supa.storage.from(BUCKET).upload(path, f, {
+    upsert:false,
+    contentType: f.type || 'application/octet-stream',
+    cacheControl: '3600'
+  });
   if(up.error) { setMsg(up.error.message,'error'); btn.disabled=false; return; }
 
   setMsg('Saving application…');
@@ -81,7 +127,6 @@ btn.onclick = async () => {
   if(ins.error) { setMsg(ins.error.message,'error'); btn.disabled=false; return; }
 
   setMsg('Submitted. We will review and approve your account.','success');
-  // Optional: disable form after submission
   document.getElementById('idnum').disabled = true;
   document.getElementById('file').disabled = true;
 };
