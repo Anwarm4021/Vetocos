@@ -1,29 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>VetoCos | Login</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<style>
-  :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
-  .wrap{max-width:480px;margin:6vh auto;padding:0 18px}
-  .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
-  h1{margin:.2rem 0 1rem}
-  label{font-size:.9rem;color:var(--muted);display:block}
-  input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text);margin-top:6px}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .btn{margin-top:14px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
-  .btn[disabled]{opacity:.6;cursor:not-allowed}
-  .muted{color:var(--muted);font-size:.9rem;margin-top:10px}
-  .success{color:#83f0a5}
-  .error{color:#ffb4b4}
-  #codeBox{display:none}
-  .tiny{font-size:.85rem;color:var(--muted);margin-top:8px}
-</style>
+  <meta charset="utf-8" />
+  <title>VetoCos | Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:#0b1020; --card:#0f162f; --muted:#8ea0c8;
+      --text:#f6f7fb; --radius:16px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin:0; font-family:Inter,sans-serif;
+      background:linear-gradient(135deg,var(--bg),#101835);
+      color:var(--text);
+    }
+    .wrap { max-width:480px; margin:6vh auto; padding:0 18px; }
+    .card {
+      background:var(--card);
+      border:1px solid rgba(141,158,199,.18);
+      border-radius:var(--radius);
+      padding:18px;
+    }
+    h1 { margin:.2rem 0 1rem; }
+    label { font-size:.9rem; color:var(--muted); display:block; }
+    input {
+      width:100%; padding:12px 14px;
+      border-radius:12px;
+      border:1px solid rgba(141,158,199,.28);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      margin-top:6px;
+    }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .btn {
+      margin-top:14px; width:100%; padding:12px 14px;
+      border-radius:12px;
+      border:1px solid rgba(141,158,199,.25);
+      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));
+      color:var(--text); cursor:pointer; font-weight:600;
+    }
+    .btn[disabled]{ opacity:.6; cursor:not-allowed; }
+    .muted { color:var(--muted); font-size:.9rem; margin-top:10px; }
+    .success { color:#83f0a5; }
+    .error { color:#ffb4b4; }
+    #codeBox { display:none; }
+    .tiny { font-size:.85rem; color:var(--muted); margin-top:8px; }
+  </style>
 </head>
+
 <body>
   <main class="wrap">
     <div class="card" role="form">
@@ -63,75 +90,78 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
-    // ===== Supabase config =====
+    /* ===== Supabase config ===== */
     const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
     const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
       auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
     });
 
-    // ===== Query params =====
+    /* ===== Query params ===== */
     const qs = new URLSearchParams(location.search);
-    // If a page asked for login (e.g. admin.html), it will pass ?redirect=thatpage
-    const redirect = qs.get("redirect") || "checkout.html";
+    const redirect = qs.get("redirect") || "checkout.html"; // default redirect
 
-    // ===== UI helpers =====
+    /* ===== UI helpers ===== */
     const msgEl = document.getElementById("msg");
-    const show = (t, kind="") => { msgEl.textContent=t||""; msgEl.className="muted "+kind; };
-    const disable = (el,on=true)=>{ if(el) el.disabled=!!on; };
+    function show(t, kind="") { msgEl.textContent=t||""; msgEl.className="muted "+kind; }
+    function disable(el, on=true){ if(el) el.disabled=!!on; }
 
-    // Pre-fill email if present
-    (function(){
+    // Prefill email if ?email= param exists
+    (()=>{
       const email = qs.get("email");
       if (email) document.getElementById("email").value = email;
     })();
 
-    // If we already have a session (e.g. after magic link), go on
-    (async () => {
+    // ===== Handle existing session =====
+    (async ()=>{
       const { data } = await supa.auth.getSession();
       if (data?.session?.user) {
-        await saveNamesToProfileIfAny(data.session.user.id);
+        await saveNamesToProfileIfAny(data.session.user.id, data.session.user.email);
         goNext();
       }
     })();
 
-    // React to auth changes (magic link hash processing)
+    // ===== React to new session =====
     supa.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_IN" && session?.user) {
-        await saveNamesToProfileIfAny(session.user.id);
+        await saveNamesToProfileIfAny(session.user.id, session.user.email);
         goNext();
       }
     });
 
     function goNext(){ location.replace(redirect); }
 
-    async function saveNamesToProfileIfAny(userId){
+    /* ===== Save profile info ===== */
+    async function saveNamesToProfileIfAny(userId, email){
       const first = localStorage.getItem("pending_first") || document.getElementById("first").value.trim();
       const last  = localStorage.getItem("pending_last")  || document.getElementById("last").value.trim();
-      if (first || last) {
-        try { await supa.from("profiles").update({ first_name:first||null, last_name:last||null }).eq("id", userId); } catch {}
+
+      if (first || last || email) {
+        try {
+          await supa.from("profiles")
+            .upsert({ id: userId, first_name:first||null, last_name:last||null, email:email||null }, { onConflict: 'id' });
+        } catch (err) {
+          console.warn("Profile update failed:", err.message);
+        }
         localStorage.removeItem("pending_first");
         localStorage.removeItem("pending_last");
       }
     }
 
-    // ===== Send magic link / OTP =====
-    document.getElementById("send").onclick = async () => {
+    /* ===== Send magic link ===== */
+    document.getElementById("send").onclick = async function(){
       show("");
       const email = document.getElementById("email").value.trim();
       const first = document.getElementById("first").value.trim();
       const last  = document.getElementById("last").value.trim();
+
       if (!first || !last) return show("Please enter your first and last name.","error");
       if (!email) return show("Please enter your email.","error");
 
       localStorage.setItem("pending_first", first);
       localStorage.setItem("pending_last",  last);
 
-      // We redirect BACK to this login page so the session is captured here,
-      // then we forward to ?redirect=... once signed in.
-      const url = new URL(location.href);
-      const absoluteLoginUrl = `${url.origin}${url.pathname}?redirect=${encodeURIComponent(redirect)}`;
-
+      const absoluteLoginUrl = `${location.origin}${location.pathname}?redirect=${encodeURIComponent(redirect)}`;
       disable(this,true);
       show("Sending email…");
 
@@ -148,8 +178,8 @@
       setTimeout(()=>document.getElementById("otp").focus(),50);
     };
 
-    // ===== Verify 6-digit code (if Email OTP is enabled) =====
-    document.getElementById("verify").onclick = async () => {
+    /* ===== Verify 6-digit OTP ===== */
+    document.getElementById("verify").onclick = async function(){
       show("");
       const email = document.getElementById("email").value.trim();
       const token = document.getElementById("otp").value.trim();
@@ -163,7 +193,7 @@
       disable(this,false);
       if (error) return show(error.message,"error");
 
-      await saveNamesToProfileIfAny(data.user.id);
+      await saveNamesToProfileIfAny(data.user.id, email);
       goNext();
     };
   </script>
