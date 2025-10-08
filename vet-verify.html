@@ -8,15 +8,23 @@
 :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px}
 *{box-sizing:border-box}
 body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
-.wrap{max-width:560px;margin:6vh auto;padding:0 18px}
+.wrap{max-width:640px;margin:6vh auto;padding:0 18px}
 .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
 label{display:block;margin:10px 0 6px}
 input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text)}
-.btn{margin-top:14px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;font-weight:600}
+.btn{margin-top:14px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
+.btn.small{width:auto;padding:8px 12px}
 .btn[disabled]{opacity:.6;cursor:not-allowed}
+.row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
 .muted{color:#8ea0c8;margin-top:10px}
 .success{color:#83f0a5} .error{color:#ffb4b4}
 .small{font-size:.92rem}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.3);font-size:.85rem}
+.ok{background:rgba(131,240,165,.12)} .pend{background:rgba(109,213,255,.12)} .bad{background:rgba(255,180,180,.12)}
+.hr{height:1px;background:rgba(141,158,199,.15);margin:14px 0}
+.preview{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.preview a{color:#6dd5ff;text-decoration:none}
+.help{font-size:.85rem;color:#8ea0c8}
 </style>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -26,6 +34,20 @@ input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius
     <h1>Vet verification</h1>
     <p class="muted small">Provide your identity number and upload a scan of your veterinary diploma or professional card.</p>
 
+    <!-- Status area (shown after login / load) -->
+    <div id="statusBox" class="row" style="display:none">
+      <div>
+        <div class="small muted">Current status</div>
+        <div id="statusPill" class="badge pend">pending</div>
+      </div>
+      <div id="previewWrap" class="preview" style="display:none">
+        <a id="previewLink" class="btn small" target="_blank" rel="noopener">Open uploaded file</a>
+        <button id="replaceBtn" class="btn small" type="button">Replace file</button>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
     <label for="idnum">Identity number</label>
     <input id="idnum" type="text" placeholder="e.g., 123456789" autocomplete="off"/>
 
@@ -33,7 +55,9 @@ input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius
     <input id="file" type="file" accept=".pdf,.png,.jpg,.jpeg" />
 
     <button class="btn" id="submit">Submit for review</button>
-    <p id="msg" class="muted"></p>
+    <p id="msg" class="muted" aria-live="polite"></p>
+
+    <p class="help">Once approved, you’ll be able to purchase without additional approval where allowed by your account settings. You’ll get an email update when your application status changes.</p>
   </div>
 </main>
 
@@ -45,7 +69,7 @@ const supa = supabase.createClient(
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
-/* ===== Cart utils (same as checkout; avoids doubling if you pass ?cart= to this page) ===== */
+/* ===== Cart utils (unchanged) ===== */
 const CART_KEY = 'cart';
 const CART_RESTORED_KEY = 'cart_restored_v2';
 function readCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; } }
@@ -86,52 +110,188 @@ function overlayBySku(baseArr,incomingArr){
   }
 })();
 
-/* ===== Verification submit ===== */
-const BUCKET = 'Documents';
-const btn = document.getElementById('submit');
+/* ===== UI refs ===== */
+const statusBox   = document.getElementById('statusBox');
+const statusPill  = document.getElementById('statusPill');
+const previewWrap = document.getElementById('previewWrap');
+const previewLink = document.getElementById('previewLink');
+const replaceBtn  = document.getElementById('replaceBtn');
+const idInput     = document.getElementById('idnum');
+const fileInput   = document.getElementById('file');
+const btn         = document.getElementById('submit');
+const msgEl       = document.getElementById('msg');
 
+function setMsg(t,kind=''){ msgEl.textContent=t; msgEl.className='muted '+kind; }
+function pill(status){
+  const s = (status||'pending').toLowerCase();
+  statusPill.textContent = s;
+  statusPill.className = 'badge ' + (s==='approved'?'ok':s==='rejected'?'bad':'pend');
+}
+
+/* ===== Load existing app (if any) & gate unauth ===== */
+let currentUser = null;
+let currentApp  = null; // most recent application row
+const BUCKET = 'Documents';
+
+async function boot(){
+  setMsg('Checking sign-in…');
+  const { data:{ user }, error } = await supa.auth.getUser();
+  if (error) { setMsg(error.message,'error'); return; }
+  if (!user) { location.replace('login.html?redirect=vet-verify.html'); return; }
+  currentUser = user;
+
+  // Load latest application
+  setMsg('Loading your application…');
+  const { data: rows, error: e2 } = await supa.from('vet_applications')
+    .select('id, identity_number, diploma_path, status, created_at')
+    .eq('user_id', user.id).order('created_at', { ascending:false }).limit(1);
+  if (e2) { setMsg(e2.message,'error'); return; }
+  currentApp = rows && rows[0] ? rows[0] : null;
+
+  if (currentApp){
+    statusBox.style.display = 'grid';
+    pill(currentApp.status);
+    if (currentApp.identity_number) idInput.value = currentApp.identity_number;
+    // show preview if we can sign URL
+    if (currentApp.diploma_path){
+      try {
+        const { data, error: sErr } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
+        if (!sErr && data?.signedUrl){
+          previewWrap.style.display = 'flex';
+          previewLink.href = data.signedUrl;
+        }
+      } catch(e){}
+    }
+    // approved → disable edits by default (you can still allow replace)
+    if (currentApp.status === 'approved'){
+      idInput.disabled = true;
+      fileInput.disabled = true;
+      btn.disabled = true;
+      btn.textContent = 'Already approved';
+      setMsg('Your account is approved. If you need to update your file, click “Replace file”.','success');
+    } else if (currentApp.status === 'rejected'){
+      setMsg('Your previous submission was rejected. You can update your ID and upload a new file for review.','error');
+    } else {
+      setMsg('Your application is pending. You can replace the file or update ID.','');
+    }
+  } else {
+    setMsg('No submission yet. Please fill in your details below.','');
+  }
+}
+document.addEventListener('DOMContentLoaded', boot);
+
+/* ===== Replace flow ===== */
+replaceBtn?.addEventListener('click', ()=>{
+  idInput.disabled = false;
+  fileInput.disabled = false;
+  btn.disabled = false;
+  btn.textContent = 'Submit updated file';
+  setMsg('You can select a new file and save.','');
+});
+
+/* ===== Submit or update ===== */
 btn.onclick = async () => {
   btn.disabled = true;
   setMsg('Checking sign-in…');
 
-  const { data: { user }, error: uErr } = await supa.auth.getUser();
+  const { data:{ user }, error: uErr } = await supa.auth.getUser();
   if (uErr) { setMsg(uErr.message, 'error'); btn.disabled=false; return; }
   if (!user) { location.replace('login.html?redirect=vet-verify.html'); return; }
 
-  const idnum = document.getElementById('idnum').value.trim();
-  const f = document.getElementById('file').files[0];
-  if(!idnum || !f) { setMsg('Please enter ID number and choose a file','error'); btn.disabled=false; return; }
+  const idnum = (idInput.value||'').trim();
+  const f = fileInput.files[0];
 
-  if (f.size > 10 * 1024 * 1024) { setMsg('File too large (max 10 MB).','error'); btn.disabled=false; return; }
-  const okTypes = ['application/pdf','image/jpeg','image/png'];
-  if (f.type && !okTypes.includes(f.type)) { setMsg('Unsupported file type.','error'); btn.disabled=false; return; }
+  // For first-time submission: both required. For update: allow only ID or only file changes.
+  if (!currentApp){
+    if(!idnum || !f){ setMsg('Please enter ID number and choose a file','error'); btn.disabled=false; return; }
+  } else if (!idnum && !f){
+    setMsg('Nothing to update. Change ID and/or choose a new file.','error'); btn.disabled=false; return;
+  }
 
-  const cleanName = f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
-  const path = `${user.id}/${Date.now()}_${cleanName || 'diploma'}`;
+  let newPath = currentApp?.diploma_path || null;
 
-  setMsg('Uploading document…');
-  const up = await supa.storage.from(BUCKET).upload(path, f, {
-    upsert:false,
-    contentType: f.type || 'application/octet-stream',
-    cacheControl: '3600'
-  });
-  if(up.error) { setMsg(up.error.message,'error'); btn.disabled=false; return; }
+  if (f){
+    if (f.size > 10 * 1024 * 1024) { setMsg('File too large (max 10 MB).','error'); btn.disabled=false; return; }
+    const okTypes = ['application/pdf','image/jpeg','image/png'];
+    if (f.type && !okTypes.includes(f.type)) { setMsg('Unsupported file type.','error'); btn.disabled=false; return; }
 
-  setMsg('Saving application…');
-  const ins = await supa.from('vet_applications').insert({
-    user_id: user.id,
-    identity_number: idnum,
-    diploma_path: up.data.path,
-    status: 'pending'
-  });
-  if(ins.error) { setMsg(ins.error.message,'error'); btn.disabled=false; return; }
+    const cleanName = f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
+    const path = `${user.id}/${Date.now()}_${cleanName || 'diploma'}`;
 
+    setMsg('Uploading document…');
+    const up = await supa.storage.from(BUCKET).upload(path, f, {
+      upsert:false,
+      contentType: f.type || 'application/octet-stream',
+      cacheControl: '3600'
+    });
+    if(up.error) { setMsg(up.error.message,'error'); btn.disabled=false; return; }
+    newPath = up.data.path;
+  }
+
+  // Insert new or update existing application
+  if (!currentApp){
+    setMsg('Saving application…');
+    const ins = await supa.from('vet_applications').insert({
+      user_id: user.id,
+      identity_number: idnum,
+      diploma_path: newPath,
+      status: 'pending'
+    }).select().single();
+
+    if(ins.error){ setMsg(ins.error.message,'error'); btn.disabled=false; return; }
+    currentApp = ins.data;
+  } else {
+    setMsg('Updating application…');
+    const upd = await supa.from('vet_applications')
+      .update({
+        identity_number: idnum || currentApp.identity_number,
+        diploma_path: f ? newPath : currentApp.diploma_path,
+        status: 'pending' // set back to pending on change
+      })
+      .eq('id', currentApp.id)
+      .select()
+      .single();
+
+    if(upd.error){ setMsg(upd.error.message,'error'); btn.disabled=false; return; }
+    currentApp = upd.data;
+  }
+
+  // Try to queue an email to the user confirming submission
+  // Create this table (once) if you haven't:
+  // create table public.mail_queue(id bigserial primary key, to_email text not null, subject text not null, html text not null, created_at timestamptz default now(), sent_at timestamptz);
+  // Your server/Edge Function can poll & send then set sent_at.
+  try {
+    const { data: prof } = await supa.from('profiles').select('email,first_name,last_name').eq('id', user.id).maybeSingle();
+    const toEmail = (prof?.email || user.email || '').trim().toLowerCase();
+    if (toEmail){
+      const subject = 'VetoCos – Vet verification submitted';
+      const html = `
+        <p>Hello ${[prof?.first_name, prof?.last_name].filter(Boolean).join(' ') || ''},</p>
+        <p>We received your veterinary verification request and will review it shortly.</p>
+        <p>Status: <strong>PENDING</strong></p>
+        <p>We’ll notify you by email when it’s approved or if we need anything else.</p>
+        <p>— VetoCos</p>
+      `;
+      await supa.from('mail_queue').insert({ to_email: toEmail, subject, html });
+    }
+  } catch(e){ /* ignore if table doesn't exist */ }
+
+  // Refresh UI (signed URL + status)
+  pill('pending');
+  statusBox.style.display = 'grid';
+  if (currentApp.diploma_path){
+    try{
+      const { data } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
+      if (data?.signedUrl){
+        previewWrap.style.display = 'flex';
+        previewLink.href = data.signedUrl;
+      }
+    }catch(e){}
+  }
   setMsg('Submitted. We will review and approve your account.','success');
-  document.getElementById('idnum').disabled = true;
-  document.getElementById('file').disabled = true;
+  btn.disabled = false;
+  btn.textContent = 'Update submission';
 };
-
-function setMsg(t,kind=''){ const p=document.getElementById('msg'); p.textContent=t; p.className='muted '+kind; }
 </script>
 </body>
 </html>
