@@ -573,6 +573,7 @@ async function deleteOrder(id){
 
 /* =======================================================================
    PRODUCTS (stock & availability)
+   Uses columns: products.stock_qty (int), products.available (bool)
 ======================================================================= */
 let products = [];
 async function loadProducts(){
@@ -594,26 +595,24 @@ function renderProducts(){
   }).forEach(p=>{
     const el=document.createElement("div");
     el.className="card";
+    const badge = p.available ? '<span class="pill ok">Available</span>' : '<span class="pill bad">Unavailable</span>';
     el.innerHTML=`
-      <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1.4fr;gap:10px;align-items:center">
-        <div><strong>${p.name||p.sku}</strong> <span class="muted">(${p.sku})</span></div>
+      <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1.6fr;gap:10px;align-items:center">
+        <div>
+          <div style="font-weight:600">${p.name||p.sku}</div>
+          <div class="muted">${p.sku}</div>
+        </div>
         <div>
           <label class="muted" style="display:block;font-size:.85rem">Stock qty</label>
           <input class="qty-edit" id="pqty_${p.sku}" type="number" min="0" value="${Number(p.stock_qty)||0}">
         </div>
-        <div>
-          <label class="muted" style="display:block;font-size:.85rem">Available</label>
-          <button class="btn small" id="pav_${p.sku}" data-av="${p.available?'1':'0'}">
-            ${p.available ? 'Available' : 'Unavailable'}
-          </button>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn small" onclick="saveProduct('${p.sku}')">Save</button>
-          <button class="btn small" onclick="toggleAvail('${p.sku}')">Toggle</button>
+        <div>${badge}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn small" onclick="saveProduct('${p.sku}')">Save qty</button>
+          <button class="btn small" onclick="toggleAvail('${p.sku}')">${p.available ? 'Set Unavailable' : 'Set Available'}</button>
         </div>
       </div>`;
     prodList.appendChild(el);
-    el.querySelector(`#pav_${p.sku}`).onclick = ()=> toggleAvail(p.sku);
   });
 }
 
@@ -621,7 +620,7 @@ async function saveProduct(sku){
   const qEl = document.getElementById(`pqty_${sku}`);
   const qty = Math.max(0, Number(qEl?.value || 0));
   const { error } = await supa.from("products").update({ stock_qty: qty }).eq("sku", sku);
-  if (error) toast(error.message, true); else toast("Saved");
+  if (error) toast(error.message, true); else toast("Stock saved");
   await loadProducts();
 }
 
