@@ -97,7 +97,7 @@
     /* RTL */
     body.rtl .links a{text-align:right}
 
-    /* Availability badge (added) */
+    /* Availability badge */
     .avail-badge{
       display:inline-block;margin:6px 0 0;padding:4px 10px;border-radius:999px;
       border:1px solid rgba(141,158,199,.25);font-size:12px
@@ -311,11 +311,9 @@ const supa = supabase.createClient(
 
 /* ==== SIGN-IN GATING: hide "Add to Cart" until signed in ==== */
 async function setAddButtonsVisibility(signedIn){
-  // Card buttons
   document.querySelectorAll('.add-btn').forEach(btn=>{
     btn.style.display = signedIn ? '' : 'none';
   });
-  // Modal button
   const modalAdd = document.getElementById('pdAddBtn');
   if (modalAdd) modalAdd.style.display = signedIn ? '' : 'none';
 }
@@ -325,8 +323,7 @@ async function refreshAuthUI(){
   await setAddButtonsVisibility(!!user);
 }
 document.addEventListener('DOMContentLoaded', refreshAuthUI);
-supa.auth.onAuthStateChange(async (_evt, _session)=>{ await refreshAuthUI(); });
-
+supa.auth.onAuthStateChange(async ()=>{ await refreshAuthUI(); });
 </script>
 
 <!-- Product Details Modal (HTML) -->
@@ -470,25 +467,30 @@ function _openPD_base(sku){
 
   // Respect sign-in gating for modal Add to Cart
   supa.auth.getUser().then(({data:{user}})=>{
-    pdAdd.style.display = user ? '' : 'none';
+    if (pdAdd) pdAdd.style.display = user ? '' : 'none';
   });
 }
 function closePD(){ pdModal.classList.remove('open'); pdModal.setAttribute('aria-hidden','true'); }
 pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
 
 /* ---------- Cart buttons ---------- */
-pdAdd.addEventListener('click', ()=>{ if(CURRENT_SKU){ addToCartBySKU(CURRENT_SKU,1); alert(getNameForSKU(CURRENT_SKU) + " added to cart"); }});
-pdBuy.addEventListener('click', async ()=>{
-  if(!CURRENT_SKU) return;
-  addToCartBySKU(CURRENT_SKU,1);
-  const { data:{ user } } = await supa.auth.getUser();
-  if(!user){ location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`; }
-  else { location.href = 'cart.html'; }
-});
+if (pdAdd) {
+  pdAdd.addEventListener('click', ()=>{ if(CURRENT_SKU){ addToCartBySKU(CURRENT_SKU,1); alert(getNameForSKU(CURRENT_SKU) + " added to cart"); }});
+}
+if (pdBuy) {
+  pdBuy.addEventListener('click', async ()=>{
+    if(!CURRENT_SKU) return;
+    addToCartBySKU(CURRENT_SKU,1);
+    const { data:{ user } } = await supa.auth.getUser();
+    if(!user){ location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`; }
+    else { location.href = 'cart.html'; }
+  });
+}
 
 /* ---------- Reviews ---------- */
 async function loadReviews(sku){
   const list = document.getElementById('reviewsList');
+  if (!list) return;
   list.textContent = 'Loading reviews…';
   const { data: revs, error } = await supa
     .from('product_reviews')
@@ -521,18 +523,18 @@ async function postReview(sku){
   const rating = Number(document.getElementById('revRating').value || 5);
   const comment= (document.getElementById('revText').value || '').trim();
   const msgEl  = document.getElementById('revMsg');
-  msgEl.textContent='';
+  if (msgEl) msgEl.textContent='';
   const { data:{ user } } = await supa.auth.getUser();
   if(!user){ location.href = `login.html?redirect=${encodeURIComponent(location.pathname)}`; return; }
   const { error } = await supa.from('product_reviews').insert({
     user_id: user.id, product_sku: sku, rating, comment
   });
-  if(error){ msgEl.textContent = error.message; return; }
-  document.getElementById('revText').value='';
-  msgEl.textContent='Thanks! Your review was posted.';
+  if(error){ if (msgEl) msgEl.textContent = error.message; return; }
+  const input = document.getElementById('revText'); if (input) input.value='';
+  if (msgEl) msgEl.textContent='Thanks! Your review was posted.';
   await loadReviews(sku);
 }
-document.getElementById('revSubmit').addEventListener('click', ()=>{ if(CURRENT_SKU) postReview(CURRENT_SKU); });
+document.getElementById('revSubmit')?.addEventListener('click', ()=>{ if(CURRENT_SKU) postReview(CURRENT_SKU); });
 
 /* ---------- Availability helpers ---------- */
 async function syncAvailability(){
@@ -611,8 +613,8 @@ async function openPD(sku){
     badge.classList.toggle('bad', !available);
     badge.textContent = available ? `Available${typeof stock_qty==='number' ? ' · '+stock_qty+' in stock' : ''}` : 'Unavailable';
 
-    pdAdd.disabled = !available;  pdAdd.title = available ? '' : 'Unavailable';
-    pdBuy.disabled = !available;  pdBuy.title = available ? '' : 'Unavailable';
+    if (pdAdd){ pdAdd.disabled = !available;  pdAdd.title = available ? '' : 'Unavailable'; }
+    if (pdBuy){ pdBuy.disabled = !available;  pdBuy.title = available ? '' : 'Unavailable'; }
   } catch(e) { /* noop */ }
 
   loadReviews(sku);
