@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><title>VetoCos | Vet verification</title>
+<meta charset="utf-8">
+<title>VetoCos | Vet verification</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Submit your professional credentials to unlock purchasing on VetoCos." />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px}
@@ -10,6 +12,7 @@
 body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
 .wrap{max-width:640px;margin:6vh auto;padding:0 18px}
 .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
+h1{margin:0 0 10px}
 label{display:block;margin:10px 0 6px}
 input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text)}
 .btn{margin-top:14px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
@@ -25,20 +28,29 @@ input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius
 .preview{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .preview a{color:#6dd5ff;text-decoration:none}
 .help{font-size:.85rem;color:#8ea0c8}
+.pair{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 </style>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <main class="wrap">
-  <div class="card">
+  <div class="pair" style="margin-bottom:12px">
     <h1>Vet verification</h1>
-    <p class="muted small">Provide your identity number and upload a scan of your veterinary diploma or professional card.</p>
+    <div class="preview">
+      <a class="btn small" href="Products.html">Products</a>
+      <a class="btn small" href="cart.html">Cart</a>
+      <a class="btn small" href="account.html">My Account</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="muted small">Provide your identity number and upload a scan of your veterinary diploma or professional card. Once approved, your account can purchase where allowed.</p>
 
     <!-- Status area (shown after login / load) -->
     <div id="statusBox" class="row" style="display:none">
       <div>
         <div class="small muted">Current status</div>
-        <div id="statusPill" class="badge pend">pending</div>
+        <div id="statusPill" class="badge pend" aria-live="polite">pending</div>
       </div>
       <div id="previewWrap" class="preview" style="display:none">
         <a id="previewLink" class="btn small" target="_blank" rel="noopener">Open uploaded file</a>
@@ -46,18 +58,18 @@ input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius
       </div>
     </div>
 
-    <div class="hr"></div>
+    <div class="hr" role="separator" aria-hidden="true"></div>
 
     <label for="idnum">Identity number</label>
-    <input id="idnum" type="text" placeholder="e.g., 123456789" autocomplete="off"/>
+    <input id="idnum" type="text" placeholder="e.g., License / Registration / ID" autocomplete="off" inputmode="text" />
 
-    <label for="file">Diploma / professional card (PDF/JPG/PNG)</label>
+    <label for="file">Diploma / professional card (PDF/JPG/PNG, max 10 MB)</label>
     <input id="file" type="file" accept=".pdf,.png,.jpg,.jpeg" />
 
-    <button class="btn" id="submit">Submit for review</button>
+    <button class="btn" id="submit" type="button">Submit for review</button>
     <p id="msg" class="muted" aria-live="polite"></p>
 
-    <p class="help">Once approved, you’ll be able to purchase without additional approval where allowed by your account settings. You’ll get an email update when your application status changes.</p>
+    <p class="help">We’ll email you when your application status changes. If you update the file or ID, the status returns to <em>pending</em> for re-review.</p>
   </div>
 </main>
 
@@ -69,7 +81,7 @@ const supa = supabase.createClient(
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
-/* ===== Cart utils (unchanged) ===== */
+/* ===== Cart adopt-once (for smooth redirects) ===== */
 const CART_KEY = 'cart';
 const CART_RESTORED_KEY = 'cart_restored_v2';
 function readCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; } }
@@ -121,6 +133,7 @@ const fileInput   = document.getElementById('file');
 const btn         = document.getElementById('submit');
 const msgEl       = document.getElementById('msg');
 
+const BUCKET = 'Documents';
 function setMsg(t,kind=''){ msgEl.textContent=t; msgEl.className='muted '+kind; }
 function pill(status){
   const s = (status||'pending').toLowerCase();
@@ -131,13 +144,16 @@ function pill(status){
 /* ===== Load existing app (if any) & gate unauth ===== */
 let currentUser = null;
 let currentApp  = null; // most recent application row
-const BUCKET = 'Documents';
 
 async function boot(){
   setMsg('Checking sign-in…');
   const { data:{ user }, error } = await supa.auth.getUser();
   if (error) { setMsg(error.message,'error'); return; }
-  if (!user) { location.replace('login.html?redirect=vet-verify.html'); return; }
+  if (!user) {
+    const cartParam = encodeURIComponent(JSON.stringify(readCart()));
+    location.replace(`login.html?redirect=${encodeURIComponent('vet-verify.html')}&cart=${cartParam}`);
+    return;
+  }
   currentUser = user;
 
   // Load latest application
@@ -152,7 +168,8 @@ async function boot(){
     statusBox.style.display = 'grid';
     pill(currentApp.status);
     if (currentApp.identity_number) idInput.value = currentApp.identity_number;
-    // show preview if we can sign URL
+
+    // show preview if available
     if (currentApp.diploma_path){
       try {
         const { data, error: sErr } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
@@ -162,17 +179,17 @@ async function boot(){
         }
       } catch(e){}
     }
-    // approved → disable edits by default (you can still allow replace)
+
     if (currentApp.status === 'approved'){
       idInput.disabled = true;
       fileInput.disabled = true;
       btn.disabled = true;
       btn.textContent = 'Already approved';
-      setMsg('Your account is approved. If you need to update your file, click “Replace file”.','success');
+      setMsg('Your account is approved. Click “Replace file” if you need to update.','success');
     } else if (currentApp.status === 'rejected'){
-      setMsg('Your previous submission was rejected. You can update your ID and upload a new file for review.','error');
+      setMsg('Your previous submission was rejected. Update your ID and upload a new file for review.','error');
     } else {
-      setMsg('Your application is pending. You can replace the file or update ID.','');
+      setMsg('Your application is pending. You can replace the file or update ID while it is under review.','');
     }
   } else {
     setMsg('No submission yet. Please fill in your details below.','');
@@ -191,19 +208,24 @@ replaceBtn?.addEventListener('click', ()=>{
 
 /* ===== Submit or update ===== */
 btn.onclick = async () => {
+  if (btn.disabled) return;
   btn.disabled = true;
-  setMsg('Checking sign-in…');
+  setMsg('Preparing submission…');
 
   const { data:{ user }, error: uErr } = await supa.auth.getUser();
   if (uErr) { setMsg(uErr.message, 'error'); btn.disabled=false; return; }
-  if (!user) { location.replace('login.html?redirect=vet-verify.html'); return; }
+  if (!user) {
+    const cartParam = encodeURIComponent(JSON.stringify(readCart()));
+    location.replace(`login.html?redirect=${encodeURIComponent('vet-verify.html')}&cart=${cartParam}`);
+    return;
+  }
 
   const idnum = (idInput.value||'').trim();
   const f = fileInput.files[0];
 
   // For first-time submission: both required. For update: allow only ID or only file changes.
   if (!currentApp){
-    if(!idnum || !f){ setMsg('Please enter ID number and choose a file','error'); btn.disabled=false; return; }
+    if(!idnum || !f){ setMsg('Please enter ID number and choose a file.','error'); btn.disabled=false; return; }
   } else if (!idnum && !f){
     setMsg('Nothing to update. Change ID and/or choose a new file.','error'); btn.disabled=false; return;
   }
@@ -237,7 +259,6 @@ btn.onclick = async () => {
       diploma_path: newPath,
       status: 'pending'
     }).select().single();
-
     if(ins.error){ setMsg(ins.error.message,'error'); btn.disabled=false; return; }
     currentApp = ins.data;
   } else {
@@ -246,20 +267,16 @@ btn.onclick = async () => {
       .update({
         identity_number: idnum || currentApp.identity_number,
         diploma_path: f ? newPath : currentApp.diploma_path,
-        status: 'pending' // set back to pending on change
+        status: 'pending' // back to pending on change
       })
       .eq('id', currentApp.id)
       .select()
       .single();
-
     if(upd.error){ setMsg(upd.error.message,'error'); btn.disabled=false; return; }
     currentApp = upd.data;
   }
 
-  // Try to queue an email to the user confirming submission
-  // Create this table (once) if you haven't:
-  // create table public.mail_queue(id bigserial primary key, to_email text not null, subject text not null, html text not null, created_at timestamptz default now(), sent_at timestamptz);
-  // Your server/Edge Function can poll & send then set sent_at.
+  // Queue confirmation email to user (optional mail_queue)
   try {
     const { data: prof } = await supa.from('profiles').select('email,first_name,last_name').eq('id', user.id).maybeSingle();
     const toEmail = (prof?.email || user.email || '').trim().toLowerCase();
@@ -276,7 +293,7 @@ btn.onclick = async () => {
     }
   } catch(e){ /* ignore if table doesn't exist */ }
 
-  // Refresh UI (signed URL + status)
+  // Refresh preview + UI
   pill('pending');
   statusBox.style.display = 'grid';
   if (currentApp.diploma_path){
