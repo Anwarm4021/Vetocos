@@ -445,21 +445,45 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
     );
 
-    /* ===== Admin button ===== */
-    async function goToAdmin() {
-      const { data: { session } } = await supa.auth.getSession();
-      if (!session?.user) {
-        const url = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
-        location.href = url; return;
-      }
-      const { data: prof, error } = await supa.from('profiles').select('is_admin').eq('id', session.user.id).maybeSingle();
-      if (error) { alert('Could not read admin status: ' + error.message); return; }
-      if (prof?.is_admin) location.href = 'admin.html'; else alert('This account is not an admin.');
+    /* ===== Admin button: show only to admins; route correctly ===== */
+    async function getCurrentUser() {
+      const { data: { user } } = await supa.auth.getUser();
+      return user || null;
     }
-    document.addEventListener("DOMContentLoaded", () => {
-      const adminBtn = document.getElementById("adminBtn");
-      if (adminBtn) adminBtn.addEventListener("click", goToAdmin);
-    });
+    async function isCurrentUserAdmin(userId) {
+      if (!userId) return false;
+      const { data, error } = await supa
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) { console.warn('is_admin read error:', error.message); return false; }
+      return !!data?.is_admin;
+    }
+    async function refreshAdminButton() {
+      const adminBtn = document.getElementById('adminBtn');
+      if (!adminBtn) return;
+
+      const user = await getCurrentUser();
+      if (!user) {
+        // Signed out → show button, but clicking asks to sign in then redirect to admin
+        adminBtn.style.display = 'inline-block';
+        adminBtn.onclick = () => {
+          const url = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
+          location.href = url;
+        };
+        return;
+      }
+      // Signed in → only show if admin
+      const isAdmin = await isCurrentUserAdmin(user.id);
+      if (isAdmin) {
+        adminBtn.style.display = 'inline-block';
+        adminBtn.onclick = () => { location.href = 'admin.html'; };
+      } else {
+        adminBtn.style.display = 'none';
+        adminBtn.onclick = null;
+      }
+    }
 
     /* ===== Account dropdown + login modal wiring ===== */
     const signinBtn = document.getElementById('signinBtn');
@@ -480,7 +504,7 @@
     function logout(){ supa.auth.signOut().then(()=>location.reload()); }
     window.logout = logout;
 
-    // Login modal controls
+    // Login modal
     const loginModal = document.getElementById('loginModal');
     function openLogin(){ loginModal.classList.add('open'); loginModal.setAttribute('aria-hidden','false'); }
     function closeLogin(){ loginModal.classList.remove('open'); loginModal.setAttribute('aria-hidden','true'); }
@@ -578,35 +602,105 @@
     };
     otpInput?.addEventListener("keydown", (e)=>{ if (e.key === "Enter"){ e.preventDefault(); verifyBtn.click(); } });
 
-    /* ===== Header session state ===== */
+    /* ===== Header session state (FULL name) ===== */
     async function refreshHeader(){
       const { data:{ session } } = await supa.auth.getSession();
       if (session?.user){
-        // pull FULL profile name (first + last) for header display
+        // Full profile name preferred; fallback to email
         let display = session.user.email;
         try {
-          const { data: p } = await supa.from('profiles').select('first_name,last_name').eq('id', session.user.id).maybeSingle();
+          const { data: p } = await supa
+            .from('profiles')
+            .select('first_name,last_name')
+            .eq('id', session.user.id)
+            .maybeSingle();
           const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
           if (full) display = full;
         } catch {}
         signinBtn.style.display = 'none';
         accountBtn.style.display = 'inline-flex';
-        helloName.textContent = display; // <<< FULL NAME shown
+        helloName.textContent = display; // FULL NAME
       } else {
         signinBtn.style.display = 'inline-block';
         accountBtn.style.display = 'none';
         helloName.textContent = '';
         accountMenu.classList.remove('open');
       }
+      // keep Admin visibility synced too
+      if (typeof refreshAdminButton === 'function') refreshAdminButton();
     }
 
-    document.addEventListener('DOMContentLoaded', refreshHeader);
+    document.addEventListener('DOMContentLoaded', async () => {
+      await refreshHeader();
+      await refreshAdminButton();
+    });
     supa.auth.onAuthStateChange(async (event, session)=>{
       if (event === "SIGNED_IN" && session?.user){
         try { await saveNamesToProfileIfAny(session.user.id, session.user.email); } catch {}
       }
       await refreshHeader();
+      await refreshAdminButton();
     });
+
+    /* ===== Purchase history helpers =====
+       Call recordOrder({ items, totals:{subtotal,total,currency} }) AFTER a successful checkout.
+    */
+    async function recordOrder({ items=[], totals={} } = {}) {
+      try {
+        const { data:{ user } } = await supa.auth.getUser();
+        const order = {
+          items,
+          subtotal: totals.subtotal ?? null,
+          total: totals.total ?? null,
+          currency: totals.currency ?? 'USD',
+          created_at: new Date().toISOString()
+        };
+        if (!user) {
+          saveOrderLocally(order);
+          return { ok:false, reason:'not_signed_in_local_only' };
+        }
+        const { error } = await supa.from('orders').insert({
+          user_id: user.id,
+          items: order.items,
+          subtotal: order.subtotal,
+          total: order.total,
+          currency: order.currency
+        });
+        if (error) {
+          console.warn('orders insert error:', error.message);
+          saveOrderLocally(order);
+          return { ok:false, reason:'supabase_error_local_saved' };
+        }
+        return { ok:true };
+      } catch (e) {
+        console.warn('recordOrder failed:', e);
+        saveOrderLocally({ items, totals, created_at: new Date().toISOString() });
+        return { ok:false, reason:'exception_local_saved' };
+      }
+    }
+    function saveOrderLocally(order){
+      const key = 'order_history';
+      const list = JSON.parse(localStorage.getItem(key) || '[]');
+      list.unshift(order);
+      localStorage.setItem(key, JSON.stringify(list.slice(0,50)));
+    }
+    async function fetchOrderHistory(){
+      const { data:{ user } } = await supa.auth.getUser();
+      if (user) {
+        const { data, error } = await supa
+          .from('orders')
+          .select('items,total,currency,created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending:false });
+        if (!error && data) return data;
+      }
+      try { return JSON.parse(localStorage.getItem('order_history') || '[]'); }
+      catch { return []; }
+    }
+    // (Optional) Export helpers to other pages
+    window.recordOrder = recordOrder;
+    window.fetchOrderHistory = fetchOrderHistory;
+
   </script>
 </body>
 </html>
