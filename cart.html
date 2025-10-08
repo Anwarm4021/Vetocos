@@ -4,27 +4,54 @@
   <meta charset="utf-8" />
   <title>VetoCos | Cart</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Your cart and purchases on VetoCos." />
+  <meta name="theme-color" content="#0b1020" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body{margin:0;font-family:Inter,sans-serif;background:#0b1020;color:#f6f7fb}
-    main{max-width:800px;margin:40px auto;padding:0 18px}
-    h1{margin-bottom:20px}
-    table{width:100%;border-collapse:collapse;background:#0f162f;border:1px solid rgba(141,158,199,.18);border-radius:10px;overflow:hidden}
-    th,td{padding:12px;text-align:left}
-    th{background:rgba(141,158,199,.15);color:#8ea0c8}
+    :root{ --bg:#0b1020; --card:#0f162f; --muted:#8ea0c8; --text:#f6f7fb; --radius:12px; }
+    body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
+    main{max-width:900px;margin:40px auto;padding:0 18px}
+    h1{margin:0 0 16px}
+    h2{margin:26px 0 10px;font-size:1.15rem}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:16px}
+    table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:10px;overflow:hidden}
+    th,td{padding:12px;text-align:left;vertical-align:middle}
+    th{background:rgba(141,158,199,.15);color:var(--muted)}
     tr:not(:last-child){border-bottom:1px solid rgba(141,158,199,.18)}
     .qty-btn{padding:4px 8px;border:none;border-radius:6px;background:rgba(255,255,255,.1);color:white;cursor:pointer}
+    .qty-btn:disabled{opacity:.6;cursor:not-allowed}
     .remove{color:#ff8080;cursor:pointer}
-    .summary{margin-top:20px;text-align:right;font-weight:600}
-    .btn{margin-top:20px;display:inline-block;padding:12px 18px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:#f6f7fb;font-weight:600;cursor:pointer}
-    .empty{text-align:center;padding:40px;background:#0f162f;border-radius:10px;color:#8ea0c8}
+    .summary{margin-top:14px;text-align:right;font-weight:600}
+    .btn{margin-top:14px;display:inline-block;padding:12px 18px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:#f6f7fb;font-weight:600;cursor:pointer}
+    .btn.secondary{background:rgba(255,255,255,.04)}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .empty{text-align:center;padding:36px;background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:10px;color:var(--muted)}
+    .muted{color:var(--muted)}
+    .orders{margin-top:28px}
+    .order{padding:12px 0;border-top:1px solid rgba(141,158,199,.18)}
+    .order:first-child{border-top:none}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:12px}
+    .badge.ok{background:rgba(131,240,165,.12)}
+    .badge.warn{background:rgba(255,180,180,.12)}
+    a{color:#6dd5ff;text-decoration:none}
+    .hint{font-size:.92rem}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <main>
     <h1>Your Cart</h1>
-    <div id="cartBox"></div>
+    <div id="cartBox" aria-live="polite"></div>
+
+    <!-- Optional: signed-in user’s recent orders -->
+    <section class="orders">
+      <div class="row">
+        <h2 style="margin:0">Your Purchases</h2>
+        <div id="ordersHint" class="muted hint">Sign in during checkout to keep your history & receipts.</div>
+      </div>
+      <div id="ordersBox" class="card" style="margin-top:10px;display:none"></div>
+    </section>
   </main>
 
   <script>
@@ -53,7 +80,7 @@
       const stamp = updatedAt || new Date().toISOString();
       const cleaned = (items || [])
         .filter(it => it && it.sku && Number(it.qty) > 0)
-        .map(it => ({ ...it, qty: Number(it.qty) }));
+        .map(it => ({ sku:String(it.sku), name:String(it.name || it.sku), qty:Number(it.qty) }));
       localStorage.setItem(CART_KEY, JSON.stringify(cleaned));
       localStorage.setItem(CART_UPDATED_KEY, stamp);
     }
@@ -70,7 +97,7 @@
       return Object.values(map).filter(x => x.qty > 0);
     }
 
-    // Adopt ?cart= exactly once per tab session, then strip from URL
+    // Adopt ?cart= exactly once per tab session, then strip from URL (for privacy)
     function adoptQueryCartOnce(){
       if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
       const qs = new URLSearchParams(location.search);
@@ -105,7 +132,7 @@
       }
     }
 
-    // Write + upsert (last-writer-wins)
+    // Write + upsert (last-writer-wins for server copy)
     async function writeCart(items){
       const updated_at = new Date().toISOString();
       setLocalBundle(items, updated_at);
@@ -177,7 +204,7 @@
         return;
       }
 
-      // Fill missing product names
+      // Fill missing product names (privacy: only name/sku)
       const missing = cart.filter(i => !i.name).map(i => i.sku);
       if (missing.length > 0) {
         const { data: products } = await supa.from("products").select("sku,name").in("sku", missing);
@@ -191,25 +218,35 @@
       const current = readCart(); // re-read in case names were set
       const rows = current.map(item => `
         <tr>
-          <td>${item.name || item.sku}</td>
+          <td>${escapeHtml(item.name || item.sku)}</td>
           <td>
-            <button class="qty-btn" onclick="changeQty('${item.sku}', -1)">-</button>
+            <button class="qty-btn" aria-label="Decrease ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', -1)">-</button>
             ${Number(item.qty || 0)}
-            <button class="qty-btn" onclick="changeQty('${item.sku}', 1)">+</button>
+            <button class="qty-btn" aria-label="Increase ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', 1)">+</button>
           </td>
-          <td><span class="remove" onclick="removeItem('${item.sku}')">Remove</span></td>
+          <td><button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)" onclick="removeItem('${escapeAttr(item.sku)}')">Remove</button></td>
         </tr>
       `).join("");
 
       box.innerHTML = `
-        <table>
-          <tr><th>Product</th><th>Quantity</th><th>Action</th></tr>
-          ${rows}
-        </table>
-        <div class="summary">Total items: ${current.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
-        <button class="btn" onclick="proceedCheckout()">Proceed to Checkout</button>
+        <div class="card">
+          <table aria-label="Cart items">
+            <tr><th>Product</th><th>Quantity</th><th>Action</th></tr>
+            ${rows}
+          </table>
+          <div class="summary">Total items: ${current.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn secondary" onclick="clearCart()">Clear cart</button>
+            <span class="muted">Secure checkout via magic link sign-in.</span>
+            <button class="btn" onclick="proceedCheckout()">Proceed to Checkout</button>
+          </div>
+        </div>
       `;
     }
+
+    /* ======================= Simple escaping helpers ======================= */
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+    function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
 
     /* ======================= Cart operations ======================= */
     function changeQty(sku, delta) {
@@ -224,11 +261,15 @@
     function removeItem(sku) {
       writeCart(readCart().filter(x => x.sku !== sku));
     }
+    function clearCart() {
+      writeCart([]);
+    }
 
     /* ======================= Checkout flow ======================= */
     async function proceedCheckout(){
       const cart = readCart();
-      // Save a one-time backup for auth redirects
+      if (!cart.length) { return; }
+      // Save a one-time backup for auth redirects (stays local)
       localStorage.setItem('cart_backup', JSON.stringify(cart));
       // Pass cart via URL once; receiving page will adopt-once and strip it
       const cartParam = encodeURIComponent(JSON.stringify(cart));
@@ -236,14 +277,100 @@
       location.href = loginUrl;
     }
 
+    /* ======================= Order history (signed-in users) ======================= */
+    async function renderOrders(){
+      const ordersBox = document.getElementById('ordersBox');
+      const hint = document.getElementById('ordersHint');
+      const { data: { user } } = await supa.auth.getUser();
+
+      if (!user) {
+        ordersBox.style.display = 'none';
+        hint.textContent = 'Sign in during checkout to keep your history & receipts.';
+        return;
+      }
+      hint.textContent = 'You are signed in. Your recent purchases are below.';
+      ordersBox.style.display = 'block';
+      ordersBox.innerHTML = `<div class="muted">Loading your orders…</div>`;
+
+      // Expecting table "orders": id, user_id, items(json), status, total_qty, total_amount, created_at, receipt_url
+      const { data: orders, error } = await supa
+        .from('orders')
+        .select('id, created_at, status, total_qty, total_amount, receipt_url')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(20);
+
+      if (error) {
+        ordersBox.innerHTML = `<div class="muted">Could not load orders: ${escapeHtml(error.message)}</div>`;
+        return;
+      }
+      if (!orders || !orders.length){
+        ordersBox.innerHTML = `<div class="muted">No purchases yet.</div>`;
+        return;
+      }
+
+      ordersBox.innerHTML = orders.map(o=>{
+        const d = new Date(o.created_at);
+        const badgeCls = (o.status||'').toLowerCase()==='paid' ? 'ok' : 'warn';
+        const amountTxt = (o.total_amount!=null) ? ` · Amount: ${Number(o.total_amount).toFixed(2)}` : '';
+        const qtyTxt = (o.total_qty!=null) ? ` · Items: ${o.total_qty}` : '';
+        const rec = o.receipt_url ? `<a href="${escapeAttr(o.receipt_url)}" target="_blank" rel="noopener">Receipt</a>` : '';
+        return `
+          <div class="order">
+            <div class="row">
+              <div><strong>Order #${escapeHtml(o.id)}</strong> · <span class="muted">${d.toLocaleString()}</span></div>
+              <span class="badge ${badgeCls}">${escapeHtml(o.status || 'pending')}</span>
+            </div>
+            <div class="muted">${qtyTxt}${amountTxt}</div>
+            <div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">
+              ${rec}
+              <button class="btn secondary" onclick="emailReceipt('${escapeAttr(o.id)}')">Email receipt</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Optional: call your Supabase Edge Function `send-receipt` to email a receipt
+    async function emailReceipt(orderId){
+      try{
+        const { data: { session } } = await supa.auth.getSession();
+        if (!session) { alert('Please sign in first.'); return; }
+
+        // Replace with your deployed Edge Function URL or relative path if proxied.
+        // Example (if you deployed as 'send-receipt'):
+        const resp = await fetch('/functions/v1/send-receipt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ order_id: orderId })
+        });
+
+        if (!resp.ok){
+          const txt = await resp.text();
+          throw new Error(txt || ('HTTP '+resp.status));
+        }
+        alert('Receipt email sent.');
+      }catch(e){
+        console.warn('emailReceipt error:', e);
+        alert('Could not send receipt email. If this persists, contact support.');
+      }
+    }
+
     /* ======================= Boot sequence ======================= */
     document.addEventListener('DOMContentLoaded', async () => {
       renderCart();
       await syncCartFromDB();
+      await renderOrders();
     });
+
     supa.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) syncCartFromDB();
+      if (session?.user) { syncCartFromDB(); renderOrders(); }
+      else { renderOrders(); }
     });
   </script>
 </body>
 </html>
+
