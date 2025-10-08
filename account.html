@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>VetoCos | My Account</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:980px;margin:40px auto;padding:0 18px}
+.card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px}
+h1,h2{margin:0 0 12px}
+.muted{color:var(--muted)}
+.badge{display:inline-block;padding:4px 10px;border:1px solid rgba(141,158,199,.25);border-radius:999px}
+.ok{background:rgba(131,240,165,.12)}
+.bad{background:rgba(255,180,180,.12)}
+.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+     background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left}
+</style>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<main>
+  <h1>My Account</h1>
+
+  <div class="card" id="profileBox">
+    <h2>Profile</h2>
+    <div id="profLine" class="muted">Checking session…</div>
+    <div style="margin-top:8px">
+      <button class="btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Saved Cart</h2>
+    <div class="muted" id="cartMsg">Loading…</div>
+    <div id="cartList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Orders</h2>
+    <div class="muted" id="ordersMsg">Loading…</div>
+    <div id="ordersList"></div>
+  </div>
+</main>
+
+<script src="cart-sync.js"></script>
+<script>
+const supa = supabase.createClient(
+  "https://qdepgviimbcdlozjpbhm.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+);
+
+function logout(){ supa.auth.signOut().then(()=>location.href='index.html'); }
+
+(async ()=>{
+  const { data: { user } } = await supa.auth.getUser();
+  if(!user){ location.href = 'login.html?redirect=account.html'; return; }
+
+  // profile
+  try {
+    const { data: p } = await supa.from('profiles')
+      .select('first_name,last_name,email,can_purchase').eq('id', user.id).maybeSingle();
+    const name = [p?.first_name, p?.last_name].filter(Boolean).join(' ') || '(no name)';
+    document.getElementById('profLine').innerHTML =
+      `<strong>${name}</strong> · ${p?.email || ''} · ${
+        p?.can_purchase ? '<span class="badge ok">Approved</span>' : '<span class="badge bad">Needs approval</span>'
+      }`;
+  } catch(e){ document.getElementById('profLine').textContent = 'Profile load error.'; }
+
+  // ensure cart synced then show
+  try { if (window.CartSync) await window.CartSync.syncCartWithServer(); } catch(e){}
+
+  // show server cart
+  try {
+    const { data } = await supa.from('user_carts').select('items').eq('user_id', user.id).maybeSingle();
+    const items = data?.items || [];
+    const list = document.getElementById('cartList');
+    const msg  = document.getElementById('cartMsg');
+    if (!items.length){ msg.textContent = 'Your cart is empty.'; }
+    else {
+      msg.textContent = '';
+      list.innerHTML = '<table><thead><tr><th>Product</th><th>Qty</th></tr></thead><tbody>' +
+        items.map(it=>`<tr><td>${(it.text||it.sku)}</td><td>${it.qty}</td></tr>`).join('') +
+        '</tbody></table>';
+    }
+  } catch(e){ document.getElementById('cartMsg').textContent='Could not load cart.'; }
+
+  // orders
+  try {
+    const { data: orders, error } = await supa
+      .from('orders').select('product_sku,quantity,status,created_at')
+      .order('created_at',{ascending:false});
+    const list = document.getElementById('ordersList');
+    const msg  = document.getElementById('ordersMsg');
+    if (error){ msg.textContent = error.message; }
+    else if (!orders?.length){ msg.textContent = 'No orders yet.'; }
+    else {
+      msg.textContent = '';
+      list.innerHTML = '<table><thead><tr><th>Date</th><th>Product</th><th>Qty</th><th>Status</th></tr></thead><tbody>' +
+        orders.map(o=>`<tr>
+          <td>${new Date(o.created_at).toLocaleString()}</td>
+          <td>${o.product_sku}</td>
+          <td>${o.quantity}</td>
+          <td>${o.status}</td>
+        </tr>`).join('') + '</tbody></table>';
+    }
+  } catch(e){ document.getElementById('ordersMsg').textContent='Could not load orders.'; }
+})();
+</script>
+</body>
+</html>
