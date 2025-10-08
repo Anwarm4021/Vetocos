@@ -96,6 +96,14 @@
 
     /* RTL */
     body.rtl .links a{text-align:right}
+
+    /* Availability badge (added) */
+    .avail-badge{
+      display:inline-block;margin:6px 0 0;padding:4px 10px;border-radius:999px;
+      border:1px solid rgba(141,158,199,.25);font-size:12px
+    }
+    .avail-badge.ok{ background:rgba(131,240,165,.12) }   /* green-ish */
+    .avail-badge.bad{ background:rgba(255,180,180,.12) }  /* red-ish */
   </style>
 </head>
 <body>
@@ -362,7 +370,7 @@ const supa = supabase.createClient(
   </div>
 </div>
 
-<!-- Cart + Product Details + Reviews logic -->
+<!-- Cart + Product Details + Availability + Reviews logic -->
 <script>
 /* ---------- Cart helpers ---------- */
 function readCart(){ try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; } }
@@ -390,7 +398,7 @@ function addToCartBySKU(sku, qty=1){
   writeCart(items);
 }
 
-/* ===== Product specs ===== */
+/* ===== Product specs (unchanged) ===== */
 const PRODUCT_SPECS = {
   "URO-CHIEN": { form:"Chewable tablets", size:"60 / 120 tabs", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", category:"Urinary care", image:"images/Product1.jpg", page:"Product1.html", pdf:"pdf/Product1.pdf" },
   "HEP-AT":    { form:"Capsules",          size:"30 / 60 caps", ingredients:"Silybin-phospholipid, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", category:"Liver support", image:"images/Product2.jpg", page:"Product2.html", pdf:"pdf/Product2.pdf" },
@@ -423,6 +431,7 @@ const pdPage  = document.getElementById('pdPageBtn');
 
 let CURRENT_SKU = null;
 
+/* ---------- Base modal open (unchanged) ---------- */
 function _openPD_base(sku){
   const spec = PRODUCT_SPECS[sku] || {};
   CURRENT_SKU = sku;
@@ -443,6 +452,7 @@ function _openPD_base(sku){
 function closePD(){ pdModal.classList.remove('open'); pdModal.setAttribute('aria-hidden','true'); }
 pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
 
+/* ---------- Cart buttons ---------- */
 pdAdd.addEventListener('click', ()=>{ if(CURRENT_SKU){ addToCartBySKU(CURRENT_SKU,1); alert(getNameForSKU(CURRENT_SKU) + " added to cart"); }});
 pdBuy.addEventListener('click', async ()=>{
   if(!CURRENT_SKU) return;
@@ -452,7 +462,7 @@ pdBuy.addEventListener('click', async ()=>{
   else { location.href = 'cart.html'; }
 });
 
-/* ----- Reviews ----- */
+/* ---------- Reviews ---------- */
 async function loadReviews(sku){
   const list = document.getElementById('reviewsList');
   list.textContent = 'Loading reviews…';
@@ -500,10 +510,94 @@ async function postReview(sku){
 }
 document.getElementById('revSubmit').addEventListener('click', ()=>{ if(CURRENT_SKU) postReview(CURRENT_SKU); });
 
-/* extend modal opener to also load reviews */
-function openPD(sku){ _openPD_base(sku); loadReviews(sku); }
+/* ---------- Availability helpers (NEW) ---------- */
+async function syncAvailability(){
+  try{
+    const cards = Array.from(document.querySelectorAll('.p-card[data-sku]'));
+    if (!cards.length) return;
 
-/* Open details on card click (not buttons) */
+    const skus = cards.map(c=>c.getAttribute('data-sku'));
+    const { data, error } = await supa
+      .from('products')
+      .select('sku, stock_qty, available')
+      .in('sku', skus);
+
+    if (error) { console.warn('availability load error', error.message); return; }
+
+    const map = {};
+    (data||[]).forEach(row=> map[row.sku] = row);
+
+    cards.forEach(card=>{
+      const sku = card.getAttribute('data-sku');
+      const row = map[sku];
+      let badge = card.querySelector('.avail-badge');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'avail-badge';
+        const px = card.querySelector('.px');
+        const title = px?.querySelector('h4');
+        (title?.parentNode || px || card).insertBefore(badge, (title?.nextSibling || null));
+      }
+
+      const addBtn = card.querySelector('.add-btn');
+      const buyBtn = card.querySelector('.buy-btn');
+
+      if (row && row.available){
+        const qtyText = (typeof row.stock_qty==='number') ? ` · ${row.stock_qty} in stock` : '';
+        badge.textContent = `Available${qtyText}`;
+        badge.classList.remove('bad'); badge.classList.add('ok');
+
+        if (addBtn){ addBtn.disabled = false; addBtn.title = ''; }
+        if (buyBtn){ buyBtn.disabled = false; buyBtn.title = ''; }
+        card.classList.remove('disabled');
+      } else {
+        badge.textContent = 'Unavailable';
+        badge.classList.remove('ok'); badge.classList.add('bad');
+
+        if (addBtn){ addBtn.disabled = true; addBtn.title = 'Unavailable'; }
+        if (buyBtn){ buyBtn.disabled = true; buyBtn.title = 'Unavailable'; }
+        card.classList.add('disabled');
+      }
+    });
+  }catch(e){ console.warn('syncAvailability failed', e); }
+}
+
+// Check availability for a single SKU (modal)
+async function isSkuAvailable(sku){
+  const { data, error } = await supa.from('products').select('available,stock_qty').eq('sku', sku).maybeSingle();
+  if (error) return { available:false, stock_qty:0 };
+  return data || { available:false, stock_qty:0 };
+}
+
+/* ---------- Modal open: extend to include availability + reviews ---------- */
+async function openPD(sku){
+  _openPD_base(sku);
+
+  // Insert availability badge near SKU
+  try {
+    const { available, stock_qty } = await isSkuAvailable(sku);
+    let badge = document.getElementById('pdAvailBadge');
+    if (!badge){
+      badge = document.createElement('span');
+      badge.id = 'pdAvailBadge';
+      badge.className = 'avail-badge';
+      const skuEl = document.getElementById('pdSku');
+      skuEl?.parentNode?.insertBefore(badge, skuEl);
+    }
+    badge.classList.toggle('ok', !!available);
+    badge.classList.toggle('bad', !available);
+    badge.textContent = available ? `Available${typeof stock_qty==='number' ? ' · '+stock_qty+' in stock' : ''}` : 'Unavailable';
+
+    // Enable/disable modal buttons
+    pdAdd.disabled = !available;  pdAdd.title = available ? '' : 'Unavailable';
+    pdBuy.disabled = !available;  pdBuy.title = available ? '' : 'Unavailable';
+  } catch(e) { /* noop */ }
+
+  // Load reviews
+  loadReviews(sku);
+}
+
+/* ---------- Card click opens modal ---------- */
 document.getElementById('productGrid').addEventListener('click', (e)=>{
   if (e.target.closest('.add-btn') || e.target.closest('.buy-btn')) return;
   const card = e.target.closest('.p-card');
@@ -513,9 +607,10 @@ document.getElementById('productGrid').addEventListener('click', (e)=>{
   openPD(sku);
 });
 
-/* Sync badge */
+/* ---------- Keep cart badge + availability in sync ---------- */
 window.addEventListener('storage', (ev)=>{ if(ev.key === 'cart') updateCartBadge(); });
-updateCartBadge();
+document.addEventListener('DOMContentLoaded', ()=>{ updateCartBadge(); syncAvailability(); });
+window.addEventListener('focus', syncAvailability);
 </script>
 </body>
 </html>
