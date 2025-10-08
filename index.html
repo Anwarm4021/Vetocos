@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="VetoCos — complementary feed (alimentary) for dogs & cats. Trusted quality, vet-inspired formulations.">
   <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0b1020">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -24,14 +25,8 @@
 
     /* CLEAN 2D LOGO (no 3D, no frame) */
     .brand-logo{
-      width:60px; /* adjust as needed */
-      height:auto;
-      display:block;
-      background:transparent;
-      border:0; outline:0;
-      /* subtle clarity on dark header */
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
-      image-rendering:auto;
+      width:60px; height:auto; display:block; background:transparent; border:0; outline:0;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35)); image-rendering:auto;
     }
     .brand-logo:hover{ filter: drop-shadow(0 8px 16px rgba(0,0,0,.4)) contrast(1.03) saturate(1.02); }
 
@@ -120,18 +115,19 @@
             class="brand-logo"
             src="images/logo.png"
             srcset="images/logo.png"
-            alt="VetoCos logo">
+            alt="VetoCos logo"
+            onerror="this.removeAttribute('srcset');this.src='images/Product1.jpg';this.alt='VetoCos';">
         </a>
         <span>VetoCos</span>
       </div>
-      <nav class="links" id="navlinks">
+      <nav class="links" id="navlinks" aria-label="Primary">
         <a class="active" href="index.html" data-i18n="nav.home">Home</a>
         <a href="Products.html" data-i18n="nav.products">Products</a>
         <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
         <a href="News.html" data-i18n="nav.news">News</a>
         <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
-        <!-- Admin button -->
-        <button class="contact-btn" type="button" id="adminBtn">Admin</button>
+        <!-- Admin button (kept) -->
+        <button class="contact-btn" type="button" id="adminBtn" aria-haspopup="true" aria-controls="" title="Admin area">Admin</button>
         <select id="lang-switch" aria-label="Language">
           <option value="en">English</option>
           <option value="fr">Français</option>
@@ -158,7 +154,7 @@
       </div>
     </div>
 
-    <section class="pillars">
+    <section class="pillars" aria-label="Why VetoCos">
       <div class="card">
         <h3 data-i18n="pillars.vetTitle">Vet-aligned formulas</h3>
         <p class="muted" data-i18n="pillars.vetText">Developed with veterinary input for targeted dietary support across common life-stage and lifestyle needs.</p>
@@ -179,29 +175,29 @@
           <h2 style="margin:0" data-i18n="popular.title">Popular products</h2>
           <a class="btn ghost" href="Products.html" data-i18n="popular.viewAll">View all</a>
         </div>
-        <div class="grid">
-          <a class="p-card" href="Product1.html">
+        <div class="grid" role="list">
+          <a class="p-card" href="Product1.html" role="listitem" aria-label="Urocline Chien product page">
             <img src="images/Product1.jpg" alt="Urocline Chien">
             <div class="px">
               <h4>Urocline Chien</h4>
               <div class="p-meta"><span data-i18n="cat.urinary">Urinary care</span><span data-i18n="cat.dogsCats">Dogs & Cats</span></div>
             </div>
           </a>
-          <a class="p-card" href="Product2.html">
+          <a class="p-card" href="Product2.html" role="listitem" aria-label="Hepatiale product page">
             <img src="images/Product2.jpg" alt="Hepatiale">
             <div class="px">
               <h4>Hepatiale</h4>
               <div class="p-meta"><span data-i18n="cat.liver">Liver support</span><span data-i18n="cat.dogsCats">Dogs & Cats</span></div>
             </div>
           </a>
-          <a class="p-card" href="Product9.html">
+          <a class="p-card" href="Product9.html" role="listitem" aria-label="Art-Asuh product page">
             <img src="images/Product9.jpg" alt="Art-Asuh">
             <div class="px">
               <h4>Art-Asuh</h4>
               <div class="p-meta"><span data-i18n="cat.mobility">Mobility</span><span data-i18n="cat.dogsCats">Dogs & Cats</span></div>
             </div>
           </a>
-          <a class="p-card" href="Product11.html">
+          <a class="p-card" href="Product11.html" role="listitem" aria-label="Renosan product page">
             <img src="images/Product11.jpg" alt="Renosan">
             <div class="px">
               <h4>Renosan</h4>
@@ -235,7 +231,7 @@
           <div class="info-card">
             <h3 data-i18n="contact.reach">Reach us</h3>
             <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
-            <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212 537742213">+212 537742213</a></p>
+            <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
             <div class="socials" aria-label="Social links">
               <a href="https://facebook.com/yourpage" target="_blank" rel="noopener">Facebook</a>
               <a href="https://instagram.com/yourpage" target="_blank" rel="noopener">Instagram</a>
@@ -313,7 +309,7 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <script>
-    // i18n dictionary
+    // i18n dictionary (kept exactly as provided)
     const I18N={en:{"nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact",
       "hero.badge":"Complementary feed — not medicine","hero.title":"Vet-expert inspired nutrition for dogs & cats",
       "hero.lead":"We create complementary alimentary products to support urinary, hepatic, renal, joint, and overall well-being. No therapeutic claims — just smart nutrition your vet can stand behind.",
@@ -405,20 +401,20 @@
     function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
     [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
 
-    // Mailto
+    // Mailto (URL-encodes user input)
     function sendMailto(e){
       e.preventDefault();
-      const name=encodeURIComponent(document.getElementById('name').value.trim());
-      const email=encodeURIComponent(document.getElementById('email').value.trim());
-      const subject=encodeURIComponent(document.getElementById('subject').value.trim()||'Website enquiry');
-      const message=encodeURIComponent(document.getElementById('message').value.trim());
+      const name=encodeURIComponent((document.getElementById('name').value||'').trim());
+      const email=encodeURIComponent((document.getElementById('email').value||'').trim());
+      const subject=encodeURIComponent((document.getElementById('subject').value||'Website enquiry').trim());
+      const message=encodeURIComponent((document.getElementById('message').value||'').trim());
       const body=`Name: ${name}%0AEmail: ${email}%0A%0A${message}`;
       const to='info@vetocos.com';
       window.location.href=`mailto:${to}?subject=${subject}&body=${body}`;
       return false;
     }
 
-    // ===== Supabase Admin Button Logic =====
+    // ===== Supabase Admin Button Logic (kept; redirects via login.html and preserves return) =====
     const supa = supabase.createClient(
       "https://qdepgviimbcdlozjpbhm.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
