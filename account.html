@@ -8,29 +8,41 @@
 <style>
 :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px}
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
+body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
 main{max-width:980px;margin:40px auto;padding:0 18px}
 .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px}
 h1,h2{margin:0 0 12px}
+a{color:#6dd5ff;text-decoration:none}
 .muted{color:var(--muted)}
 .badge{display:inline-block;padding:4px 10px;border:1px solid rgba(141,158,199,.25);border-radius:999px}
 .ok{background:rgba(131,240,165,.12)}
 .bad{background:rgba(255,180,180,.12)}
 .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer}
+.btn[disabled]{opacity:.6;cursor:not-allowed}
+.hrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left}
+th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
 </style>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <main>
-  <h1>My Account</h1>
+  <div class="hrow" style="justify-content:space-between;margin-bottom:10px">
+    <h1>My Account</h1>
+    <div class="actions">
+      <a class="btn" href="index.html">Home</a>
+      <a class="btn" href="Products.html">Products</a>
+      <a class="btn" href="cart.html">Cart</a>
+    </div>
+  </div>
 
   <div class="card" id="profileBox">
     <h2>Profile</h2>
     <div id="profLine" class="muted">Checking session…</div>
-    <div style="margin-top:8px">
+    <div class="actions" style="margin-top:8px">
+      <a class="btn" href="vet-verify.html">Verification</a>
       <button class="btn" onclick="logout()">Logout</button>
     </div>
   </div>
@@ -48,68 +60,116 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
   </div>
 </main>
 
-<script src="cart-sync.js"></script>
 <script>
+/* ===== Supabase client ===== */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+  { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
 function logout(){ supa.auth.signOut().then(()=>location.href='index.html'); }
 
-(async ()=>{
-  const { data: { user } } = await supa.auth.getUser();
-  if(!user){ location.href = 'login.html?redirect=account.html'; return; }
+/* Simple escaping */
+const esc = s => String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
 
-  // profile
+/* ===== Boot ===== */
+(async ()=>{
+  const { data:{ user } } = await supa.auth.getUser();
+  if(!user){
+    const back = encodeURIComponent('account.html');
+    location.href = `login.html?redirect=${back}`;
+    return;
+  }
+
+  // Profile
   try {
     const { data: p } = await supa.from('profiles')
-      .select('first_name,last_name,email,can_purchase').eq('id', user.id).maybeSingle();
+      .select('first_name,last_name,email,can_purchase')
+      .eq('id', user.id)
+      .maybeSingle();
+
     const name = [p?.first_name, p?.last_name].filter(Boolean).join(' ') || '(no name)';
+    const badge = p?.can_purchase
+      ? '<span class="badge ok">Approved</span>'
+      : '<span class="badge bad">Needs approval</span>';
+
     document.getElementById('profLine').innerHTML =
-      `<strong>${name}</strong> · ${p?.email || ''} · ${
-        p?.can_purchase ? '<span class="badge ok">Approved</span>' : '<span class="badge bad">Needs approval</span>'
-      }`;
-  } catch(e){ document.getElementById('profLine').textContent = 'Profile load error.'; }
+      `<strong>${esc(name)}</strong> · ${esc(p?.email || user.email || '')} · ${badge}`;
+  } catch(e){
+    document.getElementById('profLine').textContent = 'Profile load error.';
+  }
 
-  // ensure cart synced then show
-  try { if (window.CartSync) await window.CartSync.syncCartWithServer(); } catch(e){}
-
-  // show server cart
+  // Server cart (table: carts { user_id uuid, items jsonb, updated_at })
   try {
-    const { data } = await supa.from('user_carts').select('items').eq('user_id', user.id).maybeSingle();
-    const items = data?.items || [];
-    const list = document.getElementById('cartList');
-    const msg  = document.getElementById('cartMsg');
-    if (!items.length){ msg.textContent = 'Your cart is empty.'; }
-    else {
-      msg.textContent = '';
-      list.innerHTML = '<table><thead><tr><th>Product</th><th>Qty</th></tr></thead><tbody>' +
-        items.map(it=>`<tr><td>${(it.text||it.sku)}</td><td>${it.qty}</td></tr>`).join('') +
-        '</tbody></table>';
-    }
-  } catch(e){ document.getElementById('cartMsg').textContent='Could not load cart.'; }
+    const { data: row } = await supa.from('carts')
+      .select('items, updated_at')
+      .eq('user_id', user.id)
+      .maybeSingle();
 
-  // orders
+    const items = Array.isArray(row?.items) ? row.items : [];
+    const msg  = document.getElementById('cartMsg');
+    const list = document.getElementById('cartList');
+
+    if (!items.length){
+      msg.textContent = 'Your cart is empty.';
+    } else {
+      msg.textContent = '';
+      list.innerHTML = `
+        <table aria-label="Saved cart">
+          <thead><tr><th>Product</th><th>Qty</th></tr></thead>
+          <tbody>
+            ${items.map(it=>`<tr><td>${esc(it.name || it.sku)}</td><td>${Number(it.qty||0)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+        <div class="muted" style="margin-top:6px">Last updated: ${row?.updated_at ? new Date(row.updated_at).toLocaleString() : '–'}</div>
+      `;
+    }
+  } catch(e){
+    document.getElementById('cartMsg').textContent = 'Could not load cart.';
+  }
+
+  // Orders (table: orders { id, user_id, status, total_qty, total_amount, currency, receipt_url, created_at })
   try {
     const { data: orders, error } = await supa
-      .from('orders').select('product_sku,quantity,status,created_at')
-      .order('created_at',{ascending:false});
-    const list = document.getElementById('ordersList');
+      .from('orders')
+      .select('id, status, total_qty, total_amount, currency, receipt_url, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending:false });
+
     const msg  = document.getElementById('ordersMsg');
-    if (error){ msg.textContent = error.message; }
-    else if (!orders?.length){ msg.textContent = 'No orders yet.'; }
-    else {
+    const list = document.getElementById('ordersList');
+
+    if (error){
+      msg.textContent = error.message;
+    } else if (!orders?.length){
+      msg.textContent = 'No orders yet.';
+    } else {
       msg.textContent = '';
-      list.innerHTML = '<table><thead><tr><th>Date</th><th>Product</th><th>Qty</th><th>Status</th></tr></thead><tbody>' +
-        orders.map(o=>`<tr>
-          <td>${new Date(o.created_at).toLocaleString()}</td>
-          <td>${o.product_sku}</td>
-          <td>${o.quantity}</td>
-          <td>${o.status}</td>
-        </tr>`).join('') + '</tbody></table>';
+      list.innerHTML = `
+        <table aria-label="Orders">
+          <thead><tr><th>Date</th><th>Order #</th><th>Items</th><th>Total</th><th>Status</th><th>Receipt</th></tr></thead>
+          <tbody>
+            ${orders.map(o=>{
+              const dt = new Date(o.created_at).toLocaleString();
+              const amt = (o.total_amount!=null) ? Number(o.total_amount).toFixed(2) + ' ' + (o.currency||'') : '—';
+              const rec = o.receipt_url ? `<a href="${esc(o.receipt_url)}" target="_blank" rel="noopener">Open</a>` : '—';
+              return `<tr>
+                <td>${esc(dt)}</td>
+                <td>${esc(o.id)}</td>
+                <td>${Number(o.total_qty||0)}</td>
+                <td>${esc(amt)}</td>
+                <td>${esc(o.status||'')}</td>
+                <td>${rec}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
     }
-  } catch(e){ document.getElementById('ordersMsg').textContent='Could not load orders.'; }
+  } catch(e){
+    document.getElementById('ordersMsg').textContent = 'Could not load orders.';
+  }
 })();
 </script>
 </body>
