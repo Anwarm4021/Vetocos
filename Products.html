@@ -102,8 +102,8 @@
       display:inline-block;margin:6px 0 0;padding:4px 10px;border-radius:999px;
       border:1px solid rgba(141,158,199,.25);font-size:12px
     }
-    .avail-badge.ok{ background:rgba(131,240,165,.12) }   /* green-ish */
-    .avail-badge.bad{ background:rgba(255,180,180,.12) }  /* red-ish */
+    .avail-badge.ok{ background:rgba(131,240,165,.12) }
+    .avail-badge.bad{ background:rgba(255,180,180,.12) }
   </style>
 </head>
 <body>
@@ -139,7 +139,7 @@
     <p class="lead" data-i18n="products.lead">Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.</p>
   </div>
 
-  <!-- Product cards: add data-sku; the JS will read <h4> as name -->
+  <!-- Product cards -->
   <div class="grid" id="productGrid">
     <div class="p-card" data-sku="URO-CHIEN" data-pn="1">
       <img src="images/Product1.jpg" alt="Urocline Chien">
@@ -308,6 +308,25 @@ const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
+
+/* ==== SIGN-IN GATING: hide "Add to Cart" until signed in ==== */
+async function setAddButtonsVisibility(signedIn){
+  // Card buttons
+  document.querySelectorAll('.add-btn').forEach(btn=>{
+    btn.style.display = signedIn ? '' : 'none';
+  });
+  // Modal button
+  const modalAdd = document.getElementById('pdAddBtn');
+  if (modalAdd) modalAdd.style.display = signedIn ? '' : 'none';
+}
+
+async function refreshAuthUI(){
+  const { data:{ user } } = await supa.auth.getUser();
+  await setAddButtonsVisibility(!!user);
+}
+document.addEventListener('DOMContentLoaded', refreshAuthUI);
+supa.auth.onAuthStateChange(async (_evt, _session)=>{ await refreshAuthUI(); });
+
 </script>
 
 <!-- Product Details Modal (HTML) -->
@@ -398,7 +417,7 @@ function addToCartBySKU(sku, qty=1){
   writeCart(items);
 }
 
-/* ===== Product specs (unchanged) ===== */
+/* ===== Product specs ===== */
 const PRODUCT_SPECS = {
   "URO-CHIEN": { form:"Chewable tablets", size:"60 / 120 tabs", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", category:"Urinary care", image:"images/Product1.jpg", page:"Product1.html", pdf:"pdf/Product1.pdf" },
   "HEP-AT":    { form:"Capsules",          size:"30 / 60 caps", ingredients:"Silybin-phospholipid, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", category:"Liver support", image:"images/Product2.jpg", page:"Product2.html", pdf:"pdf/Product2.pdf" },
@@ -431,7 +450,7 @@ const pdPage  = document.getElementById('pdPageBtn');
 
 let CURRENT_SKU = null;
 
-/* ---------- Base modal open (unchanged) ---------- */
+/* ---------- Base modal open ---------- */
 function _openPD_base(sku){
   const spec = PRODUCT_SPECS[sku] || {};
   CURRENT_SKU = sku;
@@ -448,6 +467,11 @@ function _openPD_base(sku){
   pdPage.href = spec.page || '#';
   pdModal.classList.add('open');
   pdModal.setAttribute('aria-hidden','false');
+
+  // Respect sign-in gating for modal Add to Cart
+  supa.auth.getUser().then(({data:{user}})=>{
+    pdAdd.style.display = user ? '' : 'none';
+  });
 }
 function closePD(){ pdModal.classList.remove('open'); pdModal.setAttribute('aria-hidden','true'); }
 pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
@@ -510,7 +534,7 @@ async function postReview(sku){
 }
 document.getElementById('revSubmit').addEventListener('click', ()=>{ if(CURRENT_SKU) postReview(CURRENT_SKU); });
 
-/* ---------- Availability helpers (NEW) ---------- */
+/* ---------- Availability helpers ---------- */
 async function syncAvailability(){
   try{
     const cards = Array.from(document.querySelectorAll('.p-card[data-sku]'));
@@ -569,11 +593,10 @@ async function isSkuAvailable(sku){
   return data || { available:false, stock_qty:0 };
 }
 
-/* ---------- Modal open: extend to include availability + reviews ---------- */
+/* ---------- Modal open: include availability + reviews ---------- */
 async function openPD(sku){
   _openPD_base(sku);
 
-  // Insert availability badge near SKU
   try {
     const { available, stock_qty } = await isSkuAvailable(sku);
     let badge = document.getElementById('pdAvailBadge');
@@ -588,12 +611,10 @@ async function openPD(sku){
     badge.classList.toggle('bad', !available);
     badge.textContent = available ? `Available${typeof stock_qty==='number' ? ' · '+stock_qty+' in stock' : ''}` : 'Unavailable';
 
-    // Enable/disable modal buttons
     pdAdd.disabled = !available;  pdAdd.title = available ? '' : 'Unavailable';
     pdBuy.disabled = !available;  pdBuy.title = available ? '' : 'Unavailable';
   } catch(e) { /* noop */ }
 
-  // Load reviews
   loadReviews(sku);
 }
 
