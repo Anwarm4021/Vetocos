@@ -128,7 +128,7 @@ const supa = supabase.createClient(
 
 /* ===== Config ===== */
 const BUCKET       = "Documents";
-const ADMIN_EMAILS = ["Anwar.moumenjamai19@gmail.com"];
+const ADMIN_EMAILS = ["Anwar.moumenjamai19@gmail.com"]; // allowlist fallback
 
 /* ===== UI refs ===== */
 const authMsg  = document.getElementById("authMsg");
@@ -173,12 +173,8 @@ function setGate(t,{showLogin=false,showLogout=false}={}) {
   loginBtn.classList.toggle("hidden", !showLogin);
   logoutBtn.classList.toggle("hidden", !showLogout);
 }
-function fullName(p){
-  return [p?.first_name, p?.last_name].filter(Boolean).join(" ") || "(unknown)";
-}
-function pill(s){
-  return `<span class="pill ${s==="approved"?"ok":s==="rejected"?"bad":"pend"}">${s||"pending"}</span>`;
-}
+function fullName(p){ return [p?.first_name, p?.last_name].filter(Boolean).join(" ") || "(unknown)"; }
+function pill(s){ return `<span class="pill ${s==="approved"?"ok":s==="rejected"?"bad":"pend"}">${s||"pending"}</span>`; }
 function diag(label, obj){ diagEl.textContent += `\n${label}: ${JSON.stringify(obj)}`; }
 function toast(msg, isErr=false){
   toastEl.textContent = msg;
@@ -194,7 +190,7 @@ loginBtn.onclick = () => {
   u.searchParams.set("force", "1");
   location.href = u.toString();
 };
-logoutBtn.onclick = async () => { await supa.auth.signOut(); location.reload(); };
+logoutBtn.onclick = async () => { await supa.auth.signOut(); location.replace("index.html"); };
 
 /* ===== Email helper (Edge Function) ===== */
 async function sendApprovalEmail(to, subject, text){
@@ -203,28 +199,44 @@ async function sendApprovalEmail(to, subject, text){
   catch(e){ console.warn('send-email failed', e); }
 }
 
-/* ===== Admin check ===== */
-async function checkAdmin(){
+/* ===== Strong admin gate =====
+   - If not signed in -> redirect to login with redirect=admin.html
+   - If signed in but not admin -> alert + go home
+   - If admin -> show all sections and load data
+*/
+async function requireAdmin() {
   setGate("Checking session…");
+  // Ensure the URL token (from magic link) is processed first
+  // Supabase v2 fires INITIAL_SESSION event; we still fetch to be safe
   const { data:{ session }, error } = await supa.auth.getSession();
   if (error) diag("getSession error", error);
-  if (!session?.user){ setGate("Not signed in.", { showLogin:true }); return false; }
+
+  if (!session?.user){
+    // Hard redirect to login (prevents falling through to any default route)
+    const url = new URL("login.html", location.href);
+    url.searchParams.set("redirect", "admin.html");
+    url.searchParams.set("force", "1");
+    location.replace(url.toString());
+    return false;
+  }
   setGate(`Signed in as ${session.user.email}`, { showLogout:true });
 
-  if (ADMIN_EMAILS.includes(session.user.email)){
-    uaWrap.classList.remove("hidden");
-    appsWrap.classList.remove("hidden");
-    vpaWrap.classList.remove("hidden");
-    orderWrap.classList.remove("hidden");
-    prodWrap.classList.remove("hidden");
-    return true;
+  // Quick allowlist OR profiles.is_admin
+  let isAdmin = ADMIN_EMAILS.includes(session.user.email);
+  if (!isAdmin){
+    const { data: prof, error: pe } = await supa
+      .from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
+    if (pe){ setGate("Profile read error.", { showLogout:true }); toast(pe.message, true); return false; }
+    isAdmin = !!prof?.is_admin;
   }
 
-  const { data: prof, error: pe } = await supa
-    .from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
-  if (pe){ setGate("Profile read error.", { showLogout:true }); toast(pe.message, true); return false; }
-  if (!prof?.is_admin){ setGate("Access denied.", { showLogout:true }); return false; }
+  if (!isAdmin){
+    alert("This account is not an admin.");
+    location.replace("index.html");
+    return false;
+  }
 
+  // Unlock panels
   uaWrap.classList.remove("hidden");
   appsWrap.classList.remove("hidden");
   vpaWrap.classList.remove("hidden");
@@ -573,7 +585,6 @@ async function deleteOrder(id){
 
 /* =======================================================================
    PRODUCTS (stock & availability)
-   Uses columns: products.stock_qty (int), products.available (bool)
 ======================================================================= */
 let products = [];
 async function loadProducts(){
@@ -586,7 +597,6 @@ async function loadProducts(){
   renderProducts();
   prodMsg.textContent = products.length ? "" : "No products.";
 }
-
 function renderProducts(){
   const q=(prodSearch.value||"").toLowerCase();
   prodList.innerHTML="";
@@ -615,7 +625,6 @@ function renderProducts(){
     prodList.appendChild(el);
   });
 }
-
 async function saveProduct(sku){
   const qEl = document.getElementById(`pqty_${sku}`);
   const qty = Math.max(0, Number(qEl?.value || 0));
@@ -623,7 +632,6 @@ async function saveProduct(sku){
   if (error) toast(error.message, true); else toast("Stock saved");
   await loadProducts();
 }
-
 async function toggleAvail(sku){
   const row = products.find(x=>x.sku===sku);
   const newVal = !row?.available;
@@ -634,14 +642,39 @@ async function toggleAvail(sku){
 
 /* ===== Boot ===== */
 document.addEventListener("DOMContentLoaded", async ()=>{
-  const ok = await checkAdmin();
-  if (ok){
-    await loadUserApprovals();
-    await loadApps();
-    await loadProductApprovals();
-    await loadOrders();
-    await loadProducts();
-  }
+  // Wait for INITIAL_SESSION so the token in URL is processed,
+  // then run the gate exactly once.
+  let ran = false;
+  supa.auth.onAuthStateChange(async (event, session) => {
+    if (ran) return;
+    if (event === "INITIAL_SESSION") {
+      ran = true;
+      const ok = await requireAdmin();
+      if (ok){
+        await loadUserApprovals();
+        await loadApps();
+        await loadProductApprovals();
+        await loadOrders();
+        await loadProducts();
+      }
+    }
+  });
+
+  // Fallback: if INITIAL_SESSION never fires (older SDKs), still run after a short tick
+  setTimeout(async ()=>{
+    if (!ran){
+      ran = true;
+      const ok = await requireAdmin();
+      if (ok){
+        await loadUserApprovals();
+        await loadApps();
+        await loadProductApprovals();
+        await loadOrders();
+        await loadProducts();
+      }
+    }
+  }, 150);
+  
   uaSearch.addEventListener("input", renderUA);
   uaRefresh.onclick = () => loadUserApprovals();
 
