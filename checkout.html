@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <title>VetoCos | Verification & Checkout</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Verify your account and complete a secure checkout on VetoCos." />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--ok:#83f0a5;--bad:#ff9d9d}
@@ -11,6 +12,7 @@
     body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
     main{max-width:900px;margin:32px auto;padding:0 18px}
     h1{margin:0 0 16px}
+    a{color:#6dd5ff;text-decoration:none}
     .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;padding:16px;margin-bottom:16px}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:720px){.row{grid-template-columns:1fr}}
@@ -18,6 +20,7 @@
     input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text);margin-top:6px}
     .btn{display:inline-block;margin-top:12px;padding:12px 16px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer}
     .btn.small{padding:6px 10px}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
     .muted{color:var(--muted)}
     .status{padding:8px 10px;border-radius:10px;display:inline-block;border:1px solid rgba(141,158,199,.25)}
     .pending{background:rgba(255,215,0,.08);border-color:rgba(255,215,0,.25)}
@@ -26,21 +29,34 @@
     table{width:100%;border-collapse:collapse;margin-top:8px}
     th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
     .qty-btn{padding:4px 8px;border:none;border-radius:6px;background:rgba(255,255,255,.1);color:white;cursor:pointer}
-    .right{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+    .right{display:flex;gap:10px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
     .error{color:var(--bad)}
     .success{color:var(--ok)}
+    .hint{font-size:.92rem}
+    .pair{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
+    .ok{background:rgba(131,240,165,.12)} .bad{background:rgba(255,180,180,.12)}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <main>
-  <h1>Verification & Checkout</h1>
+  <div class="pair" style="margin-bottom:8px">
+    <h1>Verification & Checkout</h1>
+    <div class="right" style="margin:0">
+      <a class="btn" href="Products.html">Products</a>
+      <a class="btn" href="cart.html">Cart</a>
+      <a class="btn" href="account.html">Account</a>
+    </div>
+  </div>
 
+  <!-- Auth box -->
   <div id="authBox" class="card"></div>
 
+  <!-- Account-level (global) professional verification -->
   <div id="verifyBox" class="card" style="display:none">
     <h2 style="margin:0 0 8px">Professional Verification</h2>
-    <p class="muted">To purchase, please verify you are a professional by submitting your identity number and diploma.</p>
+    <p class="muted">To purchase, verify you’re a professional by submitting your identity number and diploma.</p>
 
     <div id="statusLine" style="margin:8px 0 12px"></div>
 
@@ -59,16 +75,25 @@
       </div>
       <button class="btn" type="submit">Submit for review</button>
       <p id="vfMsg" class="muted"></p>
+      <p class="muted hint">You can also manage your verification anytime on the <a href="vet-verify.html">verification page</a>.</p>
     </form>
   </div>
 
+  <!-- Cart / approvals / prices -->
   <div id="cartBox" class="card" style="display:none">
-    <h2 style="margin:0 0 8px">Your Order</h2>
+    <div class="pair">
+      <h2 style="margin:0 0 8px">Your Order</h2>
+      <div id="priceGate" class="badge bad" style="display:none">Approval needed</div>
+    </div>
     <div id="cartTbl"></div>
     <div class="right">
-      <button class="btn" onclick="placeOrder()">Place Order</button>
+      <label class="muted hint" style="display:flex;align-items:center;gap:8px">
+        <input id="accept" type="checkbox"> I accept the terms of sale and confirm I’m purchasing as a professional.
+      </label>
+      <button class="btn" id="placeBtn" onclick="placeOrder()">Place Order</button>
     </div>
     <p id="priceNote" class="muted" style="margin-top:8px"></p>
+    <p id="orderMsg" class="muted" aria-live="polite"></p>
   </div>
 </main>
 
@@ -90,7 +115,7 @@ function readCart(){
 function writeCart(arr){
   const cleaned = (arr||[])
     .filter(it => it && it.sku && Number(it.qty) > 0)
-    .map(it => ({ ...it, qty: Number(it.qty) }));
+    .map(it => ({ sku:String(it.sku), name:String(it.name||it.sku), qty:Number(it.qty) }));
   localStorage.setItem(CART_KEY, JSON.stringify(cleaned));
   return cleaned;
 }
@@ -100,7 +125,7 @@ function overlayBySku(baseArr, incomingArr){
   (baseArr||[]).forEach(it => { if (it?.sku) map[it.sku] = { ...it, qty: Number(it.qty||0) }; });
   (incomingArr||[]).forEach(it => {
     if (!it?.sku) return;
-    map[it.sku] = { ...map[it.sku], ...it, qty: Number(it.qty||0) }; // overwrite qty
+    map[it.sku] = { ...map[it.sku], ...it, qty: Number(it.qty||0) };
   });
   return Object.values(map).filter(x => x.qty > 0);
 }
@@ -133,31 +158,16 @@ function adoptBackupCartOnce(){
     writeCart(merged);
   } catch(e) { console.warn('backup restore failed', e); }
   finally {
-    localStorage.removeItem('cart_backup'); // important to prevent re-apply
+    localStorage.removeItem('cart_backup');
     sessionStorage.setItem(CART_RESTORED_KEY, '1');
   }
 }
-function setQty(sku, qty, extra = {}){
-  const cart = readCart();
-  const map = {};
-  cart.forEach(it => { if (it?.sku) map[it.sku] = it; });
-  map[sku] = { ...(map[sku] || { sku }), ...extra, qty: Math.max(0, Number(qty)||0) };
-  return writeCart(Object.values(map));
-}
-function incQty(sku, delta, extra = {}){
-  const cart = readCart();
-  const map = {};
-  cart.forEach(it => { if (it?.sku) map[it.sku] = it; });
-  const curr = Number(map[sku]?.qty || 0);
-  map[sku] = { ...(map[sku] || { sku }), ...extra, qty: Math.max(0, curr + Number(delta||0)) };
-  return writeCart(Object.values(map));
-}
-// Run once per load (prevents doubling)
-adoptQueryCartOnce();
-adoptBackupCartOnce();
+(function bootCartOnce(){ adoptQueryCartOnce(); adoptBackupCartOnce(); })();
 
 /* ===== UI helpers ===== */
-function msg(elId, text, cls=''){ const el = document.getElementById(elId); if(!el) return; el.textContent = text; el.className = 'muted '+cls; }
+const $ = sel => document.querySelector(sel);
+const esc = s => String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+function setMsg(id, text, cls=''){ const el = document.getElementById(id); if(!el) return; el.textContent = text; el.className = 'muted '+cls; }
 
 /* ===== Load (auth + cart + vet status) ===== */
 document.addEventListener('DOMContentLoaded', async () => {
@@ -174,7 +184,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  authBox.innerHTML = `<strong>Logged in:</strong> <span class="muted">${session.user.email}</span>`;
+  const prof = await supa.from('profiles').select('first_name,last_name,can_purchase').eq('id', session.user.id).maybeSingle();
+  const name = [prof.data?.first_name, prof.data?.last_name].filter(Boolean).join(' ') || session.user.email || 'Account';
+  authBox.innerHTML = `<div class="pair"><div><strong>Logged in:</strong> <span class="muted">${esc(name)}</span></div>
+    <div class="right" style="margin:0"><a class="btn" href="account.html">My Account</a>
+    <button class="btn" onclick="supa.auth.signOut().then(()=>location.href='index.html')">Logout</button></div></div>`;
 
   // Show/handle vet verification
   await loadVetStatus();
@@ -222,44 +236,39 @@ async function loadVetStatus(){
 
 async function submitApplication(e){
   e.preventDefault();
-  msg('vfMsg','Submitting…');
+  setMsg('vfMsg','Submitting…');
 
   const { data:{ user } } = await supa.auth.getUser();
-  if(!user){ msg('vfMsg','You must be logged in.','error'); return false; }
+  if(!user){ setMsg('vfMsg','You must be logged in.','error'); return false; }
 
   const identity = document.getElementById('identity').value.trim();
   const fileEl   = document.getElementById('diploma');
   const file     = fileEl.files[0];
 
-  if (!identity || !file) {
-    msg('vfMsg','Please provide identity number and diploma file.','error');
-    return false;
-  }
-
-  if (file.size > 10 * 1024 * 1024) { msg('vfMsg','File too large (max 10 MB).','error'); return false; }
+  if (!identity || !file) { setMsg('vfMsg','Please provide identity number and diploma file.','error'); return false; }
+  if (file.size > 10 * 1024 * 1024) { setMsg('vfMsg','File too large (max 10 MB).','error'); return false; }
   const okTypes = ['application/pdf','image/jpeg','image/png'];
-  if (file.type && !okTypes.includes(file.type)) { msg('vfMsg','Unsupported file type.','error'); return false; }
+  if (file.type && !okTypes.includes(file.type)) { setMsg('vfMsg','Unsupported file type.','error'); return false; }
 
-  // Upload to Documents/<uid>/...
   const ext = (file.name.split('.').pop() || 'pdf').toLowerCase();
   const safe = file.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
   const path = `${user.id}/diploma_${Date.now()}_${safe || 'file'}.${ext}`;
 
-  const { error: upErr } = await supa.storage.from('Documents').upload(path, file, {
+  const up = await supa.storage.from('Documents').upload(path, file, {
     upsert: true,
     contentType: file.type || (ext==='pdf'?'application/pdf':'image/'+ext)
   });
-  if (upErr){ msg('vfMsg', upErr.message, 'error'); return false; }
+  if (up.error){ setMsg('vfMsg', up.error.message, 'error'); return false; }
 
-  const { error: insErr } = await supa.from('vet_applications').insert({
+  const ins = await supa.from('vet_applications').insert({
     user_id: user.id,
     identity_number: identity,
     diploma_path: path,
     status: 'pending'
   });
-  if (insErr){ msg('vfMsg', insErr.message, 'error'); return false; }
+  if (ins.error){ setMsg('vfMsg', ins.error.message, 'error'); return false; }
 
-  msg('vfMsg','Submitted successfully. Status set to pending.','success');
+  setMsg('vfMsg','Submitted successfully. Status set to pending.','success');
   await loadVetStatus();
   return false;
 }
@@ -281,12 +290,11 @@ async function fetchApprovalsForCart(userId, skus){
 async function requestApprovalForSku(sku){
   const { data:{ user } } = await supa.auth.getUser();
   if(!user) return alert('Please login first.');
-  // upsert unique (user_id, product_sku)
   const { error } = await supa
     .from('vet_product_approvals')
     .upsert({ user_id: user.id, product_sku: sku, status: 'pending' }, { onConflict: 'user_id,product_sku' });
   if (error) return alert(error.message);
-  await renderCartForCheckout(); // refresh UI to show Pending
+  await renderCartForCheckout(); // refresh UI
 }
 
 /* ===== Cart table + price visibility (per-product approval gating) ===== */
@@ -294,6 +302,7 @@ async function renderCartForCheckout(){
   const cartWrap = document.getElementById('cartBox');
   const tbl      = document.getElementById('cartTbl');
   const note     = document.getElementById('priceNote');
+  const gate     = document.getElementById('priceGate');
 
   const items = readCart();
   cartWrap.style.display = 'block';
@@ -301,6 +310,7 @@ async function renderCartForCheckout(){
   if (items.length === 0){
     tbl.innerHTML = `<p class="muted">Your cart is empty.</p>`;
     note.textContent = '';
+    gate.style.display = 'none';
     return;
   }
 
@@ -313,7 +323,7 @@ async function renderCartForCheckout(){
     writeCart(updated);
   }
 
-  // Fetch prices (RLS may hide for non-approved account; we also gate per-product below)
+  // Fetch prices (RLS may hide for non-approved; we gate per-item below anyway)
   const { data: priceRows } = await supa
     .from('prices')
     .select('product_id, amount_cents, currency, products!inner(sku)');
@@ -321,31 +331,32 @@ async function renderCartForCheckout(){
   const priceMap = {};
   (priceRows||[]).forEach(r => { if (r.products?.sku) priceMap[r.products.sku] = r; });
 
-  // Fetch per-product approvals for items in cart
+  // Fetch per-product approvals
   const { data:{ user } } = await supa.auth.getUser();
-  const skus = items.map(i => i.sku);
+  const current = readCart(); // re-read after names set
+  const skus = current.map(i => i.sku);
   const approvals = user ? await fetchApprovalsForCart(user.id, skus) : {};
 
-  // Build table with Approval column; only show price when approved
-  const current = readCart(); // re-read in case names were filled
+  // Build table
   const rows = current.map(it=>{
-    const status = approvals[it.sku] || 'missing';
-    const statusCell = (status === 'approved')
+    const st = approvals[it.sku] || 'missing';
+    const stCell = (st === 'approved')
       ? `<span class="status approved">Approved</span>`
-      : (status === 'pending')
+      : (st === 'pending')
         ? `<span class="status pending">Pending</span>`
         : `<button class="btn small" onclick="requestApprovalForSku('${it.sku}')">Request approval</button>`;
 
     const price = priceMap[it.sku];
-    const line  = (price && status==='approved') ? (price.amount_cents/100 * it.qty) : null;
+    const unit  = (price && st==='approved') ? (price.amount_cents/100) : null;
+    const line  = (unit!=null) ? (unit * it.qty) : null;
 
     return `
       <tr>
-        <td>${it.name || it.sku}</td>
-        <td>${it.qty}</td>
-        <td>${statusCell}</td>
-        <td>${price && status==='approved' ? (price.amount_cents/100).toFixed(2)+' '+price.currency : '—'}</td>
-        <td>${price && status==='approved' ? (line).toFixed(2)+' '+price.currency : '—'}</td>
+        <td>${esc(it.name || it.sku)}</td>
+        <td>${Number(it.qty)}</td>
+        <td>${stCell}</td>
+        <td>${unit!=null ? unit.toFixed(2)+' '+price.currency : '—'}</td>
+        <td>${line!=null ? line.toFixed(2)+' '+price.currency : '—'}</td>
       </tr>
     `;
   }).join('');
@@ -355,9 +366,10 @@ async function renderCartForCheckout(){
     const st = approvals[it.sku] || 'missing';
     return sum + (p && st==='approved' ? (p.amount_cents/100)*it.qty : 0);
   }, 0);
+  const anyUnapproved = skus.some(s => (approvals[s] !== 'approved'));
 
   tbl.innerHTML = `
-    <table>
+    <table aria-label="Checkout cart">
       <tr><th>Product</th><th>Qty</th><th>Approval</th><th>Unit</th><th>Total</th></tr>
       ${rows}
       <tr>
@@ -367,33 +379,158 @@ async function renderCartForCheckout(){
     </table>
   `;
 
-  if (skus.some(s => (approvals[s] !== 'approved'))) {
+  if (anyUnapproved) {
     note.textContent = "Each item requires approval. Click “Request approval” for unapproved items. Prices and checkout unlock per approved product.";
+    gate.textContent = 'Approval needed';
+    gate.classList.remove('ok'); gate.classList.add('bad'); gate.style.display = 'inline-block';
   } else if (!priceRows || priceRows.length === 0) {
     note.textContent = "Prices are visible only for approved professionals.";
+    gate.textContent = 'Approval needed';
+    gate.classList.remove('ok'); gate.classList.add('bad'); gate.style.display = 'inline-block';
   } else {
     note.textContent = "";
+    gate.textContent = 'Approved';
+    gate.classList.remove('bad'); gate.classList.add('ok'); gate.style.display = 'inline-block';
   }
 }
 
-/* ===== Place order: block if any item unapproved ===== */
+/* ===== Place order =====
+   - Blocks if terms not accepted
+   - Blocks if any item unapproved
+   - Calculates totals using current price table
+   - Inserts into orders table
+   - Queues a receipt email (mail_queue) and optionally calls /functions/v1/send-receipt
+   - Clears local cart and updates server cart
+*/
 async function placeOrder(){
-  const items = readCart();
-  if (!items.length) return alert('Your cart is empty.');
-
-  const { data:{ user } } = await supa.auth.getUser();
-  if(!user) return alert('Please login first.');
-
-  const approvals = await fetchApprovalsForCart(user.id, items.map(i=>i.sku));
-  const unapproved = items.filter(it => approvals[it.sku] !== 'approved');
-
-  if (unapproved.length) {
-    const names = unapproved.map(x => x.name || x.sku).join(', ');
-    return alert('These items need approval before checkout: ' + names);
+  const btn = document.getElementById('placeBtn');
+  const msg = id => setMsg('orderMsg', id);
+  msg('');
+  if (!document.getElementById('accept').checked){
+    msg('Please accept the terms to continue.','error'); return;
   }
 
-  // proceed with payment flow (all items approved)
-  alert('All items approved — proceed to payment/invoice flow.');
+  const items = readCart();
+  if (!items.length) { msg('Your cart is empty.','error'); return; }
+
+  btn.disabled = true;
+
+  try{
+    const { data:{ user } } = await supa.auth.getUser();
+    if(!user){ msg('Please login first.','error'); btn.disabled=false; return; }
+
+    // Approvals
+    const approvals = await fetchApprovalsForCart(user.id, items.map(i=>i.sku));
+    const unapproved = items.filter(it => approvals[it.sku] !== 'approved');
+    if (unapproved.length) {
+      const names = unapproved.map(x => x.name || x.sku).join(', ');
+      msg('These items need approval before checkout: ' + names,'error');
+      btn.disabled = false; return;
+    }
+
+    // Prices (re-read now)
+    const { data: priceRows, error: pErr } = await supa
+      .from('prices')
+      .select('product_id, amount_cents, currency, products!inner(sku)');
+    if (pErr){ msg(pErr.message,'error'); btn.disabled=false; return; }
+
+    const priceMap = {};
+    (priceRows||[]).forEach(r => { if (r.products?.sku) priceMap[r.products.sku] = r; });
+
+    // Build order lines
+    const lines = [];
+    let totalQty = 0;
+    let totalAmount = 0;
+    let currency = priceRows?.[0]?.currency || 'USD';
+
+    for (const it of items){
+      const p = priceMap[it.sku];
+      if (!p){ continue; } // skip non-priced items
+      const unit = p.amount_cents/100;
+      const lineTotal = unit * it.qty;
+      lines.push({
+        product_sku: it.sku,
+        name: it.name || it.sku,
+        qty: it.qty,
+        unit_price: unit,
+        currency: p.currency
+      });
+      totalQty += Number(it.qty||0);
+      totalAmount += lineTotal;
+      currency = p.currency || currency;
+    }
+
+    if (!lines.length){
+      msg('No priced items found. You may need approval or to refresh prices.','error');
+      btn.disabled=false; return;
+    }
+
+    // Insert order (table: orders)
+    // Suggested schema:
+    // id (uuid default gen_random_uuid()), user_id uuid, items jsonb, total_qty int, total_amount numeric, currency text, status text default 'paid'|'processing', created_at timestamptz default now(), receipt_url text
+    const { data: order, error: oErr } = await supa
+      .from('orders')
+      .insert({
+        user_id: user.id,
+        items: lines,
+        total_qty: totalQty,
+        total_amount: Number(totalAmount.toFixed(2)),
+        currency,
+        status: 'processing'
+      })
+      .select('id, receipt_url, created_at, status')
+      .single();
+
+    if (oErr){ msg('Order error: '+oErr.message,'error'); btn.disabled=false; return; }
+
+    // Upsert server cart to empty (purchase complete)
+    await supa.from('carts').upsert({ user_id: user.id, items: [], updated_at: new Date().toISOString() });
+    // Clear local cart
+    writeCart([]);
+
+    // Queue receipt email (mail_queue) – handled by your backend/Edge Function
+    try{
+      const { data: prof } = await supa.from('profiles').select('email,first_name,last_name').eq('id', user.id).maybeSingle();
+      const toEmail = (prof?.email || user.email || '').trim().toLowerCase();
+      if (toEmail){
+        const subject = 'VetoCos – Your order receipt';
+        const html = `
+          <p>Hello ${[prof?.first_name, prof?.last_name].filter(Boolean).join(' ') || ''},</p>
+          <p>Thank you for your purchase. Your order <strong>${order.id}</strong> was received.</p>
+          <p>You can view your receipt in your account.</p>
+          <p>— VetoCos</p>
+        `;
+        await supa.from('mail_queue').insert({ to_email: toEmail, subject, html });
+      }
+    } catch(e){ /* ignore if mail_queue not present */ }
+
+    // Optional Edge Function call to send immediately
+    try{
+      const { data:{ session } } = await supa.auth.getSession();
+      if (session?.access_token){
+        await fetch('/functions/v1/send-receipt', {
+          method:'POST',
+          headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${session.access_token}` },
+          body: JSON.stringify({ order_id: order.id })
+        });
+      }
+    }catch(e){ /* best-effort */ }
+
+    // Success UI
+    const recLink = order.receipt_url ? ` <a href="${esc(order.receipt_url)}" target="_blank" rel="noopener">Open receipt</a>` : '';
+    setMsg('orderMsg', `Order placed successfully. Order #${order.id}.${recLink}`, 'success');
+
+    // Show empty cart now
+    await renderCartForCheckout();
+
+    // Offer quick links
+    document.getElementById('orderMsg').innerHTML += ` <a href="account.html">Go to My Account →</a>`;
+  }catch(e){
+    console.warn(e);
+    msg('Unexpected error placing the order.','error');
+  }finally{
+    btn.disabled = false;
+  }
 }
 </script>
 </body>
