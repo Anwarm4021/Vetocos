@@ -2,329 +2,635 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>VetoCos | Login</title>
+  <title>VetoCos | Products</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Log in to VetoCos to manage your cart, purchases, and profile. Passwordless magic link + optional 6-digit code.">
-  <meta name="theme-color" content="#0b1020">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
-  <!-- Optional mild CSP hint (non-enforcing here since inline styles/scripts are used) -->
-  <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://qdepgviimbcdlozjpbhm.supabase.co https://unpkg.com; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://unpkg.com"> -->
-
+  <meta name="description" content="VetoCos complementary feed for dogs & cats." />
+  <meta name="theme-color" content="#0b1020" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#0b1020; --card:#0f162f; --muted:#8ea0c8; --text:#f6f7fb; --radius:16px; }
-    * { box-sizing: border-box; }
-    body {
-      margin:0; font-family:Inter,sans-serif;
-      background:linear-gradient(135deg,var(--bg),#101835);
-      color:var(--text);
+    :root{
+      --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;
+      --brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;
+      --shadow:0 10px 30px rgba(0,0,0,.25)
     }
-    .wrap { max-width:480px; margin:6vh auto; padding:0 18px; }
-    .card {
-      background:var(--card);
-      border:1px solid rgba(141,158,199,.18);
-      border-radius:var(--radius);
-      padding:18px;
+    *{box-sizing:border-box}
+    body{margin:0;padding:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif;line-height:1.6}
+    a{text-decoration:none;color:inherit}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+
+    /* Header */
+    header.site{position:sticky;top:0;z-index:50;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:var(--shadow)}
+    .links{display:flex;gap:18px;align-items:center}
+    .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
+    .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
+
+    /* Cart button in header */
+    .cart-link{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.04)}
+    .cart-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;display:grid;place-items:center;font-size:12px;background:#ff6d6d;border-radius:999px;padding:0 6px;color:white}
+
+    .contact-btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
+
+    .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
+    @media(max-width:820px){
+      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:200px}
+      .links.open{display:flex}
+      .hamb{display:block}
+      .contact-btn,#lang-switch{width:100%;text-align:left}
     }
-    h1 { margin:.2rem 0 1rem; }
-    label { font-size:.9rem; color:var(--muted); display:block; }
-    input {
-      width:100%; padding:12px 14px;
-      border-radius:12px;
-      border:1px solid rgba(141,158,199,.28);
-      background:rgba(255,255,255,.03);
-      color:var(--text);
-      margin-top:6px;
-    }
-    input:focus { outline: 2px solid rgba(131,240,165,.35); }
-    .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .btn {
-      margin-top:14px; width:100%; padding:12px 14px;
-      border-radius:12px;
+
+    /* Hero */
+    .hero{padding:40px 0 20px;text-align:center}
+    .badge{display:inline-flex;gap:8px;align-items:center;background:rgba(141,158,199,.15);border:1px solid rgba(141,158,199,.25);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
+    h1{font-size:clamp(28px,5vw,42px);margin:14px 0}
+    .lead{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:700px;margin:0 auto 18px}
+
+    /* Product grid */
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
+    @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.grid{grid-template-columns:1fr}}
+    .p-card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:.2s;cursor:pointer}
+    .p-card:hover{transform:translateY(-3px);border-color:rgba(131,240,165,.3)}
+    .p-card img{width:100%;height:170px;object-fit:cover}
+    .px{padding:12px}
+    .px h4{margin:.2rem 0 .1rem}
+    .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+    /* Buttons */
+    .btn{
+      display:inline-block;
+      padding:10px 14px;
+      border-radius:10px;
       border:1px solid rgba(141,158,199,.25);
       background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));
-      color:var(--text); cursor:pointer; font-weight:600;
+      color:var(--text);
+      cursor:pointer;
+      font-weight:600
     }
-    .btn[disabled]{ opacity:.6; cursor:not-allowed; }
-    .muted { color:var(--muted); font-size:.9rem; margin-top:10px; }
-    .success { color:#83f0a5; }
-    .error { color:#ffb4b4; }
-    #codeBox { display:none; }
-    .tiny { font-size:.85rem; color:var(--muted); margin-top:8px; }
-    .inline { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .sr-only{ position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    .btn.ghost{background:transparent}
+
+    /* Footer */
+    footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+
+    /* --- Product Details Modal --- */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
+    .modal.open{display:flex}
+    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
+    .sheet-title{margin:0;font-size:1.1rem}
+    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+    .sheet-body{padding:16px}
+    .pd-cols{display:grid;grid-template-columns:220px 1fr;gap:16px}
+    @media(max-width:720px){.pd-cols{grid-template-columns:1fr}}
+    .pd-img{width:100%;height:220px;object-fit:cover;border-radius:12px;border:1px solid rgba(141,158,199,.18)}
+    .specs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:720px){.specs{grid-template-columns:1fr}}
+    .spec{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:12px}
+    .spec h5{margin:.2rem 0 .3rem;font-size:0.95rem}
+    .muted{color:var(--muted)}
+    .sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+    /* RTL */
+    body.rtl .links a{text-align:right}
+
+    /* Availability badge (added) */
+    .avail-badge{
+      display:inline-block;margin:6px 0 0;padding:4px 10px;border-radius:999px;
+      border:1px solid rgba(141,158,199,.25);font-size:12px
+    }
+    .avail-badge.ok{ background:rgba(131,240,165,.12) }   /* green-ish */
+    .avail-badge.bad{ background:rgba(255,180,180,.12) }  /* red-ish */
+    .p-card.disabled{ opacity:.65 }
   </style>
 </head>
-
 <body>
-  <main class="wrap">
-    <div class="card" role="form" aria-labelledby="loginTitle">
-      <h1 id="loginTitle">Login</h1>
-      <p class="muted">Enter your details. We’ll email you a magic link and, if enabled, a 6-digit code.</p>
-
-      <form id="loginForm" novalidate>
-        <div class="row">
-          <div>
-            <label for="first">First name
-              <input id="first" name="first" autocomplete="given-name" required />
-            </label>
-          </div>
-          <div>
-            <label for="last">Last name
-              <input id="last" name="last" autocomplete="family-name" required />
-            </label>
-          </div>
-        </div>
-
-        <label for="email" style="margin-top:10px">Email
-          <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required />
-        </label>
-
-        <!-- Hidden field to carry forward cart once after login -->
-        <input type="hidden" id="cartParam" name="cart">
-
-        <button class="btn" id="send" type="button">Send login email</button>
-
-        <div id="codeBox" aria-live="polite">
-          <label for="otp" style="margin-top:10px">Enter 6-digit code (if your email shows one)
-            <input id="otp" inputmode="numeric" pattern="[0-9]*" maxlength="6" aria-describedby="otpHelp" />
-          </label>
-          <div id="otpHelp" class="sr-only">Type the six digit code included in your email if requested.</div>
-          <div class="inline">
-            <button class="btn" id="verify" type="button">Verify & continue</button>
-            <button class="btn" id="resend" style="display:none; min-width:170px" type="button"></button>
-          </div>
-        </div>
-      </form>
-
-      <p id="msg" class="muted" aria-live="polite" role="status"></p>
-      <p class="tiny">Tip: open the magic link in the <strong>same browser</strong> where you started login. If your email app opens another browser, copy the URL and paste it here.</p>
-
-      <p class="tiny">By continuing, you agree to our site terms. We use passwordless sign-in to keep your account safe. Purchases, receipts and history are protected by your login.</p>
+<header class="site">
+  <div class="wrap nav">
+    <div class="brand" aria-label="VetoCos">
+      <span class="logo" aria-hidden="true"></span> VetoCos
     </div>
-  </main>
+    <nav class="links" id="navlinks" aria-label="Primary">
+      <a href="index.html" data-i18n="nav.home">Home</a>
+      <a class="active" href="Products.html" data-i18n="nav.products">Products</a>
+      <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
+      <a href="News.html" data-i18n="nav.news">News</a>
 
-  <!-- Supabase SDK -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    /* ===== Supabase config ===== */
-    const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
-    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
-    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-      auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+      <a class="cart-link" href="cart.html" aria-label="Cart">
+        <span>Cart</span>
+        <span id="cartCount" class="cart-badge" style="display:none">0</span>
+      </a>
+
+      <button class="contact-btn" type="button" onclick="openContact && openContact()" data-i18n="nav.contact">Contact</button>
+      <select id="lang-switch" aria-label="Language">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="ar">العربية</option>
+      </select>
+    </nav>
+    <button class="hamb" aria-label="Open menu" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
+    <h1 data-i18n="products.title">Our Product Range</h1>
+    <p class="lead" data-i18n="products.lead">Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.</p>
+  </div>
+
+  <!-- Product cards: add data-sku; the JS will read <h4> as name -->
+  <div class="grid" id="productGrid" role="list">
+    <div class="p-card" data-sku="URO-CHIEN" data-pn="1" role="listitem">
+      <img src="images/Product1.jpg" alt="Urocline Chien">
+      <div class="px">
+        <h4>Urocline Chien</h4>
+        <div class="p-meta"><span data-i18n="cat.urinary">Urinary care</span><span data-i18n="cat.dc">Dogs & Cats</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add Urocline Chien to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy Urocline Chien now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-card" data-sku="HEP-AT" data-pn="2" role="listitem">
+      <img src="images/Product2.jpg" alt="Hepatiale">
+      <div class="px">
+        <h4>Hepatiale</h4>
+        <div class="p-meta"><span data-i18n="cat.liver">Liver support</span><span data-i18n="cat.dc">Dogs & Cats</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add Hepatiale to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy Hepatiale now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-card" data-sku="NEU-VIEW" data-pn="3" role="listitem">
+      <img src="images/Product3.jpg" alt="Neuroview">
+      <div class="px">
+        <h4>Neuroview</h4>
+        <div class="p-meta"><span data-i18n="cat.cognitive">Cognitive</span><span data-i18n="cat.dc">Dogs & Cats</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add Neuroview to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy Neuroview now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-card" data-sku="MUNI-SAN" data-pn="4" role="listitem">
+      <img src="images/Product4.jpg" alt="Munisan">
+      <div class="px">
+        <h4>Munisan</h4>
+        <div class="p-meta"><span data-i18n="cat.immune">Immune</span><span data-i18n="cat.dc">Dogs & Cats</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add Munisan to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy Munisan now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-card" data-sku="PILO-SAN" data-pn="5" role="listitem">
+      <img src="images/Product5.jpg" alt="Pilosan">
+      <div class="px">
+        <h4>Pilosan</h4>
+        <div class="p-meta"><span data-i18n="cat.skin">Skin & coat</span><span data-i18n="cat.dc">Dogs & Cats</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add Pilosan to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy Pilosan now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-card" data-sku="HEMO-VET" data-pn="6" role="listitem">
+      <img src="images/Product6.jpg" alt="HemoVet">
+      <div class="px">
+        <h4>HemoVet</h4>
+        <div class="p-meta"><span data-i18n="cat.vitamins">Vitamins & minerals</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add HemoVet to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy HemoVet now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-card" data-sku="URO-STONES" data-pn="7" role="listitem">
+      <img src="images/Product7.jpg" alt="Urocline-Stones">
+      <div class="px">
+        <h4>Urocline-Stones</h4>
+        <div class="p-meta"><span data-i18n="cat.urinary">Urinary care</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add Urocline-Stones to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy Urocline-Stones now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-card" data-sku="VIT-MIN" data-pn="8" role="listitem">
+      <img src="images/Product8.jpg" alt="Vit&Min">
+      <div class="px">
+        <h4>Vit&Min</h4>
+        <div class="p-meta"><span data-i18n="cat.vitamins">Vitamins & minerals</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add Vit&Min to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy Vit&Min now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-card" data-sku="ART-ASUH" data-pn="9" role="listitem">
+      <img src="images/Product9.jpg" alt="Art-Asuh">
+      <div class="px">
+        <h4>Art-Asuh</h4>
+        <div class="p-meta"><span data-i18n="cat.mobility">Mobility</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add Art-Asuh to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy Art-Asuh now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-card" data-sku="CARBO-DIG" data-pn="10" role="listitem">
+      <img src="images/Product10.jpg" alt="Carbo Digest">
+      <div class="px">
+        <h4>Carbo Digest</h4>
+        <div class="p-meta"><span data-i18n="cat.digestive">Digestive comfort</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add Carbo Digest to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy Carbo Digest now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-card" data-sku="RENO-SAN" data-pn="11" role="listitem">
+      <img src="images/Product11.jpg" alt="Renosan">
+      <div class="px">
+        <h4>Renosan</h4>
+        <div class="p-meta"><span data-i18n="cat.renal">Renal support</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add Renosan to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy Renosan now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-card" data-sku="QAL-MIL" data-pn="12" role="listitem">
+      <img src="images/Product12.jpg" alt="Qalmil">
+      <div class="px">
+        <h4>Qalmil</h4>
+        <div class="p-meta"><span data-i18n="cat.calming">Calming</span></div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" aria-label="Add Qalmil to cart">Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" aria-label="Buy Qalmil now">Buy Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  © <span id="y"></span> VetoCos · <span data-i18n="footer.tagline">Complementary feed for companion animals</span>
+  <div class="footer-links">
+    <a href="#" onclick="openPolicy && openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
+    <a href="#" onclick="openContact && openContact();return false;" data-i18n="nav.contact">Contact</a>
+  </div>
+</footer>
+
+<!-- Minimal stubs for the modal open/close (to avoid errors if not present globally) -->
+<script> function openContact(){} function openPolicy(){} </script>
+
+<!-- i18n + header year -->
+<script> document.getElementById("y") && (document.getElementById("y").textContent = new Date().getFullYear()); </script>
+
+<!-- Supabase (auth used for Buy Now + reviews + availability) -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+const supa = supabase.createClient(
+  "https://qdepgviimbcdlozjpbhm.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+);
+</script>
+
+<!-- Product Details Modal (HTML) -->
+<div id="productDetailsModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
+    <div class="sheet-head">
+      <h2 id="pdTitle" class="sheet-title">Product details</h2>
+      <button class="close" type="button" onclick="closePD()">Close</button>
+    </div>
+    <div class="sheet-body">
+      <div class="pd-cols">
+        <img id="pdImg" class="pd-img" alt="">
+        <div>
+          <h3 id="pdName" style="margin:0 0 6px"></h3>
+          <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
+          <div class="specs">
+            <div class="spec"><h5>Form</h5><div id="pdForm" class="muted"></div></div>
+            <div class="spec"><h5>Pack size</h5><div id="pdSize" class="muted"></div></div>
+            <div class="spec"><h5>Key ingredients</h5><div id="pdIngredients" class="muted"></div></div>
+            <div class="spec"><h5>Feeding guidance</h5><div id="pdUsage" class="muted"></div></div>
+          </div>
+
+          <div class="sheet-actions">
+            <button class="btn" id="pdAddBtn" type="button">Add to Cart</button>
+            <button class="btn ghost" id="pdBuyBtn" type="button">Buy Now</button>
+            <a class="btn" id="pdPdfBtn" href="#" target="_blank" rel="noopener">Download PDF</a>
+            <a class="btn ghost" id="pdPageBtn" href="#">View full page</a>
+            <span class="muted" id="pdSku" style="margin-left:auto"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews -->
+      <div id="reviewsBox" style="margin-top:16px">
+        <h3 style="margin:0 0 8px">Reviews</h3>
+        <div id="reviewsList" class="muted">Loading reviews…</div>
+        <div id="reviewForm" class="spec" style="margin-top:10px">
+          <h5 style="margin:.2rem 0 .3rem">Leave a review</h5>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <label>Rating
+              <select id="revRating" style="margin-left:8px" aria-label="Rating">
+                <option value="5">★★★★★ (5)</option>
+                <option value="4">★★★★☆ (4)</option>
+                <option value="3">★★★☆☆ (3)</option>
+                <option value="2">★★☆☆☆ (2)</option>
+                <option value="1">★☆☆☆☆ (1)</option>
+              </select>
+            </label>
+            <input id="revText" placeholder="Your comment…" aria-label="Your review comment" style="flex:1;min-width:220px;padding:10px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text)">
+            <button class="btn" id="revSubmit" type="button">Post</button>
+          </div>
+          <div id="revMsg" class="muted" style="margin-top:6px"></div>
+        </div>
+      </div>
+
+      <p class="muted" style="margin-top:12px">
+        Complementary feed — not a medicine. Always follow your vet’s advice.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Cart + Product Details + Availability + Reviews logic -->
+<script>
+/* ---------- Cart helpers ---------- */
+function readCart(){ try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; } }
+function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items)); updateCartBadge(); }
+function countCart(){ return readCart().reduce((n,x)=>n + Number(x.qty||0), 0); }
+function updateCartBadge(){
+  const n = countCart();
+  const b = document.getElementById('cartCount');
+  if(!b) return;
+  if(n>0){ b.style.display='inline-grid'; b.textContent = String(n); }
+  else   { b.style.display='none'; }
+}
+function getNameForSKU(sku){
+  const card = document.querySelector(`.p-card[data-sku="${sku}"]`);
+  if(!card) return sku;
+  const h4 = card.querySelector('h4');
+  return (h4 && h4.textContent.trim()) || sku;
+}
+function addToCartBySKU(sku, qty=1){
+  const name = getNameForSKU(sku);
+  const items = readCart();
+  const i = items.findIndex(x=>x.sku===sku);
+  if(i>-1) items[i].qty += qty;
+  else items.push({ sku, name, qty });
+  writeCart(items);
+}
+
+/* ===== Product specs (kept) ===== */
+const PRODUCT_SPECS = {
+  "URO-CHIEN": { form:"Chewable tablets", size:"60 / 120 tabs", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", category:"Urinary care", image:"images/Product1.jpg", page:"Product1.html", pdf:"pdf/Product1.pdf" },
+  "HEP-AT":    { form:"Capsules",          size:"30 / 60 caps", ingredients:"Silybin-phospholipid, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", category:"Liver support", image:"images/Product2.jpg", page:"Product2.html", pdf:"pdf/Product2.pdf" },
+  "NEU-VIEW":  { form:"Soft chews",        size:"60 chews",     ingredients:"Phosphatidylserine, DHA, L-theanine, B-vitamins", usage:"1 chew / 10 kg daily", category:"Cognitive", image:"images/Product3.jpg", page:"Product3.html", pdf:"pdf/Product3.pdf" },
+  "MUNI-SAN":  { form:"Powder",            size:"120 g",        ingredients:"Beta-glucans, Colostrum, Zinc, Vitamin C", usage:"Mix with food once daily", category:"Immune", image:"images/Product4.jpg", page:"Product4.html", pdf:"pdf/Product4.pdf" },
+  "PILO-SAN":  { form:"Syrup",             size:"150 ml",       ingredients:"Biotin, Omega-3 & 6, Zinc", usage:"1 ml / 5 kg daily", category:"Skin & coat", image:"images/Product5.jpg", page:"Product5.html", pdf:"pdf/Product5.pdf" },
+  "HEMO-VET":  { form:"Tablets",           size:"60 tabs",      ingredients:"Iron, B12, Folic acid, Copper", usage:"As directed by your vet", category:"Vitamins & minerals", image:"images/Product6.jpg", page:"Product6.html", pdf:"pdf/Product6.pdf" },
+  "URO-STONES":{ form:"Tablets",           size:"60 tabs",      ingredients:"DL-methionine, Potassium citrate, Cranberry", usage:"Supports urinary environment", category:"Urinary care", image:"images/Product7.jpg", page:"Product7.html", pdf:"pdf/Product7.pdf" },
+  "VIT-MIN":   { form:"Powder",            size:"200 g",        ingredients:"Balanced vitamins & trace minerals", usage:"Daily multivitamin per weight", category:"Vitamins & minerals", image:"images/Product8.jpg", page:"Product8.html", pdf:"pdf/Product8.pdf" },
+  "ART-ASUH":  { form:"Chewable tablets",  size:"90 tabs",      ingredients:"Glucosamine, Chondroitin, MSM, Hyaluronic acid", usage:"Initial 4–6 weeks then maintenance", category:"Mobility", image:"images/Product9.jpg", page:"Product9.html", pdf:"pdf/Product9.pdf" },
+  "CARBO-DIG": { form:"Capsules",          size:"30 caps",      ingredients:"Activated charcoal, Prebiotics", usage:"Short-term digestive comfort", category:"Digestive comfort", image:"images/Product10.jpg", page:"Product10.html", pdf:"pdf/Product10.pdf" },
+  "RENO-SAN":  { form:"Powder",            size:"150 g",        ingredients:"Calcium carbonate, Chitosan, Omega-3", usage:"Supports renal function (dietary)", category:"Renal support", image:"images/Product11.jpg", page:"Product11.html", pdf:"pdf/Product11.pdf" },
+  "QAL-MIL":   { form:"Soft chews",        size:"60 chews",     ingredients:"L-tryptophan, L-theanine, Lemon balm", usage:"Use before stressful events or daily", category:"Calming", image:"images/Product12.jpg", page:"Product12.html", pdf:"pdf/Product12.pdf" }
+};
+
+/* ===== Modal refs ===== */
+const pdModal = document.getElementById('productDetailsModal');
+const pdImg   = document.getElementById('pdImg');
+const pdName  = document.getElementById('pdName');
+const pdCat   = document.getElementById('pdCategory');
+const pdForm  = document.getElementById('pdForm');
+const pdSize  = document.getElementById('pdSize');
+const pdIngr  = document.getElementById('pdIngredients');
+const pdUse   = document.getElementById('pdUsage');
+const pdSku   = document.getElementById('pdSku');
+const pdAdd   = document.getElementById('pdAddBtn');
+const pdBuy   = document.getElementById('pdBuyBtn');
+const pdPdf   = document.getElementById('pdPdfBtn');
+const pdPage  = document.getElementById('pdPageBtn');
+
+let CURRENT_SKU = null;
+
+/* ---------- Base modal open (kept) ---------- */
+function _openPD_base(sku){
+  const spec = PRODUCT_SPECS[sku] || {};
+  CURRENT_SKU = sku;
+  pdName.textContent = getNameForSKU(sku);
+  pdCat.textContent  = spec.category || '';
+  pdForm.textContent = spec.form || '—';
+  pdSize.textContent = spec.size || '—';
+  pdIngr.textContent = spec.ingredients || '—';
+  pdUse.textContent  = spec.usage || '—';
+  pdSku.textContent  = 'SKU: ' + sku;
+  pdImg.src = spec.image || (document.querySelector(`.p-card[data-sku="${sku}"] img`)?.src || '');
+  pdImg.alt = pdName.textContent || 'Product image';
+  pdPdf.href  = spec.pdf  || '#';
+  pdPage.href = spec.page || '#';
+  pdModal.classList.add('open');
+  pdModal.setAttribute('aria-hidden','false');
+}
+function closePD(){ pdModal.classList.remove('open'); pdModal.setAttribute('aria-hidden','true'); }
+pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
+
+/* ---------- Cart buttons ---------- */
+pdAdd.addEventListener('click', ()=>{ if(CURRENT_SKU){ addToCartBySKU(CURRENT_SKU,1); alert(getNameForSKU(CURRENT_SKU) + " added to cart"); }});
+pdBuy.addEventListener('click', async ()=>{
+  if(!CURRENT_SKU) return;
+  addToCartBySKU(CURRENT_SKU,1);
+  const { data:{ user } } = await supa.auth.getUser();
+  if(!user){ location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`; }
+  else { location.href = 'cart.html'; }
+});
+
+/* ---------- Reviews ---------- */
+async function loadReviews(sku){
+  const list = document.getElementById('reviewsList');
+  list.textContent = 'Loading reviews…';
+  const { data: revs, error } = await supa
+    .from('product_reviews')
+    .select('rating, comment, created_at, user_id')
+    .eq('product_sku', sku)
+    .order('created_at', { ascending:false });
+  if(error){ list.textContent = error.message; return; }
+  if(!revs || !revs.length){ list.textContent = 'No reviews yet.'; return; }
+
+  const uids = [...new Set(revs.map(r=>r.user_id).filter(Boolean))];
+  let profs = {};
+  if (uids.length){
+    const { data: p, error: pe } = await supa.from('profiles').select('id,first_name,last_name').in('id', uids);
+    if(!pe && p){ p.forEach(x=> profs[x.id]=x); }
+  }
+  list.innerHTML = revs.map(r=>{
+    const pf = profs[r.user_id] || {};
+    const name = [pf.first_name, pf.last_name].filter(Boolean).join(' ') || 'Customer';
+    const rating = Math.max(1, Math.min(5, Number(r.rating||0)));
+    const stars = '★★★★★'.slice(0, rating) + '☆☆☆☆☆'.slice(rating);
+    const comment = (r.comment||'').replace(/</g,'&lt;');
+    return `<div style="padding:10px 0;border-top:1px solid rgba(141,158,199,.15)">
+      <div><strong>${name}</strong> · <span class="muted">${new Date(r.created_at).toLocaleDateString()}</span></div>
+      <div aria-label="rating">${stars}</div>
+      <div>${comment}</div>
+    </div>`;
+  }).join('');
+}
+
+async function postReview(sku){
+  const rating = Math.max(1, Math.min(5, Number(document.getElementById('revRating').value || 5)));
+  const comment= (document.getElementById('revText').value || '').trim().slice(0, 1000);
+  const msgEl  = document.getElementById('revMsg');
+  msgEl.textContent='';
+  const { data:{ user } } = await supa.auth.getUser();
+  if(!user){ location.href = `login.html?redirect=${encodeURIComponent(location.pathname)}`; return; }
+  const { error } = await supa.from('product_reviews').insert({
+    user_id: user.id, product_sku: sku, rating, comment
+  });
+  if(error){ msgEl.textContent = error.message; return; }
+  document.getElementById('revText').value='';
+  msgEl.textContent='Thanks! Your review was posted.';
+  await loadReviews(sku);
+}
+document.getElementById('revSubmit').addEventListener('click', ()=>{ if(CURRENT_SKU) postReview(CURRENT_SKU); });
+
+/* ---------- Availability helpers ---------- */
+async function syncAvailability(){
+  try{
+    const cards = Array.from(document.querySelectorAll('.p-card[data-sku]'));
+    if (!cards.length) return;
+
+    const skus = cards.map(c=>c.getAttribute('data-sku'));
+    const { data, error } = await supa
+      .from('products')
+      .select('sku, stock_qty, available')
+      .in('sku', skus);
+
+    if (error) { console.warn('availability load error', error.message); return; }
+
+    const map = {};
+    (data||[]).forEach(row=> map[row.sku] = row);
+
+    cards.forEach(card=>{
+      const sku = card.getAttribute('data-sku');
+      const row = map[sku];
+      let badge = card.querySelector('.avail-badge');
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'avail-badge';
+        const px = card.querySelector('.px');
+        const title = px?.querySelector('h4');
+        (title?.parentNode || px || card).insertBefore(badge, (title?.nextSibling || null));
+      }
+
+      const addBtn = card.querySelector('.add-btn');
+      const buyBtn = card.querySelector('.buy-btn');
+
+      if (row && row.available){
+        const qtyText = (typeof row.stock_qty==='number') ? ` · ${row.stock_qty} in stock` : '';
+        badge.textContent = `Available${qtyText}`;
+        badge.classList.remove('bad'); badge.classList.add('ok');
+
+        if (addBtn){ addBtn.disabled = false; addBtn.title = ''; }
+        if (buyBtn){ buyBtn.disabled = false; buyBtn.title = ''; }
+        card.classList.remove('disabled');
+      } else {
+        badge.textContent = 'Unavailable';
+        badge.classList.remove('ok'); badge.classList.add('bad');
+
+        if (addBtn){ addBtn.disabled = true; addBtn.title = 'Unavailable'; }
+        if (buyBtn){ buyBtn.disabled = true; buyBtn.title = 'Unavailable'; }
+        card.classList.add('disabled');
+      }
     });
+  }catch(e){ console.warn('syncAvailability failed', e); }
+}
 
-    /* ===== Query params ===== */
-    const qs = new URLSearchParams(location.search);
-    const redirect = qs.get("redirect") || "checkout.html";
-    const forceRelog = qs.get("force") === "1";
-    const incomingCartParam = qs.get("cart"); // one-time cart handoff
+// Check availability for a single SKU (modal)
+async function isSkuAvailable(sku){
+  const { data, error } = await supa.from('products').select('available,stock_qty').eq('sku', sku).maybeSingle();
+  if (error) return { available:false, stock_qty:0 };
+  return data || { available:false, stock_qty:0 };
+}
 
-    /* ===== UI refs ===== */
-    const msgEl = document.getElementById("msg");
-    const sendBtn = document.getElementById("send");
-    const verifyBtn = document.getElementById("verify");
-    const resendBtn = document.getElementById("resend");
-    const codeBox = document.getElementById("codeBox");
-    const emailInput = document.getElementById("email");
-    const firstInput = document.getElementById("first");
-    const lastInput  = document.getElementById("last");
-    const otpInput   = document.getElementById("otp");
-    const cartHidden = document.getElementById("cartParam");
+/* ---------- Modal open: include availability + reviews ---------- */
+async function openPD(sku){
+  _openPD_base(sku);
 
-    function show(t, kind="") { msgEl.textContent=t||""; msgEl.className="muted "+kind; }
-    function disable(el, on=true){ if(el) el.disabled=!!on; }
-    function normEmail(v){ return (v||"").trim().toLowerCase(); }
-
-    // Prefill email if ?email= param exists
-    (()=>{ const em = qs.get("email"); if (em) emailInput.value = em; })();
-
-    // Carry forward cart (if present) in a hidden field so we can re-attach post-auth if needed
-    if (incomingCartParam) {
-      cartHidden.value = incomingCartParam;
-      // also stash a backup in localStorage so if we bounce through magic link we still have it
-      try { localStorage.setItem('cart_backup', decodeURIComponent(incomingCartParam)); } catch {}
+  // Insert availability badge near SKU
+  try {
+    const { available, stock_qty } = await isSkuAvailable(sku);
+    let badge = document.getElementById('pdAvailBadge');
+    if (!badge){
+      badge = document.createElement('span');
+      badge.id = 'pdAvailBadge';
+      badge.className = 'avail-badge';
+      const skuEl = document.getElementById('pdSku');
+      skuEl?.parentNode?.insertBefore(badge, skuEl);
     }
+    badge.classList.toggle('ok', !!available);
+    badge.classList.toggle('bad', !available);
+    badge.textContent = available ? `Available${typeof stock_qty==='number' ? ' · '+stock_qty+' in stock' : ''}` : 'Unavailable';
 
-    // Optional: force sign-out if ?force=1 (useful when switching accounts)
-    (async ()=>{
-      if (forceRelog) { try { await supa.auth.signOut(); } catch(e){} }
-    })();
+    // Enable/disable modal buttons
+    pdAdd.disabled = !available;  pdAdd.title = available ? '' : 'Unavailable';
+    pdBuy.disabled = !available;  pdBuy.title = available ? '' : 'Unavailable';
+  } catch(e) { /* noop */ }
 
-    // ===== Handle existing session =====
-    (async ()=>{
-      try{
-        const { data } = await supa.auth.getSession();
-        if (data?.session?.user && !forceRelog) {
-          await saveNamesToProfileIfAny(data.session.user.id, data.session.user.email);
-          goNext();
-        }
-      } catch(e){ /* no-op */ }
-    })();
+  // Load reviews
+  loadReviews(sku);
+}
 
-    // ===== React to new session (magic link completes) =====
-    supa.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        await saveNamesToProfileIfAny(session.user.id, session.user.email);
-        goNext();
-      }
-      // If the provider added fragments (?code=...#access_token=...), clean URL
-      if (["SIGNED_IN","INITIAL_SESSION"].includes(event)) {
-        try {
-          const clean = location.pathname + (location.search ? location.search : "");
-          history.replaceState({}, "", clean);
-        } catch {}
-      }
-    });
+/* ---------- Card click opens modal ---------- */
+document.getElementById('productGrid').addEventListener('click', (e)=>{
+  if (e.target.closest('.add-btn') || e.target.closest('.buy-btn')) return;
+  const card = e.target.closest('.p-card');
+  if (!card) return;
+  const sku = card.getAttribute('data-sku');
+  if (!sku) return;
+  openPD(sku);
+});
 
-    function goNext(){
-      // Preserve cart via URL exactly once (checkout and cart pages already adopt-once)
-      try {
-        const cart = localStorage.getItem('cart_backup');
-        if (cart && redirect) {
-          const target = new URL(redirect, location.origin);
-          if (!target.searchParams.get('cart')) {
-            target.searchParams.set('cart', encodeURIComponent(cart));
-          }
-          location.replace(target.toString());
-          return;
-        }
-      } catch {}
-      location.replace(redirect);
-    }
+/* ---------- Keep cart badge + availability in sync ---------- */
+window.addEventListener('storage', (ev)=>{ if(ev.key === 'cart') updateCartBadge(); });
+document.addEventListener('DOMContentLoaded', ()=>{ updateCartBadge(); syncAvailability(); });
+window.addEventListener('focus', syncAvailability);
 
-    /* ===== Save profile info =====
-       Ensures names & email are in 'profiles' (RLS should allow user to upsert own row).
-    */
-    async function saveNamesToProfileIfAny(userId, email){
-      const first = localStorage.getItem("pending_first") || firstInput.value.trim();
-      const last  = localStorage.getItem("pending_last")  || lastInput.value.trim();
-      const em    = normEmail(email);
-      if (first || last || em) {
-        try {
-          await supa.from("profiles")
-            .upsert({ id: userId, first_name:first || null, last_name:last || null, email:em || null }, { onConflict: 'id' });
-        } catch (err) {
-          console.warn("Profile update failed:", err?.message || err);
-        }
-        localStorage.removeItem("pending_first");
-        localStorage.removeItem("pending_last");
-      }
-    }
-
-    /* ===== Resend cooldown ===== */
-    let resendTimer = null;
-    function startResend(seconds=45){
-      let left = seconds;
-      resendBtn.style.display = "inline-block";
-      resendBtn.textContent = `Resend email (${left})`;
-      resendBtn.disabled = true;
-      clearInterval(resendTimer);
-      resendTimer = setInterval(()=>{
-        left -= 1;
-        if (left <= 0){
-          clearInterval(resendTimer);
-          resendBtn.textContent = "Resend email";
-          resendBtn.disabled = false;
-        } else {
-          resendBtn.textContent = `Resend email (${left})`;
-        }
-      }, 1000);
-    }
-
-    /* ===== Send magic link ===== */
-    sendBtn.onclick = async function(){
-      show("");
-      const email = normEmail(emailInput.value);
-      const first = firstInput.value.trim();
-      const last  = lastInput.value.trim();
-
-      if (!first || !last) return show("Please enter your first and last name.","error");
-      if (!email) return show("Please enter your email.","error");
-
-      // stash names for post-redirect profile upsert
-      localStorage.setItem("pending_first", first);
-      localStorage.setItem("pending_last",  last);
-
-      // Build an absolute redirect back to this page (so the SDK can parse the session)
-      const backURL = new URL(location.href);
-      // Keep redirect target and (once) cart param in the return url
-      backURL.searchParams.set('redirect', redirect);
-      if (incomingCartParam) backURL.searchParams.set('cart', incomingCartParam);
-
-      disable(sendBtn,true);
-      show("Sending email…");
-
-      try{
-        const { error } = await supa.auth.signInWithOtp({
-          email,
-          options: {
-            // NOTE: Supabase v2 uses this for magic-link return
-            emailRedirectTo: backURL.toString(),
-            shouldCreateUser: true
-          }
-        });
-
-        disable(sendBtn,false);
-        if (error) return show(error.message,"error");
-
-        show(`Email sent to ${email}. Open the magic link here. If you also got a 6-digit code, enter it below.`, "success");
-        codeBox.style.display = "block";
-        startResend(45);
-        setTimeout(()=>otpInput.focus(),50);
-
-        // enable resend action
-        resendBtn.onclick = () => sendBtn.click();
-      }catch(e){
-        disable(sendBtn,false);
-        show("Network error. Please try again.","error");
-      }
-    };
-
-    /* ===== Verify 6-digit OTP (if email shows a code) ===== */
-    verifyBtn.onclick = async function(){
-      show("");
-      const email = normEmail(emailInput.value);
-      const token = (otpInput.value || "").trim();
-      if (!email) return show("Enter your email again to verify.","error");
-      if (!/^\d{6}$/.test(token)) return show("Enter the 6-digit code from your email.","error");
-
-      disable(verifyBtn,true);
-      show("Verifying…");
-
-      try{
-        const { data, error } = await supa.auth.verifyOtp({ email, token, type:"email" });
-        disable(verifyBtn,false);
-        if (error) return show(error.message,"error");
-
-        // data.user may be null in some edge cases; re-fetch user if needed
-        const userId = data?.user?.id;
-        if (userId) {
-          await saveNamesToProfileIfAny(userId, email);
-        } else {
-          const { data:{ user } } = await supa.auth.getUser();
-          if (user) await saveNamesToProfileIfAny(user.id, email);
-        }
-        goNext();
-      }catch(e){
-        disable(verifyBtn,false);
-        show("Verification failed. Please try again.","error");
-      }
-    };
-
-    // Submit OTP with Enter
-    otpInput.addEventListener("keydown", (e)=>{
-      if (e.key === "Enter") { e.preventDefault(); verifyBtn.click(); }
-    });
-
-    // Basic required validation hint when leaving inputs
-    ["first","last","email"].forEach(id=>{
-      const el = document.getElementById(id);
-      el.addEventListener("blur", ()=>{
-        if(!el.value.trim()){ el.setAttribute("aria-invalid","true"); }
-        else { el.removeAttribute("aria-invalid"); }
-      });
-    });
-  </script>
+/* ---------- Card-level Add/Buy buttons ---------- */
+document.querySelectorAll('.p-card').forEach(card=>{
+  const sku = card.getAttribute('data-sku');
+  const add = card.querySelector('.add-btn');
+  const buy = card.querySelector('.buy-btn');
+  if (add) add.addEventListener('click', (ev)=>{ ev.stopPropagation(); addToCartBySKU(sku,1); updateCartBadge(); });
+  if (buy) buy.addEventListener('click', async (ev)=>{
+    ev.stopPropagation();
+    addToCartBySKU(sku,1);
+    const { data:{ user } } = await supa.auth.getUser();
+    if(!user){ location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`; }
+    else { location.href = 'cart.html'; }
+  });
+});
+</script>
 </body>
 </html>
