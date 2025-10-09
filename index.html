@@ -128,8 +128,8 @@
 
         <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
 
-        <!-- Admin button (visibility handled in JS) -->
-        <button class="contact-btn" type="button" id="adminBtn">Admin</button>
+        <!-- Admin link (handled by JS to enforce login/admin check) -->
+        <a class="contact-btn" id="adminBtn" href="admin.html" onclick="return goToAdmin(event)">Admin</a>
 
         <select id="lang-switch" aria-label="Language">
           <option value="en">English</option>
@@ -449,23 +449,31 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
     );
 
-    /* ===== Admin navigation (NEVER to Products) ===== */
-    async function goToAdmin() {
-      const { data: { session } } = await supa.auth.getSession();
-      if (!session?.user) {
-        // Send to login, then bounce back to admin
-        location.href = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
-        return;
+    /* ===== Admin navigation (force login if needed; then admin.html) ===== */
+    async function goToAdmin(e){
+      if (e) e.preventDefault();
+      try{
+        const { data:{ session } } = await supa.auth.getSession();
+        if (!session?.user){
+          location.href = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
+          return false;
+        }
+        const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
+        if (SUPER_ADMINS.includes(session.user.email)){
+          location.href = 'admin.html';
+          return false;
+        }
+        const { data: prof, error } = await supa
+          .from('profiles').select('is_admin').eq('id', session.user.id).maybeSingle();
+        if (error){ alert('Could not read admin status: ' + error.message); return false; }
+        if (prof?.is_admin){ location.href = 'admin.html'; }
+        else { alert('This account is not an admin.'); }
+      } catch(err){
+        alert('Admin check failed: ' + (err?.message || err));
       }
-      const { data: prof, error } = await supa
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .maybeSingle();
-      if (error) { alert('Could not read admin status: ' + error.message); return; }
-      if (prof?.is_admin) location.href = 'admin.html';
-      else alert('This account is not an admin.');
+      return false;
     }
+    window.goToAdmin = goToAdmin;
 
     /* ===== Account dropdown + login modal wiring ===== */
     const signinBtn = document.getElementById('signinBtn');
@@ -473,7 +481,6 @@
     const accountMenu=document.getElementById('accountMenu');
     const accountHeader=document.getElementById('accountHeader');
     const helloName = document.getElementById('helloName');
-    const adminBtn = document.getElementById('adminBtn');
 
     function toggleMenu(){
       const open = accountMenu.classList.toggle('open');
@@ -484,7 +491,6 @@
       }
     }
     accountBtn.addEventListener('click', toggleMenu);
-    if (adminBtn) adminBtn.addEventListener('click', goToAdmin);
 
     function logout(){ supa.auth.signOut().then(()=>location.reload()); }
     window.logout = logout;
@@ -493,8 +499,6 @@
     const loginModal = document.getElementById('loginModal');
     function openLogin(){ loginModal.classList.add('open'); loginModal.setAttribute('aria-hidden','false'); }
     function closeLogin(){ loginModal.classList.remove('open'); loginModal.setAttribute('aria-hidden','true'); }
-    window.openLogin = openLogin; window.closeLogin = closeLogin;
-
     if (signinBtn) signinBtn.addEventListener('click', openLogin);
 
     /* ===== Inline magic-link + optional OTP ===== */
@@ -593,7 +597,6 @@
       if (!box) return;
       box.innerHTML = '<div class="muted">Recent purchases</div><div class="muted" style="margin-top:6px">Loading…</div>';
 
-      // Expecting a table 'orders' with: id, user_id, created_at, total_amount, currency
       const { data, error } = await supa
         .from('orders')
         .select('id, created_at, total_amount, currency')
@@ -619,11 +622,10 @@
       `;
     }
 
-    /* ===== Header session state + Admin visibility ===== */
+    /* ===== Header session state ===== */
     async function refreshHeader(){
       const { data:{ session } } = await supa.auth.getSession();
       if (session?.user){
-        // pull FULL profile name (first + last) for header display
         let display = session.user.email;
         let isAdmin = false;
         try {
@@ -637,13 +639,7 @@
         helloName.textContent = display;
         accountHeader.textContent = display;
 
-        // Admin button visibility rule:
-        // - hide for non-admin signed-in users
-        // - show for admin users
-        // - (shown for visitors when signed out, handled below)
-        if (adminBtn) adminBtn.style.display = isAdmin ? 'inline-block' : 'none';
-
-        // Show recent orders
+        // Admin link is always visible; goToAdmin enforces checks.
         loadRecentPurchases(session.user.id);
       } else {
         signinBtn.style.display = 'inline-block';
@@ -651,25 +647,12 @@
         helloName.textContent = '';
         accountHeader.textContent = '';
         accountMenu.classList.remove('open');
-
-        // Admin button visible for signed-out visitors
-        if (adminBtn) adminBtn.style.display = 'inline-block';
       }
     }
 
     document.addEventListener('DOMContentLoaded', refreshHeader);
-    supa.auth.onAuthStateChange(async (event, session)=>{
-      if (event === "SIGNED_IN" && session?.user){
-        try {
-          // Ensure profile has names if provided during login
-          const { data: p } = await supa.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
-          if (!p) {
-            await supa.from('profiles').insert({ id: session.user.id, email: session.user.email }).catch(()=>{});
-          }
-        } catch {}
-      }
-      await refreshHeader();
-    });
+    supa.auth.onAuthStateChange(async ()=>{ await refreshHeader(); });
   </script>
 </body>
 </html>
+
