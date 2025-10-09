@@ -92,15 +92,8 @@
     .pd-cols{display:grid;grid-template-columns:220px 1fr;gap:16px}
     @media(max-width:720px){.pd-cols{grid-template-columns:1fr}}
     .pd-img{width:100%;height:220px;object-fit:cover;border-radius:12px;border:1px solid rgba(141,158,199,.18)}
-    .specs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:720px){.specs{grid-template-columns:1fr}}
-    .spec{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:12px}
-    .spec h5{margin:.2rem 0 .3rem;font-size:0.95rem}
     .muted{color:var(--muted)}
     .sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-
-    /* RTL */
-    body.rtl .links a{text-align:right}
   </style>
 </head>
 <body>
@@ -158,11 +151,14 @@
 <script>
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4QyI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
 const PRODUCT_BUCKET = "ProductFiles";
 function filePublicUrl(path){
-  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(path.replace(/^ProductFiles\//,''))}`;
+  if(!path) return "";
+  // ensure we don't duplicate the bucket segment
+  const clean = path.replace(/^ProductFiles\//,'');
+  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(clean)}`;
 }
 </script>
 
@@ -178,16 +174,10 @@ function filePublicUrl(path){
         <img id="pdImg" class="pd-img" alt="">
         <div>
           <h3 id="pdName" style="margin:0 0 6px"></h3>
-          <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
-          <div class="specs">
-            <div class="spec">
-              <h5>Description</h5>
-              <div id="pdDesc" class="muted"></div>
-            </div>
-            <div class="spec">
-              <h5>Availability</h5>
-              <div id="pdAvail" class="muted"></div>
-            </div>
+          <p class="muted" id="pdAvailability" style="margin:0 0 10px"></p>
+          <div>
+            <h5 style="margin:.2rem 0 .3rem;font-size:0.95rem">Description</h5>
+            <div id="pdDesc" class="muted"></div>
           </div>
 
           <div class="sheet-actions">
@@ -226,14 +216,15 @@ function addToCartBySKU(sku, qty=1, nameOverride){
   writeCart(items);
 }
 
-/* ===== Runtime PRODUCT_SPECS built from DB ===== */
+/* ===== Runtime spec store built from DB ===== */
 const PRODUCT_SPECS = {}; // { SKU: { name, description, image, pdf, available, stock_qty } }
 
-/* ===== Load products in admin-defined order and render ===== */
+/* ===== Load products in admin-defined order and render (keep ALL products) ===== */
 const grid = document.getElementById('productGrid');
 
-function availBadge(p){
-  return p.available && Number(p.stock_qty||0) > 0
+function availBadge(available, stock){
+  const ok = !!available && Number(stock||0) > 0;
+  return ok
     ? `<span class="pill ok">Available</span>`
     : `<span class="pill bad">Unavailable</span>`;
 }
@@ -246,18 +237,20 @@ async function loadAndRenderProducts(){
     .order("name", { ascending:true });
 
   if(error){ grid.innerHTML = `<div class="muted">Failed to load products.</div>`; return; }
+
   (data||[]).forEach((p, idx)=>{
     const spec = {
+      name: p.name || p.sku,
       description: p.description || '',
       image: p.image_path ? filePublicUrl(p.image_path) : '',
       pdf: p.pdf_path ? filePublicUrl(p.pdf_path) : '#',
       available: !!p.available,
       stock_qty: Number(p.stock_qty||0),
-      name: p.name
     };
     PRODUCT_SPECS[p.sku] = spec;
 
     const disabled = !(spec.available && spec.stock_qty > 0);
+    const safeName = (spec.name||p.sku).replace(/"/g,'&quot;');
 
     const card = document.createElement('div');
     card.className = 'p-card';
@@ -265,15 +258,15 @@ async function loadAndRenderProducts(){
     card.setAttribute('data-pn', String(idx+1));
 
     card.innerHTML = `
-      <img src="${spec.image || 'images/placeholder.png'}" alt="${(p.name||p.sku).replace(/"/g,'&quot;')}">
+      <img src="${spec.image || 'images/placeholder.png'}" alt="${safeName}">
       <div class="px">
-        <h4>${p.name || p.sku}</h4>
+        <h4>${safeName}</h4>
         <div class="p-meta">
-          ${availBadge(spec)}
+          ${availBadge(spec.available, spec.stock_qty)}
           <span>Qty: ${spec.stock_qty}</span>
         </div>
         <div class="p-meta" style="margin-top:6px">
-          ${p.description ? `<span>${p.description.substring(0,80)}${p.description.length>80?'…':''}</span>` : `<span class="muted">No description</span>`}
+          ${spec.description ? `<span>${spec.description.substring(0,80)}${spec.description.length>80?'…':''}</span>` : `<span class="muted">No description</span>`}
         </div>
         <div class="actions">
           <button class="btn add-btn" type="button" ${disabled?'disabled':''} data-sku="${p.sku}">Add to Cart</button>
@@ -290,9 +283,8 @@ async function loadAndRenderProducts(){
 const pdModal = document.getElementById('productDetailsModal');
 const pdImg   = document.getElementById('pdImg');
 const pdName  = document.getElementById('pdName');
-const pdCat   = document.getElementById('pdCategory');
+const pdAvail = document.getElementById('pdAvailability');
 const pdDesc  = document.getElementById('pdDesc');
-const pdAvail = document.getElementById('pdAvail');
 const pdSku   = document.getElementById('pdSku');
 const pdAdd   = document.getElementById('pdAddBtn');
 const pdBuy   = document.getElementById('pdBuyBtn');
@@ -305,7 +297,6 @@ function openPD(sku){
   CURRENT_SKU = sku;
 
   pdName.textContent = spec.name || sku;
-  pdCat.textContent  = ""; // unused
   pdDesc.textContent = spec.description || '—';
   pdAvail.textContent= (spec.available && Number(spec.stock_qty||0)>0) ? `In stock (${spec.stock_qty})` : 'Unavailable';
   pdSku.textContent  = 'SKU: ' + sku;
@@ -313,7 +304,7 @@ function openPD(sku){
   pdImg.src = spec.image || '';
   pdImg.alt = pdName.textContent;
 
-  pdPdf.href  = spec.pdf || '#';
+  pdPdf.href = spec.pdf || '#';
 
   const disabled = !(spec.available && Number(spec.stock_qty||0)>0);
   pdAdd.disabled = disabled;
@@ -368,7 +359,7 @@ grid.addEventListener('click', (e)=>{
     if(sku) openPD(sku);
     return;
   }
-  // clicking elsewhere on the card opens details
+  // clicking anywhere else on the card opens details
   if(card){
     const sku = card.getAttribute('data-sku');
     if(sku) openPD(sku);
