@@ -30,16 +30,20 @@
             background:rgba(255,255,255,.05);color:var(--text)}
     input.qty-edit{width:84px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
                    background:rgba(255,255,255,.05);color:white;text-align:center}
-    input.text, textarea, input[type="file"]{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
-                   background:rgba(255,255,255,.05);color:white}
-    label.small{font-size:.85rem;color:var(--muted);display:block;margin:6px 0 4px}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-    @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
-    .filelink{font-size:.9rem;color:var(--muted)}
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
            border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
     #diag{color:var(--muted);font-size:.85rem;white-space:pre-wrap;margin-top:6px}
+
+    /* Add product form */
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    label{display:block;font-size:.9rem;color:var(--muted)}
+    input[type="text"], input[type="number"], textarea, input[type="file"]{
+      width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+      background:rgba(255,255,255,.05);color:var(--text)
+    }
+    textarea{min-height:90px;resize:vertical}
+    .switch{display:flex;align-items:center;gap:8px}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -57,7 +61,7 @@
     <div id="diag"></div>
   </div>
 
-  <!-- User Approvals (global can_purchase toggle) -->
+  <!-- User Approvals -->
   <div class="card hidden" id="uaWrap">
     <div class="toolbar">
       <h2>User Approvals</h2>
@@ -96,7 +100,7 @@
     <div id="vpaList"></div>
   </div>
 
-  <!-- Orders (admin quantity + status + email) -->
+  <!-- Orders -->
   <div class="card hidden" id="orderWrap">
     <div class="toolbar">
       <h2>Client Orders</h2>
@@ -109,7 +113,7 @@
     <div id="orderList"></div>
   </div>
 
-  <!-- Products (stock & availability + Create & Edit) -->
+  <!-- Products: Add + Manage -->
   <div class="card hidden" id="prodWrap">
     <div class="toolbar">
       <h2>Products</h2>
@@ -119,49 +123,57 @@
       </div>
     </div>
 
-    <!-- Create new product -->
-    <div class="card" style="background:rgba(255,255,255,.02)">
-      <h3 style="margin:0 0 8px">Create product</h3>
-      <div class="grid3">
+    <!-- ADD PRODUCT -->
+    <div class="card" style="margin:-4px 0 12px">
+      <h3 style="margin:0 0 10px">Add new product</h3>
+      <div class="grid2">
         <div>
-          <label class="small">SKU</label>
-          <input id="newSku" class="text" placeholder="e.g., URO-CHIEN">
+          <label>Product name
+            <input id="apName" type="text" placeholder="e.g., Urocline Chien">
+          </label>
         </div>
         <div>
-          <label class="small">Name</label>
-          <input id="newName" class="text" placeholder="Product name">
-        </div>
-        <div>
-          <label class="small">Sort order</label>
-          <input id="newSort" class="qty-edit" type="number" value="0" min="0">
+          <label>SKU
+            <input id="apSku" type="text" placeholder="e.g., URO-CHIEN">
+          </label>
         </div>
       </div>
-      <div class="grid2" style="margin-top:8px">
+
+      <label style="margin-top:10px">Description
+        <textarea id="apDesc" placeholder="Short description shown on product card and details"></textarea>
+      </label>
+
+      <div class="grid3" style="margin-top:10px">
         <div>
-          <label class="small">Description</label>
-          <textarea id="newDesc" rows="2" placeholder="Short description for lists and modal"></textarea>
+          <label>Quantity available
+            <input id="apQty" type="number" min="0" value="0">
+          </label>
         </div>
         <div>
-          <label class="small">Stock</label>
-          <input id="newStock" class="qty-edit" type="number" min="0" value="0">
-          <label class="small" style="margin-top:10px"><input id="newAvail" type="checkbox" checked> Available</label>
+          <label>Product image (JPG/PNG)
+            <input id="apImg" type="file" accept=".jpg,.jpeg,.png">
+          </label>
         </div>
         <div>
-          <label class="small">Image (JPG/PNG)</label>
-          <input id="newImg" type="file" accept=".jpg,.jpeg,.png">
-        </div>
-        <div>
-          <label class="small">PDF (spec sheet)</label>
-          <input id="newPdf" type="file" accept=".pdf">
+          <label>Product PDF
+            <input id="apPdf" type="file" accept=".pdf">
+          </label>
         </div>
       </div>
-      <div style="margin-top:10px">
-        <button class="btn small" id="createProdBtn">Create product</button>
-        <span id="prodMsg" class="muted" style="margin-left:8px"></span>
+
+      <div class="switch" style="margin-top:10px">
+        <input id="apAvail" type="checkbox" checked>
+        <label for="apAvail">Available</label>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn" id="apCreate">Create product</button>
+        <div id="apMsg" class="muted"></div>
       </div>
     </div>
 
-    <!-- Product list -->
+    <!-- MANAGE LIST -->
+    <div id="prodMsg" class="muted"></div>
     <div id="prodList"></div>
   </div>
 </main>
@@ -223,6 +235,17 @@ const prodMsg  = document.getElementById("prodMsg");
 const prodSearch  = document.getElementById("prodSearch");
 const prodRefresh = document.getElementById("prodRefresh");
 
+/* Add product form */
+const apName  = document.getElementById('apName');
+const apSku   = document.getElementById('apSku');
+const apDesc  = document.getElementById('apDesc');
+const apQty   = document.getElementById('apQty');
+const apImg   = document.getElementById('apImg');
+const apPdf   = document.getElementById('apPdf');
+const apAvail = document.getElementById('apAvail');
+const apCreate= document.getElementById('apCreate');
+const apMsg   = document.getElementById('apMsg');
+
 /* ===== Helpers ===== */
 function setGate(t,{showLogin=false,showLogout=false}={}) {
   authMsg.textContent = t;
@@ -230,13 +253,16 @@ function setGate(t,{showLogin=false,showLogout=false}={}) {
   logoutBtn.classList.toggle("hidden", !showLogout);
 }
 function fullName(p){ return [p?.first_name, p?.last_name].filter(Boolean).join(" ") || "(unknown)"; }
-function pill(s){ return `<span class="pill ${s==="approved"?"ok":s==="rejected"?"bad":"pend"}">${s||"pending"}</span>`; }
+function pill(s){ return `<span class="pill ${s===true||s==="approved"?"ok":(s===false||s==="rejected")?"bad":"pend"}">${s===true?"available":s===false?"unavailable":s||"pending"}</span>`; }
 function diag(label, obj){ diagEl.textContent += `\n${label}: ${JSON.stringify(obj)}`; }
 function toast(msg, isErr=false){
   toastEl.textContent = msg;
   toastEl.style.display = "block";
   toastEl.style.borderColor = isErr ? "rgba(255,120,120,.4)" : "rgba(141,158,199,.25)";
   clearTimeout(toast._t); toast._t = setTimeout(()=> toastEl.style.display="none", 2200);
+}
+function filePublicUrl(path){ // for ProductFiles bucket (public)
+  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(path.replace(/^ProductFiles\//,''))}`;
 }
 
 /* ===== Email helper (Edge Function) ===== */
@@ -276,7 +302,7 @@ async function checkAdmin(){
 }
 
 /* =======================================================================
-   USER APPROVALS (toggle profiles.can_purchase)
+   USER APPROVALS
 ======================================================================= */
 let uaRows=[];
 async function loadUserApprovals(){
@@ -399,6 +425,17 @@ appsList.addEventListener("click", async (e)=>{
     const status = action==="app-approve" ? "approved" : "rejected";
     const { error } = await supa.from("vet_applications").update({status}).eq("id", btn.dataset.id);
     if (error){ toast(error.message, true); return; }
+    if(status==="approved"){
+      const app = apps.find(a=>a.id===btn.dataset.id);
+      const prof = app ? profMap[app.user_id] : null;
+      if (prof?.email){
+        await sendApprovalEmail(
+          prof.email,
+          "Your vet verification was approved",
+          "Hi,\n\nYour VetoCos vet verification was approved. You may now place orders that require verification.\n\nThank you,\nVetoCos"
+        );
+      }
+    }
     toast(status==="approved" ? "Application approved" : "Application rejected");
     await loadApps();
   }
@@ -412,7 +449,7 @@ appsList.addEventListener("click", async (e)=>{
 });
 
 /* =======================================================================
-   PER-PRODUCT APPROVALS (with quantity edit)
+   PER-PRODUCT APPROVALS
 ======================================================================= */
 let vpaRows=[], vpaProfiles={}, vpaProducts={};
 async function loadProductApprovals(){
@@ -516,6 +553,17 @@ vpaList.addEventListener("click", async (e)=>{
     const status = action==="vpa-approve" ? "approved" : "rejected";
     const { error } = await supa.from("vet_product_approvals").update({status}).eq("id",id);
     if (error){ toast(error.message, true); return; }
+    if(status==="approved"){
+      const row = vpaRows.find(r=>r.id===id);
+      const prof = row ? vpaProfiles[row.user_id] : null;
+      if (prof?.email){
+        await sendApprovalEmail(
+          prof.email,
+          "Product request approved",
+          `Hi,\n\nYour request for ${row.product_sku} has been approved. You can now purchase it.\n\nThank you,\nVetoCos`
+        );
+      }
+    }
     toast(status==="approved" ? "SKU approved" : "SKU rejected");
     await loadProductApprovals();
     return;
@@ -530,7 +578,7 @@ vpaList.addEventListener("click", async (e)=>{
 });
 
 /* =======================================================================
-   ORDERS (Admin quantity + approve/reject + email)
+   ORDERS
 ======================================================================= */
 let orders=[], ordProfiles={}, ordProducts={};
 async function loadOrders(){
@@ -639,25 +687,20 @@ orderList.addEventListener("click", async (e)=>{
 });
 
 /* =======================================================================
-   PRODUCTS (Create + Edit: name, description, sort order, stock, availability, image/PDF)
+   PRODUCTS (Add + Manage)
 ======================================================================= */
 let products = [];
-function publicUrl(path){
-  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(path.replace(/^ProductFiles\//,''))}`;
-}
-
 async function loadProducts(){
   prodMsg.textContent = "Loading…";
   const { data, error } = await supa.from("products")
     .select("sku,name,description,stock_qty,available,image_path,pdf_path,sort_order,updated_at")
     .order("sort_order", { ascending:true, nullsFirst:false })
-    .order("name", { ascending:true });
+    .order("name");
   if (error){ prodMsg.textContent = error.message; toast(error.message, true); return; }
   products = data || [];
   renderProducts();
   prodMsg.textContent = products.length ? "" : "No products.";
 }
-
 function renderProducts(){
   const q=(prodSearch.value||"").toLowerCase();
   prodList.innerHTML="";
@@ -666,133 +709,137 @@ function renderProducts(){
   }).forEach(p=>{
     const el=document.createElement("div");
     el.className="card";
+    const imgTag = p.image_path ? `<img src="${filePublicUrl(p.image_path)}" style="width:84px;height:64px;object-fit:cover;border-radius:8px;border:1px solid rgba(141,158,199,.18)">` : '';
+    const pdfTag = p.pdf_path ? `<a class="btn small" href="${filePublicUrl(p.pdf_path)}" target="_blank" rel="noopener">PDF</a>` : '';
     el.innerHTML=`
-      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
-        <div><strong>${p.name||p.sku}</strong> <span class="muted">(${p.sku})</span></div>
-        <div class="muted">Updated: ${p.updated_at ? new Date(p.updated_at).toLocaleString() : "-"}</div>
-      </div>
-
-      <div class="grid3" style="margin-top:10px">
+      <div style="display:grid;grid-template-columns:1.4fr 84px 1fr 1fr 1.4fr;gap:10px;align-items:center">
         <div>
-          <label class="small">Name</label>
-          <input class="text" id="nm_${p.sku}" value="${(p.name||'').replace(/"/g,'&quot;')}">
+          <div><strong>${p.name||p.sku}</strong> <span class="muted">(${p.sku})</span></div>
+          <div class="muted" style="font-size:.9rem;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${p.description||''}</div>
+        </div>
+        <div>${imgTag||'<span class="muted">No image</span>'}</div>
+        <div>
+          <label class="muted" style="display:block;font-size:.85rem">Stock qty</label>
+          <input class="qty-edit" id="pqty_${p.sku}" type="number" min="0" value="${Number(p.stock_qty)||0}">
         </div>
         <div>
-          <label class="small">Sort order</label>
-          <input class="qty-edit" id="so_${p.sku}" type="number" min="0" value="${Number(p.sort_order)||0}">
+          <label class="muted" style="display:block;font-size:.85rem">Availability</label>
+          <button class="btn small" data-action="prod-toggle" data-sku="${p.sku}">
+            ${p.available ? 'Available' : 'Unavailable'}
+          </button>
         </div>
-        <div>
-          <label class="small">Stock</label>
-          <input class="qty-edit" id="q_${p.sku}" type="number" min="0" value="${Number(p.stock_qty)||0}">
-          <label class="small" style="margin-top:8px"><input id="av_${p.sku}" type="checkbox" ${p.available?'checked':''}> Available</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          ${pdfTag}
+          <button class="btn small" data-action="prod-save" data-sku="${p.sku}">Save</button>
+          <button class="btn danger small" data-action="prod-delete" data-sku="${p.sku}">Delete</button>
         </div>
-      </div>
-
-      <div class="grid2" style="margin-top:8px">
-        <div>
-          <label class="small">Description</label>
-          <textarea id="ds_${p.sku}" rows="2">${(p.description||'')}</textarea>
-        </div>
-        <div>
-          <label class="small">Image (JPG/PNG)</label>
-          <input type="file" id="img_${p.sku}" accept=".jpg,.jpeg,.png">
-          ${p.image_path ? `<div style="margin-top:6px"><a class="filelink" href="${publicUrl(p.image_path)}" target="_blank">Current image</a></div>`:''}
-          <label class="small" style="margin-top:10px">PDF (spec)</label>
-          <input type="file" id="pdf_${p.sku}" accept=".pdf">
-          ${p.pdf_path ? `<div style="margin-top:6px"><a class="filelink" href="${publicUrl(p.pdf_path)}" target="_blank">Current PDF</a></div>`:''}
-        </div>
-      </div>
-
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
-        <button class="btn small" data-action="prod-save" data-sku="${p.sku}">Save</button>
-        <button class="btn small" data-action="prod-upload-img" data-sku="${p.sku}">Upload image</button>
-        <button class="btn small" data-action="prod-upload-pdf" data-sku="${p.sku}">Upload PDF</button>
       </div>`;
     prodList.appendChild(el);
   });
 }
-
-/* Create new product */
-const newSku = document.getElementById("newSku");
-const newName = document.getElementById("newName");
-const newSort = document.getElementById("newSort");
-const newDesc = document.getElementById("newDesc");
-const newStock = document.getElementById("newStock");
-const newAvail = document.getElementById("newAvail");
-const newImg = document.getElementById("newImg");
-const newPdf = document.getElementById("newPdf");
-const createProdBtn = document.getElementById("createProdBtn");
-
-createProdBtn.onclick = async ()=>{
-  const sku = (newSku.value||"").trim();
-  const name = (newName.value||"").trim();
-  if(!sku || !name) { prodMsg.textContent = "SKU and Name are required."; return; }
-  prodMsg.textContent = "Creating…";
-
-  const body = {
-    sku, name,
-    description: (newDesc.value||"").trim() || null,
-    sort_order: Math.max(0, Number(newSort.value||0)),
-    stock_qty:  Math.max(0, Number(newStock.value||0)),
-    available: !!newAvail.checked
-  };
-  const { error } = await supa.from("products").insert(body);
-  if (error){ prodMsg.textContent = error.message; toast(error.message, true); return; }
-
-  // Upload files if present, then patch record
-  if(newImg.files[0]) await uploadFileForSku(sku, newImg.files[0], 'image');
-  if(newPdf.files[0]) await uploadFileForSku(sku, newPdf.files[0], 'pdf');
-
-  prodMsg.textContent = "Created.";
-  newSku.value=""; newName.value=""; newDesc.value=""; newSort.value="0"; newStock.value="0"; newAvail.checked=true; newImg.value=""; newPdf.value="";
-  await loadProducts();
-};
-
-async function uploadFileForSku(sku, file, kind){
-  if(!file) return;
-  const ext = (file.name.split('.').pop()||'').toLowerCase();
-  const path = `${sku}/${kind==='image' ? `image.${ext||'jpg'}` : `spec.${ext||'pdf'}`}`;
-  const up = await supa.storage.from(PRODUCT_BUCKET).upload(path, file, { upsert:true, cacheControl:"3600", contentType: file.type || "application/octet-stream" });
-  if(up.error){ toast(up.error.message, true); return; }
-  const patch = (kind==='image') ? { image_path: path } : { pdf_path: path };
-  const { error } = await supa.from("products").update(patch).eq("sku", sku);
-  if (error) toast(error.message, true); else toast(kind==='image'?"Image uploaded":"PDF uploaded");
-}
-
-/* Edit events */
 prodList.addEventListener("click", async (e)=>{
   const btn = e.target.closest("button[data-action]");
   if(!btn) return;
-  const sku = btn.dataset.sku;
-  const action = btn.dataset.action;
-
+  const { action, sku } = btn.dataset;
   if(action==="prod-save"){
-    const body = {
-      name:        document.getElementById(`nm_${sku}`).value.trim() || null,
-      description: document.getElementById(`ds_${sku}`).value.trim() || null,
-      sort_order:  Math.max(0, Number(document.getElementById(`so_${sku}`).value||0)),
-      stock_qty:   Math.max(0, Number(document.getElementById(`q_${sku}`).value||0)),
-      available:   document.getElementById(`av_${sku}`).checked
-    };
-    const { error } = await supa.from("products").update(body).eq("sku", sku);
+    const qEl = document.getElementById(`pqty_${sku}`);
+    const qty = Math.max(0, Number(qEl?.value || 0));
+    const { error } = await supa.from("products").update({ stock_qty: qty }).eq("sku", sku);
     if (error) toast(error.message, true); else toast("Saved");
     await loadProducts();
-  }
-
-  if(action==="prod-upload-img"){
-    const f = document.getElementById(`img_${sku}`)?.files?.[0];
-    if(!f) return toast("Choose an image first", true);
-    await uploadFileForSku(sku, f, 'image');
+  } else if (action==="prod-toggle"){
+    const row = products.find(x=>x.sku===sku);
+    const newVal = !row?.available;
+    const { error } = await supa.from("products").update({ available: newVal }).eq("sku", sku);
+    if (error) toast(error.message, true); else toast(newVal?"Marked available":"Marked unavailable");
     await loadProducts();
-  }
-
-  if(action==="prod-upload-pdf"){
-    const f = document.getElementById(`pdf_${sku}`)?.files?.[0];
-    if(!f) return toast("Choose a PDF first", true);
-    await uploadFileForSku(sku, f, 'pdf');
+  } else if (action==="prod-delete"){
+    if(!confirm(`Delete product ${sku}? This cannot be undone.`)) return;
+    // Optional: attempt to delete files if paths exist
+    const row = products.find(x=>x.sku===sku);
+    try{
+      const toRemove = [];
+      if(row?.image_path) toRemove.push(row.image_path);
+      if(row?.pdf_path)   toRemove.push(row.pdf_path);
+      if(toRemove.length){
+        await supa.storage.from(PRODUCT_BUCKET).remove(toRemove);
+      }
+    }catch(e){ console.warn('storage remove failed', e); }
+    const { error } = await supa.from("products").delete().eq("sku", sku);
+    if (error) toast(error.message, true); else toast("Product deleted");
     await loadProducts();
   }
 });
+
+/* ===== Add Product ===== */
+apCreate.onclick = async ()=>{
+  apMsg.textContent = "Uploading…";
+  apCreate.disabled = true;
+
+  const name = apName.value.trim();
+  const sku  = apSku.value.trim();
+  const desc = apDesc.value.trim();
+  const qty  = Math.max(0, Number(apQty.value||0));
+  const avail= !!apAvail.checked;
+  const imgF = apImg.files[0] || null;
+  const pdfF = apPdf.files[0] || null;
+
+  if(!name || !sku){ apMsg.textContent="Enter name and SKU."; apCreate.disabled=false; return; }
+
+  // check if SKU exists
+  const { data:exists, error:exErr } = await supa.from('products').select('sku').eq('sku', sku).maybeSingle();
+  if(exErr){ apMsg.textContent = exErr.message; apCreate.disabled=false; return; }
+  if(exists){ apMsg.textContent = "SKU already exists. Choose another."; apCreate.disabled=false; return; }
+
+  let image_path=null, pdf_path=null;
+
+  // upload image
+  if(imgF){
+    if(!['image/jpeg','image/png'].includes(imgF.type)){ apMsg.textContent="Image must be JPG or PNG."; apCreate.disabled=false; return; }
+    if(imgF.size > 8*1024*1024){ apMsg.textContent="Image too large (8MB max)."; apCreate.disabled=false; return; }
+    const imgName = imgF.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
+    const imgPath = `${sku}/${Date.now()}_${imgName}`;
+    const up = await supa.storage.from(PRODUCT_BUCKET).upload(imgPath, imgF, { upsert:false, cacheControl:'3600', contentType: imgF.type });
+    if(up.error){ apMsg.textContent = up.error.message; apCreate.disabled=false; return; }
+    image_path = up.data.path;
+  }
+
+  // upload pdf
+  if(pdfF){
+    if(pdfF.type!=='application/pdf'){ apMsg.textContent="PDF must be application/pdf."; apCreate.disabled=false; return; }
+    if(pdfF.size > 20*1024*1024){ apMsg.textContent="PDF too large (20MB max)."; apCreate.disabled=false; return; }
+    const pdfName = pdfF.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
+    const pdfPath = `${sku}/${Date.now()}_${pdfName}`;
+    const up2 = await supa.storage.from(PRODUCT_BUCKET).upload(pdfPath, pdfF, { upsert:false, cacheControl:'3600', contentType: 'application/pdf' });
+    if(up2.error){ apMsg.textContent = up2.error.message; apCreate.disabled=false; return; }
+    pdf_path = up2.data.path;
+  }
+
+  // compute next sort_order
+  let sort_order = null;
+  try{
+    const { data:maxrows } = await supa.rpc('get_max_sort_order_products').catch(()=>({data:null}));
+    if(maxrows && typeof maxrows.max === 'number') sort_order = maxrows.max + 1;
+  }catch(_){}
+
+  const insert = {
+    sku, name, description: desc || null,
+    stock_qty: qty, available: avail,
+    image_path, pdf_path, sort_order
+  };
+
+  const { error:insErr } = await supa.from('products').insert(insert);
+  if(insErr){ apMsg.textContent = insErr.message; apCreate.disabled=false; return; }
+
+  apMsg.textContent = "Product created.";
+  toast("Product created");
+  // reset form
+  apName.value = ""; apSku.value = ""; apDesc.value = ""; apQty.value = "0";
+  apImg.value = ""; apPdf.value = ""; apAvail.checked = true;
+  apCreate.disabled = false;
+
+  await loadProducts();
+};
 
 /* ===== Boot ===== */
 document.addEventListener("DOMContentLoaded", async ()=>{
