@@ -101,8 +101,8 @@
 <body>
 <header class="site">
   <div class="wrap nav">
-    <div class="brand" aria-label="VetoCos brand"><span class="logo" aria-hidden="true"></span> VetoCos</div>
-    <nav class="links" id="navlinks" aria-label="Primary">
+    <div class="brand"><span class="logo"></span> VetoCos</div>
+    <nav class="links" id="navlinks">
       <a href="index.html" data-i18n="nav.home">Home</a>
       <a class="active" href="Products.html" data-i18n="nav.products">Products</a>
       <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
@@ -114,26 +114,25 @@
       </a>
 
       <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
-      <label for="lang-switch" class="visually-hidden" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">Language</label>
       <select id="lang-switch" aria-label="Language">
         <option value="en">English</option>
         <option value="fr">Français</option>
         <option value="ar">العربية</option>
       </select>
     </nav>
-    <button class="hamb" aria-expanded="false" aria-controls="navlinks" onclick="document.getElementById('navlinks').classList.toggle('open'); this.setAttribute('aria-expanded', document.getElementById('navlinks').classList.contains('open'));">☰</button>
+    <button class="hamb" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
   </div>
 </header>
 
 <main class="wrap">
-  <section class="hero">
+  <div class="hero">
     <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
     <h1 data-i18n="products.title">Our Product Range</h1>
     <p class="lead" data-i18n="products.lead">Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.</p>
-  </section>
+  </div>
 
   <!-- Product cards: add data-sku; the JS will read <h4> as name -->
-  <section class="grid" id="productGrid">
+  <div class="grid" id="productGrid">
     <div class="p-card" data-sku="URO-CHIEN" data-pn="1">
       <img src="images/Product1.jpg" alt="Urocline Chien">
       <div class="px">
@@ -277,7 +276,7 @@
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </main>
 
 <footer>
@@ -289,12 +288,17 @@
 </footer>
 
 <!-- Minimal stubs for the modal open/close (to avoid errors) -->
-<script> function openContact(){} function openPolicy(){} </script>
+<script>
+  function openContact() {}
+  function openPolicy() {}
+</script>
 
 <!-- i18n + header year -->
-<script> document.getElementById("y") && (document.getElementById("y").textContent = new Date().getFullYear()); </script>
+<script>
+  document.getElementById("y") && (document.getElementById("y").textContent = new Date().getFullYear());
+</script>
 
-<!-- Supabase (auth used for Buy Now + reviews) -->
+<!-- Supabase (auth used for Buy Now redirect only) -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
 const supa = supabase.createClient(
@@ -317,10 +321,22 @@ const supa = supabase.createClient(
           <h3 id="pdName" style="margin:0 0 6px"></h3>
           <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
           <div class="specs">
-            <div class="spec"><h5>Form</h5><div id="pdForm" class="muted"></div></div>
-            <div class="spec"><h5>Pack size</h5><div id="pdSize" class="muted"></div></div>
-            <div class="spec"><h5>Key ingredients</h5><div id="pdIngredients" class="muted"></div></div>
-            <div class="spec"><h5>Feeding guidance</h5><div id="pdUsage" class="muted"></div></div>
+            <div class="spec">
+              <h5>Form</h5>
+              <div id="pdForm" class="muted"></div>
+            </div>
+            <div class="spec">
+              <h5>Pack size</h5>
+              <div id="pdSize" class="muted"></div>
+            </div>
+            <div class="spec">
+              <h5>Key ingredients</h5>
+              <div id="pdIngredients" class="muted"></div>
+            </div>
+            <div class="spec">
+              <h5>Feeding guidance</h5>
+              <div id="pdUsage" class="muted"></div>
+            </div>
           </div>
 
           <div class="sheet-actions">
@@ -332,30 +348,6 @@ const supa = supabase.createClient(
           </div>
         </div>
       </div>
-
-      <!-- Reviews -->
-      <div id="reviewsBox" style="margin-top:16px">
-        <h3 style="margin:0 0 8px">Reviews</h3>
-        <div id="reviewsList" class="muted">Loading reviews…</div>
-        <div id="reviewForm" class="spec" style="margin-top:10px">
-          <h5 style="margin:.2rem 0 .3rem">Leave a review</h5>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <label>Rating
-              <select id="revRating" style="margin-left:8px" aria-label="Rating">
-                <option value="5">★★★★★ (5)</option>
-                <option value="4">★★★★☆ (4)</option>
-                <option value="3">★★★☆☆ (3)</option>
-                <option value="2">★★☆☆☆ (2)</option>
-                <option value="1">★☆☆☆☆ (1)</option>
-              </select>
-            </label>
-            <input id="revText" placeholder="Your comment…" style="flex:1;min-width:220px;padding:10px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text)">
-            <button class="btn" id="revSubmit" type="button">Post</button>
-          </div>
-          <div id="revMsg" class="muted" style="margin-top:6px"></div>
-        </div>
-      </div>
-
       <p class="muted" style="margin-top:12px">
         Complementary feed — not a medicine. Always follow your vet’s advice.
       </p>
@@ -363,12 +355,20 @@ const supa = supabase.createClient(
   </div>
 </div>
 
-<!-- Cart + Product Details + Reviews logic -->
+<!-- Cart + Product Details logic -->
 <script>
-/* ---------- Cart helpers ---------- */
-const readCart   = () => { try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; } };
-const writeCart  = (items) => { localStorage.setItem("cart", JSON.stringify(items)); updateCartBadge(); };
-const countCart  = () => readCart().reduce((n,x)=>n + Number(x.qty||0), 0);
+/* ---------- Cart helpers (shared format with cart.html) ---------- */
+function readCart(){
+  try { return JSON.parse(localStorage.getItem("cart")||"[]"); }
+  catch { return []; }
+}
+function writeCart(items){
+  localStorage.setItem("cart", JSON.stringify(items));
+  updateCartBadge();
+}
+function countCart(){
+  return readCart().reduce((n,x)=>n + Number(x.qty||0), 0);
+}
 function updateCartBadge(){
   const n = countCart();
   const b = document.getElementById('cartCount');
@@ -376,12 +376,16 @@ function updateCartBadge(){
   if(n>0){ b.style.display='inline-grid'; b.textContent = n; }
   else   { b.style.display='none'; }
 }
+
+/* Get name from the card DOM to ensure it matches */
 function getNameForSKU(sku){
   const card = document.querySelector(`.p-card[data-sku="${sku}"]`);
   if(!card) return sku;
   const h4 = card.querySelector('h4');
   return (h4 && h4.textContent.trim()) || sku;
 }
+
+/* Single source of truth for adding to cart (prevents double-adding) */
 function addToCartBySKU(sku, qty=1){
   const name = getNameForSKU(sku);
   const items = readCart();
@@ -391,23 +395,26 @@ function addToCartBySKU(sku, qty=1){
   writeCart(items);
 }
 
-/* ===== Product specs ===== */
+/* ===== Product specifications & resources =====
+   - page: points to your existing ProductN.html
+   - pdf: points to pdf/ProductN.pdf (add your files there)
+*/
 const PRODUCT_SPECS = {
   "URO-CHIEN": { form:"Chewable tablets", size:"60 / 120 tabs", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", category:"Urinary care", image:"images/Product1.jpg", page:"Product1.html", pdf:"pdf/Product1.pdf" },
-  "HEP-AT":    { form:"Capsules",          size:"30 / 60 caps", ingredients:"Silybin-phospholipid, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", category:"Liver support", image:"images/Product2.jpg", page:"Product2.html", pdf:"pdf/Product2.pdf" },
-  "NEU-VIEW":  { form:"Soft chews",        size:"60 chews",     ingredients:"Phosphatidylserine, DHA, L-theanine, B-vitamins", usage:"1 chew / 10 kg daily", category:"Cognitive", image:"images/Product3.jpg", page:"Product3.html", pdf:"pdf/Product3.pdf" },
-  "MUNI-SAN":  { form:"Powder",            size:"120 g",        ingredients:"Beta-glucans, Colostrum, Zinc, Vitamin C", usage:"Mix with food once daily", category:"Immune", image:"images/Product4.jpg", page:"Product4.html", pdf:"pdf/Product4.pdf" },
-  "PILO-SAN":  { form:"Syrup",             size:"150 ml",       ingredients:"Biotin, Omega-3 & 6, Zinc", usage:"1 ml / 5 kg daily", category:"Skin & coat", image:"images/Product5.jpg", page:"Product5.html", pdf:"pdf/Product5.pdf" },
-  "HEMO-VET":  { form:"Tablets",           size:"60 tabs",      ingredients:"Iron, B12, Folic acid, Copper", usage:"As directed by your vet", category:"Vitamins & minerals", image:"images/Product6.jpg", page:"Product6.html", pdf:"pdf/Product6.pdf" },
-  "URO-STONES":{ form:"Tablets",           size:"60 tabs",      ingredients:"DL-methionine, Potassium citrate, Cranberry", usage:"Supports urinary environment", category:"Urinary care", image:"images/Product7.jpg", page:"Product7.html", pdf:"pdf/Product7.pdf" },
-  "VIT-MIN":   { form:"Powder",            size:"200 g",        ingredients:"Balanced vitamins & trace minerals", usage:"Daily multivitamin per weight", category:"Vitamins & minerals", image:"images/Product8.jpg", page:"Product8.html", pdf:"pdf/Product8.pdf" },
-  "ART-ASUH":  { form:"Chewable tablets",  size:"90 tabs",      ingredients:"Glucosamine, Chondroitin, MSM, Hyaluronic acid", usage:"Initial 4–6 weeks then maintenance", category:"Mobility", image:"images/Product9.jpg", page:"Product9.html", pdf:"pdf/Product9.pdf" },
-  "CARBO-DIG": { form:"Capsules",          size:"30 caps",      ingredients:"Activated charcoal, Prebiotics", usage:"Short-term digestive comfort", category:"Digestive comfort", image:"images/Product10.jpg", page:"Product10.html", pdf:"pdf/Product10.pdf" },
-  "RENO-SAN":  { form:"Powder",            size:"150 g",        ingredients:"Calcium carbonate, Chitosan, Omega-3", usage:"Supports renal function (dietary)", category:"Renal support", image:"images/Product11.jpg", page:"Product11.html", pdf:"pdf/Product11.pdf" },
-  "QAL-MIL":   { form:"Soft chews",        size:"60 chews",     ingredients:"L-tryptophan, L-theanine, Lemon balm", usage:"Use before stressful events or daily", category:"Calming", image:"images/Product12.jpg", page:"Product12.html", pdf:"pdf/Product12.pdf" }
+  "HEP-AT":    { form:"Capsules",          size:"30 / 60 caps", ingredients:"Silybin-phospholipid, SAMe, Vitamin E",                  usage:"1 cap / 10 kg daily for 4–8 weeks", category:"Liver support", image:"images/Product2.jpg", page:"Product2.html", pdf:"pdf/Product2.pdf" },
+  "NEU-VIEW":  { form:"Soft chews",        size:"60 chews",     ingredients:"Phosphatidylserine, DHA, L-theanine, B-vitamins",       usage:"1 chew / 10 kg daily", category:"Cognitive", image:"images/Product3.jpg", page:"Product3.html", pdf:"pdf/Product3.pdf" },
+  "MUNI-SAN":  { form:"Powder",            size:"120 g",        ingredients:"Beta-glucans, Colostrum, Zinc, Vitamin C",              usage:"Mix with food once daily", category:"Immune", image:"images/Product4.jpg", page:"Product4.html", pdf:"pdf/Product4.pdf" },
+  "PILO-SAN":  { form:"Syrup",             size:"150 ml",       ingredients:"Biotin, Omega-3 & 6, Zinc",                              usage:"1 ml / 5 kg daily", category:"Skin & coat", image:"images/Product5.jpg", page:"Product5.html", pdf:"pdf/Product5.pdf" },
+  "HEMO-VET":  { form:"Tablets",           size:"60 tabs",      ingredients:"Iron, B12, Folic acid, Copper",                          usage:"As directed by your vet", category:"Vitamins & minerals", image:"images/Product6.jpg", page:"Product6.html", pdf:"pdf/Product6.pdf" },
+  "URO-STONES":{ form:"Tablets",           size:"60 tabs",      ingredients:"DL-methionine, Potassium citrate, Cranberry",            usage:"Supports urinary environment", category:"Urinary care", image:"images/Product7.jpg", page:"Product7.html", pdf:"pdf/Product7.pdf" },
+  "VIT-MIN":   { form:"Powder",            size:"200 g",        ingredients:"Balanced vitamins & trace minerals",                     usage:"Daily multivitamin per weight", category:"Vitamins & minerals", image:"images/Product8.jpg", page:"Product8.html", pdf:"pdf/Product8.pdf" },
+  "ART-ASUH":  { form:"Chewable tablets",  size:"90 tabs",      ingredients:"Glucosamine, Chondroitin, MSM, Hyaluronic acid",         usage:"Initial 4–6 weeks then maintenance", category:"Mobility", image:"images/Product9.jpg", page:"Product9.html", pdf:"pdf/Product9.pdf" },
+  "CARBO-DIG": { form:"Capsules",          size:"30 caps",      ingredients:"Activated charcoal, Prebiotics",                          usage:"Short-term digestive comfort", category:"Digestive comfort", image:"images/Product10.jpg", page:"Product10.html", pdf:"pdf/Product10.pdf" },
+  "RENO-SAN":  { form:"Powder",            size:"150 g",        ingredients:"Calcium carbonate, Chitosan, Omega-3",                    usage:"Supports renal function (dietary)", category:"Renal support", image:"images/Product11.jpg", page:"Product11.html", pdf:"pdf/Product11.pdf" },
+  "QAL-MIL":   { form:"Soft chews",        size:"60 chews",     ingredients:"L-tryptophan, L-theanine, Lemon balm",                    usage:"Use before stressful events or daily", category:"Calming", image:"images/Product12.jpg", page:"Product12.html", pdf:"pdf/Product12.pdf" }
 };
 
-/* ===== Modal refs ===== */
+/* ===== Modal helpers ===== */
 const pdModal = document.getElementById('productDetailsModal');
 const pdImg   = document.getElementById('pdImg');
 const pdName  = document.getElementById('pdName');
@@ -424,8 +431,7 @@ const pdPage  = document.getElementById('pdPageBtn');
 
 let CURRENT_SKU = null;
 
-/* ----- Modal base ----- */
-function _openPD_base(sku){
+function openPD(sku){
   const spec = PRODUCT_SPECS[sku] || {};
   CURRENT_SKU = sku;
   pdName.textContent = getNameForSKU(sku);
@@ -435,17 +441,23 @@ function _openPD_base(sku){
   pdIngr.textContent = spec.ingredients || '—';
   pdUse.textContent  = spec.usage || '—';
   pdSku.textContent  = 'SKU: ' + sku;
+  // image priority: spec.image -> card image
   pdImg.src = spec.image || (document.querySelector(`.p-card[data-sku="${sku}"] img`)?.src || '');
   pdImg.alt = pdName.textContent;
+  // resources
   pdPdf.href  = spec.pdf  || '#';
   pdPage.href = spec.page || '#';
+
   pdModal.classList.add('open');
   pdModal.setAttribute('aria-hidden','false');
 }
-function closePD(){ pdModal.classList.remove('open'); pdModal.setAttribute('aria-hidden','true'); }
+function closePD(){
+  pdModal.classList.remove('open');
+  pdModal.setAttribute('aria-hidden','true');
+}
 pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
 
-/* ----- Modal actions ----- */
+/* Buttons inside modal reuse your cart/login flow */
 pdAdd.addEventListener('click', ()=>{ if(CURRENT_SKU){ addToCartBySKU(CURRENT_SKU,1); alert(getNameForSKU(CURRENT_SKU) + " added to cart"); }});
 pdBuy.addEventListener('click', async ()=>{
   if(!CURRENT_SKU) return;
@@ -455,57 +467,9 @@ pdBuy.addEventListener('click', async ()=>{
   else { location.href = 'cart.html'; }
 });
 
-/* ----- Reviews ----- */
-async function loadReviews(sku){
-  const list = document.getElementById('reviewsList');
-  list.textContent = 'Loading reviews…';
-  const { data: revs, error } = await supa
-    .from('product_reviews')
-    .select('rating, comment, created_at, user_id')
-    .eq('product_sku', sku)
-    .order('created_at', { ascending:false });
-  if(error){ list.textContent = error.message; return; }
-  if(!revs || !revs.length){ list.textContent = 'No reviews yet.'; return; }
-
-  const uids = [...new Set(revs.map(r=>r.user_id).filter(Boolean))];
-  let profs = {};
-  if (uids.length){
-    const { data: p, error: pe } = await supa.from('profiles').select('id,first_name,last_name').in('id', uids);
-    if(!pe && p){ p.forEach(x=> profs[x.id]=x); }
-  }
-  list.innerHTML = revs.map(r=>{
-    const pf = profs[r.user_id] || {};
-    const name = [pf.first_name, pf.last_name].filter(Boolean).join(' ') || 'Customer';
-    const stars = '★★★★★'.slice(0, r.rating) + '☆☆☆☆☆'.slice(r.rating);
-    const comment = (r.comment||'').replace(/</g,'&lt;');
-    return `<div style="padding:10px 0;border-top:1px solid rgba(141,158,199,.15)">
-      <div><strong>${name}</strong> · <span class="muted">${new Date(r.created_at).toLocaleDateString()}</span></div>
-      <div aria-label="rating">${stars}</div>
-      <div>${comment}</div>
-    </div>`;
-  }).join('');
-}
-async function postReview(sku){
-  const rating = Number(document.getElementById('revRating').value || 5);
-  const comment= (document.getElementById('revText').value || '').trim();
-  const msgEl  = document.getElementById('revMsg');
-  msgEl.textContent='';
-  const { data:{ user } } = await supa.auth.getUser();
-  if(!user){ location.href = `login.html?redirect=${encodeURIComponent(location.pathname)}`; return; }
-  const { error } = await supa.from('product_reviews').insert({ user_id: user.id, product_sku: sku, rating, comment });
-  if(error){ msgEl.textContent = error.message; return; }
-  document.getElementById('revText').value='';
-  msgEl.textContent='Thanks! Your review was posted.';
-  await loadReviews(sku);
-}
-document.getElementById('revSubmit').addEventListener('click', ()=>{ if(CURRENT_SKU) postReview(CURRENT_SKU); });
-
-/* extend modal opener to also load reviews */
-function openPD(sku){ _openPD_base(sku); loadReviews(sku); }
-
-/* Open details on card click (not buttons) */
+/* ===== Open details when clicking any card (but NOT the Add/Buy buttons) ===== */
 document.getElementById('productGrid').addEventListener('click', (e)=>{
-  if (e.target.closest('.add-btn') || e.target.closest('.buy-btn')) return;
+  if (e.target.closest('.add-btn') || e.target.closest('.buy-btn')) return; // let original handler run
   const card = e.target.closest('.p-card');
   if (!card) return;
   const sku = card.getAttribute('data-sku');
@@ -513,10 +477,13 @@ document.getElementById('productGrid').addEventListener('click', (e)=>{
   openPD(sku);
 });
 
-/* Sync badge */
-window.addEventListener('storage', (ev)=>{ if(ev.key === 'cart') updateCartBadge(); });
+/* Keep badge in sync across tabs/devices on same browser */
+window.addEventListener('storage', (ev)=>{
+  if(ev.key === 'cart') updateCartBadge();
+});
+
+/* Initial badge */
 updateCartBadge();
 </script>
 </body>
 </html>
-
