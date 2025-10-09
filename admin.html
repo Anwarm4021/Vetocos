@@ -50,19 +50,6 @@
     <div id="diag"></div>
   </div>
 
-  <!-- User Approvals (global can_purchase toggle) -->
-  <div class="card hidden" id="uaWrap">
-    <div class="toolbar">
-      <h2>User Approvals</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="uaSearch" class="search" placeholder="Search by name / email">
-        <button class="btn small" id="uaRefresh">Refresh</button>
-      </div>
-    </div>
-    <div id="uaMsg" class="muted"></div>
-    <div id="uaList"></div>
-  </div>
-
   <!-- Vet applications -->
   <div class="card hidden" id="appsWrap">
     <div class="toolbar">
@@ -89,7 +76,7 @@
     <div id="vpaList"></div>
   </div>
 
-  <!-- Orders (admin quantity + status + email) -->
+  <!-- Orders (admin quantity control) -->
   <div class="card hidden" id="orderWrap">
     <div class="toolbar">
       <h2>Client Orders</h2>
@@ -100,19 +87,6 @@
     </div>
     <div id="orderMsg" class="muted"></div>
     <div id="orderList"></div>
-  </div>
-
-  <!-- Products (stock & availability) -->
-  <div class="card hidden" id="prodWrap">
-    <div class="toolbar">
-      <h2>Products</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="prodSearch" class="search" placeholder="Search by name / SKU">
-        <button class="btn small" id="prodRefresh">Refresh</button>
-      </div>
-    </div>
-    <div id="prodMsg" class="muted"></div>
-    <div id="prodList"></div>
   </div>
 </main>
 
@@ -137,40 +111,23 @@ const logoutBtn= document.getElementById("logoutBtn");
 const diagEl   = document.getElementById("diag");
 const toastEl  = document.getElementById("toast");
 
-/* user approvals */
-const uaWrap = document.getElementById("uaWrap");
-const uaList = document.getElementById("uaList");
-const uaMsg  = document.getElementById("uaMsg");
-const uaSearch = document.getElementById("uaSearch");
-const uaRefresh= document.getElementById("uaRefresh");
-
-/* vet apps */
 const appsWrap = document.getElementById("appsWrap");
 const appsList = document.getElementById("appsList");
 const appsMsg  = document.getElementById("appsMsg");
 const appsSearch = document.getElementById("search");
 const appsRefresh = document.getElementById("appsRefresh");
 
-/* per-product approvals */
 const vpaWrap  = document.getElementById("vpaWrap");
 const vpaList  = document.getElementById("vpaList");
 const vpaMsg   = document.getElementById("vpaMsg");
 const vpaSearch= document.getElementById("vpaSearch");
 const vpaRefresh = document.getElementById("vpaRefresh");
 
-/* orders */
 const orderWrap  = document.getElementById("orderWrap");
 const orderList  = document.getElementById("orderList");
 const orderMsg   = document.getElementById("orderMsg");
 const orderSearch= document.getElementById("orderSearch");
 const ordersRefresh = document.getElementById("ordersRefresh");
-
-/* products */
-const prodWrap = document.getElementById("prodWrap");
-const prodList = document.getElementById("prodList");
-const prodMsg  = document.getElementById("prodMsg");
-const prodSearch  = document.getElementById("prodSearch");
-const prodRefresh = document.getElementById("prodRefresh");
 
 /* ===== Helpers ===== */
 function setGate(t,{showLogin=false,showLogout=false}={}) {
@@ -178,21 +135,18 @@ function setGate(t,{showLogin=false,showLogout=false}={}) {
   loginBtn.classList.toggle("hidden", !showLogin);
   logoutBtn.classList.toggle("hidden", !showLogout);
 }
-function fullName(p){ return [p?.first_name, p?.last_name].filter(Boolean).join(" ") || "(unknown)"; }
-function pill(s){ return `<span class="pill ${s==="approved"?"ok":s==="rejected"?"bad":"pend"}">${s||"pending"}</span>`; }
+function fullName(p){
+  return [p?.first_name, p?.last_name].filter(Boolean).join(" ") || "(unknown)";
+}
+function pill(s){
+  return `<span class="pill ${s==="approved"?"ok":s==="rejected"?"bad":"pend"}">${s||"pending"}</span>`;
+}
 function diag(label, obj){ diagEl.textContent += `\n${label}: ${JSON.stringify(obj)}`; }
 function toast(msg, isErr=false){
   toastEl.textContent = msg;
   toastEl.style.display = "block";
   toastEl.style.borderColor = isErr ? "rgba(255,120,120,.4)" : "rgba(141,158,199,.25)";
-  clearTimeout(toast._t); toast._t = setTimeout(()=> toastEl.style.display="none", 2200);
-}
-
-/* ===== Email helper (Edge Function) ===== */
-async function sendApprovalEmail(to, subject, text){
-  if(!to) return;
-  try { await supa.functions.invoke('send-email', { body: { to, subject, text }}); }
-  catch(e){ console.warn('send-email failed', e); }
+  setTimeout(()=> toastEl.style.display="none", 2200);
 }
 
 /* ===== Auth buttons ===== */
@@ -213,73 +167,22 @@ async function checkAdmin(){
   setGate(`Signed in as ${session.user.email}`, { showLogout:true });
 
   if (ADMIN_EMAILS.includes(session.user.email)){
-    [uaWrap, appsWrap, vpaWrap, orderWrap, prodWrap].forEach(el=>el.classList.remove("hidden"));
+    appsWrap.classList.remove("hidden");
+    vpaWrap.classList.remove("hidden");
+    orderWrap.classList.remove("hidden");
     return true;
   }
+
   const { data: prof, error: pe } = await supa
     .from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (pe){ setGate("Profile read error.", { showLogout:true }); toast(pe.message, true); return false; }
   if (!prof?.is_admin){ setGate("Access denied.", { showLogout:true }); return false; }
-  [uaWrap, appsWrap, vpaWrap, orderWrap, prodWrap].forEach(el=>el.classList.remove("hidden"));
+
+  appsWrap.classList.remove("hidden");
+  vpaWrap.classList.remove("hidden");
+  orderWrap.classList.remove("hidden");
   return true;
 }
-
-/* =======================================================================
-   USER APPROVALS (toggle profiles.can_purchase)
-======================================================================= */
-let uaRows=[];
-async function loadUserApprovals(){
-  uaMsg.textContent = "Loading…";
-  const { data, error } = await supa
-    .from("profiles")
-    .select("id,first_name,last_name,email,can_purchase")
-    .order("last_name", { ascending: true });
-  if (error){ uaMsg.textContent = error.message; toast(error.message, true); return; }
-  uaRows = data || [];
-  renderUA();
-  uaMsg.textContent = uaRows.length ? "" : "No users.";
-}
-function renderUA(){
-  const q=(uaSearch.value||"").toLowerCase();
-  uaList.innerHTML = "";
-  uaRows.filter(p=>{
-    const name = [p.first_name, p.last_name].filter(Boolean).join(' ');
-    return !q || name.toLowerCase().includes(q) || (p.email||"").toLowerCase().includes(q);
-  }).forEach(p=>{
-    const name = [p.first_name, p.last_name].filter(Boolean).join(' ') || '(no name)';
-    const el=document.createElement('div');
-    el.className='card';
-    el.innerHTML = `
-      <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;align-items:center">
-        <div>
-          <div style="font-weight:600">${name}</div>
-          <div class="muted">${p.email||''}</div>
-        </div>
-        <div>${p.can_purchase ? '<span class="pill ok">Approved</span>' : '<span class="pill pend">Needs approval</span>'}</div>
-        <div style="display:flex;gap:6px">
-          <button class="btn small" data-action="ua-approve" data-id="${p.id}" data-email="${p.email||''}">Approve</button>
-          <button class="btn small" data-action="ua-revoke"  data-id="${p.id}" data-email="${p.email||''}">Revoke</button>
-        </div>
-      </div>`;
-    uaList.appendChild(el);
-  });
-}
-uaList.addEventListener("click", async (e)=>{
-  const btn = e.target.closest("button[data-action]");
-  if(!btn) return;
-  const approve = btn.dataset.action === "ua-approve";
-  const { error } = await supa.from('profiles').update({ can_purchase: approve }).eq('id', btn.dataset.id);
-  if (error){ toast(error.message, true); return; }
-  toast(approve ? "User approved" : "Approval revoked");
-  if (approve && btn.dataset.email){
-    await sendApprovalEmail(
-      btn.dataset.email,
-      "Your VetoCos account has been approved",
-      "Hi,\n\nYour account has been approved. You can purchase without additional approvals now.\n\nThank you,\nVetoCos"
-    );
-  }
-  await loadUserApprovals();
-});
 
 /* =======================================================================
    VET APPLICATIONS
@@ -325,54 +228,40 @@ function renderApps(){
           <div class="muted">Status: ${pill(a.status)}</div>
           <div class="muted">Submitted: ${new Date(a.created_at).toLocaleString()}</div>
         </div>
-        <div><button class="btn" data-action="app-view" data-path="${a.diploma_path||""}">Diploma</button></div>
-        <div><button class="btn" data-action="app-approve" data-id="${a.id}">Approve</button></div>
-        <div><button class="btn" data-action="app-reject"  data-id="${a.id}">Reject</button></div>
-        <div><button class="btn danger small" data-action="app-delete" data-id="${a.id}">Delete</button></div>
+        <div><button class="btn" onclick="viewDiploma('${a.diploma_path||""}')">Diploma</button></div>
+        <div><button class="btn" onclick="approve('${a.id}')">Approve</button></div>
+        <div><button class="btn" onclick="reject('${a.id}')">Reject</button></div>
+        <div><button class="btn danger small" onclick="deleteApp('${a.id}')">Delete</button></div>
       </div>`;
     appsList.appendChild(el);
   });
 }
-appsList.addEventListener("click", async (e)=>{
-  const btn = e.target.closest("button[data-action]");
-  if(!btn) return;
-  const action = btn.dataset.action;
-
-  if(action === "app-view"){
-    const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(btn.dataset.path, 300);
-    if (error){ toast(error.message, true); return; }
-    window.location.assign(data.signedUrl);
-  }
-
-  if(action === "app-approve" || action === "app-reject"){
-    const status = action==="app-approve" ? "approved" : "rejected";
-    const { error } = await supa.from("vet_applications").update({status}).eq("id", btn.dataset.id);
-    if (error){ toast(error.message, true); return; }
-    if(status==="approved"){
-      const app = apps.find(a=>a.id===btn.dataset.id);
-      const prof = app ? profMap[app.user_id] : null;
-      if (prof?.email){
-        await sendApprovalEmail(
-          prof.email,
-          "Your vet verification was approved",
-          "Hi,\n\nYour VetoCos vet verification was approved. You may now place orders that require verification.\n\nThank you,\nVetoCos"
-        );
-      }
-    }
-    toast(status==="approved" ? "Application approved" : "Application rejected");
-    await loadApps();
-  }
-
-  if(action === "app-delete"){
-    if(!confirm("Delete this application permanently?")) return;
-    const { error } = await supa.from("vet_applications").delete().eq("id", btn.dataset.id);
-    if (error) toast(error.message, true); else toast("Application deleted");
-    await loadApps();
-  }
-});
+async function viewDiploma(path){
+  if(!path) return alert("No file path.");
+  const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(path, 300);
+  if (error){ toast(error.message, true); return; }
+  window.location.assign(data.signedUrl);
+}
+async function approve(id){
+  const { error } = await supa.from("vet_applications").update({status:"approved"}).eq("id", id);
+  if (error) toast(error.message, true); else toast("Application approved");
+  await loadApps();
+}
+async function reject(id){
+  const { error } = await supa.from("vet_applications").update({status:"rejected"}).eq("id", id);
+  if (error) toast(error.message, true); else toast("Application rejected");
+  await loadApps();
+}
+async function deleteApp(id){
+  if(!confirm("Delete this application permanently?")) return;
+  const { error } = await supa.from("vet_applications").delete().eq("id", id);
+  if (error) toast(error.message, true); else toast("Application deleted");
+  await loadApps();
+}
 
 /* =======================================================================
    PER-PRODUCT APPROVALS (with quantity edit)
+   Make sure table has: quantity integer not null default 1
 ======================================================================= */
 let vpaRows=[], vpaProfiles={}, vpaProducts={};
 async function loadProductApprovals(){
@@ -431,77 +320,63 @@ function renderVPA(){
         <div>
           <label class="muted" style="display:block;font-size:.85rem">Quantity</label>
           <div style="display:flex;gap:6px;align-items:center">
-            <button class="btn small" data-action="vpa-dec" data-id="${r.id}">−</button>
+            <button class="btn small" onclick="vpaDecQty('${r.id}')">−</button>
             <input id="qty-${r.id}" class="qty-edit" type="number" min="1" value="${Number(r.quantity)||1}">
-            <button class="btn small" data-action="vpa-inc" data-id="${r.id}">+</button>
+            <button class="btn small" onclick="vpaIncQty('${r.id}')">+</button>
           </div>
         </div>
 
         <div>${pill(r.status)}</div>
 
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn small" data-action="vpa-save"    data-id="${r.id}">Save qty</button>
-          <button class="btn small" data-action="vpa-approve" data-id="${r.id}">Approve</button>
-          <button class="btn small" data-action="vpa-reject"  data-id="${r.id}">Reject</button>
-          <button class="btn danger small" data-action="vpa-delete" data-id="${r.id}">Delete</button>
+          <button class="btn small" onclick="saveVpaQty('${r.id}')">Save qty</button>
+          <button class="btn small" onclick="approveSku('${r.id}')">Approve</button>
+          <button class="btn small" onclick="rejectSku('${r.id}')">Reject</button>
+          <button class="btn danger small" onclick="deleteSkuReq('${r.id}')">Delete</button>
         </div>
       </div>`;
     vpaList.appendChild(el);
   });
 }
-vpaList.addEventListener("click", async (e)=>{
-  const btn = e.target.closest("button[data-action]");
-  if(!btn) return;
-  const { action, id } = btn.dataset;
-
-  if(action==="vpa-inc" || action==="vpa-dec"){
-    const el = document.getElementById(`qty-${id}`);
-    if (!el) return;
-    const delta = action==="vpa-inc" ? 1 : -1;
-    el.value = Math.max(1, Number(el.value || 1) + delta);
-    return;
-  }
-
-  if(action==="vpa-save"){
-    const el = document.getElementById(`qty-${id}`);
-    if (!el) return alert('Quantity input not found.');
-    const qty = Math.max(1, Number(el.value || 1));
-    const { error } = await supa.from('vet_product_approvals').update({ quantity: qty }).eq('id', id);
-    if (error) toast(error.message, true); else toast('Quantity saved');
-    await loadProductApprovals();
-    return;
-  }
-
-  if(action==="vpa-approve" || action==="vpa-reject"){
-    const status = action==="vpa-approve" ? "approved" : "rejected";
-    const { error } = await supa.from("vet_product_approvals").update({status}).eq("id",id);
-    if (error){ toast(error.message, true); return; }
-    if(status==="approved"){
-      const row = vpaRows.find(r=>r.id===id);
-      const prof = row ? vpaProfiles[row.user_id] : null;
-      if (prof?.email){
-        await sendApprovalEmail(
-          prof.email,
-          "Product request approved",
-          `Hi,\n\nYour request for ${row.product_sku} has been approved. You can now purchase it.\n\nThank you,\nVetoCos`
-        );
-      }
-    }
-    toast(status==="approved" ? "SKU approved" : "SKU rejected");
-    await loadProductApprovals();
-    return;
-  }
-
-  if(action==="vpa-delete"){
-    if(!confirm("Delete this approval request?")) return;
-    const { error } = await supa.from("vet_product_approvals").delete().eq("id",id);
-    if (error) toast(error.message, true); else toast("Request deleted");
-    await loadProductApprovals();
-  }
-});
+function vpaIncQty(id){
+  const el = document.getElementById(`qty-${id}`);
+  if (!el) return;
+  el.value = Math.max(1, Number(el.value || 1) + 1);
+}
+function vpaDecQty(id){
+  const el = document.getElementById(`qty-${id}`);
+  if (!el) return;
+  el.value = Math.max(1, Number(el.value || 1) - 1);
+}
+async function saveVpaQty(id){
+  const el = document.getElementById(`qty-${id}`);
+  if (!el) return alert('Quantity input not found.');
+  const qty = Math.max(1, Number(el.value || 1));
+  const { error } = await supa.from('vet_product_approvals').update({ quantity: qty }).eq('id', id);
+  if (error) toast(error.message, true); else toast('Quantity saved');
+  await loadProductApprovals();
+}
+async function approveSku(id){
+  const { error } = await supa.from("vet_product_approvals").update({status:"approved"}).eq("id",id);
+  if (error) toast(error.message, true); else toast("SKU approved");
+  await loadProductApprovals();
+}
+async function rejectSku(id){
+  const { error } = await supa.from("vet_product_approvals").update({status:"rejected"}).eq("id",id);
+  if (error) toast(error.message, true); else toast("SKU rejected");
+  await loadProductApprovals();
+}
+async function deleteSkuReq(id){
+  if(!confirm("Delete this approval request?")) return;
+  const { error } = await supa.from("vet_product_approvals").delete().eq("id",id);
+  if (error) toast(error.message, true); else toast("Request deleted");
+  await loadProductApprovals();
+}
 
 /* =======================================================================
-   ORDERS (Admin quantity + approve/reject + email)
+   ORDERS (Admin quantity control)
+   Expected: public.orders(id uuid/serial, user_id uuid, product_sku text,
+                           quantity int, status text, created_at timestamptz)
 ======================================================================= */
 let orders=[], ordProfiles={}, ordProducts={};
 async function loadOrders(){
@@ -545,159 +420,54 @@ function renderOrders(){
     const el=document.createElement("div");
     el.className="card";
     el.innerHTML=`
-      <div style="display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1.6fr;gap:10px;align-items:center">
+      <div style="display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1fr;gap:10px;align-items:center">
         <div>
           <div style="font-weight:600">${fullName(p)}</div>
           <div class="muted">${p.email||""}</div>
         </div>
         <div>${prod} <span class="muted">(${o.product_sku})</span></div>
-        <div>
-          <label class="muted" style="display:block;font-size:.85rem">Qty</label>
-          <input class="qty-edit" id="q_${o.id}" type="number" min="1" value="${o.quantity}">
-        </div>
+        <div><input class="qty-edit" id="q_${o.id}" type="number" min="1" value="${o.quantity}"></div>
         <div>${pill(o.status)}</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn small" data-action="ord-save" data-id="${o.id}">Save</button>
-          <button class="btn small" data-action="ord-approve" data-id="${o.id}">Approve</button>
-          <button class="btn small" data-action="ord-reject" data-id="${o.id}">Reject</button>
-          <button class="btn danger small" data-action="ord-delete" data-id="${o.id}">Delete</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn small" onclick="updateQty('${o.id}')">Save</button>
+          <button class="btn danger small" onclick="deleteOrder('${o.id}')">Delete</button>
         </div>
       </div>`;
     orderList.appendChild(el);
   });
 }
-orderList.addEventListener("click", async (e)=>{
-  const btn = e.target.closest("button[data-action]");
-  if(!btn) return;
-  const { action, id } = btn.dataset;
-  const row = orders.find(o=>o.id===id);
-  const prof = row ? ordProfiles[row.user_id] : null;
-
-  if(action==="ord-save"){
-    const input = document.getElementById("q_"+id);
-    const val = Number(input?.value||0);
-    if(!val || val<1) return toast("Invalid quantity", true);
-    const { error } = await supa.from("orders").update({ quantity: val }).eq("id", id);
-    if (error) toast(error.message, true); else toast("Quantity updated");
-    await loadOrders();
-    return;
-  }
-
-  if(action==="ord-approve" || action==="ord-reject"){
-    const status = action==="ord-approve" ? "approved" : "rejected";
-    const { error } = await supa.from("orders").update({ status }).eq("id", id);
-    if (error){ toast(error.message, true); return; }
-    toast(status==="approved"?"Order approved":"Order rejected");
-    if (prof?.email){
-      await sendApprovalEmail(
-        prof.email,
-        status==="approved" ? "Your VetoCos order was approved" : "Your VetoCos order was rejected",
-        status==="approved"
-          ? `Hi,\n\nYour order for ${row.product_sku} (qty ${row.quantity}) has been approved and will be processed.\n\nThank you,\nVetoCos`
-          : `Hi,\n\nUnfortunately your order for ${row.product_sku} (qty ${row.quantity}) was rejected. If you believe this is an error, please contact support.\n\nThank you,\nVetoCos`
-      );
-    }
-    await loadOrders();
-    return;
-  }
-
-  if(action==="ord-delete"){
-    if(!confirm("Delete this order permanently?")) return;
-    const { error } = await supa.from("orders").delete().eq("id", id);
-    if (error) toast(error.message, true); else toast("Order deleted");
-    await loadOrders();
-  }
-});
-
-/* =======================================================================
-   PRODUCTS (stock & availability)
-======================================================================= */
-let products = [];
-async function loadProducts(){
-  prodMsg.textContent = "Loading…";
-  const { data, error } = await supa.from("products")
-    .select("sku,name,stock_qty,available")
-    .order("sku");
-  if (error){ prodMsg.textContent = error.message; toast(error.message, true); return; }
-  products = data || [];
-  renderProducts();
-  prodMsg.textContent = products.length ? "" : "No products.";
+async function updateQty(id){
+  const input = document.getElementById("q_"+id);
+  const val = Number(input?.value||0);
+  if(!val || val<1) return toast("Invalid quantity", true);
+  const { error } = await supa.from("orders").update({ quantity: val }).eq("id", id);
+  if (error) toast(error.message, true); else toast("Quantity updated");
+  await loadOrders();
 }
-function renderProducts(){
-  const q=(prodSearch.value||"").toLowerCase();
-  prodList.innerHTML="";
-  products.filter(p=>{
-    return !q || (p.name||"").toLowerCase().includes(q) || (p.sku||"").toLowerCase().includes(q);
-  }).forEach(p=>{
-    const el=document.createElement("div");
-    el.className="card";
-    el.innerHTML=`
-      <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1.4fr;gap:10px;align-items:center">
-        <div><strong>${p.name||p.sku}</strong> <span class="muted">(${p.sku})</span></div>
-        <div>
-          <label class="muted" style="display:block;font-size:.85rem">Stock qty</label>
-          <input class="qty-edit" id="pqty_${p.sku}" type="number" min="0" value="${Number(p.stock_qty)||0}">
-        </div>
-        <div>
-          <label class="muted" style="display:block;font-size:.85rem">Available</label>
-          <button class="btn small" data-action="prod-toggle" data-sku="${p.sku}" aria-pressed="${p.available}">
-            ${p.available ? 'Available' : 'Unavailable'}
-          </button>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn small" data-action="prod-save" data-sku="${p.sku}">Save</button>
-          <button class="btn small" data-action="prod-toggle" data-sku="${p.sku}">Toggle</button>
-        </div>
-      </div>`;
-    prodList.appendChild(el);
-  });
+async function deleteOrder(id){
+  if(!confirm("Delete this order permanently?")) return;
+  const { error } = await supa.from("orders").delete().eq("id", id);
+  if (error) toast(error.message, true); else toast("Order deleted");
+  await loadOrders();
 }
-prodList.addEventListener("click", async (e)=>{
-  const btn = e.target.closest("button[data-action]");
-  if(!btn) return;
-  const { action, sku } = btn.dataset;
-  if(action==="prod-save"){
-    const qEl = document.getElementById(`pqty_${sku}`);
-    const qty = Math.max(0, Number(qEl?.value || 0));
-    const { error } = await supa.from("products").update({ stock_qty: qty }).eq("sku", sku);
-    if (error) toast(error.message, true); else toast("Saved");
-    await loadProducts();
-  } else if (action==="prod-toggle"){
-    const row = products.find(x=>x.sku===sku);
-    const newVal = !row?.available;
-    const { error } = await supa.from("products").update({ available: newVal }).eq("sku", sku);
-    if (error) toast(error.message, true); else toast(newVal?"Marked available":"Marked unavailable");
-    await loadProducts();
-  }
-});
 
 /* ===== Boot ===== */
 document.addEventListener("DOMContentLoaded", async ()=>{
   const ok = await checkAdmin();
   if (ok){
-    await Promise.all([
-      loadUserApprovals(),
-      loadApps(),
-      loadProductApprovals(),
-      loadOrders(),
-      loadProducts()
-    ]);
+    await loadApps();
+    await loadProductApprovals();
+    await loadOrders();
   }
-  uaSearch.addEventListener("input", renderUA);
-  uaRefresh.onclick = () => loadUserApprovals();
-
   appsSearch.addEventListener("input", renderApps);
-  appsRefresh.onclick   = () => loadApps();
-
   vpaSearch.addEventListener("input", renderVPA);
-  vpaRefresh.onclick    = () => loadProductApprovals();
-
   orderSearch.addEventListener("input", renderOrders);
-  ordersRefresh.onclick = () => loadOrders();
 
-  prodSearch.addEventListener("input", renderProducts);
-  prodRefresh.onclick   = () => loadProducts();
+  appsRefresh.onclick   = () => loadApps();
+  vpaRefresh.onclick    = () => loadProductApprovals();
+  ordersRefresh.onclick = () => loadOrders();
 });
 </script>
 </body>
 </html>
+
