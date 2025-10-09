@@ -30,6 +30,13 @@
             background:rgba(255,255,255,.05);color:var(--text)}
     input.qty-edit{width:84px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
                    background:rgba(255,255,255,.05);color:white;text-align:center}
+    input.text, textarea, input[type="file"]{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
+                   background:rgba(255,255,255,.05);color:white}
+    label.small{font-size:.85rem;color:var(--muted);display:block;margin:6px 0 4px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+    .filelink{font-size:.9rem;color:var(--muted)}
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
            border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
     #diag{color:var(--muted);font-size:.85rem;white-space:pre-wrap;margin-top:6px}
@@ -102,7 +109,7 @@
     <div id="orderList"></div>
   </div>
 
-  <!-- Products (stock & availability) -->
+  <!-- Products (stock & availability + Create & Edit) -->
   <div class="card hidden" id="prodWrap">
     <div class="toolbar">
       <h2>Products</h2>
@@ -111,7 +118,50 @@
         <button class="btn small" id="prodRefresh">Refresh</button>
       </div>
     </div>
-    <div id="prodMsg" class="muted"></div>
+
+    <!-- Create new product -->
+    <div class="card" style="background:rgba(255,255,255,.02)">
+      <h3 style="margin:0 0 8px">Create product</h3>
+      <div class="grid3">
+        <div>
+          <label class="small">SKU</label>
+          <input id="newSku" class="text" placeholder="e.g., URO-CHIEN">
+        </div>
+        <div>
+          <label class="small">Name</label>
+          <input id="newName" class="text" placeholder="Product name">
+        </div>
+        <div>
+          <label class="small">Sort order</label>
+          <input id="newSort" class="qty-edit" type="number" value="0" min="0">
+        </div>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <div>
+          <label class="small">Description</label>
+          <textarea id="newDesc" rows="2" placeholder="Short description for lists and modal"></textarea>
+        </div>
+        <div>
+          <label class="small">Stock</label>
+          <input id="newStock" class="qty-edit" type="number" min="0" value="0">
+          <label class="small" style="margin-top:10px"><input id="newAvail" type="checkbox" checked> Available</label>
+        </div>
+        <div>
+          <label class="small">Image (JPG/PNG)</label>
+          <input id="newImg" type="file" accept=".jpg,.jpeg,.png">
+        </div>
+        <div>
+          <label class="small">PDF (spec sheet)</label>
+          <input id="newPdf" type="file" accept=".pdf">
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <button class="btn small" id="createProdBtn">Create product</button>
+        <span id="prodMsg" class="muted" style="margin-left:8px"></span>
+      </div>
+    </div>
+
+    <!-- Product list -->
     <div id="prodList"></div>
   </div>
 </main>
@@ -127,8 +177,9 @@ const supa = supabase.createClient(
 );
 
 /* ===== Config ===== */
-const BUCKET       = "Documents";
-const ADMIN_EMAILS = ["Anwar.moumenjamai19@gmail.com"];
+const DOCS_BUCKET    = "Documents";
+const PRODUCT_BUCKET = "ProductFiles";
+const ADMIN_EMAILS   = ["Anwar.moumenjamai19@gmail.com"];
 
 /* ===== UI refs ===== */
 const authMsg  = document.getElementById("authMsg");
@@ -339,7 +390,7 @@ appsList.addEventListener("click", async (e)=>{
   const action = btn.dataset.action;
 
   if(action === "app-view"){
-    const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(btn.dataset.path, 300);
+    const { data, error } = await supa.storage.from(DOCS_BUCKET).createSignedUrl(btn.dataset.path, 300);
     if (error){ toast(error.message, true); return; }
     window.location.assign(data.signedUrl);
   }
@@ -348,17 +399,6 @@ appsList.addEventListener("click", async (e)=>{
     const status = action==="app-approve" ? "approved" : "rejected";
     const { error } = await supa.from("vet_applications").update({status}).eq("id", btn.dataset.id);
     if (error){ toast(error.message, true); return; }
-    if(status==="approved"){
-      const app = apps.find(a=>a.id===btn.dataset.id);
-      const prof = app ? profMap[app.user_id] : null;
-      if (prof?.email){
-        await sendApprovalEmail(
-          prof.email,
-          "Your vet verification was approved",
-          "Hi,\n\nYour VetoCos vet verification was approved. You may now place orders that require verification.\n\nThank you,\nVetoCos"
-        );
-      }
-    }
     toast(status==="approved" ? "Application approved" : "Application rejected");
     await loadApps();
   }
@@ -476,17 +516,6 @@ vpaList.addEventListener("click", async (e)=>{
     const status = action==="vpa-approve" ? "approved" : "rejected";
     const { error } = await supa.from("vet_product_approvals").update({status}).eq("id",id);
     if (error){ toast(error.message, true); return; }
-    if(status==="approved"){
-      const row = vpaRows.find(r=>r.id===id);
-      const prof = row ? vpaProfiles[row.user_id] : null;
-      if (prof?.email){
-        await sendApprovalEmail(
-          prof.email,
-          "Product request approved",
-          `Hi,\n\nYour request for ${row.product_sku} has been approved. You can now purchase it.\n\nThank you,\nVetoCos`
-        );
-      }
-    }
     toast(status==="approved" ? "SKU approved" : "SKU rejected");
     await loadProductApprovals();
     return;
@@ -610,19 +639,25 @@ orderList.addEventListener("click", async (e)=>{
 });
 
 /* =======================================================================
-   PRODUCTS (stock & availability)
+   PRODUCTS (Create + Edit: name, description, sort order, stock, availability, image/PDF)
 ======================================================================= */
 let products = [];
+function publicUrl(path){
+  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(path.replace(/^ProductFiles\//,''))}`;
+}
+
 async function loadProducts(){
   prodMsg.textContent = "Loading…";
   const { data, error } = await supa.from("products")
-    .select("sku,name,stock_qty,available")
-    .order("sku");
+    .select("sku,name,description,stock_qty,available,image_path,pdf_path,sort_order,updated_at")
+    .order("sort_order", { ascending:true, nullsFirst:false })
+    .order("name", { ascending:true });
   if (error){ prodMsg.textContent = error.message; toast(error.message, true); return; }
   products = data || [];
   renderProducts();
   prodMsg.textContent = products.length ? "" : "No products.";
 }
+
 function renderProducts(){
   const q=(prodSearch.value||"").toLowerCase();
   prodList.innerHTML="";
@@ -632,41 +667,129 @@ function renderProducts(){
     const el=document.createElement("div");
     el.className="card";
     el.innerHTML=`
-      <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1.4fr;gap:10px;align-items:center">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
         <div><strong>${p.name||p.sku}</strong> <span class="muted">(${p.sku})</span></div>
+        <div class="muted">Updated: ${p.updated_at ? new Date(p.updated_at).toLocaleString() : "-"}</div>
+      </div>
+
+      <div class="grid3" style="margin-top:10px">
         <div>
-          <label class="muted" style="display:block;font-size:.85rem">Stock qty</label>
-          <input class="qty-edit" id="pqty_${p.sku}" type="number" min="0" value="${Number(p.stock_qty)||0}">
+          <label class="small">Name</label>
+          <input class="text" id="nm_${p.sku}" value="${(p.name||'').replace(/"/g,'&quot;')}">
         </div>
         <div>
-          <label class="muted" style="display:block;font-size:.85rem">Available</label>
-          <button class="btn small" data-action="prod-toggle" data-sku="${p.sku}" aria-pressed="${p.available}">
-            ${p.available ? 'Available' : 'Unavailable'}
-          </button>
+          <label class="small">Sort order</label>
+          <input class="qty-edit" id="so_${p.sku}" type="number" min="0" value="${Number(p.sort_order)||0}">
         </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn small" data-action="prod-save" data-sku="${p.sku}">Save</button>
-          <button class="btn small" data-action="prod-toggle" data-sku="${p.sku}">Toggle</button>
+        <div>
+          <label class="small">Stock</label>
+          <input class="qty-edit" id="q_${p.sku}" type="number" min="0" value="${Number(p.stock_qty)||0}">
+          <label class="small" style="margin-top:8px"><input id="av_${p.sku}" type="checkbox" ${p.available?'checked':''}> Available</label>
         </div>
+      </div>
+
+      <div class="grid2" style="margin-top:8px">
+        <div>
+          <label class="small">Description</label>
+          <textarea id="ds_${p.sku}" rows="2">${(p.description||'')}</textarea>
+        </div>
+        <div>
+          <label class="small">Image (JPG/PNG)</label>
+          <input type="file" id="img_${p.sku}" accept=".jpg,.jpeg,.png">
+          ${p.image_path ? `<div style="margin-top:6px"><a class="filelink" href="${publicUrl(p.image_path)}" target="_blank">Current image</a></div>`:''}
+          <label class="small" style="margin-top:10px">PDF (spec)</label>
+          <input type="file" id="pdf_${p.sku}" accept=".pdf">
+          ${p.pdf_path ? `<div style="margin-top:6px"><a class="filelink" href="${publicUrl(p.pdf_path)}" target="_blank">Current PDF</a></div>`:''}
+        </div>
+      </div>
+
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn small" data-action="prod-save" data-sku="${p.sku}">Save</button>
+        <button class="btn small" data-action="prod-upload-img" data-sku="${p.sku}">Upload image</button>
+        <button class="btn small" data-action="prod-upload-pdf" data-sku="${p.sku}">Upload PDF</button>
       </div>`;
     prodList.appendChild(el);
   });
 }
+
+/* Create new product */
+const newSku = document.getElementById("newSku");
+const newName = document.getElementById("newName");
+const newSort = document.getElementById("newSort");
+const newDesc = document.getElementById("newDesc");
+const newStock = document.getElementById("newStock");
+const newAvail = document.getElementById("newAvail");
+const newImg = document.getElementById("newImg");
+const newPdf = document.getElementById("newPdf");
+const createProdBtn = document.getElementById("createProdBtn");
+
+createProdBtn.onclick = async ()=>{
+  const sku = (newSku.value||"").trim();
+  const name = (newName.value||"").trim();
+  if(!sku || !name) { prodMsg.textContent = "SKU and Name are required."; return; }
+  prodMsg.textContent = "Creating…";
+
+  const body = {
+    sku, name,
+    description: (newDesc.value||"").trim() || null,
+    sort_order: Math.max(0, Number(newSort.value||0)),
+    stock_qty:  Math.max(0, Number(newStock.value||0)),
+    available: !!newAvail.checked
+  };
+  const { error } = await supa.from("products").insert(body);
+  if (error){ prodMsg.textContent = error.message; toast(error.message, true); return; }
+
+  // Upload files if present, then patch record
+  if(newImg.files[0]) await uploadFileForSku(sku, newImg.files[0], 'image');
+  if(newPdf.files[0]) await uploadFileForSku(sku, newPdf.files[0], 'pdf');
+
+  prodMsg.textContent = "Created.";
+  newSku.value=""; newName.value=""; newDesc.value=""; newSort.value="0"; newStock.value="0"; newAvail.checked=true; newImg.value=""; newPdf.value="";
+  await loadProducts();
+};
+
+async function uploadFileForSku(sku, file, kind){
+  if(!file) return;
+  const ext = (file.name.split('.').pop()||'').toLowerCase();
+  const path = `${sku}/${kind==='image' ? `image.${ext||'jpg'}` : `spec.${ext||'pdf'}`}`;
+  const up = await supa.storage.from(PRODUCT_BUCKET).upload(path, file, { upsert:true, cacheControl:"3600", contentType: file.type || "application/octet-stream" });
+  if(up.error){ toast(up.error.message, true); return; }
+  const patch = (kind==='image') ? { image_path: path } : { pdf_path: path };
+  const { error } = await supa.from("products").update(patch).eq("sku", sku);
+  if (error) toast(error.message, true); else toast(kind==='image'?"Image uploaded":"PDF uploaded");
+}
+
+/* Edit events */
 prodList.addEventListener("click", async (e)=>{
   const btn = e.target.closest("button[data-action]");
   if(!btn) return;
-  const { action, sku } = btn.dataset;
+  const sku = btn.dataset.sku;
+  const action = btn.dataset.action;
+
   if(action==="prod-save"){
-    const qEl = document.getElementById(`pqty_${sku}`);
-    const qty = Math.max(0, Number(qEl?.value || 0));
-    const { error } = await supa.from("products").update({ stock_qty: qty }).eq("sku", sku);
+    const body = {
+      name:        document.getElementById(`nm_${sku}`).value.trim() || null,
+      description: document.getElementById(`ds_${sku}`).value.trim() || null,
+      sort_order:  Math.max(0, Number(document.getElementById(`so_${sku}`).value||0)),
+      stock_qty:   Math.max(0, Number(document.getElementById(`q_${sku}`).value||0)),
+      available:   document.getElementById(`av_${sku}`).checked
+    };
+    const { error } = await supa.from("products").update(body).eq("sku", sku);
     if (error) toast(error.message, true); else toast("Saved");
     await loadProducts();
-  } else if (action==="prod-toggle"){
-    const row = products.find(x=>x.sku===sku);
-    const newVal = !row?.available;
-    const { error } = await supa.from("products").update({ available: newVal }).eq("sku", sku);
-    if (error) toast(error.message, true); else toast(newVal?"Marked available":"Marked unavailable");
+  }
+
+  if(action==="prod-upload-img"){
+    const f = document.getElementById(`img_${sku}`)?.files?.[0];
+    if(!f) return toast("Choose an image first", true);
+    await uploadFileForSku(sku, f, 'image');
+    await loadProducts();
+  }
+
+  if(action==="prod-upload-pdf"){
+    const f = document.getElementById(`pdf_${sku}`)?.files?.[0];
+    if(!f) return toast("Choose a PDF first", true);
+    await uploadFileForSku(sku, f, 'pdf');
     await loadProducts();
   }
 });
