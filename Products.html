@@ -57,11 +57,11 @@
     .px{padding:12px}
     .px h4{margin:.2rem 0 .1rem}
     .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:12px}
-    .pill.ok{background:rgba(131,240,165,.12);color:#83f0a5;border-color:rgba(131,240,165,.35)}
-    .pill.bad{background:rgba(255,120,120,.12);color:#ff8b8b;border-color:rgba(255,120,120,.35)}
     .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .more{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer}
+    .status{font-size:12px;border-radius:999px;padding:2px 8px;border:1px solid rgba(141,158,199,.25)}
+    .status.ok{background:rgba(131,240,165,.14)}
+    .status.bad{background:rgba(255,120,120,.14)}
+    .qty{font-size:12px;color:var(--muted)}
 
     /* Buttons */
     .btn{
@@ -92,8 +92,15 @@
     .pd-cols{display:grid;grid-template-columns:220px 1fr;gap:16px}
     @media(max-width:720px){.pd-cols{grid-template-columns:1fr}}
     .pd-img{width:100%;height:220px;object-fit:cover;border-radius:12px;border:1px solid rgba(141,158,199,.18)}
+    .specs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:720px){.specs{grid-template-columns:1fr}}
+    .spec{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:12px}
+    .spec h5{margin:.2rem 0 .3rem;font-size:0.95rem}
     .muted{color:var(--muted)}
     .sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+    /* RTL */
+    body.rtl .links a{text-align:right}
   </style>
 </head>
 <body>
@@ -140,6 +147,7 @@
   </div>
 </footer>
 
+<!-- Minimal stubs for the modal open/close (to avoid errors) -->
 <script>
   function openContact() {}
   function openPolicy() {}
@@ -153,16 +161,9 @@ const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
 );
-const PRODUCT_BUCKET = "ProductFiles";
-function filePublicUrl(path){
-  if(!path) return "";
-  // ensure we don't duplicate the bucket segment
-  const clean = path.replace(/^ProductFiles\//,'');
-  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(clean)}`;
-}
 </script>
 
-<!-- Product Details Modal -->
+<!-- Product Details Modal (HTML) -->
 <div id="productDetailsModal" class="modal" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
     <div class="sheet-head">
@@ -174,16 +175,33 @@ function filePublicUrl(path){
         <img id="pdImg" class="pd-img" alt="">
         <div>
           <h3 id="pdName" style="margin:0 0 6px"></h3>
-          <p class="muted" id="pdAvailability" style="margin:0 0 10px"></p>
-          <div>
-            <h5 style="margin:.2rem 0 .3rem;font-size:0.95rem">Description</h5>
-            <div id="pdDesc" class="muted"></div>
+          <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
+          <div class="specs">
+            <div class="spec">
+              <h5>Form</h5>
+              <div id="pdForm" class="muted"></div>
+            </div>
+            <div class="spec">
+              <h5>Pack size</h5>
+              <div id="pdSize" class="muted"></div>
+            </div>
+            <div class="spec">
+              <h5>Key ingredients</h5>
+              <div id="pdIngredients" class="muted"></div>
+            </div>
+            <div class="spec">
+              <h5>Feeding guidance</h5>
+              <div id="pdUsage" class="muted"></div>
+            </div>
           </div>
+
+          <p id="pdDesc" class="muted" style="margin-top:10px"></p>
 
           <div class="sheet-actions">
             <button class="btn" id="pdAddBtn" type="button">Add to Cart</button>
             <button class="btn ghost" id="pdBuyBtn" type="button">Buy Now</button>
             <a class="btn" id="pdPdfBtn" href="#" target="_blank" rel="noopener">Download PDF</a>
+            <a class="btn ghost" id="pdPageBtn" href="#">View full page</a>
             <span class="muted" id="pdSku" style="margin-left:auto"></span>
           </div>
         </div>
@@ -195,10 +213,16 @@ function filePublicUrl(path){
   </div>
 </div>
 
+<!-- Cart + Product render logic -->
 <script>
 /* ---------- Cart helpers ---------- */
-function readCart(){ try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; } }
-function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items)); updateCartBadge(); }
+function readCart(){
+  try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; }
+}
+function writeCart(items){
+  localStorage.setItem("cart", JSON.stringify(items));
+  updateCartBadge();
+}
 function countCart(){ return readCart().reduce((n,x)=>n + Number(x.qty||0), 0); }
 function updateCartBadge(){
   const n = countCart();
@@ -207,8 +231,9 @@ function updateCartBadge(){
   if(n>0){ b.style.display='inline-grid'; b.textContent = n; }
   else   { b.style.display='none'; }
 }
-function addToCartBySKU(sku, qty=1, nameOverride){
-  const name = nameOverride || sku;
+
+/* Single source of truth for adding to cart */
+function addToCartBySKU(sku, name, qty=1){
   const items = readCart();
   const i = items.findIndex(x=>x.sku===sku);
   if(i>-1) items[i].qty += qty;
@@ -216,162 +241,227 @@ function addToCartBySKU(sku, qty=1, nameOverride){
   writeCart(items);
 }
 
-/* ===== Runtime spec store built from DB ===== */
-const PRODUCT_SPECS = {}; // { SKU: { name, description, image, pdf, available, stock_qty } }
+/* Fallback product specs (to keep your original products content) */
+const FALLBACK = {
+  "URO-CHIEN": { name:"Urocline Chien", image:"images/Product1.jpg", category:"Urinary care", form:"Chewable tablets", size:"60 / 120 tabs", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", page:"Product1.html", pdf:"pdf/Product1.pdf" },
+  "HEP-AT":    { name:"Hepatiale", image:"images/Product2.jpg", category:"Liver support", form:"Capsules", size:"30 / 60 caps", ingredients:"Silybin-phospholipid, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", page:"Product2.html", pdf:"pdf/Product2.pdf" },
+  "NEU-VIEW":  { name:"Neuroview", image:"images/Product3.jpg", category:"Cognitive", form:"Soft chews", size:"60 chews", ingredients:"Phosphatidylserine, DHA, L-theanine, B-vitamins", usage:"1 chew / 10 kg daily", page:"Product3.html", pdf:"pdf/Product3.pdf" },
+  "MUNI-SAN":  { name:"Munisan", image:"images/Product4.jpg", category:"Immune", form:"Powder", size:"120 g", ingredients:"Beta-glucans, Colostrum, Zinc, Vitamin C", usage:"Mix with food once daily", page:"Product4.html", pdf:"pdf/Product4.pdf" },
+  "PILO-SAN":  { name:"Pilosan", image:"images/Product5.jpg", category:"Skin & coat", form:"Syrup", size:"150 ml", ingredients:"Biotin, Omega-3 & 6, Zinc", usage:"1 ml / 5 kg daily", page:"Product5.html", pdf:"pdf/Product5.pdf" },
+  "HEMO-VET":  { name:"HemoVet", image:"images/Product6.jpg", category:"Vitamins & minerals", form:"Tablets", size:"60 tabs", ingredients:"Iron, B12, Folic acid, Copper", usage:"As directed by your vet", page:"Product6.html", pdf:"pdf/Product6.pdf" },
+  "URO-STONES":{ name:"Urocline-Stones", image:"images/Product7.jpg", category:"Urinary care", form:"Tablets", size:"60 tabs", ingredients:"DL-methionine, Potassium citrate, Cranberry", usage:"Supports urinary environment", page:"Product7.html", pdf:"pdf/Product7.pdf" },
+  "VIT-MIN":   { name:"Vit&Min", image:"images/Product8.jpg", category:"Vitamins & minerals", form:"Powder", size:"200 g", ingredients:"Balanced vitamins & trace minerals", usage:"Daily multivitamin per weight", page:"Product8.html", pdf:"pdf/Product8.pdf" },
+  "ART-ASUH":  { name:"Art-Asuh", image:"images/Product9.jpg", category:"Mobility", form:"Chewable tablets", size:"90 tabs", ingredients:"Glucosamine, Chondroitin, MSM, Hyaluronic acid", usage:"Initial 4–6 weeks then maintenance", page:"Product9.html", pdf:"pdf/Product9.pdf" },
+  "CARBO-DIG": { name:"Carbo Digest", image:"images/Product10.jpg", category:"Digestive comfort", form:"Capsules", size:"30 caps", ingredients:"Activated charcoal, Prebiotics", usage:"Short-term digestive comfort", page:"Product10.html", pdf:"pdf/Product10.pdf" },
+  "RENO-SAN":  { name:"Renosan", image:"images/Product11.jpg", category:"Renal support", form:"Powder", size:"150 g", ingredients:"Calcium carbonate, Chitosan, Omega-3", usage:"Supports renal function (dietary)", page:"Product11.html", pdf:"pdf/Product11.pdf" },
+  "QAL-MIL":   { name:"Qalmil", image:"images/Product12.jpg", category:"Calming", form:"Soft chews", size:"60 chews", ingredients:"L-tryptophan, L-theanine, Lemon balm", usage:"Use before stressful events or daily", page:"Product12.html", pdf:"pdf/Product12.pdf" }
+};
 
-/* ===== Load products in admin-defined order and render (keep ALL products) ===== */
-const grid = document.getElementById('productGrid');
-
-function availBadge(available, stock){
-  const ok = !!available && Number(stock||0) > 0;
-  return ok
-    ? `<span class="pill ok">Available</span>`
-    : `<span class="pill bad">Unavailable</span>`;
+/* Build public file URL for ProductFiles bucket */
+const PRODUCT_BUCKET = "ProductFiles";
+function filePublicUrl(path){
+  if(!path) return null;
+  // Ensure we don't duplicate the bucket prefix
+  const p = path.replace(/^ProductFiles\//,'');
+  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(p)}`;
 }
 
-async function loadAndRenderProducts(){
-  grid.innerHTML = "";
-  const { data, error } = await supa.from("products")
-    .select("sku,name,description,image_path,pdf_path,available,stock_qty,sort_order")
-    .order("sort_order", { ascending:true, nullsFirst:false })
-    .order("name", { ascending:true });
-
-  if(error){ grid.innerHTML = `<div class="muted">Failed to load products.</div>`; return; }
-
-  (data||[]).forEach((p, idx)=>{
-    const spec = {
-      name: p.name || p.sku,
-      description: p.description || '',
-      image: p.image_path ? filePublicUrl(p.image_path) : '',
-      pdf: p.pdf_path ? filePublicUrl(p.pdf_path) : '#',
-      available: !!p.available,
-      stock_qty: Number(p.stock_qty||0),
-    };
-    PRODUCT_SPECS[p.sku] = spec;
-
-    const disabled = !(spec.available && spec.stock_qty > 0);
-    const safeName = (spec.name||p.sku).replace(/"/g,'&quot;');
-
-    const card = document.createElement('div');
-    card.className = 'p-card';
-    card.setAttribute('data-sku', p.sku);
-    card.setAttribute('data-pn', String(idx+1));
-
-    card.innerHTML = `
-      <img src="${spec.image || 'images/placeholder.png'}" alt="${safeName}">
-      <div class="px">
-        <h4>${safeName}</h4>
-        <div class="p-meta">
-          ${availBadge(spec.available, spec.stock_qty)}
-          <span>Qty: ${spec.stock_qty}</span>
-        </div>
-        <div class="p-meta" style="margin-top:6px">
-          ${spec.description ? `<span>${spec.description.substring(0,80)}${spec.description.length>80?'…':''}</span>` : `<span class="muted">No description</span>`}
-        </div>
-        <div class="actions">
-          <button class="btn add-btn" type="button" ${disabled?'disabled':''} data-sku="${p.sku}">Add to Cart</button>
-          <button class="btn ghost buy-btn" type="button" ${disabled?'disabled':''} data-sku="${p.sku}">Buy Now</button>
-          <span class="more" data-more="${p.sku}">Click here for more details</span>
-        </div>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-}
-
-/* ===== Modal helpers ===== */
+/* Modal refs */
 const pdModal = document.getElementById('productDetailsModal');
 const pdImg   = document.getElementById('pdImg');
 const pdName  = document.getElementById('pdName');
-const pdAvail = document.getElementById('pdAvailability');
-const pdDesc  = document.getElementById('pdDesc');
+const pdCat   = document.getElementById('pdCategory');
+const pdForm  = document.getElementById('pdForm');
+const pdSize  = document.getElementById('pdSize');
+const pdIngr  = document.getElementById('pdIngredients');
+const pdUse   = document.getElementById('pdUsage');
 const pdSku   = document.getElementById('pdSku');
 const pdAdd   = document.getElementById('pdAddBtn');
 const pdBuy   = document.getElementById('pdBuyBtn');
 const pdPdf   = document.getElementById('pdPdfBtn');
+const pdPage  = document.getElementById('pdPageBtn');
+const pdDesc  = document.getElementById('pdDesc');
 
 let CURRENT_SKU = null;
+let PRODUCT_CACHE = {}; // sku -> merged data for modal/buttons
 
 function openPD(sku){
-  const spec = PRODUCT_SPECS[sku] || {};
+  const spec = PRODUCT_CACHE[sku] || {};
   CURRENT_SKU = sku;
-
   pdName.textContent = spec.name || sku;
-  pdDesc.textContent = spec.description || '—';
-  pdAvail.textContent= (spec.available && Number(spec.stock_qty||0)>0) ? `In stock (${spec.stock_qty})` : 'Unavailable';
+  pdCat.textContent  = spec.category || '';
+  pdForm.textContent = spec.form || '—';
+  pdSize.textContent = spec.size || '—';
+  pdIngr.textContent = spec.ingredients || '—';
+  pdUse.textContent  = spec.usage || '—';
+  pdDesc.textContent = spec.description || '';
   pdSku.textContent  = 'SKU: ' + sku;
 
-  pdImg.src = spec.image || '';
-  pdImg.alt = pdName.textContent;
+  const imgUrl = spec.image_path ? filePublicUrl(spec.image_path) : (spec.image || '');
+  pdImg.src = imgUrl || '';
+  pdImg.alt = spec.name || sku;
 
-  pdPdf.href = spec.pdf || '#';
+  pdPdf.href  = (spec.pdf_path ? filePublicUrl(spec.pdf_path) : (spec.pdf || '#')) || '#';
+  pdPage.href = spec.page || '#';
 
-  const disabled = !(spec.available && Number(spec.stock_qty||0)>0);
-  pdAdd.disabled = disabled;
-  pdBuy.disabled = disabled;
+  pdAdd.disabled = !(spec.available && (Number(spec.stock_qty||0) > 0));
+  pdBuy.disabled = pdAdd.disabled;
 
   pdModal.classList.add('open');
   pdModal.setAttribute('aria-hidden','false');
 }
-function closePD(){ pdModal.classList.remove('open'); pdModal.setAttribute('aria-hidden','true'); }
+function closePD(){
+  pdModal.classList.remove('open');
+  pdModal.setAttribute('aria-hidden','true');
+}
 pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
 
-/* Buttons inside modal */
-pdAdd.addEventListener('click', ()=>{ if(CURRENT_SKU){ addToCartBySKU(CURRENT_SKU,1, PRODUCT_SPECS[CURRENT_SKU]?.name||CURRENT_SKU); alert((PRODUCT_SPECS[CURRENT_SKU]?.name||CURRENT_SKU) + " added to cart"); }});
+pdAdd.addEventListener('click', ()=>{
+  if(!CURRENT_SKU) return;
+  const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
+  addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
+  alert((spec.name || CURRENT_SKU) + " added to cart");
+});
 pdBuy.addEventListener('click', async ()=>{
   if(!CURRENT_SKU) return;
-  addToCartBySKU(CURRENT_SKU,1, PRODUCT_SPECS[CURRENT_SKU]?.name||CURRENT_SKU);
+  const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
+  addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
   const { data:{ user } } = await supa.auth.getUser();
   if(!user){ location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`; }
   else { location.href = 'cart.html'; }
 });
 
-/* Card-level interactions (work BEFORE details) */
-grid.addEventListener('click', (e)=>{
-  const addBtn = e.target.closest('.add-btn');
-  const buyBtn = e.target.closest('.buy-btn');
-  const more   = e.target.closest('[data-more]');
-  const card   = e.target.closest('.p-card');
+/* Render cards from DB (with fallback content) */
+async function loadAndRenderProducts(){
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = '<div class="muted">Loading…</div>';
+  let rows = [];
+  const { data, error } = await supa
+    .from('products')
+    .select('sku,name,description,stock_qty,available,image_path,pdf_path,sort_order,updated_at')
+    .order('sort_order', { ascending:true, nullsFirst:false })
+    .order('name', { ascending:true });
 
-  if(addBtn){
-    const sku = addBtn.getAttribute('data-sku');
-    if(!addBtn.disabled && sku){
-      addToCartBySKU(sku,1, PRODUCT_SPECS[sku]?.name||sku);
+  if (error){
+    console.warn(error);
+  } else {
+    rows = data || [];
+  }
+
+  // If no DB products yet, synthesize from FALLBACK list (keeps your current 12 cards)
+  if (!rows.length){
+    rows = Object.keys(FALLBACK).map((sku, i)=>({
+      sku,
+      name: FALLBACK[sku].name,
+      description: '',
+      stock_qty: 999,      // treat as in stock
+      available: true,     // treat as available
+      image_path: null,
+      pdf_path: null,
+      sort_order: i+1
+    }));
+  }
+
+  // Build PRODUCT_CACHE (merge DB row with FALLBACK attributes)
+  PRODUCT_CACHE = {};
+  rows.forEach(r=>{
+    const f = FALLBACK[r.sku] || {};
+    PRODUCT_CACHE[r.sku] = {
+      sku: r.sku,
+      name: r.name || f.name || r.sku,
+      description: r.description || '',
+      stock_qty: Number(r.stock_qty||0),
+      available: !!r.available,
+      image_path: r.image_path || null,
+      pdf_path: r.pdf_path || null,
+      // extra info for modal
+      category: f.category || '',
+      form: f.form || '',
+      size: f.size || '',
+      ingredients: f.ingredients || '',
+      usage: f.usage || '',
+      image: f.image || '',
+      page: f.page || '',
+      pdf: f.pdf || ''
+    };
+  });
+
+  // Render grid
+  grid.innerHTML = '';
+  rows.forEach(r=>{
+    const p = PRODUCT_CACHE[r.sku];
+    const imgUrl = r.image_path ? filePublicUrl(r.image_path) : (p.image || '');
+    const isAvail = p.available && (p.stock_qty > 0);
+    const statusHtml = isAvail
+      ? `<span class="status ok">Available</span>`
+      : `<span class="status bad">Unavailable</span>`;
+    const qtyHtml = `<span class="qty">${p.stock_qty>0 ? (p.stock_qty + ' in stock') : 'Out of stock'}</span>`;
+
+    const card = document.createElement('div');
+    card.className = 'p-card';
+    card.setAttribute('data-sku', r.sku);
+
+    card.innerHTML = `
+      <img src="${imgUrl}" alt="${p.name}">
+      <div class="px">
+        <h4>${p.name}</h4>
+        <div class="p-meta">
+          ${statusHtml}
+          <span>•</span>
+          ${qtyHtml}
+        </div>
+        <div class="actions">
+          <button class="btn add-btn" type="button" ${!isAvail ? 'disabled' : ''}>Add to Cart</button>
+          <button class="btn ghost buy-btn" type="button" ${!isAvail ? 'disabled' : ''}>Buy Now</button>
+          <button class="btn ghost more-btn" type="button">Click for more details</button>
+        </div>
+      </div>
+    `;
+
+    // Button handlers that work without opening modal first
+    const addBtn = card.querySelector('.add-btn');
+    addBtn?.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      addToCartBySKU(r.sku, p.name, 1);
       updateCartBadge();
-      alert((PRODUCT_SPECS[sku]?.name||sku) + " added to cart");
-    }
-    return;
-  }
-  if(buyBtn){
-    const sku = buyBtn.getAttribute('data-sku');
-    if(!buyBtn.disabled && sku){
-      addToCartBySKU(sku,1, PRODUCT_SPECS[sku]?.name||sku);
-      (async ()=>{
-        const { data:{ user } } = await supa.auth.getUser();
-        if(!user){ location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`; }
-        else { location.href = 'cart.html'; }
-      })();
-    }
-    return;
-  }
-  if(more){
-    const sku = more.getAttribute('data-more');
-    if(sku) openPD(sku);
-    return;
-  }
-  // clicking anywhere else on the card opens details
-  if(card){
-    const sku = card.getAttribute('data-sku');
-    if(sku) openPD(sku);
-  }
+    });
+
+    const buyBtn = card.querySelector('.buy-btn');
+    buyBtn?.addEventListener('click', async (ev)=>{
+      ev.stopPropagation();
+      addToCartBySKU(r.sku, p.name, 1);
+      const { data:{ user } } = await supa.auth.getUser();
+      if(!user){ location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`; }
+      else { location.href = 'cart.html'; }
+    });
+
+    const moreBtn = card.querySelector('.more-btn');
+    moreBtn?.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      openPD(r.sku);
+    });
+
+    // Also allow clicking the image/title area to open details
+    card.addEventListener('click', (e)=>{
+      // avoid double trigger when clicking buttons
+      if (e.target.closest('.actions')) return;
+      openPD(r.sku);
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+/* Keep badge in sync across tabs/devices on same browser */
+window.addEventListener('storage', (ev)=>{
+  if(ev.key === 'cart') updateCartBadge();
 });
 
-/* Keep badge in sync */
-window.addEventListener('storage', (ev)=>{ if(ev.key === 'cart') updateCartBadge(); });
-updateCartBadge();
-
-/* Initial load */
-loadAndRenderProducts();
+/* Boot */
+document.addEventListener('DOMContentLoaded', async ()=>{
+  updateCartBadge();
+  await loadAndRenderProducts();
+});
 </script>
 </body>
 </html>
