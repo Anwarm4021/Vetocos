@@ -28,8 +28,15 @@
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap}
     .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
             background:rgba(255,255,255,.05);color:var(--text)}
-    input.qty-edit{width:84px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
-                   background:rgba(255,255,255,.05);color:white;text-align:center}
+    input.qty-edit, input.text, textarea, select, input[type="file"]{width:100%;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
+                   background:rgba(255,255,255,.05);color:white}
+    input.qty-edit{text-align:center;max-width:100px}
+    .grid2{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:10px}
+    .gridFull{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:900px){.gridFull{grid-template-columns:1fr}}
+    label.small{font-size:.82rem;color:var(--muted);display:block;margin-top:8px}
+    .files{display:flex;gap:10px;flex-wrap:wrap}
+    .filelink{font-size:.9rem;color:var(--muted)}
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
            border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
     #diag{color:var(--muted);font-size:.85rem;white-space:pre-wrap;margin-top:6px}
@@ -50,6 +57,82 @@
     <div id="diag"></div>
   </div>
 
+  <!-- Products management -->
+  <div class="card hidden" id="prodWrap">
+    <div class="toolbar">
+      <h2>Products</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="prodSearch" class="search" placeholder="Search by name / SKU / category">
+        <button class="btn small" id="prodRefresh">Refresh</button>
+      </div>
+    </div>
+
+    <!-- Add new product -->
+    <div class="card" style="background:rgba(255,255,255,.02)">
+      <h3 style="margin:0 0 8px">Add new product</h3>
+      <div class="gridFull">
+        <div>
+          <label class="small">SKU</label>
+          <input id="newSku" class="text" placeholder="e.g., URO-CHIEN">
+        </div>
+        <div>
+          <label class="small">Name</label>
+          <input id="newName" class="text" placeholder="Product name">
+        </div>
+        <div>
+          <label class="small">Category</label>
+          <input id="newCategory" class="text" placeholder="e.g., Urinary care">
+        </div>
+        <div>
+          <label class="small">Form</label>
+          <input id="newForm" class="text" placeholder="e.g., Tablets">
+        </div>
+        <div>
+          <label class="small">Pack size</label>
+          <input id="newSize" class="text" placeholder="e.g., 60 tabs">
+        </div>
+        <div>
+          <label class="small">Stock</label>
+          <input id="newStock" class="qty-edit" type="number" min="0" value="0">
+        </div>
+        <div>
+          <label class="small">Ingredients</label>
+          <input id="newIngredients" class="text" placeholder="Key ingredients">
+        </div>
+        <div>
+          <label class="small">Usage</label>
+          <input id="newUsage" class="text" placeholder="Feeding guidance">
+        </div>
+        <div>
+          <label class="small">Short description</label>
+          <textarea id="newDesc" rows="2" placeholder="Short description"></textarea>
+        </div>
+        <div>
+          <label class="small">Full details (HTML allowed)</label>
+          <textarea id="newHtml" rows="2" placeholder="<p>Full product details…</p>"></textarea>
+        </div>
+        <div>
+          <label class="small">Image (jpg/png)</label>
+          <input id="newImg" type="file" accept=".jpg,.jpeg,.png">
+        </div>
+        <div>
+          <label class="small">PDF</label>
+          <input id="newPdf" type="file" accept=".pdf">
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:8px" class="small">
+          <input id="newAvail" type="checkbox" checked> Available
+        </label>
+        <button class="btn small" id="createProdBtn">Create product</button>
+      </div>
+      <div id="prodMsg" class="muted" style="margin-top:6px"></div>
+    </div>
+
+    <!-- Product list -->
+    <div id="prodList"></div>
+  </div>
+
   <!-- Vet applications -->
   <div class="card hidden" id="appsWrap">
     <div class="toolbar">
@@ -61,6 +144,19 @@
     </div>
     <div id="appsMsg" class="muted"></div>
     <div id="appsList"></div>
+  </div>
+
+  <!-- Users (verify/unverify) -->
+  <div class="card hidden" id="usersWrap">
+    <div class="toolbar">
+      <h2>Users</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="usersSearch" class="search" placeholder="Search by name / email">
+        <button class="btn small" id="usersRefresh">Refresh</button>
+      </div>
+    </div>
+    <div id="usersMsg" class="muted"></div>
+    <div id="usersList"></div>
   </div>
 
   <!-- Per-product approvals -->
@@ -76,7 +172,7 @@
     <div id="vpaList"></div>
   </div>
 
-  <!-- Orders (admin quantity control) -->
+  <!-- Orders -->
   <div class="card hidden" id="orderWrap">
     <div class="toolbar">
       <h2>Client Orders</h2>
@@ -101,8 +197,9 @@ const supa = supabase.createClient(
 );
 
 /* ===== Config ===== */
-const BUCKET       = "Documents";
-const ADMIN_EMAILS = ["Anwar.moumenjamai19@gmail.com"];
+const DOCS_BUCKET    = "Documents";
+const PRODUCT_BUCKET = "ProductFiles";
+const ADMIN_EMAILS   = ["Anwar.moumenjamai19@gmail.com"];
 
 /* ===== UI refs ===== */
 const authMsg  = document.getElementById("authMsg");
@@ -111,18 +208,51 @@ const logoutBtn= document.getElementById("logoutBtn");
 const diagEl   = document.getElementById("diag");
 const toastEl  = document.getElementById("toast");
 
+/* Products refs */
+const prodWrap = document.getElementById("prodWrap");
+const prodList = document.getElementById("prodList");
+const prodSearch = document.getElementById("prodSearch");
+const prodRefresh = document.getElementById("prodRefresh");
+const prodMsg = document.getElementById("prodMsg");
+
+/* Add new product refs */
+const newSku = document.getElementById("newSku");
+const newName = document.getElementById("newName");
+const newCategory = document.getElementById("newCategory");
+const newForm = document.getElementById("newForm");
+const newSize = document.getElementById("newSize");
+const newStock = document.getElementById("newStock");
+const newIngredients = document.getElementById("newIngredients");
+const newUsage = document.getElementById("newUsage");
+const newDesc = document.getElementById("newDesc");
+const newHtml = document.getElementById("newHtml");
+const newImg = document.getElementById("newImg");
+const newPdf = document.getElementById("newPdf");
+const newAvail = document.getElementById("newAvail");
+const createProdBtn = document.getElementById("createProdBtn");
+
+/* Applications refs */
 const appsWrap = document.getElementById("appsWrap");
 const appsList = document.getElementById("appsList");
 const appsMsg  = document.getElementById("appsMsg");
 const appsSearch = document.getElementById("search");
 const appsRefresh = document.getElementById("appsRefresh");
 
+/* Users refs */
+const usersWrap = document.getElementById("usersWrap");
+const usersList = document.getElementById("usersList");
+const usersMsg  = document.getElementById("usersMsg");
+const usersSearch = document.getElementById("usersSearch");
+const usersRefresh = document.getElementById("usersRefresh");
+
+/* VPA refs */
 const vpaWrap  = document.getElementById("vpaWrap");
 const vpaList  = document.getElementById("vpaList");
 const vpaMsg   = document.getElementById("vpaMsg");
 const vpaSearch= document.getElementById("vpaSearch");
 const vpaRefresh = document.getElementById("vpaRefresh");
 
+/* Orders refs */
 const orderWrap  = document.getElementById("orderWrap");
 const orderList  = document.getElementById("orderList");
 const orderMsg   = document.getElementById("orderMsg");
@@ -135,11 +265,10 @@ function setGate(t,{showLogin=false,showLogout=false}={}) {
   loginBtn.classList.toggle("hidden", !showLogin);
   logoutBtn.classList.toggle("hidden", !showLogout);
 }
-function fullName(p){
-  return [p?.first_name, p?.last_name].filter(Boolean).join(" ") || "(unknown)";
-}
-function pill(s){
-  return `<span class="pill ${s==="approved"?"ok":s==="rejected"?"bad":"pend"}">${s||"pending"}</span>`;
+function fullName(p){ return [p?.first_name, p?.last_name].filter(Boolean).join(" ") || "(unknown)"; }
+function pill(s,kind){
+  const cls = kind || (s==="approved"?"ok":s==="rejected"?"bad":"pend");
+  return `<span class="pill ${cls}">${s}</span>`;
 }
 function diag(label, obj){ diagEl.textContent += `\n${label}: ${JSON.stringify(obj)}`; }
 function toast(msg, isErr=false){
@@ -167,7 +296,9 @@ async function checkAdmin(){
   setGate(`Signed in as ${session.user.email}`, { showLogout:true });
 
   if (ADMIN_EMAILS.includes(session.user.email)){
+    prodWrap.classList.remove("hidden");
     appsWrap.classList.remove("hidden");
+    usersWrap.classList.remove("hidden");
     vpaWrap.classList.remove("hidden");
     orderWrap.classList.remove("hidden");
     return true;
@@ -178,14 +309,213 @@ async function checkAdmin(){
   if (pe){ setGate("Profile read error.", { showLogout:true }); toast(pe.message, true); return false; }
   if (!prof?.is_admin){ setGate("Access denied.", { showLogout:true }); return false; }
 
+  prodWrap.classList.remove("hidden");
   appsWrap.classList.remove("hidden");
+  usersWrap.classList.remove("hidden");
   vpaWrap.classList.remove("hidden");
   orderWrap.classList.remove("hidden");
   return true;
 }
 
 /* =======================================================================
-   VET APPLICATIONS
+   PRODUCTS: CRUD + file uploads
+======================================================================= */
+let prods = [];
+async function loadProducts(){
+  prodMsg.textContent = "Loading…";
+  const { data, error } = await supa.from("products")
+    .select("sku,name,available,stock,category,form,size,ingredients,usage,image_path,pdf_path,description,details_html,updated_at")
+    .order("name",{ascending:true});
+  if (error){ prodMsg.textContent = error.message; toast(error.message, true); return; }
+  prods = data || [];
+  renderProducts();
+  prodMsg.textContent = prods.length ? "" : "No products.";
+}
+
+function renderProducts(){
+  const q = (prodSearch.value||"").toLowerCase();
+  prodList.innerHTML = "";
+  prods.filter(p=>{
+    if(!q) return true;
+    return (p.name||"").toLowerCase().includes(q) ||
+           (p.sku||"").toLowerCase().includes(q) ||
+           (p.category||"").toLowerCase().includes(q);
+  }).forEach(p=>{
+    const el = document.createElement("div");
+    el.className="card";
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+        <div style="font-weight:600">${p.name} <span class="muted">(${p.sku})</span></div>
+        <div class="muted">Updated: ${p.updated_at ? new Date(p.updated_at).toLocaleString() : "-"}</div>
+      </div>
+
+      <div class="gridFull" style="margin-top:10px">
+        <div>
+          <label class="small">Name</label>
+          <input class="text" id="nm-${p.sku}" value="${escapeHtml(p.name||'')}">
+        </div>
+        <div>
+          <label class="small">Category</label>
+          <input class="text" id="cat-${p.sku}" value="${escapeHtml(p.category||'')}">
+        </div>
+        <div>
+          <label class="small">Form</label>
+          <input class="text" id="form-${p.sku}" value="${escapeHtml(p.form||'')}">
+        </div>
+        <div>
+          <label class="small">Pack size</label>
+          <input class="text" id="size-${p.sku}" value="${escapeHtml(p.size||'')}">
+        </div>
+        <div>
+          <label class="small">Ingredients</label>
+          <input class="text" id="ing-${p.sku}" value="${escapeHtml(p.ingredients||'')}">
+        </div>
+        <div>
+          <label class="small">Usage</label>
+          <input class="text" id="use-${p.sku}" value="${escapeHtml(p.usage||'')}">
+        </div>
+        <div>
+          <label class="small">Stock</label>
+          <input class="qty-edit" id="stk-${p.sku}" type="number" min="0" value="${Number(p.stock)||0}">
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:26px">
+          <label class="small" style="display:flex;align-items:center;gap:8px;margin:0">
+            <input id="avl-${p.sku}" type="checkbox" ${p.available?'checked':''}> Available
+          </label>
+        </div>
+        <div>
+          <label class="small">Short description</label>
+          <textarea id="desc-${p.sku}" rows="2">${escapeHtml(p.description||'')}</textarea>
+        </div>
+        <div>
+          <label class="small">Full details (HTML allowed)</label>
+          <textarea id="html-${p.sku}" rows="2">${escapeHtml(p.details_html||'')}</textarea>
+        </div>
+        <div>
+          <label class="small">Image (jpg/png)</label>
+          <div class="files">
+            <input type="file" id="img-${p.sku}" accept=".jpg,.jpeg,.png">
+            ${p.image_path ? `<a class="filelink" href="${publicUrl(p.image_path)}" target="_blank">Current image</a>`:''}
+          </div>
+        </div>
+        <div>
+          <label class="small">PDF</label>
+          <div class="files">
+            <input type="file" id="pdf-${p.sku}" accept=".pdf">
+            ${p.pdf_path ? `<a class="filelink" href="${publicUrl(p.pdf_path)}" target="_blank">Current PDF</a>`:''}
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn small" onclick="saveProduct('${p.sku}')">Save</button>
+        <button class="btn small" onclick="uploadImage('${p.sku}')">Upload image</button>
+        <button class="btn small" onclick="uploadPdf('${p.sku}')">Upload PDF</button>
+        <button class="btn danger small" onclick="deleteProduct('${p.sku}')">Delete</button>
+      </div>
+    `;
+    prodList.appendChild(el);
+  });
+}
+
+function escapeHtml(s){
+  return (s||'').toString().replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function publicUrl(path){
+  // For public buckets, a direct path works via storage CDN:
+  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(path.replace(/^ProductFiles\//,''))}`;
+}
+
+async function createProduct(){
+  const sku = (newSku.value||"").trim();
+  const name = (newName.value||"").trim();
+  if(!sku || !name){ prodMsg.textContent = "SKU and Name are required."; return; }
+  prodMsg.textContent = "Creating…";
+
+  const body = {
+    sku, name,
+    category: (newCategory.value||"").trim() || null,
+    form: (newForm.value||"").trim() || null,
+    size: (newSize.value||"").trim() || null,
+    stock: Math.max(0, Number(newStock.value||0)),
+    ingredients: (newIngredients.value||"").trim() || null,
+    usage: (newUsage.value||"").trim() || null,
+    description: (newDesc.value||"").trim() || null,
+    details_html: (newHtml.value||"").trim() || null,
+    available: !!newAvail.checked
+  };
+
+  const { error } = await supa.from("products").insert(body);
+  if(error){ prodMsg.textContent = error.message; toast(error.message,true); return; }
+
+  // Upload files if provided
+  if(newImg.files[0]) await uploadFileForSku(sku, newImg.files[0], 'image');
+  if(newPdf.files[0]) await uploadFileForSku(sku, newPdf.files[0], 'pdf');
+
+  prodMsg.textContent = "Created.";
+  clearNewForm();
+  await loadProducts();
+}
+function clearNewForm(){
+  [newSku,newName,newCategory,newForm,newSize,newIngredients,newUsage,newDesc,newHtml].forEach(i=>i.value="");
+  newStock.value = "0"; newAvail.checked = true; newImg.value=""; newPdf.value="";
+}
+
+async function saveProduct(sku){
+  const body = {
+    name:       document.getElementById(`nm-${sku}`).value.trim() || null,
+    category:   document.getElementById(`cat-${sku}`).value.trim() || null,
+    form:       document.getElementById(`form-${sku}`).value.trim() || null,
+    size:       document.getElementById(`size-${sku}`).value.trim() || null,
+    ingredients:document.getElementById(`ing-${sku}`).value.trim() || null,
+    usage:      document.getElementById(`use-${sku}`).value.trim() || null,
+    description:document.getElementById(`desc-${sku}`).value.trim() || null,
+    details_html:document.getElementById(`html-${sku}`).value.trim() || null,
+    stock:      Math.max(0, Number(document.getElementById(`stk-${sku}`).value||0)),
+    available:  document.getElementById(`avl-${sku}`).checked
+  };
+  const { error } = await supa.from("products").update(body).eq("sku", sku);
+  if(error) toast(error.message,true); else toast("Saved");
+  await loadProducts();
+}
+
+async function deleteProduct(sku){
+  if(!confirm(`Delete product ${sku}?`)) return;
+  const { error } = await supa.from("products").delete().eq("sku", sku);
+  if (error) toast(error.message,true); else toast("Product deleted");
+  await loadProducts();
+}
+
+async function uploadFileForSku(sku, file, kind){
+  if(!file) return;
+  const ext = (file.name.split('.').pop()||'').toLowerCase();
+  const path = `${sku}/${kind==='image' ? `image.${ext||'jpg'}` : `spec.${ext||'pdf'}`}`;
+  const up = await supa.storage.from(PRODUCT_BUCKET).upload(path, file, {
+    upsert:true, cacheControl:'3600', contentType: file.type || 'application/octet-stream'
+  });
+  if(up.error){ toast(up.error.message,true); return; }
+  const col = (kind==='image') ? { image_path: path } : { pdf_path: path };
+  const { error } = await supa.from("products").update(col).eq("sku", sku);
+  if(error) toast(error.message,true); else toast(`${kind==='image'?'Image':'PDF'} uploaded`);
+}
+
+async function uploadImage(sku){
+  const input = document.getElementById(`img-${sku}`);
+  const f = input?.files?.[0];
+  if(!f) return toast("Choose an image file first", true);
+  await uploadFileForSku(sku, f, 'image');
+  await loadProducts();
+}
+async function uploadPdf(sku){
+  const input = document.getElementById(`pdf-${sku}`);
+  const f = input?.files?.[0];
+  if(!f) return toast("Choose a PDF file first", true);
+  await uploadFileForSku(sku, f, 'pdf');
+  await loadProducts();
+}
+
+/* =======================================================================
+   VET APPLICATIONS (add: verify user)
 ======================================================================= */
 let apps = [], profMap = {};
 async function loadApps(){
@@ -199,7 +529,7 @@ async function loadApps(){
   profMap = {};
   if (ids.length){
     const { data: profs, error: pe } = await supa
-      .from("profiles").select("id,first_name,last_name,email").in("id", ids);
+      .from("profiles").select("id,first_name,last_name,email,is_vet_verified").in("id", ids);
     if (pe) toast(pe.message, true);
     (profs||[]).forEach(p=> profMap[p.id]=p);
   }
@@ -227,10 +557,12 @@ function renderApps(){
           <div><strong>ID#:</strong> ${a.identity_number||"-"}</div>
           <div class="muted">Status: ${pill(a.status)}</div>
           <div class="muted">Submitted: ${new Date(a.created_at).toLocaleString()}</div>
+          <div style="margin-top:6px">${p.is_vet_verified ? pill('Verified','ok') : pill('Not verified','bad')}</div>
         </div>
         <div><button class="btn" onclick="viewDiploma('${a.diploma_path||""}')">Diploma</button></div>
         <div><button class="btn" onclick="approve('${a.id}')">Approve</button></div>
         <div><button class="btn" onclick="reject('${a.id}')">Reject</button></div>
+        <div><button class="btn small" onclick="verifyUser('${a.user_id}', true)">Verify user</button></div>
         <div><button class="btn danger small" onclick="deleteApp('${a.id}')">Delete</button></div>
       </div>`;
     appsList.appendChild(el);
@@ -238,7 +570,7 @@ function renderApps(){
 }
 async function viewDiploma(path){
   if(!path) return alert("No file path.");
-  const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(path, 300);
+  const { data, error } = await supa.storage.from(DOCS_BUCKET).createSignedUrl(path, 300);
   if (error){ toast(error.message, true); return; }
   window.location.assign(data.signedUrl);
 }
@@ -258,10 +590,56 @@ async function deleteApp(id){
   if (error) toast(error.message, true); else toast("Application deleted");
   await loadApps();
 }
+async function verifyUser(userId, on){
+  const { error } = await supa.from("profiles").update({ is_vet_verified: !!on }).eq("id", userId);
+  if (error) toast(error.message,true); else toast(on?"User verified":"User unverified");
+  await loadApps(); await loadUsers();
+}
 
 /* =======================================================================
-   PER-PRODUCT APPROVALS (with quantity edit)
-   Make sure table has: quantity integer not null default 1
+   USERS: verify/unverify directly
+======================================================================= */
+let users = [];
+async function loadUsers(){
+  usersMsg.textContent="Loading…";
+  const { data, error } = await supa.from("profiles")
+    .select("id,first_name,last_name,email,is_vet_verified,is_admin")
+    .order("first_name",{ascending:true});
+  if(error){ usersMsg.textContent=error.message; toast(error.message,true); return; }
+  users = data || [];
+  renderUsers();
+  usersMsg.textContent = users.length ? "" : "No users.";
+}
+function renderUsers(){
+  const q=(usersSearch.value||"").toLowerCase();
+  usersList.innerHTML="";
+  users.filter(u=>{
+    if(!q) return true;
+    return fullName(u).toLowerCase().includes(q) || (u.email||"").toLowerCase().includes(q);
+  }).forEach(u=>{
+    const el=document.createElement("div");
+    el.className="card";
+    el.innerHTML=`
+      <div style="display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:10px;align-items:center">
+        <div>
+          <div style="font-weight:600">${fullName(u)}</div>
+          <div class="muted">${u.email||""}</div>
+        </div>
+        <div>${u.is_admin? pill('Admin','ok'):''}</div>
+        <div>${u.is_vet_verified ? pill('Verified','ok') : pill('Not verified','bad')}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${u.is_vet_verified
+            ? `<button class="btn small" onclick="verifyUser('${u.id}', false)">Unverify</button>`
+            : `<button class="btn small" onclick="verifyUser('${u.id}', true)">Verify</button>`
+          }
+        </div>
+      </div>`;
+    usersList.appendChild(el);
+  });
+}
+
+/* =======================================================================
+   PER-PRODUCT APPROVALS (unchanged core + quantity edit)
 ======================================================================= */
 let vpaRows=[], vpaProfiles={}, vpaProducts={};
 async function loadProductApprovals(){
@@ -278,7 +656,7 @@ async function loadProductApprovals(){
 
   if (uids.length){
     const { data: profs, error: pe } = await supa
-      .from("profiles").select("id,first_name,last_name,email").in("id", uids);
+      .from("profiles").select("id,first_name,last_name,email,is_vet_verified").in("id", uids);
     if (pe) toast(pe.message, true);
     vpaProfiles={}; (profs||[]).forEach(p=> vpaProfiles[p.id]=p);
   }
@@ -313,21 +691,18 @@ function renderVPA(){
         <div>
           <div style="font-weight:600">${fullName(p)}</div>
           <div class="muted">${p.email||""}</div>
+          <div style="margin-top:6px">${p.is_vet_verified ? pill('Verified','ok') : pill('Not verified','bad')}</div>
         </div>
-
         <div>${prod} <span class="muted">(${r.product_sku})</span></div>
-
         <div>
-          <label class="muted" style="display:block;font-size:.85rem">Quantity</label>
+          <label class="small" style="display:block">Quantity</label>
           <div style="display:flex;gap:6px;align-items:center">
             <button class="btn small" onclick="vpaDecQty('${r.id}')">−</button>
             <input id="qty-${r.id}" class="qty-edit" type="number" min="1" value="${Number(r.quantity)||1}">
             <button class="btn small" onclick="vpaIncQty('${r.id}')">+</button>
           </div>
         </div>
-
         <div>${pill(r.status)}</div>
-
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn small" onclick="saveVpaQty('${r.id}')">Save qty</button>
           <button class="btn small" onclick="approveSku('${r.id}')">Approve</button>
@@ -338,19 +713,10 @@ function renderVPA(){
     vpaList.appendChild(el);
   });
 }
-function vpaIncQty(id){
-  const el = document.getElementById(`qty-${id}`);
-  if (!el) return;
-  el.value = Math.max(1, Number(el.value || 1) + 1);
-}
-function vpaDecQty(id){
-  const el = document.getElementById(`qty-${id}`);
-  if (!el) return;
-  el.value = Math.max(1, Number(el.value || 1) - 1);
-}
+function vpaIncQty(id){ const el = document.getElementById(`qty-${id}`); if (!el) return; el.value = Math.max(1, Number(el.value || 1) + 1); }
+function vpaDecQty(id){ const el = document.getElementById(`qty-${id}`); if (!el) return; el.value = Math.max(1, Number(el.value || 1) - 1); }
 async function saveVpaQty(id){
-  const el = document.getElementById(`qty-${id}`);
-  if (!el) return alert('Quantity input not found.');
+  const el = document.getElementById(`qty-${id}`); if (!el) return alert('Quantity input not found.');
   const qty = Math.max(1, Number(el.value || 1));
   const { error } = await supa.from('vet_product_approvals').update({ quantity: qty }).eq('id', id);
   if (error) toast(error.message, true); else toast('Quantity saved');
@@ -375,8 +741,6 @@ async function deleteSkuReq(id){
 
 /* =======================================================================
    ORDERS (Admin quantity control)
-   Expected: public.orders(id uuid/serial, user_id uuid, product_sku text,
-                           quantity int, status text, created_at timestamptz)
 ======================================================================= */
 let orders=[], ordProfiles={}, ordProducts={};
 async function loadOrders(){
@@ -455,19 +819,26 @@ async function deleteOrder(id){
 document.addEventListener("DOMContentLoaded", async ()=>{
   const ok = await checkAdmin();
   if (ok){
+    await loadProducts();
     await loadApps();
+    await loadUsers();
     await loadProductApprovals();
     await loadOrders();
   }
+  /* Filters */
+  prodSearch.addEventListener("input", renderProducts);
   appsSearch.addEventListener("input", renderApps);
+  usersSearch.addEventListener("input", renderUsers);
   vpaSearch.addEventListener("input", renderVPA);
   orderSearch.addEventListener("input", renderOrders);
-
-  appsRefresh.onclick   = () => loadApps();
-  vpaRefresh.onclick    = () => loadProductApprovals();
-  ordersRefresh.onclick = () => loadOrders();
+  /* Refresh buttons */
+  prodRefresh.onclick  = () => loadProducts();
+  createProdBtn.onclick= () => createProduct();
+  appsRefresh.onclick  = () => loadApps();
+  usersRefresh.onclick = () => loadUsers();
+  vpaRefresh.onclick   = () => loadProductApprovals();
+  ordersRefresh.onclick= () => loadOrders();
 });
 </script>
 </body>
 </html>
-
