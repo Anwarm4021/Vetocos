@@ -9,33 +9,33 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{ --bg:#0b1020; --card:#0f162f; --muted:#8ea0c8; --text:#f6f7fb; --radius:12px; }
-    body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
-    main{max-width:900px;margin:40px auto;padding:0 18px}
-    h1{margin:0 0 16px}
-    h2{margin:26px 0 10px;font-size:1.15rem}
-    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:16px}
-    table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:10px;overflow:hidden}
-    th,td{padding:12px;text-align:left;vertical-align:middle}
-    th{background:rgba(141,158,199,.15);color:var(--muted)}
-    tr:not(:last-child){border-bottom:1px solid rgba(141,158,199,.18)}
-    .qty-btn{padding:4px 8px;border:none;border-radius:6px;background:rgba(255,255,255,.1);color:white;cursor:pointer}
-    .qty-btn:disabled{opacity:.6;cursor:not-allowed}
-    .remove{color:#ff8080;cursor:pointer}
-    .summary{margin-top:14px;text-align:right;font-weight:600}
-    .btn{margin-top:14px;display:inline-block;padding:12px 18px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:#f6f7fb;font-weight:600;cursor:pointer}
-    .btn.secondary{background:rgba(255,255,255,.04)}
-    .btn[disabled]{opacity:.6;cursor:not-allowed}
-    .empty{text-align:center;padding:36px;background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:10px;color:var(--muted)}
-    .muted{color:var(--muted)}
-    .orders{margin-top:28px}
-    .order{padding:12px 0;border-top:1px solid rgba(141,158,199,.18)}
-    .order:first-child{border-top:none}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
-    .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:12px}
-    .badge.ok{background:rgba(131,240,165,.12)}
-    .badge.warn{background:rgba(255,180,180,.12)}
-    a{color:#6dd5ff;text-decoration:none}
-    .hint{font-size:.92rem}
+    *{ box-sizing:border-box }
+    body{ margin:0; font-family:Inter,sans-serif; background:linear-gradient(135deg,var(--bg),#101835); color:var(--text) }
+    main{ max-width:900px; margin:40px auto; padding:0 18px }
+    h1{ margin:0 0 16px }
+    h2{ margin:26px 0 10px; font-size:1.15rem }
+    .card{ background:var(--card); border:1px solid rgba(141,158,199,.18); border-radius:var(--radius); padding:16px }
+    table{ width:100%; border-collapse:collapse; background:var(--card); border:1px solid rgba(141,158,199,.18); border-radius:10px; overflow:hidden }
+    th,td{ padding:12px; text-align:left; vertical-align:middle }
+    th{ background:rgba(141,158,199,.15); color:var(--muted) }
+    tr:not(:last-child){ border-bottom:1px solid rgba(141,158,199,.18) }
+    .qty-btn{ padding:4px 8px; border:none; border-radius:6px; background:rgba(255,255,255,.1); color:white; cursor:pointer }
+    .qty-btn:disabled{ opacity:.6; cursor:not-allowed }
+    .summary{ margin-top:14px; text-align:right; font-weight:600 }
+    .btn{ margin-top:14px; display:inline-block; padding:12px 18px; border-radius:10px; border:1px solid rgba(141,158,199,.25); background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12)); color:#f6f7fb; font-weight:600; cursor:pointer }
+    .btn.secondary{ background:rgba(255,255,255,.04) }
+    .btn[disabled]{ opacity:.6; cursor:not-allowed }
+    .empty{ text-align:center; padding:36px; background:var(--card); border:1px solid rgba(141,158,199,.18); border-radius:10px; color:var(--muted) }
+    .muted{ color:var(--muted) }
+    .orders{ margin-top:28px }
+    .order{ padding:12px 0; border-top:1px solid rgba(141,158,199,.18) }
+    .order:first-child{ border-top:none }
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:space-between }
+    .badge{ display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid rgba(141,158,199,.25); font-size:12px }
+    .badge.ok{ background:rgba(131,240,165,.12) }
+    .badge.warn{ background:rgba(255,180,180,.12) }
+    a{ color:#6dd5ff; text-decoration:none }
+    .hint{ font-size:.92rem }
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -44,11 +44,10 @@
     <h1>Your Cart</h1>
     <div id="cartBox" aria-live="polite"></div>
 
-    <!-- Optional: signed-in user’s recent orders -->
     <section class="orders">
       <div class="row">
         <h2 style="margin:0">Your Purchases</h2>
-        <div id="ordersHint" class="muted hint">Sign in during checkout to keep your history & receipts.</div>
+        <div id="ordersHint" class="muted hint">Sign in to see your purchase history.</div>
       </div>
       <div id="ordersBox" class="card" style="margin-top:10px;display:none"></div>
     </section>
@@ -62,10 +61,10 @@
       { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
 
-    /* ======================= Cart utils (idempotent) ======================= */
+    /* ======================= Cart utils ======================= */
     const CART_KEY = 'cart';
     const CART_UPDATED_KEY = 'cart_updated_at';
-    const CART_RESTORED_KEY = 'cart_restored_v2'; // per-tab session guard
+    const CART_RESTORED_KEY = 'cart_restored_v2'; // per-tab, adopt-once guard
 
     function getLocalBundle() {
       try {
@@ -85,19 +84,21 @@
       localStorage.setItem(CART_UPDATED_KEY, stamp);
     }
     function readCart(){ return getLocalBundle().items; }
-
-    // Overwrite quantities by SKU (no summing!)
+    async function writeCart(items){
+      const updated_at = new Date().toISOString();
+      setLocalBundle(items, updated_at);
+      renderCart();
+      const { data:{ user } } = await supa.auth.getUser();
+      if (user) { await supa.from('carts').upsert({ user_id:user.id, items, updated_at }); }
+    }
     function overlayBySku(baseArr, incomingArr){
       const map = {};
-      (baseArr || []).forEach(it => { if (it?.sku) map[it.sku] = { ...it, qty: Number(it.qty || 0) }; });
-      (incomingArr || []).forEach(it => {
-        if (!it?.sku) return;
-        map[it.sku] = { ...map[it.sku], ...it, qty: Number(it.qty || 0) }; // overwrite qty
-      });
+      (baseArr || []).forEach(it => { if (it?.sku) map[it.sku] = { ...it, qty:Number(it.qty||0) }; });
+      (incomingArr || []).forEach(it => { if (it?.sku) map[it.sku] = { ...map[it.sku], ...it, qty:Number(it.qty||0) }; });
       return Object.values(map).filter(x => x.qty > 0);
     }
 
-    // Adopt ?cart= exactly once per tab session, then strip from URL (for privacy)
+    /* ======================= Adopt cart (once per tab) ======================= */
     function adoptQueryCartOnce(){
       if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
       const qs = new URLSearchParams(location.search);
@@ -115,8 +116,6 @@
         sessionStorage.setItem(CART_RESTORED_KEY, '1');
       }
     }
-
-    // Adopt cart_backup once (used after auth redirects), then clear it
     function adoptBackupCartOnce(){
       if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
       const backup = localStorage.getItem('cart_backup');
@@ -132,20 +131,9 @@
       }
     }
 
-    // Write + upsert (last-writer-wins for server copy)
-    async function writeCart(items){
-      const updated_at = new Date().toISOString();
-      setLocalBundle(items, updated_at);
-      renderCart();
-      const { data: { user } } = await supa.auth.getUser();
-      if (user) {
-        await supa.from('carts').upsert({ user_id: user.id, items, updated_at });
-      }
-    }
-
-    /* ======================= Cross-device sync (last-writer-wins) ======================= */
+    /* ======================= Cross-device sync ======================= */
     async function syncCartFromDB() {
-      const { data: { user } } = await supa.auth.getUser();
+      const { data:{ user } } = await supa.auth.getUser();
       if (!user) return;
 
       const { data: row, error } = await supa
@@ -163,36 +151,31 @@
       let chosenUpdatedAt = new Date().toISOString();
 
       if (serverItems && (!local.items || local.items.length === 0)) {
-        chosenItems = serverItems;
-        chosenUpdatedAt = serverUpdated || chosenUpdatedAt;
+        chosenItems = serverItems; chosenUpdatedAt = serverUpdated || chosenUpdatedAt;
         setLocalBundle(chosenItems, chosenUpdatedAt);
       } else if ((!serverItems || serverItems.length === 0) && local.items.length > 0) {
-        chosenItems = local.items;
-        chosenUpdatedAt = local.updated_at || chosenUpdatedAt;
-        await supa.from('carts').upsert({ user_id: user.id, items: chosenItems, updated_at: chosenUpdatedAt });
+        chosenItems = local.items; chosenUpdatedAt = local.updated_at || chosenUpdatedAt;
+        await supa.from('carts').upsert({ user_id:user.id, items:chosenItems, updated_at:chosenUpdatedAt });
       } else if (serverItems && local.items.length > 0) {
         const localTime = local.updated_at ? Date.parse(local.updated_at) : 0;
         const serverTime = serverUpdated ? Date.parse(serverUpdated) : 0;
         if (serverTime >= localTime) {
-          chosenItems = serverItems;
-          chosenUpdatedAt = serverUpdated || chosenUpdatedAt;
+          chosenItems = serverItems; chosenUpdatedAt = serverUpdated || chosenUpdatedAt;
           setLocalBundle(chosenItems, chosenUpdatedAt);
         } else {
-          chosenItems = local.items;
-          chosenUpdatedAt = local.updated_at || chosenUpdatedAt;
-          await supa.from('carts').upsert({ user_id: user.id, items: chosenItems, updated_at: chosenUpdatedAt });
+          chosenItems = local.items; chosenUpdatedAt = local.updated_at || chosenUpdatedAt;
+          await supa.from('carts').upsert({ user_id:user.id, items:chosenItems, updated_at:chosenUpdatedAt });
         }
       } else {
-        chosenItems = [];
-        setLocalBundle([], chosenUpdatedAt);
+        chosenItems = []; setLocalBundle([], chosenUpdatedAt);
       }
 
       renderCart();
     }
 
-    /* ======================= Boot: adopt once, then sync ======================= */
-    adoptQueryCartOnce();
-    adoptBackupCartOnce();
+    /* ======================= Escaping helpers ======================= */
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+    function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
 
     /* ======================= Rendering ======================= */
     async function renderCart() {
@@ -204,7 +187,7 @@
         return;
       }
 
-      // Fill missing product names (privacy: only name/sku)
+      // Fill missing names to improve display
       const missing = cart.filter(i => !i.name).map(i => i.sku);
       if (missing.length > 0) {
         const { data: products } = await supa.from("products").select("sku,name").in("sku", missing);
@@ -215,7 +198,7 @@
         }
       }
 
-      const current = readCart(); // re-read in case names were set
+      const current = readCart(); // re-read in case names filled
       const rows = current.map(item => `
         <tr>
           <td>${escapeHtml(item.name || item.sku)}</td>
@@ -237,16 +220,12 @@
           <div class="summary">Total items: ${current.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
           <div class="row" style="margin-top:10px">
             <button class="btn secondary" onclick="clearCart()">Clear cart</button>
-            <span class="muted">Secure checkout via magic link sign-in.</span>
-            <button class="btn" onclick="proceedCheckout()">Proceed to Checkout</button>
+            <span class="muted">Checkout won’t ask you to sign in again if you’re already signed in.</span>
+            <button class="btn" onclick="proceedCheckout()">Proceed</button>
           </div>
         </div>
       `;
     }
-
-    /* ======================= Simple escaping helpers ======================= */
-    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
-    function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
 
     /* ======================= Cart operations ======================= */
     function changeQty(sku, delta) {
@@ -265,45 +244,43 @@
       writeCart([]);
     }
 
-    /* ======================= Checkout flow ======================= */
+    /* ======================= Proceed flow (no re-login if signed in) ======================= */
     async function proceedCheckout(){
       const cart = readCart();
-      if (!cart.length) { return; }
+      if (!cart.length) return;
 
-      // Save a one-time backup for auth redirects (stays local)
+      // Always keep a local backup (for safety across any redirect)
       localStorage.setItem('cart_backup', JSON.stringify(cart));
 
-      // Pass cart via URL once
-      const cartParam = encodeURIComponent(JSON.stringify(cart));
+      // Fast local session check
+      const { data:{ session } } = await supa.auth.getSession();
 
-      // ✅ Only send to login if the user is NOT signed in.
-      const { data: { user } } = await supa.auth.getUser();
-      if (user) {
-        // Already signed in → go straight to checkout (which will auto-route to vet-verify if needed)
-        location.href = `checkout.html?cart=${cartParam}&from=cart`;
+      if (session?.user) {
+        // Already signed in → go directly to vet verification (which can route/approve)
+        const cartParam = encodeURIComponent(JSON.stringify(cart));
+        location.href = `vet-verify.html?cart=${cartParam}&from=cart`;
       } else {
-        // Not signed in → go to login (original behavior)
-        const loginUrl  = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}&force=1`;
-        location.href = loginUrl;
+        // Not signed in → send to login once, then land on vet-verify with the cart restored
+        const cartParam = encodeURIComponent(JSON.stringify(cart));
+        location.href = `login.html?redirect=${encodeURIComponent('vet-verify.html')}&cart=${cartParam}&force=1`;
       }
     }
 
-    /* ======================= Order history (signed-in users) ======================= */
+    /* ======================= Order history ======================= */
     async function renderOrders(){
       const ordersBox = document.getElementById('ordersBox');
       const hint = document.getElementById('ordersHint');
-      const { data: { user } } = await supa.auth.getUser();
+      const { data:{ user } } = await supa.auth.getUser();
 
       if (!user) {
         ordersBox.style.display = 'none';
-        hint.textContent = 'Sign in during checkout to keep your history & receipts.';
+        hint.textContent = 'Sign in to see your purchase history.';
         return;
       }
       hint.textContent = 'You are signed in. Your recent purchases are below.';
       ordersBox.style.display = 'block';
       ordersBox.innerHTML = `<div class="muted">Loading your orders…</div>`;
 
-      // Expecting table "orders": id, user_id, items(json), status, total_qty, total_amount, created_at, receipt_url
       const { data: orders, error } = await supa
         .from('orders')
         .select('id, created_at, status, total_qty, total_amount, receipt_url')
@@ -335,42 +312,17 @@
             <div class="muted">${qtyTxt}${amountTxt}</div>
             <div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">
               ${rec}
-              <button class="btn secondary" onclick="emailReceipt('${escapeAttr(o.id)}')">Email receipt</button>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    // Optional: call your Supabase Edge Function `send-receipt` to email a receipt
-    async function emailReceipt(orderId){
-      try{
-        const { data: { session } } = await supa.auth.getSession();
-        if (!session) { alert('Please sign in first.'); return; }
-
-        const resp = await fetch('/functions/v1/send-receipt', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({ order_id: orderId })
-        });
-
-        if (!resp.ok){
-          const txt = await resp.text();
-          throw new Error(txt || ('HTTP '+resp.status));
-        }
-        alert('Receipt email sent.');
-      }catch(e){
-        console.warn('emailReceipt error:', e);
-        alert('Could not send receipt email. If this persists, contact support.');
-      }
-    }
-
-    /* ======================= Boot sequence ======================= */
+    /* ======================= Boot ======================= */
     document.addEventListener('DOMContentLoaded', async () => {
-      renderCart();
+      adoptQueryCartOnce();
+      adoptBackupCartOnce();
+      await renderCart();
       await syncCartFromDB();
       await renderOrders();
     });
