@@ -26,7 +26,7 @@
     .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
     .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
 
-    /* Cart button in header */
+    /* Cart button in header (hidden when logged out) */
     .cart-link{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.04)}
     .cart-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;display:grid;place-items:center;font-size:12px;background:#ff6d6d;border-radius:999px;padding:0 6px;color:white}
 
@@ -86,11 +86,7 @@
     .btn.ghost{background:transparent}
     .btn[disabled]{opacity:.6;cursor:not-allowed}
 
-    /* Footer */
-    footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
-    .footer-links{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
-
-    /* Product details modal */
+    /* Modal */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
     .modal.open{display:flex}
     .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
@@ -108,8 +104,9 @@
     .muted{color:var(--muted)}
     .sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 
-    /* RTL */
-    body.rtl .links a{text-align:right}
+    /* Footer */
+    footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
   </style>
 </head>
 <body>
@@ -117,25 +114,27 @@
     <div class="wrap nav">
       <div class="brand"><span class="logo"></span> VetoCos</div>
       <nav class="links" id="navlinks">
-        <a href="index.html" data-i18n="nav.home">Home</a>
-        <a class="active" href="Products.html" data-i18n="nav.products">Products</a>
-        <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
-        <a href="News.html" data-i18n="nav.news">News</a>
+        <a href="index.html">Home</a>
+        <a class="active" href="Products.html">Products</a>
+        <a href="World Wide.html">World Wide</a>
+        <a href="News.html">News</a>
 
-        <a class="cart-link" id="cartLink" href="cart.html" aria-label="Cart" style="display:none">
+        <!-- Cart: hidden when logged out -->
+        <a class="cart-link" id="cartLink" href="cart.html" style="display:none">
           <span>Cart</span>
           <span id="cartCount" class="cart-badge" style="display:none">0</span>
         </a>
 
-        <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
+        <button class="contact-btn" type="button" onclick="openContact()">Contact</button>
 
-        <!-- Admin link (shown only when admin) -->
+        <!-- Admin link (only visible when admin) -->
         <a class="contact-btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
 
-        <!-- Auth controls -->
+        <!-- Auth controls (hidden when logged in) -->
         <button class="contact-btn" id="signInBtn" type="button">Sign in</button>
         <button class="contact-btn" id="signUpBtn" type="button">Sign up</button>
 
+        <!-- Account dropdown (visible when logged in) -->
         <div class="acct" id="acctBlock" style="display:none">
           <button class="contact-btn" id="accountBtn" type="button">
             <span class="avatar" aria-hidden="true"></span>
@@ -151,12 +150,6 @@
             <button type="button" role="menuitem" id="logoutBtn">Sign out</button>
           </div>
         </div>
-
-        <select id="lang-switch" aria-label="Language">
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="ar">العربية</option>
-        </select>
       </nav>
       <button class="hamb" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
     </div>
@@ -164,27 +157,26 @@
 
   <main class="wrap">
     <div class="hero">
-      <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
-      <h1 data-i18n="products.title">Our Product Range</h1>
-      <p class="lead" data-i18n="products.lead">Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.</p>
+      <span class="badge">Complementary feed — not medicine</span>
+      <h1>Our Product Range</h1>
+      <p class="lead">Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.</p>
     </div>
 
     <div class="grid" id="productGrid"></div>
   </main>
 
   <footer>
-    © <span id="y"></span> VetoCos · <span data-i18n="footer.tagline">Complementary feed for companion animals</span>
+    © <span id="y"></span> VetoCos · <span>Complementary feed for companion animals</span>
     <div class="footer-links">
-      <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
-      <a href="#" onclick="openContact();return false;" data-i18n="nav.contact">Contact</a>
+      <a href="#" onclick="openPolicy();return false;">Privacy & Policy</a>
+      <a href="#" onclick="openContact();return false;">Contact</a>
     </div>
   </footer>
 
-  <!-- Minimal stubs for the modal open/close (to avoid errors) -->
   <script>
     function openContact() {}
     function openPolicy() {}
-    document.getElementById("y") && (document.getElementById("y").textContent = new Date().getFullYear());
+    document.getElementById("y").textContent = new Date().getFullYear();
   </script>
 
   <!-- Supabase -->
@@ -196,57 +188,88 @@
       { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
     const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
-  </script>
 
-  <!-- Product Details Modal (HTML) -->
-  <div id="productDetailsModal" class="modal" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
-      <div class="sheet-head">
-        <h2 id="pdTitle" class="sheet-title">Product details</h2>
-        <button class="close" type="button" onclick="closePD()">Close</button>
-      </div>
-      <div class="sheet-body">
-        <div class="pd-cols">
-          <img id="pdImg" class="pd-img" alt="">
-          <div>
-            <h3 id="pdName" style="margin:0 0 6px"></h3>
-            <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
-            <div class="specs">
-              <div class="spec"><h5>Form</h5><div id="pdForm" class="muted"></div></div>
-              <div class="spec"><h5>Pack size</h5><div id="pdSize" class="muted"></div></div>
-              <div class="spec"><h5>Key ingredients</h5><div id="pdIngredients" class="muted"></div></div>
-              <div class="spec"><h5>Feeding guidance</h5><div id="pdUsage" class="muted"></div></div>
-            </div>
-            <p id="pdDesc" class="muted" style="margin-top:10px"></p>
-            <div class="sheet-actions">
-              <button class="btn" id="pdAddBtn" type="button">Add to Cart</button>
-              <button class="btn ghost" id="pdBuyBtn" type="button">Buy Now</button>
-              <a class="btn" id="pdPdfBtn" href="#" target="_blank" rel="noopener">Download PDF</a>
-              <a class="btn ghost" id="pdPageBtn" href="#">View full page</a>
-              <span class="muted" id="pdSku" style="margin-left:auto"></span>
-            </div>
-          </div>
-        </div>
-        <p class="muted" style="margin-top:12px">
-          Complementary feed — not a medicine. Always follow your vet’s advice.
-        </p>
-      </div>
-    </div>
-  </div>
+    /* Header auth UI wiring */
+    const signInBtn  = document.getElementById('signInBtn');
+    const signUpBtn  = document.getElementById('signUpBtn');
+    const acctBlock  = document.getElementById('acctBlock');
+    const accountBtn = document.getElementById('accountBtn');
+    const accountMenu= document.getElementById('accountMenu');
+    const accountHeader = document.getElementById('accountHeader');
+    const helloName  = document.getElementById('helloName');
+    const adminBtn   = document.getElementById('adminBtn');
+    const logoutBtn  = document.getElementById('logoutBtn');
+    const cartLink   = document.getElementById('cartLink');
+    const cartCount  = document.getElementById('cartCount');
 
-  <!-- Cart + Product render logic -->
-  <script>
-    /* ---------- Cart helpers ---------- */
+    signInBtn.addEventListener('click', ()=>{ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); });
+    signUpBtn.addEventListener('click', ()=>{ location.href = 'signup.html?redirect=' + encodeURIComponent('Products.html'); });
+
+    accountBtn.addEventListener('click', ()=>{
+      const open = accountMenu.classList.toggle('open');
+      accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
+      if (open){
+        const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
+        setTimeout(()=>document.addEventListener('click', onDoc),0);
+      }
+    });
+    logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
+
+    let IS_LOGGED_IN = false;
+
+    async function refreshHeader(){
+      const { data:{ session } } = await supa.auth.getSession();
+      if (!session?.user){
+        IS_LOGGED_IN = false;
+        signInBtn.style.display = 'inline-block';
+        signUpBtn.style.display = 'inline-block';
+        acctBlock.style.display = 'none';
+        adminBtn.style.display  = 'none';
+        cartLink.style.display  = 'none';   // hide cart until signed in
+        return;
+      }
+      IS_LOGGED_IN = true;
+
+      let display = session.user.email;
+      let isAdmin = false;
+      try{
+        const { data: p } = await supa.from('profiles')
+          .select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
+        const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
+        if (full) display = full;
+        isAdmin = !!p?.is_admin;
+      }catch(_){}
+      helloName.textContent = display;
+      accountHeader.textContent = display;
+
+      signInBtn.style.display = 'none';
+      signUpBtn.style.display = 'none';
+      acctBlock.style.display = 'inline-flex';
+      cartLink.style.display  = 'inline-flex';
+
+      if (isAdmin || SUPER_ADMINS.includes(session.user.email)) {
+        adminBtn.style.display = 'inline-block';
+      } else {
+        adminBtn.style.display = 'none';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', refreshHeader);
+    supa.auth.onAuthStateChange((_e)=>{ refreshHeader(); renderProducts(); });
+
+    /* Cart helpers */
     function readCart(){ try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; } }
-    function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items)); updateCartBadge(); }
+    function writeCart(items){
+      localStorage.setItem("cart", JSON.stringify(items));
+      updateCartBadge();
+    }
     function countCart(){ return readCart().reduce((n,x)=>n + Number(x.qty||0), 0); }
     function updateCartBadge(){
       const n = countCart();
-      const b = document.getElementById('cartCount');
-      if(!b) return;
-      if(n>0){ b.style.display='inline-grid'; b.textContent = n; }
-      else { b.style.display='none'; }
+      if (n>0){ cartCount.style.display='inline-grid'; cartCount.textContent = n; }
+      else { cartCount.style.display='none'; }
     }
+
     function addToCartBySKU(sku, name, qty=1){
       const items = readCart();
       const i = items.findIndex(x=>x.sku===sku);
@@ -255,7 +278,7 @@
       writeCart(items);
     }
 
-    /* Fallback catalog (keeps your original visuals) */
+    /* Fallback catalog (for visuals if DB empty) */
     const FALLBACK = {
       "URO-CHIEN": { name:"Urocline Chien", image:"images/Product1.jpg", category:"Urinary care", form:"Chewable tablets", size:"60 / 120 tabs", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", page:"Product1.html", pdf:"pdf/Product1.pdf" },
       "HEP-AT":    { name:"Hepatiale", image:"images/Product2.jpg", category:"Liver support",   form:"Capsules", size:"30 / 60 caps", ingredients:"Silybin-phospholipid, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", page:"Product2.html", pdf:"pdf/Product2.pdf" },
@@ -278,7 +301,7 @@
       return "https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/" + PRODUCT_BUCKET + "/" + encodeURI(p);
     }
 
-    /* Modal refs */
+    // Modal refs
     const pdModal = document.getElementById('productDetailsModal');
     const pdImg = document.getElementById('pdImg');
     const pdName = document.getElementById('pdName');
@@ -296,7 +319,6 @@
 
     let CURRENT_SKU = null;
     let PRODUCT_CACHE = {};
-    let IS_LOGGED_IN = false;
 
     function openPD(sku){
       const spec = PRODUCT_CACHE[sku] || {};
@@ -321,29 +343,33 @@
       if (!IS_LOGGED_IN){
         pdAdd.disabled = true;
         pdBuy.disabled = true;
-        pdAdd.onclick = ()=>{ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); };
-        pdBuy.onclick = ()=>{ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); };
       } else {
         pdAdd.disabled = !isAvail;
         pdBuy.disabled = !isAvail;
-        pdAdd.onclick = ()=>{ addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1); alert((spec.name || CURRENT_SKU) + " added to cart"); };
-        pdBuy.onclick = ()=>{ addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1); location.href = 'cart.html'; };
       }
 
       pdModal.classList.add('open');
       pdModal.setAttribute('aria-hidden','false');
     }
-    function closePD(){
-      pdModal.classList.remove('open');
-      pdModal.setAttribute('aria-hidden','true');
-    }
+    function closePD(){ pdModal.classList.remove('open'); pdModal.setAttribute('aria-hidden','true'); }
     pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
 
-    /* Render cards from DB (with fallback content) */
-    async function loadAndRenderProducts(){
-      const grid = document.getElementById('productGrid');
-      grid.innerHTML = '<div class="muted">Loading…</div>';
+    pdAdd.addEventListener('click', ()=>{
+      if(!CURRENT_SKU) return;
+      if(!IS_LOGGED_IN){ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); return; }
+      const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
+      addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
+      alert((spec.name || CURRENT_SKU) + " added to cart");
+    });
+    pdBuy.addEventListener('click', ()=>{
+      if(!CURRENT_SKU) return;
+      if(!IS_LOGGED_IN){ location.href = 'login.html?redirect=' + encodeURIComponent('cart.html'); return; }
+      const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
+      addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
+      location.href = 'cart.html';
+    });
 
+    async function fetchProducts(){
       let rows = [];
       const { data, error } = await supa
         .from('products')
@@ -353,8 +379,8 @@
 
       if (!error && Array.isArray(data)) rows = data;
 
-      // If no DB records, use fallback to ensure public browsing always works
       if (!rows.length){
+        // fallback to keep visuals if DB is empty
         rows = Object.keys(FALLBACK).map((sku, i)=>({
           sku,
           name: FALLBACK[sku].name,
@@ -389,7 +415,20 @@
         };
       });
 
+      return rows;
+    }
+
+    async function renderProducts(){
+      // Reflect current auth before drawing buttons
+      const { data:{ session } } = await supa.auth.getSession();
+      IS_LOGGED_IN = !!session?.user;
+
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = '<div class="muted">Loading…</div>';
+
+      const rows = await fetchProducts();
       grid.innerHTML = '';
+
       rows.forEach(r=>{
         const p = PRODUCT_CACHE[r.sku];
         const imgUrl = r.image_path ? filePublicUrl(r.image_path) : (p.image || '');
@@ -399,34 +438,27 @@
           : '<span class="status bad">Unavailable</span>';
         const qtyHtml = '<span class="qty">' + (p.stock_qty>0 ? (p.stock_qty + ' in stock') : 'Out of stock') + '</span>';
 
-        const actionsWhenLoggedOut = `
+        const card = document.createElement('div');
+        card.className = 'p-card';
+        card.setAttribute('data-sku', r.sku);
+
+        const actionsLoggedOut = `
           <button class="btn" type="button" data-action="signin">Sign in to purchase</button>
           <button class="btn ghost more-btn" type="button">Click for more details</button>
         `;
-        const actionsWhenLoggedIn = `
+        const actionsLoggedIn = `
           <button class="btn add-btn" type="button" ${!isAvail ? 'disabled' : ''}>Add to Cart</button>
           <button class="btn ghost buy-btn" type="button" ${!isAvail ? 'disabled' : ''}>Buy Now</button>
           <button class="btn ghost more-btn" type="button">Click for more details</button>
         `;
-
-        const card = document.createElement('div');
-        card.className = 'p-card';
-        card.setAttribute('data-sku', r.sku);
 
         card.innerHTML =
           '<img src="'+imgUrl+'" alt="'+p.name+'">' +
           '<div class="px">' +
             '<h4>'+p.name+'</h4>' +
             '<div class="p-meta">' + statusHtml + '<span>•</span>' + qtyHtml + '</div>' +
-            '<div class="actions">' + (IS_LOGGED_IN ? actionsWhenLoggedIn : actionsWhenLoggedOut) + '</div>' +
+            '<div class="actions">' + (IS_LOGGED_IN ? actionsLoggedIn : actionsLoggedOut) + '</div>' +
           '</div>';
-
-        // Handlers
-        const signInAction = card.querySelector('[data-action="signin"]');
-        signInAction?.addEventListener('click', (ev)=>{
-          ev.stopPropagation();
-          location.href = 'login.html?redirect=' + encodeURIComponent('Products.html');
-        });
 
         const addBtn = card.querySelector('.add-btn');
         addBtn?.addEventListener('click', (ev)=>{
@@ -442,13 +474,18 @@
           location.href = 'cart.html';
         });
 
+        const signInAction = card.querySelector('[data-action="signin"]');
+        signInAction?.addEventListener('click', (ev)=>{
+          ev.stopPropagation();
+          location.href = 'login.html?redirect=' + encodeURIComponent('Products.html');
+        });
+
         const moreBtn = card.querySelector('.more-btn');
         moreBtn?.addEventListener('click', (ev)=>{
           ev.stopPropagation();
           openPD(r.sku);
         });
 
-        // Also allow clicking the image/title area to open details
         card.addEventListener('click', (e)=>{
           if (e.target.closest('.actions')) return;
           openPD(r.sku);
@@ -458,76 +495,49 @@
       });
     }
 
-    /* ---------- Header auth UI ---------- */
-    const signInBtn  = document.getElementById('signInBtn');
-    const signUpBtn  = document.getElementById('signUpBtn');
-    const acctBlock  = document.getElementById('acctBlock');
-    const accountBtn = document.getElementById('accountBtn');
-    const accountMenu= document.getElementById('accountMenu');
-    const accountHeader = document.getElementById('accountHeader');
-    const helloName  = document.getElementById('helloName');
-    const adminBtn   = document.getElementById('adminBtn');
-    const cartLink   = document.getElementById('cartLink');
-    const logoutBtn  = document.getElementById('logoutBtn');
-
-    signInBtn.addEventListener('click', ()=>{ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); });
-    signUpBtn.addEventListener('click', ()=>{ location.href = 'signup.html?redirect=' + encodeURIComponent('Products.html'); });
-
-    accountBtn.addEventListener('click', ()=>{
-      const open = accountMenu.classList.toggle('open');
-      accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
-      if (open){
-        const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
-        setTimeout(()=>document.addEventListener('click', onDoc),0);
-      }
-    });
-    logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
-
-    async function refreshHeaderAndGrid(){
-      const { data:{ session } } = await supa.auth.getSession();
-      if (!session?.user){
-        IS_LOGGED_IN = false;
-        signInBtn.style.display = 'inline-block';
-        signUpBtn.style.display = 'inline-block';
-        acctBlock.style.display = 'none';
-        adminBtn.style.display = 'none';
-        cartLink.style.display = 'none';   // hide cart when logged out
-      } else {
-        IS_LOGGED_IN = true;
-        let display = session.user.email;
-        let isAdmin = false;
-        try{
-          const { data: p } = await supa.from('profiles')
-            .select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
-          const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
-          if (full) display = full;
-          isAdmin = !!p?.is_admin;
-        }catch(_){}
-        helloName.textContent = display;
-        accountHeader.textContent = display;
-
-        signInBtn.style.display = 'none';
-        signUpBtn.style.display = 'none';
-        acctBlock.style.display = 'inline-flex';
-        cartLink.style.display = 'inline-flex'; // show cart when logged in
-        if (isAdmin || SUPER_ADMINS.includes(session.user.email)) {
-          adminBtn.style.display = 'inline-block';
-        } else {
-          adminBtn.style.display = 'none';
-        }
-      }
-      // re-render products so action buttons match auth state
-      await loadAndRenderProducts();
-      // update badge if any
-      updateCartBadge();
-    }
-
-    document.addEventListener('DOMContentLoaded', refreshHeaderAndGrid);
-    supa.auth.onAuthStateChange(refreshHeaderAndGrid);
-
-    /* Keep badge in sync across tabs/devices on same browser */
+    /* Keep badge in sync */
     window.addEventListener('storage', (ev)=>{ if(ev.key === 'cart') updateCartBadge(); });
+
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      document.getElementById("y").textContent = new Date().getFullYear();
+      await refreshHeader();          // header & cart visibility
+      await renderProducts();         // products for everyone
+      updateCartBadge();              // badge if any
+    });
   </script>
+
+  <!-- Product Details Modal -->
+  <div id="productDetailsModal" class="modal" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
+      <div class="sheet-head">
+        <h2 id="pdTitle" class="sheet-title">Product details</h2>
+        <button class="close" type="button" onclick="closePD()">Close</button>
+      </div>
+      <div class="sheet-body">
+        <div class="pd-cols">
+          <img id="pdImg" class="pd-img" alt="">
+          <div>
+            <h3 id="pdName" style="margin:0 0 6px"></h3>
+            <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
+            <div class="specs">
+              <div class="spec"><h5>Form</h5><div id="pdForm" class="muted"></div></div>
+              <div class="spec"><h5>Pack size</h5><div id="pdSize" class="muted"></div></div>
+              <div class="spec"><h5>Key ingredients</h5><div id="pdIngredients" class="muted"></div></div>
+              <div class="spec"><h5>Feeding guidance</h5><div id="pdUsage" class="muted"></div></div>
+            </div>
+            <p id="pdDesc" class="muted" style="margin-top:10px"></p>
+            <div class="sheet-actions">
+              <button class="btn" id="pdAddBtn" type="button">Add to Cart</button>
+              <button class="btn ghost" id="pdBuyBtn" type="button">Buy Now</button>
+              <a class="btn" id="pdPdfBtn" href="#" target="_blank" rel="noopener">Download PDF</a>
+              <a class="btn ghost" id="pdPageBtn" href="#">View full page</a>
+              <span class="muted" id="pdSku" style="margin-left:auto"></span>
+            </div>
+          </div>
+        </div>
+        <p class="muted" style="margin-top:12px">Complementary feed — not a medicine. Always follow your vet’s advice.</p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
-
