@@ -21,7 +21,7 @@
     header.site{position:sticky;top:0;z-index:50;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:10px;font-weight:700}
-    /* NEW: real logo image, linked to index */
+    /* Real logo image linked to index */
     .brand-logo{
       width:60px;height:auto;display:block;background:transparent;border:0;outline:0;
       filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
@@ -120,7 +120,6 @@
 <body>
   <header class="site">
     <div class="wrap nav">
-      <!-- Brand now uses your logo and links to index -->
       <div class="brand">
         <a href="index.html" aria-label="VetoCos home">
           <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
@@ -254,17 +253,15 @@
         isAdmin = !!p?.is_admin;
       }catch(_){}
       helloName.textContent = display;
-
-      // NEW: show both name (or name fallback) and email in the menu header
       accountHeader.innerHTML = '<div><strong>'+display+
-        '</strong><div class="muted">'+(session.user.email || '')+'</div></div>';
+        '</strong><div class="muted">'+( (await supa.auth.getSession()).data.session.user.email || '' )+'</div></div>';
 
       signInBtn.style.display = 'none';
       signUpBtn.style.display = 'none';
       acctBlock.style.display = 'inline-flex';
       cartLink.style.display  = 'inline-flex';
 
-      if (isAdmin || SUPER_ADMINS.includes(session.user.email)) {
+      if (isAdmin || SUPER_ADMINS.includes((await supa.auth.getSession()).data.session.user.email)) {
         adminBtn.style.display = 'inline-block';
       } else {
         adminBtn.style.display = 'none';
@@ -318,27 +315,50 @@
       return "https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/" + PRODUCT_BUCKET + "/" + encodeURI(p);
     }
 
-    // Modal refs
-    const pdModal = document.getElementById('productDetailsModal');
-    const pdImg = document.getElementById('pdImg');
-    const pdName = document.getElementById('pdName');
-    const pdCat = document.getElementById('pdCategory');
-    const pdForm = document.getElementById('pdForm');
-    const pdSize = document.getElementById('pdSize');
-    const pdIngr = document.getElementById('pdIngredients');
-    const pdUse = document.getElementById('pdUsage');
-    const pdSku = document.getElementById('pdSku');
-    const pdAdd = document.getElementById('pdAddBtn');
-    const pdBuy = document.getElementById('pdBuyBtn');
-    const pdPdf = document.getElementById('pdPdfBtn');
-    const pdPage = document.getElementById('pdPageBtn');
-    const pdDesc = document.getElementById('pdDesc');
-
+    /* --------- Modal (lazy refs so it works even if HTML is below scripts) --------- */
+    let pdModal=null,pdImg=null,pdName=null,pdCat=null,pdForm=null,pdSize=null,pdIngr=null,pdUse=null,pdSku=null,pdAdd=null,pdBuy=null,pdPdf=null,pdPage=null,pdDesc=null;
     let CURRENT_SKU = null;
     let PRODUCT_CACHE = {};
-    let IS_LOGGED_IN = false;
+
+    function ensurePDRefs(){
+      if (pdModal) return;
+      pdModal = document.getElementById('productDetailsModal');
+      pdImg   = document.getElementById('pdImg');
+      pdName  = document.getElementById('pdName');
+      pdCat   = document.getElementById('pdCategory');
+      pdForm  = document.getElementById('pdForm');
+      pdSize  = document.getElementById('pdSize');
+      pdIngr  = document.getElementById('pdIngredients');
+      pdUse   = document.getElementById('pdUsage');
+      pdSku   = document.getElementById('pdSku');
+      pdAdd   = document.getElementById('pdAddBtn');
+      pdBuy   = document.getElementById('pdBuyBtn');
+      pdPdf   = document.getElementById('pdPdfBtn');
+      pdPage  = document.getElementById('pdPageBtn');
+      pdDesc  = document.getElementById('pdDesc');
+
+      if (!pdModal) return; // safety
+
+      // one-time listeners
+      pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
+      pdAdd.addEventListener('click', ()=>{
+        if(!CURRENT_SKU) return;
+        if(!IS_LOGGED_IN){ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); return; }
+        const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
+        addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
+        alert((spec.name || CURRENT_SKU) + " added to cart");
+      });
+      pdBuy.addEventListener('click', ()=>{
+        if(!CURRENT_SKU) return;
+        if(!IS_LOGGED_IN){ location.href = 'login.html?redirect=' + encodeURIComponent('cart.html'); return; }
+        const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
+        addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
+        location.href = 'cart.html';
+      });
+    }
 
     function openPD(sku){
+      ensurePDRefs(); // <-- FIX: make sure refs exist
       const spec = PRODUCT_CACHE[sku] || {};
       CURRENT_SKU = sku;
       pdName.textContent = spec.name || sku;
@@ -369,24 +389,9 @@
       pdModal.classList.add('open');
       pdModal.setAttribute('aria-hidden','false');
     }
-    function closePD(){ pdModal.classList.remove('open'); pdModal.setAttribute('aria-hidden','true'); }
-    pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
+    function closePD(){ if(pdModal){ pdModal.classList.remove('open'); pdModal.setAttribute('aria-hidden','true'); } }
 
-    pdAdd.addEventListener('click', ()=>{
-      if(!CURRENT_SKU) return;
-      if(!IS_LOGGED_IN){ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); return; }
-      const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
-      addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
-      alert((spec.name || CURRENT_SKU) + " added to cart");
-    });
-    pdBuy.addEventListener('click', ()=>{
-      if(!CURRENT_SKU) return;
-      if(!IS_LOGGED_IN){ location.href = 'login.html?redirect=' + encodeURIComponent('cart.html'); return; }
-      const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
-      addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
-      location.href = 'cart.html';
-    });
-
+    /* ---------------- Products rendering ---------------- */
     async function fetchProducts(){
       let rows = [];
       const { data, error } = await supa
@@ -501,7 +506,7 @@
         const moreBtn = card.querySelector('.more-btn');
         moreBtn?.addEventListener('click', (ev)=>{
           ev.stopPropagation();
-          openPD(r.sku);
+          openPD(r.sku);   // will now always work (lazy refs)
         });
 
         card.addEventListener('click', (e)=>{
@@ -524,12 +529,12 @@
     });
   </script>
 
-  <!-- Product Details Modal -->
+  <!-- Product Details Modal (kept at the end, works via lazy refs) -->
   <div id="productDetailsModal" class="modal" aria-hidden="true">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
       <div class="sheet-head">
         <h2 id="pdTitle" class="sheet-title">Product details</h2>
-        <button class="close" type="button" onclick="closePD()">Close</button>
+        <button class="close" type="button" onclick="(function(){ const m=document.getElementById('productDetailsModal'); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } })()">Close</button>
       </div>
       <div class="sheet-body">
         <div class="pd-cols">
