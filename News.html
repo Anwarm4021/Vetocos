@@ -1,90 +1,279 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>VetoCos | Actualités</title>
+  <title>VetoCos | News</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Actualités VetoCos par région" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="description" content="VetoCos news and updates.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px}
+    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.25)}
     *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
-    main{max-width:960px;margin:40px auto;padding:0 18px}
-    h1{margin:0 0 12px}
-    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:12px}
+    body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif;line-height:1.6}
+    a{text-decoration:none;color:inherit}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+
+    /* Header */
+    header.site{position:sticky;top:0;z-index:50;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700}
+    .brand-logo{width:60px;height:auto;display:block;filter: drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+    .links{display:flex;gap:12px;align-items:center}
+    .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
+    .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
+    .contact-btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
+    .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
+    @media(max-width:900px){
+      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:240px}
+      .links.open{display:flex}
+      .hamb{display:block}
+    }
+
+    /* Account menu */
+    .acct{position:relative;display:inline-flex;align-items:center;gap:8px}
+    .avatar{width:28px;height:28px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:inline-block;border:1px solid rgba(141,158,199,.3)}
+    .menu{position:absolute;top:42px;right:0;background:rgba(16,24,53,.98);border:1px solid rgba(141,158,199,.2);border-radius:12px;min-width:240px;display:none;box-shadow:var(--shadow)}
+    .menu.open{display:block}
+    .menu a,.menu button{display:block;width:100%;text-align:left;padding:10px 12px;background:transparent;border:0;color:var(--text);cursor:pointer}
+    .menu a:hover,.menu button:hover{background:rgba(141,158,199,.15)}
+    .menu .muted{font-size:12px}
     .muted{color:var(--muted)}
-    .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-    select{padding:10px 12px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text)}
-    a{color:#6dd5ff;text-decoration:none}
-    img{max-width:100%;border-radius:10px;border:1px solid rgba(141,158,199,.18)}
+
+    /* Page header */
+    .hero{padding:36px 0 18px}
+    h1{font-size:clamp(28px,5vw,42px);margin:0}
+    .lead{color:var(--muted);margin-top:6px}
+
+    /* News list */
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0 28px}
+    @media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:680px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+    .thumb{width:100%;height:170px;object-fit:cover;background:#0d1330}
+    .px{padding:12px}
+    .title{margin:.2rem 0 .1rem}
+    .meta{font-size:12px;color:var(--muted)}
+    .btn{display:inline-block;margin-top:8px;padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
+    .btn.ghost{background:transparent}
+    .empty{color:var(--muted);text-align:center;padding:28px;border:1px dashed rgba(141,158,199,.25);border-radius:12px}
+
+    /* Modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
+    .modal.open{display:flex}
+    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
+    .sheet-title{margin:0;font-size:1.1rem}
+    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+    .sheet-body{padding:16px}
   </style>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<main>
-  <div class="row">
-    <h1>Actualités</h1>
-    <div>
-      <label class="muted" for="regions">Région</label>
-      <select id="regions"></select>
+<header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a href="index.html" aria-label="VetoCos home">
+        <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
+      </a>
+      <span>VetoCos</span>
     </div>
+    <nav class="links" id="navlinks">
+      <a href="index.html">Home</a>
+      <a href="Products.html">Products</a>
+      <a href="World Wide.html">World Wide</a>
+      <a class="active" href="News.html">News</a>
+
+      <button class="contact-btn" type="button" onclick="openContact()">Contact</button>
+
+      <a class="contact-btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
+
+      <button class="contact-btn" id="signInBtn" type="button">Sign in</button>
+      <button class="contact-btn" id="signUpBtn" type="button">Sign up</button>
+
+      <div class="acct" id="acctBlock" style="display:none">
+        <button class="contact-btn" id="accountBtn" type="button">
+          <span class="avatar" aria-hidden="true"></span>
+          <span id="helloName" class="muted" style="font-size:.9rem"></span>
+        </button>
+        <div class="menu" id="accountMenu" role="menu" aria-hidden="true">
+          <div id="accountHeader" class="muted" style="padding:8px 12px; border-bottom:1px solid rgba(141,158,199,.12)"></div>
+          <a href="account.html" role="menuitem">Account settings</a>
+          <a href="my-order.html" role="menuitem">My orders</a>
+          <a href="cart.html" role="menuitem">Cart</a>
+          <a href="checkout.html" role="menuitem">Checkout</a>
+          <a href="vet-verify.html" role="menuitem">Vet verification</a>
+          <button type="button" role="menuitem" id="logoutBtn">Sign out</button>
+        </div>
+      </div>
+    </nav>
+    <button class="hamb" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
   </div>
-  <div id="msg" class="muted">Chargement…</div>
-  <div id="list"></div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <h1>News & Updates</h1>
+    <p class="lead">Official announcements, product updates, and events from VetoCos.</p>
+  </div>
+
+  <div id="newsGrid" class="grid"></div>
+  <div id="newsEmpty" class="empty" style="display:none">No news yet.</div>
 </main>
 
+<footer class="wrap" style="padding:24px 0;color:var(--muted)">
+  © <span id="y"></span> VetoCos
+</footer>
+
+<!-- News modal -->
+<div id="newsModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="newsTitle">
+    <div class="sheet-head">
+      <h2 id="newsTitle" class="sheet-title">News</h2>
+      <button class="close" type="button" onclick="closeNews()">Close</button>
+    </div>
+    <div class="sheet-body">
+      <img id="newsCover" class="thumb" alt="" style="height:240px;border-radius:12px;border:1px solid rgba(141,158,199,.18);object-fit:cover;display:none;margin-bottom:10px">
+      <div class="muted" id="newsDate"></div>
+      <p id="newsBody" style="white-space:pre-wrap;margin-top:10px"></p>
+      <div id="newsAttachBox" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openContact() {}
+  function closeNews(){ document.getElementById('newsModal').classList.remove('open'); document.getElementById('newsModal').setAttribute('aria-hidden','true'); }
+  document.getElementById('newsModal').addEventListener('click', (e)=>{ if(e.target.id==='newsModal'){ closeNews(); } });
+  document.getElementById('y').textContent = new Date().getFullYear();
+</script>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
   const supa = supabase.createClient(
     "https://qdepgviimbcdlozjpbhm.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
     { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
   );
-  const regionsSel = document.getElementById('regions');
-  const list = document.getElementById('list');
-  const msg  = document.getElementById('msg');
+  const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
 
-  function filePublicUrl(bucket, path){
-    return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${bucket}/${encodeURI(path.replace(new RegExp('^'+bucket+'/'),''))}`;
-  }
+  // Header wiring (same pattern as Products)
+  const signInBtn  = document.getElementById('signInBtn');
+  const signUpBtn  = document.getElementById('signUpBtn');
+  const acctBlock  = document.getElementById('acctBlock');
+  const accountBtn = document.getElementById('accountBtn');
+  const accountMenu= document.getElementById('accountMenu');
+  const accountHeader=document.getElementById('accountHeader');
+  const helloName  = document.getElementById('helloName');
+  const adminBtn   = document.getElementById('adminBtn');
+  const logoutBtn  = document.getElementById('logoutBtn');
 
-  async function loadRegions(){
-    const { data } = await supa.from('site_settings').select('value').eq('key','active_regions').maybeSingle();
-    const active = Array.isArray(data?.value) ? data.value : ["Africa","Global"];
-    regionsSel.innerHTML = active.map(r=>`<option value="${r}">${r}</option>`).join('');
-  }
+  signInBtn.addEventListener('click', ()=>{ location.href='login.html?redirect='+encodeURIComponent('News.html'); });
+  signUpBtn.addEventListener('click', ()=>{ location.href='signup.html?redirect='+encodeURIComponent('News.html'); });
 
-  async function loadNews(){
-    msg.textContent='Chargement…';
-    const region = regionsSel.value || 'Africa';
-    // Only published items in enabled region
-    const { data, error } = await supa.from('news')
-      .select('id,title,body,region,image_path,file_path,created_at,published')
-      .eq('published', true)
-      .eq('region', region)
-      .order('created_at',{ ascending:false });
-    if (error){ msg.textContent = error.message; return; }
-    const rows = data || [];
-    list.innerHTML = rows.map(n=>{
-      const img = n.image_path ? `<img src="${filePublicUrl('NewsFiles', n.image_path)}" alt="">` : '';
-      const att = n.file_path ? `<a href="${filePublicUrl('NewsFiles', n.file_path)}" target="_blank" rel="noopener">Pièce jointe</a>` : '';
-      return `<article class="card">
-        <h2 style="margin:.2rem 0">${n.title}</h2>
-        <div class="muted" style="font-size:.9rem">${new Date(n.created_at).toLocaleString()} · ${n.region}</div>
-        <div style="margin:10px 0">${img}</div>
-        <p>${(n.body||'').replace(/</g,'&lt;')}</p>
-        <div style="margin-top:8px">${att}</div>
-      </article>`;
-    }).join('');
-    msg.textContent = rows.length ? '' : 'Aucune actualité.';
-  }
-
-  regionsSel.addEventListener('change', loadNews);
-  document.addEventListener('DOMContentLoaded', async ()=>{
-    await loadRegions();
-    await loadNews();
+  accountBtn.addEventListener('click', ()=>{
+    const open = accountMenu.classList.toggle('open');
+    accountMenu.setAttribute('aria-hidden', open ? 'false':'true');
+    if (open){
+      const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
+      setTimeout(()=>document.addEventListener('click', onDoc),0);
+    }
   });
+  logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
+
+  async function refreshHeader(){
+    const { data:{ session } } = await supa.auth.getSession();
+    if (!session?.user){
+      signInBtn.style.display='inline-block';
+      signUpBtn.style.display='inline-block';
+      acctBlock.style.display='none';
+      adminBtn.style.display='none';
+      return;
+    }
+    let display = session.user.email;
+    let isAdmin = false;
+    try{
+      const { data: p } = await supa.from('profiles').select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
+      const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
+      if (full) display = full;
+      isAdmin = !!p?.is_admin;
+    }catch{}
+    helloName.textContent = display;
+    accountHeader.textContent = display;
+    signInBtn.style.display='none';
+    signUpBtn.style.display='none';
+    acctBlock.style.display='inline-flex';
+    adminBtn.style.display = (isAdmin || SUPER_ADMINS.includes(session.user.email)) ? 'inline-block' : 'none';
+  }
+  document.addEventListener('DOMContentLoaded', refreshHeader);
+  supa.auth.onAuthStateChange(()=>{ refreshHeader(); });
+
+  /* ----- NEWS RENDER ----- */
+  const NEWS_BUCKET = "NewsFiles";
+  function filePublicUrl(path){
+    if(!path) return null;
+    const p = String(path).replace(/^NewsFiles\//,'');
+    return "https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/" + NEWS_BUCKET + "/" + encodeURI(p);
+  }
+
+  async function renderNews(){
+    const box = document.getElementById('newsGrid');
+    const empty = document.getElementById('newsEmpty');
+    box.innerHTML = '<div class="muted" style="grid-column:1/-1">Loading…</div>';
+
+    let rows = [];
+    const { data, error } = await supa
+      .from('news')
+      .select('id,title,body,created_at,cover_path,file_path,is_published,region')
+      .eq('is_published', true)
+      .order('created_at', { ascending:false })
+      .limit(60);
+
+    if (!error && Array.isArray(data)) rows = data;
+
+    if (!rows.length){
+      box.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    box.innerHTML = '';
+
+    rows.forEach(n=>{
+      const card = document.createElement('div');
+      card.className = 'card';
+      const cover = n.cover_path ? filePublicUrl(n.cover_path) : '';
+      card.innerHTML =
+        (cover ? `<img class="thumb" src="${cover}" alt="${n.title}">` : `<div class="thumb" aria-hidden="true"></div>`) +
+        `<div class="px">
+           <div class="meta">${new Date(n.created_at).toLocaleDateString()}${n.region ? ' · '+n.region : ''}</div>
+           <h3 class="title">${escapeHtml(n.title||'Untitled')}</h3>
+           <p class="muted">${escapeHtml((n.body||'').slice(0,160))}${(n.body||'').length>160?'…':''}</p>
+           <button class="btn" data-id="${n.id}">Read more</button>
+         </div>`;
+      card.querySelector('.btn').addEventListener('click', ()=>openNews(n));
+      box.appendChild(card);
+    });
+  }
+
+  function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m])); }
+
+  function openNews(n){
+    const modal = document.getElementById('newsModal');
+    document.getElementById('newsTitle').textContent = n.title || 'News';
+    const cover = n.cover_path ? filePublicUrl(n.cover_path) : '';
+    const img = document.getElementById('newsCover');
+    if (cover){ img.src = cover; img.style.display='block'; } else { img.style.display='none'; }
+    document.getElementById('newsDate').textContent = new Date(n.created_at).toLocaleString();
+    document.getElementById('newsBody').textContent = n.body || '';
+    const attachBox = document.getElementById('newsAttachBox');
+    const fileUrl = n.file_path ? filePublicUrl(n.file_path) : '';
+    attachBox.innerHTML = fileUrl ? `<a class="btn ghost" href="${fileUrl}" target="_blank" rel="noopener">Open attachment</a>` : '';
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+  }
+
+  document.addEventListener('DOMContentLoaded', renderNews);
 </script>
 </body>
 </html>
+
 
