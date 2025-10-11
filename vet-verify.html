@@ -7,18 +7,20 @@
 <meta name="description" content="Submit your professional credentials to unlock purchasing on VetoCos." />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px}
+:root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px;--brand:#6dd5ff;--brand2:#83f0a5}
 *{box-sizing:border-box}
 body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
-.wrap{max-width:980px;margin:6vh auto;padding:0 18px}
+.wrap{max-width:1100px;margin:6vh auto;padding:0 18px}
 .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
 h1{margin:0 0 10px}
 label{display:block;margin:10px 0 6px}
 input[type="text"],input[type="file"],select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text)}
 .btn{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
 .btn.small{padding:8px 12px}
+.btn.ghost{background:transparent}
 .btn[disabled]{opacity:.6;cursor:not-allowed}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .muted{color:#8ea0c8;margin-top:10px}
 .success{color:#83f0a5} .error{color:#ffb4b4}
 .small{font-size:.92rem}
@@ -30,8 +32,13 @@ input[type="text"],input[type="file"],select,textarea{width:100%;padding:12px 14
 .help{font-size:.85rem;color:#8ea0c8}
 .pair{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left}
+th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
 .section-title{margin:18px 0 10px}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
+.rowbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search{padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);min-width:240px}
+.qtybtn{padding:6px 10px;border-radius:8px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}
+.kicker{font-size:.9rem;color:var(--muted)}
 </style>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -43,12 +50,16 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
       <a class="btn small" href="Products.html">Products</a>
       <a class="btn small" href="cart.html">Cart</a>
       <a class="btn small" href="account.html">My Account</a>
+      <a id="checkoutBtnTop" class="btn small" href="checkout.html" style="display:none">Checkout</a>
     </div>
   </div>
 
   <!-- Verification card -->
   <div class="card">
-    <p class="muted small">Provide your identity number and upload a scan of your veterinary diploma or professional card. Once approved, your account can purchase where allowed.</p>
+    <div class="rowbar" style="justify-content:space-between">
+      <p class="kicker">Provide your credentials to unlock purchasing. Once approved, the checkout button will appear.</p>
+      <a id="checkoutBtnRight" class="btn" href="checkout.html" style="display:none">Go to Checkout</a>
+    </div>
 
     <!-- Status area -->
     <div id="statusBox" class="row" style="display:none">
@@ -80,6 +91,16 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
   <h2 class="section-title">My Cart (quick edit)</h2>
   <div class="card" id="cartBox">Loading…</div>
 
+  <!-- Product Browser (add more products) -->
+  <h2 class="section-title">Add more products</h2>
+  <div class="card">
+    <div class="rowbar" style="margin-bottom:10px">
+      <input id="prodSearch" class="search" placeholder="Search products by name or SKU">
+      <span class="kicker">Only available items are shown. Stock limits apply.</span>
+    </div>
+    <div id="prodList" class="muted">Loading…</div>
+  </div>
+
   <!-- Orders -->
   <h2 class="section-title">My Orders</h2>
   <div class="card" id="ordersBox">Loading…</div>
@@ -87,7 +108,7 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
   <!-- Reviews -->
   <h2 class="section-title">Write a Review</h2>
   <div class="card">
-    <div class="row">
+    <div class="grid3">
       <label>Product purchased
         <select id="revSku"><option value="">Select a product…</option></select>
       </label>
@@ -100,6 +121,9 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
           <option value="1">1 – Bad</option>
         </select>
       </label>
+      <div style="display:flex;align-items:flex-end">
+        <a id="revViewProduct" class="btn ghost" href="Products.html" target="_blank" rel="noopener" style="margin-top:0">View product</a>
+      </div>
     </div>
     <label>Comment
       <textarea id="revComment" placeholder="Share your experience… (optional)"></textarea>
@@ -117,7 +141,7 @@ const supa = supabase.createClient(
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
-/* ===== Verification (from your original) ===== */
+/* ===== UI refs ===== */
 const BUCKET = 'Documents';
 const statusBox   = document.getElementById('statusBox');
 const statusPill  = document.getElementById('statusPill');
@@ -128,16 +152,39 @@ const idInput     = document.getElementById('idnum');
 const fileInput   = document.getElementById('file');
 const btn         = document.getElementById('submit');
 const msgEl       = document.getElementById('msg');
+const checkoutBtnTop   = document.getElementById('checkoutBtnTop');
+const checkoutBtnRight = document.getElementById('checkoutBtnRight');
 
+/* ===== Helpers ===== */
 function setMsg(t,kind=''){ msgEl.textContent=t; msgEl.className='muted '+kind; }
 function pill(status){
   const s = (status||'pending').toLowerCase();
   statusPill.textContent = s;
   statusPill.className = 'badge ' + (s==='approved'?'ok':s==='rejected'?'bad':'pend');
 }
+function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+/* ===== Auth + Approval state ===== */
 let currentUser = null;
 let currentApp  = null;
+let CAN_CHECKOUT = false; // either can_purchase=true or app.status='approved'
 
+async function checkCanCheckout(userId){
+  // can_purchase grants perpetual purchasing
+  let ok = false;
+  const { data: prof } = await supa.from('profiles').select('can_purchase').eq('id', userId).maybeSingle();
+  ok = !!prof?.can_purchase;
+  if (!ok && currentApp && currentApp.status === 'approved') ok = true;
+  toggleCheckout(ok);
+  return ok;
+}
+function toggleCheckout(show){
+  CAN_CHECKOUT = !!show;
+  checkoutBtnTop.style.display = show ? 'inline-block' : 'none';
+  checkoutBtnRight.style.display = show ? 'inline-block' : 'none';
+}
+
+/* ===== Boot ===== */
 async function boot(){
   setMsg('Checking sign-in…');
   const { data:{ user }, error } = await supa.auth.getUser();
@@ -145,6 +192,7 @@ async function boot(){
   if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
   currentUser = user;
 
+  // Load latest application
   setMsg('Loading your application…');
   const { data: rows, error: e2 } = await supa.from('vet_applications')
     .select('id, identity_number, diploma_path, status, created_at')
@@ -162,7 +210,7 @@ async function boot(){
     }
     if (currentApp.status === 'approved'){
       idInput.disabled = true; fileInput.disabled = true; btn.disabled = true; btn.textContent = 'Already approved';
-      setMsg('Your account is approved.','success');
+      setMsg('Your account is approved. You can proceed to checkout.','success');
     } else if (currentApp.status === 'rejected'){
       setMsg('Your previous submission was rejected. Update your ID and upload a new file for review.','error');
     } else {
@@ -172,7 +220,9 @@ async function boot(){
     setMsg('No submission yet. Please fill your details below.','');
   }
 
+  await checkCanCheckout(user.id);
   await renderMiniCart();
+  await loadProducts();
   await renderOrders();
   await populateReviewSKUs();
 }
@@ -183,6 +233,7 @@ replaceBtn?.addEventListener('click', ()=>{
   setMsg('You can select a new file and save.','');
 });
 
+/* ===== Submit or update ===== */
 btn.onclick = async () => {
   if (btn.disabled) return;
   btn.disabled = true; setMsg('Preparing submission…');
@@ -233,19 +284,6 @@ btn.onclick = async () => {
     currentApp = upd.data;
   }
 
-  // Email queue (optional)
-  try{
-    const { data: prof } = await supa.from('profiles').select('email,first_name,last_name').eq('id', user.id).maybeSingle();
-    const toEmail = (prof?.email || user.email || '').trim().toLowerCase();
-    if (toEmail){
-      const subject = 'VetoCos – Vet verification submitted';
-      const html = `<p>Hello ${[prof?.first_name, prof?.last_name].filter(Boolean).join(' ') || ''},</p>
-      <p>We received your veterinary verification request and will review it shortly.</p>
-      <p>Status: <strong>PENDING</strong></p><p>— VetoCos</p>`;
-      await supa.from('mail_queue').insert({ to_email: toEmail, subject, html });
-    }
-  }catch{}
-
   pill('pending'); statusBox.style.display = 'grid';
   if (currentApp.diploma_path){
     try{ const { data } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
@@ -262,19 +300,19 @@ function readCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY)||'[]
 function writeCart(items){ localStorage.setItem(CART_KEY, JSON.stringify((items||[]).filter(x=>x && x.sku && Number(x.qty)>0))); }
 function renderMiniCartRow(it, i){
   return `<tr>
-    <td>${escapeHtml(it.name || it.sku)}</td>
+    <td>${escapeHtml(it.name || it.sku)} <span class="kicker">(${escapeHtml(it.sku)})</span></td>
     <td>
-      <button class="btn small" data-cart="${i}" data-d="-1">−</button>
+      <button class="qtybtn" data-cart="${i}" data-d="-1">−</button>
       <span style="display:inline-block;width:34px;text-align:center">${Number(it.qty||0)}</span>
-      <button class="btn small" data-cart="${i}" data-d="1">+</button>
+      <button class="qtybtn" data-cart="${i}" data-d="1">+</button>
     </td>
-    <td><button class="btn small" data-rem="${i}">Remove</button></td>
+    <td><button class="qtybtn" data-rem="${i}">Remove</button></td>
   </tr>`;
 }
 async function renderMiniCart(){
   const cart = readCart();
   const box = document.getElementById('cartBox');
-  if (!cart.length){ box.innerHTML = `<div class="muted">Cart is empty. You can add products from the Products page.</div>`; return; }
+  if (!cart.length){ box.innerHTML = `<div class="muted">Cart is empty. You can add from the products list below.</div>`; return; }
   box.innerHTML = `<table><thead><tr><th>Product</th><th>Qty</th><th>Action</th></tr></thead>
     <tbody>${cart.map(renderMiniCartRow).join('')}</tbody></table>
     <div class="small muted" style="margin-top:8px">Total items: ${cart.reduce((n,x)=>n+Number(x.qty||0),0)}</div>`;
@@ -291,7 +329,58 @@ async function renderMiniCart(){
     b.onclick = ()=>{ const idx = Number(b.dataset.rem); const c = readCart(); c.splice(idx,1); writeCart(c); renderMiniCart(); };
   });
 }
-function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+/* ===== Product Browser (add to cart, obey stock & availability) ===== */
+const prodSearch = document.getElementById('prodSearch');
+const prodList   = document.getElementById('prodList');
+let PRODUCT_CACHE = [];
+prodSearch.addEventListener('input', renderProducts);
+
+async function loadProducts(){
+  prodList.textContent = 'Loading…';
+  const { data, error } = await supa.from('products')
+    .select('sku,name,stock_qty,available,requires_verification')
+    .order('name', { ascending:true });
+  if (error){ prodList.textContent = error.message; return; }
+  PRODUCT_CACHE = (data||[]).filter(p=>p.available && Number(p.stock_qty||0) > 0);
+  renderProducts();
+}
+
+function renderProducts(){
+  const q = (prodSearch.value||'').toLowerCase().trim();
+  const rows = PRODUCT_CACHE.filter(p=>{
+    if(!q) return true;
+    return (p.name||'').toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q);
+  }).map(p=>{
+    const badge = p.requires_verification ? `<span class="pill">Requires verification</span>` : `<span class="pill ok">Open</span>`;
+    return `<div class="pair" style="border-top:1px solid rgba(141,158,199,.18);padding:10px 0">
+      <div>
+        <div style="font-weight:600">${escapeHtml(p.name)} <span class="kicker">(${escapeHtml(p.sku)})</span></div>
+        <div class="kicker">In stock: ${p.stock_qty|0}</div>
+      </div>
+      <div class="rowbar">
+        ${badge}
+        <button class="btn small" data-sku="${escapeHtml(p.sku)}" data-name="${escapeHtml(p.name)}">Add to cart</button>
+      </div>
+    </div>`;
+  }).join('');
+  prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
+
+  // Add handlers
+  prodList.querySelectorAll('button[data-sku]').forEach(b=>{
+    b.onclick = ()=>{
+      const sku = b.dataset.sku, name = b.dataset.name;
+      const cart = readCart();
+      const i = cart.findIndex(x=>x.sku===sku);
+      const prod = PRODUCT_CACHE.find(x=>x.sku===sku);
+      const currentQty = i>-1 ? Number(cart[i].qty||0) : 0;
+      const nextQty = Math.min(currentQty+1, Number(prod?.stock_qty||1));
+      if (i>-1) cart[i].qty = nextQty; else cart.push({ sku, name, qty: 1 });
+      writeCart(cart);
+      renderMiniCart();
+    };
+  });
+}
 
 /* ===== Orders ===== */
 async function renderOrders(){
@@ -315,34 +404,50 @@ async function renderOrders(){
 }
 
 /* ===== Reviews =====
-   Table: reviews(id bigserial pk, user_id uuid, product_sku text, rating int, comment text, created_at timestamptz)
+   Table: reviews(id, user_id, product_sku, rating, comment, created_at)
 */
 const revSku = document.getElementById('revSku');
 const revRating = document.getElementById('revRating');
 const revComment = document.getElementById('revComment');
 const revSubmit = document.getElementById('revSubmit');
 const revMsg = document.getElementById('revMsg');
+const revViewProduct = document.getElementById('revViewProduct');
+
+revSku.addEventListener('change', ()=>{
+  const sku = revSku.value;
+  if(!sku){ revViewProduct.href = 'Products.html'; return; }
+  // If you have product detail pages, change this to that URL. For now, go to Products.html with hash.
+  revViewProduct.href = `Products.html#${encodeURIComponent(sku)}`;
+});
 
 async function populateReviewSKUs(){
   const { data:{ user } } = await supa.auth.getUser(); if (!user) return;
-  // Collect SKUs from orders (assuming you store order items in order_items table OR orders.items as json)
-  // Try order_items first
+
+  // Gather purchased SKUs (prefer order_items if you have it)
   let skus = [];
   try{
     const { data: items } = await supa.from('order_items').select('product_sku').eq('user_id', user.id);
-    if (Array.isArray(items)) skus = [...new Set(items.map(i=>i.product_sku))];
+    if (Array.isArray(items)) skus = items.map(i=>i.product_sku);
   }catch{}
-  // Fallback: parse orders.items (json array [{sku, qty}])
   if (!skus.length){
     const { data: orders } = await supa.from('orders').select('items').eq('user_id', user.id).limit(50);
     if (Array.isArray(orders)){
-      orders.forEach(o=>{
-        if (Array.isArray(o.items)){ o.items.forEach(it=>{ if(it?.sku) skus.push(it.sku); }); }
-      });
-      skus = [...new Set(skus)];
+      orders.forEach(o=>{ if(Array.isArray(o.items)){ o.items.forEach(it=>{ if(it?.sku) skus.push(it.sku); }); } });
     }
   }
-  revSku.innerHTML = `<option value="">Select a product…</option>` + skus.map(s=>`<option>${s}</option>`).join('');
+  skus = [...new Set(skus)];
+
+  // Map to names
+  let options = '<option value="">Select a product…</option>';
+  if (skus.length){
+    const { data: prods } = await supa.from('products').select('sku,name').in('sku', skus);
+    const nameBySku = Object.fromEntries((prods||[]).map(p=>[p.sku, p.name]));
+    skus.forEach(s=>{
+      const name = nameBySku[s] || s;
+      options += `<option value="${escapeHtml(s)}">${escapeHtml(name)} (${escapeHtml(s)})</option>`;
+    });
+  }
+  revSku.innerHTML = options;
 }
 
 revSubmit.onclick = async ()=>{
