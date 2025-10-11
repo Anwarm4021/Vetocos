@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>VetoCos | Admin Portal</title>
+  <title>VetoCos | Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="robots" content="noindex, nofollow"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px}
     *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,sans-serif;background:var(--bg);color:var(--text)}
+    body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
     main{max-width:1120px;margin:40px auto;padding:0 18px}
     h1,h2{margin:0 0 14px}
     .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px}
@@ -50,7 +50,7 @@
 <body>
 <main>
   <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-    <h1 style="margin:0">Admin Portal</h1>
+    <h1 style="margin:0">Admin</h1>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a class="btn small" href="Products.html" target="_blank" rel="noopener">Open Products</a>
       <a class="btn small" href="news.html" target="_blank" rel="noopener">Open News</a>
@@ -68,7 +68,7 @@
     <div id="diag"></div>
   </div>
 
-  <!-- Products: Add + Manage -->
+  <!-- PRODUCTS -->
   <div class="card hidden" id="prodWrap">
     <div class="toolbar">
       <h2>Products</h2>
@@ -78,7 +78,7 @@
       </div>
     </div>
 
-    <!-- ADD PRODUCT -->
+    <!-- Add -->
     <div class="card" style="margin:-4px 0 12px">
       <h3 style="margin:0 0 10px">Add new product</h3>
       <div class="grid2">
@@ -127,12 +127,12 @@
       </div>
     </div>
 
-    <!-- MANAGE LIST -->
+    <!-- List -->
     <div id="prodMsg" class="muted"></div>
     <div id="prodList"></div>
   </div>
 
-  <!-- NEWS: Regions + Editor + List -->
+  <!-- NEWS + REGIONS -->
   <div class="card hidden" id="newsWrap">
     <div class="toolbar">
       <h2>News & Regions</h2>
@@ -142,15 +142,15 @@
       </div>
     </div>
 
-    <!-- Regions (Worldwide toggle lives here — include "Global") -->
+    <!-- Regions -->
     <div class="card" style="margin:-4px 0 12px">
       <h3 style="margin:0 0 8px">Active Regions</h3>
-      <p class="muted mini" style="margin:0 0 8px">Enable which regions are visible to users (e.g., keep only “Global / Worldwide” enabled if you want worldwide only).</p>
+      <p class="muted mini" style="margin:0 0 8px">Enable which regions are visible to users (e.g., keep only “Global / Worldwide” enabled).</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap" id="regionToggles"></div>
       <div style="margin-top:8px"><button id="saveRegions" class="btn small">Save regions</button> <span id="regMsg" class="muted"></span></div>
     </div>
 
-    <!-- Create/Update News -->
+    <!-- Create/Update -->
     <div class="card" style="margin:-4px 0 12px">
       <h3 style="margin:0 0 8px">Create / Update News</h3>
       <div class="grid2">
@@ -160,12 +160,12 @@
         <div>
           <label>Region
             <select id="nRegion" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text)">
+              <option value="Global">Global</option>
               <option value="Africa">Africa</option>
               <option value="Europe">Europe</option>
               <option value="Middle East">Middle East</option>
               <option value="Americas">Americas</option>
               <option value="Asia">Asia</option>
-              <option value="Global">Global</option>
             </select>
           </label>
         </div>
@@ -207,19 +207,19 @@
 <div id="toast"></div>
 
 <script>
-/* ===== Supabase client ===== */
+/* ================= Supabase client ================= */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
-/* ===== Config ===== */
+/* ================= Config ================= */
 const PRODUCT_BUCKET = "ProductFiles";   // public bucket for product images/pdfs
 const NEWS_BUCKET    = "NewsFiles";      // public bucket for news images/pdfs
 const ADMIN_EMAILS   = ["Anwar.moumenjamai19@gmail.com"]; // optional allow-list
 
-/* ===== Helpers/UI ===== */
+/* ================= Helpers/UI ================= */
 const toastEl  = document.getElementById("toast");
 function toast(msg, isErr=false){
   toastEl.textContent = msg;
@@ -228,17 +228,16 @@ function toast(msg, isErr=false){
   clearTimeout(toast._t); toast._t = setTimeout(()=> toastEl.style.display="none", 2200);
 }
 function filePublicUrl(bucket, path){
-  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${bucket}/${encodeURI(path.replace(new RegExp('^'+bucket+'/'),''))}`;
+  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${bucket}/${encodeURI(String(path||'').replace(new RegExp('^'+bucket+'/'),''))}`;
 }
-function pill(s){ return `<span class="pill ${s===true||s==="approved"?"ok":(s===false||s==="rejected")?"bad":"pend"}">${s===true?"available":s===false?"unavailable":s||"pending"}</span>`; }
 
-/* ===== Auth Gate ===== */
+/* ================= Auth Gate ================= */
 const authMsg  = document.getElementById("authMsg");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
 loginBtn.onclick = () => {
   const u = new URL("login.html", location.href);
-  u.searchParams.set("redirect", "admin-portal.html");
+  u.searchParams.set("redirect", "admin.html");
   u.searchParams.set("force", "1");
   location.href = u.toString();
 };
@@ -250,7 +249,7 @@ async function checkAdmin(){
   if (!session?.user){ authMsg.textContent="Not signed in."; loginBtn.classList.remove('hidden'); return false; }
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove('hidden');
-  // Gate by email OR by profiles.is_admin
+  // Gate by allow-list OR profiles.is_admin
   if (ADMIN_EMAILS.includes(session.user.email)) return true;
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){
@@ -262,7 +261,7 @@ async function checkAdmin(){
 
 /* =======================================================================
    PRODUCTS (CRUD)
-   Table assumed: products(sku text PK, name text, description text, stock_qty int, available bool, image_path text, pdf_path text)
+   Table: products(sku text pk, name text, description text, stock_qty int, available bool, image_path text, pdf_path text, updated_at timestamptz)
 ======================================================================= */
 const prodWrap    = document.getElementById('prodWrap');
 const prodSearch  = document.getElementById('prodSearch');
@@ -372,7 +371,6 @@ apCreate.onclick = async ()=>{
   if (error){ apMsg.textContent = error.message; apCreate.disabled=false; return; }
   apMsg.textContent = "Created.";
   toast('Product created');
-  // clear form
   apName.value=''; apSku.value=''; apDesc.value=''; apQty.value='0'; apImg.value=''; apPdf.value=''; apAvail.checked=true;
   apCreate.disabled=false;
   await loadProducts();
@@ -383,7 +381,6 @@ prodList.addEventListener('click', async (e)=>{
   const card = e.target.closest('.card[data-sku]'); if (!card) return;
   const sku = card.dataset.sku;
 
-  // Save fields
   if (e.target.matches('button[data-action="save"]')){
     const qtyEl  = card.querySelector('input[data-field="stock_qty"]');
     const avaEl  = card.querySelector('select[data-field="available"]');
@@ -397,7 +394,6 @@ prodList.addEventListener('click', async (e)=>{
     await loadProducts();
   }
 
-  // Delete product
   if (e.target.matches('button[data-action="delete"]')){
     if (!confirm(`Delete product ${sku}? This cannot be undone.`)) return;
     const { error } = await supa.from('products').delete().eq('sku', sku);
@@ -407,7 +403,7 @@ prodList.addEventListener('click', async (e)=>{
   }
 });
 
-// Uploads inside product row (image/pdf)
+// Uploads inside product row
 prodList.addEventListener('change', async (e)=>{
   const input = e.target;
   const card = input.closest('.card[data-sku]'); if (!card) return;
@@ -437,10 +433,10 @@ prodList.addEventListener('change', async (e)=>{
 });
 
 /* =======================================================================
-   NEWS + REGIONS (Worldwide)
+   NEWS + REGIONS
    Tables:
-     - news(id bigint pk, title text, body text, region text, published bool, image_path text, file_path text, created_at timestamptz default now())
-     - site_settings(key text pk, value jsonb)
+     - news(id bigserial pk, title text, body text, region text, published bool, archived bool, image_path text, file_path text, created_at, updated_at)
+     - site_settings(key text pk, value jsonb) with active_regions
 ======================================================================= */
 const newsWrap   = document.getElementById('newsWrap');
 const newsMsg    = document.getElementById('newsMsg');
@@ -492,7 +488,7 @@ saveRegions.onclick = async ()=>{
 async function loadNews(){
   newsMsg.textContent = "Loading…";
   const { data, error } = await supa.from('news')
-    .select('id,title,body,region,published,image_path,file_path,created_at')
+    .select('id,title,body,region,published,archived,image_path,file_path,created_at,updated_at')
     .order('created_at',{ ascending:false });
   if (error){ newsMsg.textContent = error.message; return; }
   const rows = data || [];
@@ -507,11 +503,12 @@ async function loadNews(){
           <div class="muted mini">${new Date(n.created_at).toLocaleString()}</div>
         </div>
         <div>${n.region}</div>
-        <div>${n.published?'<span class="pill ok">Published</span>':'<span class="pill">Draft</span>'}</div>
+        <div>${n.published?'<span class="pill ok">Published</span>':'<span class="pill">Draft</span>'} ${n.archived?'<span class="pill bad">Archived</span>':''}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
           ${img} ${att}
           <button class="btn small" data-action="edit" data-id="${n.id}">Edit</button>
-          <button class="btn danger small" data-action="del" data-id="${n.id}">Delete</button>
+          <button class="btn small" data-action="toggle-archive" data-id="${n.id}">${n.archived?'Unarchive':'Archive'}</button>
+          <button class="btn danger small" data-action="delete" data-id="${n.id}">Delete</button>
         </div>
       </div>
     </div>`;
@@ -523,6 +520,7 @@ newsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]');
   if(!b) return;
   const { action, id } = b.dataset;
+
   if(action==='edit'){
     const { data } = await supa.from('news').select('*').eq('id', id).maybeSingle();
     if (!data) return;
@@ -534,11 +532,24 @@ newsList.addEventListener('click', async (e)=>{
     nUpdate.disabled = false;
     nCreate.disabled = true;
     nMsg.textContent = 'Loaded for editing.';
-  } else if (action==='del'){
-    if(!confirm('Delete this news item?')) return;
+  }
+
+  if (action==='toggle-archive'){
+    const { data: row } = await supa.from('news').select('archived').eq('id', id).maybeSingle();
+    const next = !row?.archived;
+    const { error } = await supa.from('news').update({ archived: next }).eq('id', id);
+    if (error) return toast(error.message, true);
+    toast(next ? 'Archived' : 'Unarchived');
+    await loadNews();
+  }
+
+  if (action==='delete'){
+    if(!confirm('Permanently delete this news item? This cannot be undone.')) return;
     const { error } = await supa.from('news').delete().eq('id', id);
     if (error) return toast(error.message, true);
-    toast('Deleted'); await loadNews(); clearNewsForm();
+    toast('Deleted');
+    await loadNews();
+    clearNewsForm();
   }
 });
 
@@ -573,6 +584,7 @@ nCreate.onclick = async ()=>{
     body:  (nBody.value||'').trim(),
     region: nRegion.value||'Global',
     published: !!nPub.checked,
+    archived: false,
     image_path, file_path
   };
   if(!row.title){ nMsg.textContent='Enter a title'; nCreate.disabled=false; return; }
@@ -620,24 +632,18 @@ nUpdate.onclick = async ()=>{
   await loadNews();
 };
 
-/* =======================================================================
-   BOOT
-======================================================================= */
+/* ================= Boot ================= */
 document.addEventListener('DOMContentLoaded', async ()=>{
   const ok = await checkAdmin();
   if (!ok) return;
-  // Unhide admin sections you need
   ["prodWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
-
-  // Load initial data
   await loadProducts();
   await loadRegions();
   await loadNews();
-
-  // Refresh buttons
   newsRefresh.onclick = ()=> loadNews();
   prodRefresh.onclick = ()=> loadProducts();
 });
 </script>
 </body>
 </html>
+
