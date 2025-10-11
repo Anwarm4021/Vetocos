@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VetoCos | Sign up</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--brand:#6dd5ff;--brand2:#83f0a5;--radius:16px}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
+    a{color:var(--brand);text-decoration:none}
+    main{max-width:780px;margin:7vh auto;padding:0 18px}
+    .box{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
+    h1{margin:.3rem 0 1rem}
+    label{display:block;font-size:.95rem;color:var(--muted);margin-top:10px}
+    input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text);margin-top:6px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:720px){.row{grid-template-columns:1fr}}
+    .btn{margin-top:14px;display:inline-block;padding:12px 18px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:#f6f7fb;font-weight:600;cursor:pointer}
+    .muted{color:var(--muted)}
+    .msg{margin-top:10px;font-size:.95rem}
+    .success{color:#83f0a5}.error{color:#ffb4b4}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2))}
+  </style>
+</head>
+<body>
+<main>
+  <div class="box">
+    <header>
+      <div class="brand"><span class="logo"></span> VetoCos</div>
+      <div><a href="login.html">Have an account? Sign in</a></div>
+    </header>
+    <h1>Create your account</h1>
+    <p class="muted">Enter your details below. We’ll send a confirmation email — after you confirm, you can sign in with your password.</p>
+
+    <form id="form">
+      <div class="row">
+        <div><label for="first">First name<input id="first" required autocomplete="given-name"></label></div>
+        <div><label for="last">Last name<input id="last" required autocomplete="family-name"></label></div>
+      </div>
+      <div class="row">
+        <div><label for="dob">Date of birth<input id="dob" type="date" required></label></div>
+        <div><label for="email">Email<input id="email" type="email" required autocomplete="email"></label></div>
+      </div>
+      <div class="row">
+        <div><label for="pw">Password<input id="pw" type="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters"></label></div>
+        <div><label for="pw2">Confirm password<input id="pw2" type="password" required minlength="8" autocomplete="new-password"></label></div>
+      </div>
+
+      <button class="btn" type="submit" id="submit">Create account</button>
+      <div id="msg" class="msg" aria-live="polite"></div>
+    </form>
+
+    <p class="muted" style="margin-top:14px">By creating an account you agree to the site terms and privacy policy.</p>
+  </div>
+</main>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const supa = supabase.createClient(
+    "https://qdepgviimbcdlozjpbhm.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+    { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
+  );
+
+  const form   = document.getElementById('form');
+  const first  = document.getElementById('first');
+  const last   = document.getElementById('last');
+  const dob    = document.getElementById('dob');
+  const email  = document.getElementById('email');
+  const pw     = document.getElementById('pw');
+  const pw2    = document.getElementById('pw2');
+  const msg    = document.getElementById('msg');
+  const submit = document.getElementById('submit');
+
+  function show(t, kind=""){ msg.textContent=t||""; msg.className="msg "+kind; }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    show("");
+    if (pw.value !== pw2.value){ return show("Passwords do not match.", "error"); }
+    if (!first.value.trim() || !last.value.trim()){ return show("Please enter your first and last name.", "error"); }
+    if (!dob.value){ return show("Please select your date of birth.", "error"); }
+
+    submit.disabled = true; show("Creating account…");
+
+    // Where to send the user after they click the confirmation link:
+    const redirectTo = new URL("login.html", location.href).toString() + "?confirmed=1";
+
+    const { data, error } = await supa.auth.signUp({
+      email: email.value.trim().toLowerCase(),
+      password: pw.value,
+      options: {
+        emailRedirectTo: redirectTo,
+        data: {
+          first_name: first.value.trim(),
+          last_name: last.value.trim(),
+          dob: dob.value
+        }
+      }
+    });
+
+    submit.disabled = false;
+
+    if (error){
+      return show(error.message, "error");
+    }
+
+    // Save pending profile locally — we’ll write it to "profiles" on first login
+    const pending = {
+      email: email.value.trim().toLowerCase(),
+      first_name: first.value.trim(),
+      last_name: last.value.trim(),
+      dob: dob.value
+    };
+    try { localStorage.setItem("pending_profile_"+pending.email, JSON.stringify(pending)); } catch{}
+
+    show("Almost done! We sent a confirmation email. Open it and click the link, then sign in here with your password.", "success");
+  });
+</script>
+</body>
+</html>
