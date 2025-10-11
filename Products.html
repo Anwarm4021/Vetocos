@@ -22,21 +22,22 @@
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:10px;font-weight:700}
     .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:var(--shadow)}
-    .links{display:flex;gap:18px;align-items:center}
+    .links{display:flex;gap:12px;align-items:center}
     .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
     .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
 
-    /* Cart & account buttons in header */
+    /* Cart + auth buttons */
     .cart-link{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.04)}
     .cart-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;display:grid;place-items:center;font-size:12px;background:#ff6d6d;border-radius:999px;padding:0 6px;color:white}
     .contact-btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
-
+    .auth-link{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.04)}
+    #lang-switch{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.04);color:var(--text)}
     .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
     @media(max-width:820px){
-      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:200px}
+      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:220px}
       .links.open{display:flex}
       .hamb{display:block}
-      .contact-btn,#lang-switch{width:100%;text-align:left}
+      .contact-btn,#lang-switch,.auth-link{width:100%;text-align:left}
     }
 
     /* Hero */
@@ -98,15 +99,6 @@
     .muted{color:var(--muted)}
     .sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 
-    /* Login Modal (small, inline) */
-    .login-modal .sheet{width:min(520px,100%)}
-    .tiny{font-size:.9rem;color:var(--muted)}
-    label{font-size:.9rem;color:var(--muted);display:block}
-    input{
-      width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);
-      background:rgba(255,255,255,.03);color:var(--text);margin-top:6px
-    }
-
     /* RTL */
     body.rtl .links a{text-align:right}
   </style>
@@ -126,8 +118,11 @@
           <span id="cartCount" class="cart-badge" style="display:none">0</span>
         </a>
 
+        <!-- New: auth shortcuts (small, unobtrusive) -->
+        <a class="auth-link" id="signinLink" href="login.html">Sign in</a>
+        <a class="auth-link" id="signupLink" href="signup.html">Sign up</a>
+
         <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
-        <button class="contact-btn" type="button" id="signinBtn">Sign in / Sign up</button>
         <select id="lang-switch" aria-label="Language">
           <option value="en">English</option>
           <option value="fr">Français</option>
@@ -156,11 +151,11 @@
     </div>
   </footer>
 
-  <!-- Minimal stubs for contact/policy (so existing buttons don't error) -->
+  <!-- Minimal stubs for the modal open/close (to avoid errors) -->
   <script>
     function openContact() {}
     function openPolicy() {}
-    (document.getElementById("y")||{}).textContent = new Date().getFullYear();
+    document.getElementById("y") && (document.getElementById("y").textContent = new Date().getFullYear());
   </script>
 
   <!-- Supabase -->
@@ -173,7 +168,7 @@
     );
   </script>
 
-  <!-- Product Details Modal -->
+  <!-- Product Details Modal (HTML) -->
   <div id="productDetailsModal" class="modal" aria-hidden="true">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
       <div class="sheet-head">
@@ -186,24 +181,31 @@
           <div>
             <h3 id="pdName" style="margin:0 0 6px"></h3>
             <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
-
             <div class="specs">
-              <div class="spec"><h5>Form</h5><div id="pdForm" class="muted"></div></div>
-              <div class="spec"><h5>Pack size</h5><div id="pdSize" class="muted"></div></div>
-              <div class="spec"><h5>Key ingredients</h5><div id="pdIngredients" class="muted"></div></div>
-              <div class="spec"><h5>Feeding guidance</h5><div id="pdUsage" class="muted"></div></div>
+              <div class="spec">
+                <h5>Form</h5>
+                <div id="pdForm" class="muted"></div>
+              </div>
+              <div class="spec">
+                <h5>Pack size</h5>
+                <div id="pdSize" class="muted"></div>
+              </div>
+              <div class="spec">
+                <h5>Key ingredients</h5>
+                <div id="pdIngredients" class="muted"></div>
+              </div>
+              <div class="spec">
+                <h5>Feeding guidance</h5>
+                <div id="pdUsage" class="muted"></div>
+              </div>
             </div>
 
             <p id="pdDesc" class="muted" style="margin-top:10px"></p>
 
             <div class="sheet-actions" id="pdActions">
-              <!-- Buttons injected by JS based on permission -->
-              <a class="btn" id="pdPdfBtn" href="#" target="_blank" rel="noopener">Download PDF</a>
-              <a class="btn ghost" id="pdPageBtn" href="#">View full page</a>
+              <!-- Buttons get injected by JS according to eligibility -->
               <span class="muted" id="pdSku" style="margin-left:auto"></span>
             </div>
-
-            <div class="tiny" id="pdNotice" style="margin-top:6px;color:#ffbdbd;display:none"></div>
           </div>
         </div>
         <p class="muted" style="margin-top:12px">
@@ -213,37 +215,7 @@
     </div>
   </div>
 
-  <!-- Login/Signup Modal (magic link) -->
-  <div id="loginModal" class="modal login-modal" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-      <div class="sheet-head">
-        <h2 id="loginTitle" class="sheet-title">Access your account</h2>
-        <button class="close" type="button" onclick="closeLogin()">Close</button>
-      </div>
-      <div class="sheet-body">
-        <p class="tiny">Enter your email. We’ll send a magic link (and a 6-digit code if enabled).</p>
-        <label for="loginEmail">Email
-          <input id="loginEmail" type="email" autocomplete="email" required />
-        </label>
-        <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
-          <button class="btn" id="sendLogin">Send magic link</button>
-        </div>
-
-        <div id="codeBox" style="display:none;margin-top:12px">
-          <label for="otp">Enter 6-digit code
-            <input id="otp" inputmode="numeric" pattern="[0-9]*" maxlength="6" />
-          </label>
-          <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
-            <button class="btn" id="verifyLogin">Verify & continue</button>
-            <button class="btn" id="resendLogin" style="display:none;min-width:170px"></button>
-          </div>
-        </div>
-        <p id="loginMsg" class="tiny" aria-live="polite"></p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Cart + Product logic -->
+  <!-- Cart + Product render logic -->
   <script>
     /* ---------- Cart helpers ---------- */
     function readCart(){ try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; } }
@@ -264,26 +236,42 @@
       writeCart(items);
     }
 
-    /* ---------- Session / permission ---------- */
-    let SESSION_USER = null;
-    let CAN_PURCHASE = false; // profiles.can_purchase
+    /* ---------- Session & eligibility ---------- */
+    let USER = null;
+    let PROFILE = null;
+    let CAN_SHOP = false; // must be signed-in AND approved (profiles.can_purchase = true)
 
-    async function refreshSessionAndProfile(){
+    async function loadSessionAndProfile(){
       const { data:{ session } } = await supa.auth.getSession();
-      SESSION_USER = session?.user || null;
-      CAN_PURCHASE = false;
-      if (SESSION_USER){
-        try{
-          const { data: prof } = await supa.from('profiles').select('can_purchase').eq('id', SESSION_USER.id).maybeSingle();
-          CAN_PURCHASE = !!prof?.can_purchase;
-        }catch{}
+      USER = session?.user || null;
+
+      const signinLink = document.getElementById('signinLink');
+      const signupLink = document.getElementById('signupLink');
+
+      if (!USER){
+        CAN_SHOP = false;
+        if (signinLink) signinLink.style.display = 'inline-block';
+        if (signupLink) signupLink.style.display = 'inline-block';
+        return;
       }
-      // Toggle header sign-in visibility
-      document.getElementById('signinBtn').style.display = SESSION_USER ? 'none' : 'inline-block';
-      return { SESSION_USER, CAN_PURCHASE };
+
+      if (signinLink) signinLink.style.display = 'none';
+      if (signupLink) signupLink.style.display = 'none';
+
+      // read profile.can_purchase
+      try{
+        const { data, error } = await supa.from('profiles')
+          .select('first_name,last_name,can_purchase')
+          .eq('id', USER.id)
+          .maybeSingle();
+        if (!error && data){
+          PROFILE = data;
+          CAN_SHOP = !!data.can_purchase;
+        }
+      }catch(e){ console.warn('profile read failed', e); }
     }
 
-    /* ---------- Fallback product specs (keep your 12 items) ---------- */
+    /* ---------- Fallback product specs (keeps your current 12 cards) ---------- */
     const FALLBACK = {
       "URO-CHIEN": { name:"Urocline Chien", image:"images/Product1.jpg", category:"Urinary care", form:"Chewable tablets", size:"60 / 120 tabs", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", page:"Product1.html", pdf:"pdf/Product1.pdf" },
       "HEP-AT": { name:"Hepatiale", image:"images/Product2.jpg", category:"Liver support", form:"Capsules", size:"30 / 60 caps", ingredients:"Silybin-phospholipid, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", page:"Product2.html", pdf:"pdf/Product2.pdf" },
@@ -299,7 +287,7 @@
       "QAL-MIL": { name:"Qalmil", image:"images/Product12.jpg", category:"Calming", form:"Soft chews", size:"60 chews", ingredients:"L-tryptophan, L-theanine, Lemon balm", usage:"Use before stressful events or daily", page:"Product12.html", pdf:"pdf/Product12.pdf" }
     };
 
-    /* ---------- Storage public URL ---------- */
+    /* ---------- Public file URL for ProductFiles bucket ---------- */
     const PRODUCT_BUCKET = "ProductFiles";
     function filePublicUrl(path){
       if(!path) return null;
@@ -309,80 +297,117 @@
 
     /* ---------- Modal refs ---------- */
     const pdModal = document.getElementById('productDetailsModal');
-    const pdImg   = document.getElementById('pdImg');
-    const pdName  = document.getElementById('pdName');
-    const pdCat   = document.getElementById('pdCategory');
-    const pdForm  = document.getElementById('pdForm');
-    const pdSize  = document.getElementById('pdSize');
-    const pdIngr  = document.getElementById('pdIngredients');
-    const pdUse   = document.getElementById('pdUsage');
-    const pdSku   = document.getElementById('pdSku');
-    const pdPdf   = document.getElementById('pdPdfBtn');
-    const pdPage  = document.getElementById('pdPageBtn');
+    const pdImg = document.getElementById('pdImg');
+    const pdName = document.getElementById('pdName');
+    const pdCat = document.getElementById('pdCategory');
+    const pdForm = document.getElementById('pdForm');
+    const pdSize = document.getElementById('pdSize');
+    const pdIngr = document.getElementById('pdIngredients');
+    const pdUse = document.getElementById('pdUsage');
+    const pdSku = document.getElementById('pdSku');
     const pdActions = document.getElementById('pdActions');
-    const pdNotice  = document.getElementById('pdNotice');
+    const pdDesc = document.getElementById('pdDesc');
 
     let CURRENT_SKU = null;
-    let PRODUCT_CACHE = {}; // sku -> merged data
+    let PRODUCT_CACHE = {}; // sku -> merged data for modal/buttons
+
+    function closePD(){
+      pdModal.classList.remove('open');
+      pdModal.setAttribute('aria-hidden','true');
+    }
+    pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
+
+    function renderPDButtons(spec){
+      // Clear existing actions (except the right-aligned SKU span)
+      const skuSpan = pdSku;
+      pdActions.innerHTML = '';
+      // Re-append SKU span at end
+      const rightSku = document.createElement('span');
+      rightSku.className = 'muted';
+      rightSku.style.marginLeft = 'auto';
+      rightSku.id = 'pdSku';
+      rightSku.textContent = 'SKU: ' + spec.sku;
+      const isAvail = spec.available && (Number(spec.stock_qty||0) > 0);
+
+      if (!USER){
+        const btn = document.createElement('a');
+        btn.className = 'btn';
+        btn.href = `login.html?redirect=${encodeURIComponent('Products.html')}`;
+        btn.textContent = 'Sign in to purchase';
+        pdActions.appendChild(btn);
+      } else if (USER && !CAN_SHOP){
+        const btn = document.createElement('a');
+        btn.className = 'btn ghost';
+        btn.href = 'vet-verify.html';
+        btn.textContent = 'Verify vet status';
+        pdActions.appendChild(btn);
+      } else {
+        // Eligible to shop
+        const addBtn = document.createElement('button');
+        addBtn.className = 'btn';
+        addBtn.type = 'button';
+        addBtn.textContent = 'Add to Cart';
+        addBtn.disabled = !isAvail;
+        addBtn.addEventListener('click', ()=>{
+          addToCartBySKU(spec.sku, spec.name || spec.sku, 1);
+          alert((spec.name || spec.sku) + ' added to cart');
+        });
+
+        const buyBtn = document.createElement('button');
+        buyBtn.className = 'btn ghost';
+        buyBtn.type = 'button';
+        buyBtn.textContent = 'Buy Now';
+        buyBtn.disabled = !isAvail;
+        buyBtn.addEventListener('click', ()=>{
+          addToCartBySKU(spec.sku, spec.name || spec.sku, 1);
+          location.href = 'cart.html';
+        });
+
+        const pdfA = document.createElement('a');
+        pdfA.className = 'btn';
+        pdfA.target = '_blank';
+        pdfA.rel = 'noopener';
+        pdfA.href = spec.pdf_path ? filePublicUrl(spec.pdf_path) : (spec.pdf || '#');
+        pdfA.textContent = 'Download PDF';
+
+        const pageA = document.createElement('a');
+        pageA.className = 'btn ghost';
+        pageA.href = spec.page || '#';
+        pageA.textContent = 'View full page';
+
+        pdActions.append(addBtn, buyBtn, pdfA, pageA);
+      }
+      pdActions.appendChild(rightSku);
+    }
 
     function openPD(sku){
-      const spec = PRODUCT_CACHE[sku] || {};
+      const spec = PRODUCT_CACHE[sku] || { sku };
       CURRENT_SKU = sku;
-
       pdName.textContent = spec.name || sku;
-      pdCat.textContent  = spec.category || '';
+      pdCat.textContent = spec.category || '';
       pdForm.textContent = spec.form || '—';
       pdSize.textContent = spec.size || '—';
       pdIngr.textContent = spec.ingredients || '—';
-      pdUse.textContent  = spec.usage || '—';
-      pdSku.textContent  = 'SKU: ' + sku;
+      pdUse.textContent = spec.usage || '—';
+      pdDesc.textContent = spec.description || '';
 
       const imgUrl = spec.image_path ? filePublicUrl(spec.image_path) : (spec.image || '');
       pdImg.src = imgUrl || '';
       pdImg.alt = spec.name || sku;
 
-      pdPdf.href = (spec.pdf_path ? filePublicUrl(spec.pdf_path) : (spec.pdf || '#')) || '#';
-      pdPage.href = spec.page || '#';
-
-      // Build actions depending on permission & availability
-      const isAvail = spec.available && (Number(spec.stock_qty||0) > 0);
-      pdActions.querySelectorAll('.dyn').forEach(el=>el.remove()); // cleanup
-      pdNotice.style.display = 'none';
-      if (isAvail && SESSION_USER && CAN_PURCHASE){
-        const addBtn = document.createElement('button');
-        addBtn.className = 'btn dyn';
-        addBtn.type = 'button';
-        addBtn.textContent = 'Add to Cart';
-        addBtn.onclick = ()=>{ addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1); alert((spec.name || CURRENT_SKU) + " added to cart"); };
-        const buyBtn = document.createElement('button');
-        buyBtn.className = 'btn ghost dyn';
-        buyBtn.type = 'button';
-        buyBtn.textContent = 'Buy Now';
-        buyBtn.onclick = ()=>{ addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1); location.href='cart.html'; };
-        pdActions.prepend(buyBtn);
-        pdActions.prepend(addBtn);
-      } else {
-        // Hide purchase buttons, show friendly notice
-        pdNotice.style.display = 'block';
-        if (!SESSION_USER){
-          pdNotice.innerHTML = `Sign in to purchase. <a href="#" onclick="openLogin();return false;">Open sign in</a>`;
-        } else if (!CAN_PURCHASE){
-          pdNotice.innerHTML = `Your account needs vet verification & admin approval before purchasing. <a href="vet-verify.html">Start verification</a>`;
-        } else if (!isAvail){
-          pdNotice.textContent = 'This product is currently unavailable.';
-        }
-      }
+      renderPDButtons(spec);
 
       pdModal.classList.add('open');
       pdModal.setAttribute('aria-hidden','false');
     }
-    function closePD(){ pdModal.classList.remove('open'); pdModal.setAttribute('aria-hidden','true'); }
-    pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
 
-    /* ---------- Render grid ---------- */
+    /* ---------- Render cards from DB (with fallback content) ---------- */
     async function loadAndRenderProducts(){
       const grid = document.getElementById('productGrid');
       grid.innerHTML = '<div class="muted">Loading…</div>';
+
+      await loadSessionAndProfile();
+
       let rows = [];
       const { data, error } = await supa
         .from('products')
@@ -390,15 +415,23 @@
         .order('sort_order', { ascending:true, nullsFirst:false })
         .order('name', { ascending:true });
 
-      if (!error && data){ rows = data; }
+      if (!error && Array.isArray(data)) rows = data;
 
+      // Fallback content if DB empty (keeps your original 12)
       if (!rows.length){
         rows = Object.keys(FALLBACK).map((sku, i)=>({
-          sku, name: FALLBACK[sku].name, description:'', stock_qty:999, available:true,
-          image_path:null, pdf_path:null, sort_order:i+1
+          sku,
+          name: FALLBACK[sku].name,
+          description: '',
+          stock_qty: 999,
+          available: true,
+          image_path: null,
+          pdf_path: null,
+          sort_order: i+1
         }));
       }
 
+      // Merge DB rows with FALLBACK attributes
       PRODUCT_CACHE = {};
       rows.forEach(r=>{
         const f = FALLBACK[r.sku] || {};
@@ -410,6 +443,7 @@
           available: !!r.available,
           image_path: r.image_path || null,
           pdf_path: r.pdf_path || null,
+          // extra info for modal
           category: f.category || '',
           form: f.form || '',
           size: f.size || '',
@@ -421,6 +455,7 @@
         };
       });
 
+      // Render the grid
       grid.innerHTML = '';
       rows.forEach(r=>{
         const p = PRODUCT_CACHE[r.sku];
@@ -435,13 +470,26 @@
         card.className = 'p-card';
         card.setAttribute('data-sku', r.sku);
 
-        // Purchase buttons are rendered ONLY if signed in & approved.
-        const canShowPurchase = (SESSION_USER && CAN_PURCHASE && isAvail);
-        const actionsHTML = `
-          ${canShowPurchase ? `<button class="btn add-btn" type="button">Add to Cart</button>` : ``}
-          ${canShowPurchase ? `<button class="btn ghost buy-btn" type="button">Buy Now</button>` : ``}
-          <button class="btn ghost more-btn" type="button">Click for more details</button>
-        `;
+        // Actions area depends on eligibility
+        let actionsHtml = '';
+        if (!USER){
+          actionsHtml = `
+            <a class="btn" href="login.html?redirect=${encodeURIComponent('Products.html')}">Sign in to purchase</a>
+            <a class="btn ghost" href="${p.page || '#'}">Click for more details</a>
+          `;
+        } else if (USER && !CAN_SHOP){
+          actionsHtml = `
+            <a class="btn ghost" href="vet-verify.html">Verify vet status</a>
+            <button class="btn ghost more-btn" type="button">Click for more details</button>
+          `;
+        } else {
+          // Eligible to shop
+          actionsHtml = `
+            <button class="btn add-btn" type="button" ${!isAvail ? 'disabled' : ''}>Add to Cart</button>
+            <button class="btn ghost buy-btn" type="button" ${!isAvail ? 'disabled' : ''}>Buy Now</button>
+            <button class="btn ghost more-btn" type="button">Click for more details</button>
+          `;
+        }
 
         card.innerHTML = `
           <img src="${imgUrl}" alt="${p.name}">
@@ -453,105 +501,40 @@
               ${qtyHtml}
             </div>
             <div class="actions">
-              ${actionsHTML}
+              ${actionsHtml}
             </div>
           </div>
         `;
 
-        // Bind handlers (only present if buttons rendered)
-        const addBtn = card.querySelector('.add-btn');
-        addBtn?.addEventListener('click', (ev)=>{ ev.stopPropagation(); addToCartBySKU(r.sku, p.name, 1); updateCartBadge(); });
-
-        const buyBtn = card.querySelector('.buy-btn');
-        buyBtn?.addEventListener('click', (ev)=>{ ev.stopPropagation(); addToCartBySKU(r.sku, p.name, 1); location.href='cart.html'; });
-
+        // Wire buttons
         const moreBtn = card.querySelector('.more-btn');
-        moreBtn.addEventListener('click', (ev)=>{ ev.stopPropagation(); openPD(r.sku); });
+        moreBtn?.addEventListener('click', (ev)=>{ ev.stopPropagation(); openPD(r.sku); });
+        card.addEventListener('click', (e)=>{ if (!e.target.closest('.actions')) openPD(r.sku); });
 
-        // Also allow clicking non-button area to open details
-        card.addEventListener('click', (e)=>{ if (e.target.closest('.actions')) return; openPD(r.sku); });
+        if (USER && CAN_SHOP){
+          const addBtn = card.querySelector('.add-btn');
+          addBtn?.addEventListener('click', (ev)=>{ ev.stopPropagation(); addToCartBySKU(r.sku, p.name, 1); updateCartBadge(); });
+
+          const buyBtn = card.querySelector('.buy-btn');
+          buyBtn?.addEventListener('click', (ev)=>{ ev.stopPropagation(); addToCartBySKU(r.sku, p.name, 1); location.href = 'cart.html'; });
+        }
 
         grid.appendChild(card);
       });
     }
 
-    /* ---------- Login modal (magic link + optional OTP) ---------- */
-    const loginModal = document.getElementById('loginModal');
-    const signinBtn  = document.getElementById('signinBtn');
-    const loginMsg   = document.getElementById('loginMsg');
-    const loginEmail = document.getElementById('loginEmail');
-    const sendLogin  = document.getElementById('sendLogin');
-    const verifyLogin= document.getElementById('verifyLogin');
-    const resendLogin= document.getElementById('resendLogin');
-    const codeBox    = document.getElementById('codeBox');
-    const otp        = document.getElementById('otp');
-
-    function openLogin(){ loginModal.classList.add('open'); loginModal.setAttribute('aria-hidden','false'); }
-    function closeLogin(){ loginModal.classList.remove('open'); loginModal.setAttribute('aria-hidden','true'); }
-    signinBtn?.addEventListener('click', openLogin);
-    loginModal.addEventListener('click', (e)=>{ if(e.target===loginModal) closeLogin(); });
-
-    function showLoginMsg(t, kind=""){ loginMsg.textContent=t||""; loginMsg.className="tiny "+kind; }
-    function startResend(btn, seconds=45){
-      let left=seconds;
-      btn.style.display="inline-block";
-      btn.textContent=`Resend email (${left})`;
-      btn.disabled=true;
-      const id=setInterval(()=>{
-        left--; if(left<=0){ clearInterval(id); btn.textContent="Resend email"; btn.disabled=false; }
-        else btn.textContent=`Resend email (${left})`;
-      },1000);
-      return id;
-    }
-    let resendTimer=null;
-
-    sendLogin.onclick = async function(){
-      showLoginMsg("");
-      const email = (loginEmail.value||"").trim().toLowerCase();
-      if(!email) return showLoginMsg("Please enter your email.","error");
-
-      sendLogin.disabled=true; showLoginMsg("Sending email…");
-      const redirectTo = location.href.split('#')[0];
-      const { error } = await supa.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo } });
-      sendLogin.disabled=false;
-      if (error) return showLoginMsg(error.message,"error");
-
-      showLoginMsg(`Email sent to ${email}. Open the magic link here. If you also got a 6-digit code, enter it below.`,"success");
-      codeBox.style.display="block";
-      clearInterval(resendTimer); resendTimer = startResend(resendLogin,45);
-      setTimeout(()=>otp.focus(),50);
-      resendLogin.onclick = ()=>sendLogin.click();
-    };
-
-    verifyLogin.onclick = async function(){
-      showLoginMsg("");
-      const email = (loginEmail.value||"").trim().toLowerCase();
-      const token = (otp.value||"").trim();
-      if (!email) return showLoginMsg("Enter your email again to verify.","error");
-      if (token.length !== 6) return showLoginMsg("Enter the 6-digit code from your email.","error");
-      verifyLogin.disabled=true; showLoginMsg("Verifying…");
-      const { error } = await supa.auth.verifyOtp({ email, token, type:"email" });
-      verifyLogin.disabled=false;
-      if (error) return showLoginMsg(error.message,"error");
-      showLoginMsg("Verified. Signing you in…","success");
-      closeLogin();
-      await afterAuthChanged();
-    };
-
-    async function afterAuthChanged(){
-      await refreshSessionAndProfile();
-      await loadAndRenderProducts(); // re-render to reveal purchase buttons if allowed
-    }
-
-    supa.auth.onAuthStateChange(async ()=>{ await afterAuthChanged(); });
-
-    /* ---------- Boot ---------- */
+    /* Keep badge in sync across tabs */
     window.addEventListener('storage', (ev)=>{ if(ev.key === 'cart') updateCartBadge(); });
+
+    /* Boot */
     document.addEventListener('DOMContentLoaded', async ()=>{
       updateCartBadge();
-      await refreshSessionAndProfile();
       await loadAndRenderProducts();
     });
+
+    // If auth state changes (sign in/out in another page), refresh gating & grid
+    supa.auth.onAuthStateChange(async ()=>{ await loadAndRenderProducts(); });
   </script>
 </body>
 </html>
+
