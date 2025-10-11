@@ -21,6 +21,14 @@
     header.site{position:sticky;top:0;z-index:50;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    /* NEW: real logo image, linked to index */
+    .brand-logo{
+      width:60px;height:auto;display:block;background:transparent;border:0;outline:0;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
+      image-rendering:auto;
+    }
+    .brand-logo:hover{ filter: drop-shadow(0 8px 16px rgba(0,0,0,.4)) contrast(1.03) saturate(1.02); }
+
     .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:var(--shadow)}
     .links{display:flex;gap:18px;align-items:center}
     .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
@@ -112,7 +120,13 @@
 <body>
   <header class="site">
     <div class="wrap nav">
-      <div class="brand"><span class="logo"></span> VetoCos</div>
+      <!-- Brand now uses your logo and links to index -->
+      <div class="brand">
+        <a href="index.html" aria-label="VetoCos home">
+          <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
+        </a>
+        <span>VetoCos</span>
+      </div>
       <nav class="links" id="navlinks">
         <a href="index.html">Home</a>
         <a class="active" href="Products.html">Products</a>
@@ -240,7 +254,10 @@
         isAdmin = !!p?.is_admin;
       }catch(_){}
       helloName.textContent = display;
-      accountHeader.textContent = display;
+
+      // NEW: show both name (or name fallback) and email in the menu header
+      accountHeader.innerHTML = '<div><strong>'+display+
+        '</strong><div class="muted">'+(session.user.email || '')+'</div></div>';
 
       signInBtn.style.display = 'none';
       signUpBtn.style.display = 'none';
@@ -319,6 +336,7 @@
 
     let CURRENT_SKU = null;
     let PRODUCT_CACHE = {};
+    let IS_LOGGED_IN = false;
 
     function openPD(sku){
       const spec = PRODUCT_CACHE[sku] || {};
