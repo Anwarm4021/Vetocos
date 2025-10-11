@@ -7,239 +7,240 @@
   <meta name="description" content="VetoCos complementary feed for dogs & cats.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;
-      --brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;
-      --shadow:0 10px 30px rgba(0,0,0,.25)
-    }
-    *{box-sizing:border-box}
-    body{margin:0;padding:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif;line-height:1.6}
-    a{text-decoration:none;color:inherit}
-    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+  :root{
+    --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;
+    --brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;
+    --shadow:0 10px 30px rgba(0,0,0,.25)
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif;line-height:1.6}
+  a{text-decoration:none;color:inherit}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
 
-    /* Header */
-    header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
-    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-    .brand{display:flex;align-items:center;gap:12px;font-weight:700}
-    .brand-logo{width:60px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
-    .links{display:flex;gap:12px;align-items:center}
-    .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
-    .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
-    .contact-btn,#lang-switch,.btn{
-      padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
-      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600
-    }
-    #lang-switch{background:rgba(255,255,255,.04)}
-    .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
-    @media(max-width:820px){
-      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:240px}
-      .links.open{display:flex}
-      .hamb{display:block}
-      .contact-btn,#lang-switch{width:100%;text-align:left}
-    }
+  /* Header */
+  header.site{position:sticky;top:0;z-index:50;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+  .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+  /* NEW: use your PNG logo */
+  .brand-logo{width:60px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+  .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:var(--shadow)}
+  .links{display:flex;gap:18px;align-items:center}
+  .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
+  .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
 
-    /* Account block */
-    .acct{position:relative;display:inline-flex;align-items:center;gap:8px}
-    .avatar{width:30px;height:30px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:inline-block;border:1px solid rgba(141,158,199,.3)}
-    .menu{position:absolute;top:42px;right:0;background:rgba(16,24,53,.98);border:1px solid rgba(141,158,199,.2);border-radius:12px;min-width:260px;display:none;box-shadow:var(--shadow);max-height:70vh;overflow:auto}
-    .menu.open{display:block}
-    .menu a,.menu button{display:block;width:100%;text-align:left;padding:10px 12px;background:transparent;border:0;color:var(--text);cursor:pointer}
-    .menu a:hover,.menu button:hover{background:rgba(141,158,199,.15)}
-    .menu .muted{font-size:12px}
-    .muted{color:var(--muted)}
+  /* Cart button in header */
+  .cart-link{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.04)}
+  .cart-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;display:grid;place-items:center;font-size:12px;background:#ff6d6d;border-radius:999px;padding:0 6px;color:white}
 
-    /* Hero */
-    .hero{padding:40px 0 20px;text-align:center}
-    .badge{display:inline-flex;gap:8px;align-items:center;background:rgba(141,158,199,.15);border:1px solid rgba(141,158,199,.25);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
-    h1{font-size:clamp(28px,5vw,42px);margin:14px 0}
-    .lead{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:700px;margin:0 auto 18px}
+  .contact-btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
 
-    /* Product grid */
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
-    @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:520px){.grid{grid-template-columns:1fr}}
-    .p-card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:.2s}
-    .p-card:hover{transform:translateY(-3px);border-color:rgba(131,240,165,.3)}
-    .p-card img{width:100%;height:170px;object-fit:cover}
-    .px{padding:12px}
-    .px h4{margin:.2rem 0 .1rem}
-    .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .status{font-size:12px;border-radius:999px;padding:2px 8px;border:1px solid rgba(141,158,199,.25)}
-    .status.ok{background:rgba(131,240,165,.14)}
-    .status.bad{background:rgba(255,120,120,.14)}
-    .qty{font-size:12px;color:var(--muted)}
-    .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
-    .btn.ghost{background:transparent}
-    .btn[disabled]{opacity:.6;cursor:not-allowed}
+  .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
+  @media(max-width:820px){
+    .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:200px}
+    .links.open{display:flex}
+    .hamb{display:block}
+    .contact-btn,#lang-switch{width:100%;text-align:left}
+  }
 
-    /* Footer */
-    footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
-    .footer-links{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+  /* Hero */
+  .hero{padding:40px 0 20px;text-align:center}
+  .badge{display:inline-flex;gap:8px;align-items:center;background:rgba(141,158,199,.15);border:1px solid rgba(141,158,199,.25);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
+  h1{font-size:clamp(28px,5vw,42px);margin:14px 0}
+  .lead{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:700px;margin:0 auto 18px}
 
-    /* Modal */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
-    .modal.open{display:flex}
-    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
-    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
-    .sheet-title{margin:0;font-size:1.1rem}
-    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
-    .sheet-body{padding:16px}
-    .pd-cols{display:grid;grid-template-columns:220px 1fr;gap:16px}
-    @media(max-width:720px){.pd-cols{grid-template-columns:1fr}}
-    .pd-img{width:100%;height:220px;object-fit:cover;border-radius:12px;border:1px solid rgba(141,158,199,.18)}
-    .specs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:720px){.specs{grid-template-columns:1fr}}
-    .spec{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:12px}
-    .spec h5{margin:.2rem 0 .3rem;font-size:0.95rem}
+  /* Product grid */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
+  @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.grid{grid-template-columns:1fr}}
+  .p-card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:.2s}
+  .p-card:hover{transform:translateY(-3px);border-color:rgba(131,240,165,.3)}
+  .p-card img{width:100%;height:170px;object-fit:cover}
+  .px{padding:12px}
+  .px h4{margin:.2rem 0 .1rem}
+  .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .status{font-size:12px;border-radius:999px;padding:2px 8px;border:1px solid rgba(141,158,199,.25)}
+  .status.ok{background:rgba(131,240,165,.14)}
+  .status.bad{background:rgba(255,120,120,.14)}
+  .qty{font-size:12px;color:var(--muted)}
+
+  /* Buttons */
+  .btn{
+    display:inline-block;
+    padding:10px 14px;
+    border-radius:10px;
+    border:1px solid rgba(141,158,199,.25);
+    background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));
+    color:var(--text);
+    cursor:pointer;
+    font-weight:600
+  }
+  .btn.ghost{background:transparent}
+  .btn[disabled]{opacity:.6;cursor:not-allowed}
+
+  /* Footer */
+  footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
+  .footer-links{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+
+  /* --- Product Details Modal --- */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
+  .modal.open{display:flex}
+  .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+  .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
+  .sheet-title{margin:0;font-size:1.1rem}
+  .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+  .sheet-body{padding:16px}
+  .pd-cols{display:grid;grid-template-columns:220px 1fr;gap:16px}
+  @media(max-width:720px){.pd-cols{grid-template-columns:1fr}}
+  .pd-img{width:100%;height:220px;object-fit:cover;border-radius:12px;border:1px solid rgba(141,158,199,.18)}
+  .specs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:720px){.specs{grid-template-columns:1fr}}
+  .spec{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:12px}
+  .spec h5{margin:.2rem 0 .3rem;font-size:0.95rem}
+  .muted{color:var(--muted)}
+  .sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+  /* RTL */
+  body.rtl .links a{text-align:right}
   </style>
 </head>
 <body>
-<header class="site">
-  <div class="wrap nav">
-    <div class="brand">
-      <a href="index.html" aria-label="VetoCos home">
-        <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
-      </a>
-      <span>VetoCos</span>
-    </div>
-    <nav class="links" id="navlinks">
-      <a href="index.html" data-i18n="nav.home">Home</a>
-      <a class="active" href="Products.html" data-i18n="nav.products">Products</a>
-      <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
-      <a href="News.html" data-i18n="nav.news">News</a>
-
-      <!-- Cart (hidden when logged out) -->
-      <a class="contact-btn" id="cartLink" href="cart.html" style="display:none">Cart</a>
-
-      <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
-
-      <!-- Admin (only for admins) -->
-      <a class="contact-btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
-
-      <!-- Auth buttons -->
-      <button class="contact-btn" id="signinBtn" type="button">Sign in</button>
-      <button class="contact-btn" id="signupBtn" type="button">Sign up</button>
-
-      <!-- Account block -->
-      <div class="acct" id="acctBlock" style="display:none">
-        <button class="contact-btn" id="accountBtn" type="button">
-          <span class="avatar" aria-hidden="true"></span>
-          <span id="helloName" class="muted" style="font-size:.9rem"></span>
-        </button>
-        <div class="menu" id="accountMenu" role="menu" aria-hidden="true">
-          <div id="accountHeader" class="muted" style="padding:8px 12px; border-bottom:1px solid rgba(141,158,199,.12)"></div>
-          <a href="account.html" role="menuitem">Account settings</a>
-          <a href="my-order.html" role="menuitem">My orders</a>
-          <a href="cart.html" role="menuitem">Cart</a>
-          <a href="checkout.html" role="menuitem">Checkout</a>
-          <a href="vet-verify.html" role="menuitem">Vet verification</a>
-          <button type="button" role="menuitem" id="logoutBtn">Sign out</button>
-        </div>
+  <header class="site">
+    <div class="wrap nav">
+      <div class="brand">
+        <!-- CHANGED: gradient box -> real logo image -->
+        <a href="index.html" aria-label="VetoCos home">
+          <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
+        </a>
+        <span>VetoCos</span>
       </div>
+      <nav class="links" id="navlinks">
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a class="active" href="Products.html" data-i18n="nav.products">Products</a>
+        <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
+        <a href="News.html" data-i18n="nav.news">News</a>
 
-      <select id="lang-switch" aria-label="Language">
-        <option value="en">English</option>
-        <option value="fr">Français</option>
-        <option value="ar">العربية</option>
-      </select>
-    </nav>
-    <button class="hamb" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
-  </div>
-</header>
+        <a class="cart-link" href="cart.html" aria-label="Cart">
+          <span>Cart</span>
+          <span id="cartCount" class="cart-badge" style="display:none">0</span>
+        </a>
 
-<main class="wrap">
-  <div class="hero">
-    <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
-    <h1 data-i18n="products.title">Our Product Range</h1>
-    <p class="lead" data-i18n="products.lead">Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.</p>
-  </div>
-
-  <div class="grid" id="productGrid"></div>
-</main>
-
-<footer>
-  © <span id="y"></span> VetoCos · <span data-i18n="footer.tagline">Complementary feed for companion animals</span>
-  <div class="footer-links">
-    <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
-    <a href="#" onclick="openContact();return false;" data-i18n="nav.contact">Contact</a>
-  </div>
-</footer>
-
-<!-- Minimal stubs for the modal open/close (to avoid errors) -->
-<script>
-  function openContact() {}
-  function openPolicy() {}
-  document.getElementById("y") && (document.getElementById("y").textContent = new Date().getFullYear());
-</script>
-
-<!-- Supabase -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const supa = supabase.createClient(
-    "https://qdepgviimbcdlozjpbhm.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
-    { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
-  );
-  const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
-</script>
-
-<!-- Product Details Modal (HTML) -->
-<div id="productDetailsModal" class="modal" aria-hidden="true">
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
-    <div class="sheet-head">
-      <h2 id="pdTitle" class="sheet-title">Product details</h2>
-      <button class="close" type="button" onclick="closePD()">Close</button>
+        <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
+        <select id="lang-switch" aria-label="Language">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="ar">العربية</option>
+        </select>
+      </nav>
+      <button class="hamb" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
     </div>
-    <div class="sheet-body">
-      <div class="pd-cols">
-        <img id="pdImg" class="pd-img" alt="">
-        <div>
-          <h3 id="pdName" style="margin:0 0 6px"></h3>
-          <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
-          <div class="specs">
-            <div class="spec">
-              <h5>Form</h5>
-              <div id="pdForm" class="muted"></div>
+  </header>
+
+  <main class="wrap">
+    <div class="hero">
+      <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
+      <h1 data-i18n="products.title">Our Product Range</h1>
+      <p class="lead" data-i18n="products.lead">Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.</p>
+    </div>
+
+    <div class="grid" id="productGrid"></div>
+  </main>
+
+  <footer>
+    © <span id="y"></span> VetoCos · <span data-i18n="footer.tagline">Complementary feed for companion animals</span>
+    <div class="footer-links">
+      <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
+      <a href="#" onclick="openContact();return false;" data-i18n="nav.contact">Contact</a>
+    </div>
+  </footer>
+
+  <!-- Minimal stubs for the modal open/close (to avoid errors) -->
+  <script>
+    function openContact() {}
+    function openPolicy() {}
+    document.getElementById("y") && (document.getElementById("y").textContent = new Date().getFullYear());
+  </script>
+
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const supa = supabase.createClient(
+      "https://qdepgviimbcdlozjpbhm.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+    );
+  </script>
+
+  <!-- Product Details Modal (HTML) -->
+  <div id="productDetailsModal" class="modal" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
+      <div class="sheet-head">
+        <h2 id="pdTitle" class="sheet-title">Product details</h2>
+        <button class="close" type="button" onclick="closePD()">Close</button>
+      </div>
+      <div class="sheet-body">
+        <div class="pd-cols">
+          <img id="pdImg" class="pd-img" alt="">
+          <div>
+            <h3 id="pdName" style="margin:0 0 6px"></h3>
+            <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
+            <div class="specs">
+              <div class="spec">
+                <h5>Form</h5>
+                <div id="pdForm" class="muted"></div>
+              </div>
+              <div class="spec">
+                <h5>Pack size</h5>
+                <div id="pdSize" class="muted"></div>
+              </div>
+              <div class="spec">
+                <h5>Key ingredients</h5>
+                <div id="pdIngredients" class="muted"></div>
+              </div>
+              <div class="spec">
+                <h5>Feeding guidance</h5>
+                <div id="pdUsage" class="muted"></div>
+              </div>
             </div>
-            <div class="spec">
-              <h5>Pack size</h5>
-              <div id="pdSize" class="muted"></div>
-            </div>
-            <div class="spec">
-              <h5>Key ingredients</h5>
-              <div id="pdIngredients" class="muted"></div>
-            </div>
-            <div class="spec">
-              <h5>Feeding guidance</h5>
-              <div id="pdUsage" class="muted"></div>
+
+            <p id="pdDesc" class="muted" style="margin-top:10px"></p>
+
+            <div class="sheet-actions">
+              <button class="btn" id="pdAddBtn" type="button">Add to Cart</button>
+              <button class="btn ghost" id="pdBuyBtn" type="button">Buy Now</button>
+              <a class="btn" id="pdPdfBtn" href="#" target="_blank" rel="noopener">Download PDF</a>
+              <a class="btn ghost" id="pdPageBtn" href="#">View full page</a>
+              <span class="muted" id="pdSku" style="margin-left:auto"></span>
             </div>
           </div>
-
-          <p id="pdDesc" class="muted" style="margin-top:10px"></p>
-
-          <div class="sheet-actions" id="pdActions">
-            <button class="btn" id="pdAddBtn" type="button">Add to Cart</button>
-            <button class="btn ghost" id="pdBuyBtn" type="button">Buy Now</button>
-            <a class="btn" id="pdPdfBtn" href="#" target="_blank" rel="noopener">Download PDF</a>
-            <a class="btn ghost" id="pdPageBtn" href="#">View full page</a>
-            <span class="muted" id="pdSku" style="margin-left:auto"></span>
-          </div>
         </div>
+        <p class="muted" style="margin-top:12px">
+          Complementary feed — not a medicine. Always follow your vet’s advice.
+        </p>
       </div>
-      <p class="muted" style="margin-top:12px">
-        Complementary feed — not a medicine. Always follow your vet’s advice.
-      </p>
     </div>
   </div>
-</div>
 
-<!-- Cart + Product render logic -->
-<script>
+  <!-- Cart + Product render logic -->
+  <script>
   /* ---------- Cart helpers ---------- */
-  function readCart(){ try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; } }
-  function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items)); }
+  function readCart(){
+    try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; }
+  }
+  function writeCart(items){
+    localStorage.setItem("cart", JSON.stringify(items));
+    updateCartBadge();
+  }
+  function countCart(){ return readCart().reduce((n,x)=>n + Number(x.qty||0), 0); }
+  function updateCartBadge(){
+    const n = countCart();
+    const b = document.getElementById('cartCount');
+    if(!b) return;
+    if(n>0){ b.style.display='inline-grid'; b.textContent = n; }
+    else { b.style.display='none'; }
+  }
+
+  /* Single source of truth for adding to cart */
   function addToCartBySKU(sku, name, qty=1){
     const items = readCart();
     const i = items.findIndex(x=>x.sku===sku);
@@ -248,7 +249,7 @@
     writeCart(items);
   }
 
-  /* Fallback product specs (unchanged) */
+  /* Fallback product specs (to keep your original products content) */
   const FALLBACK = {
     "URO-CHIEN": { name:"Urocline Chien", image:"images/Product1.jpg", category:"Urinary care", form:"Chewable tablets", size:"60 / 120 tabs", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", page:"Product1.html", pdf:"pdf/Product1.pdf" },
     "HEP-AT": { name:"Hepatiale", image:"images/Product2.jpg", category:"Liver support", form:"Capsules", size:"30 / 60 caps", ingredients:"Silybin-phospholipid, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", page:"Product2.html", pdf:"pdf/Product2.pdf" },
@@ -264,14 +265,16 @@
     "QAL-MIL": { name:"Qalmil", image:"images/Product12.jpg", category:"Calming", form:"Soft chews", size:"60 chews", ingredients:"L-tryptophan, L-theanine, Lemon balm", usage:"Use before stressful events or daily", page:"Product12.html", pdf:"pdf/Product12.pdf" }
   };
 
+  /* Build public file URL for ProductFiles bucket */
   const PRODUCT_BUCKET = "ProductFiles";
   function filePublicUrl(path){
     if(!path) return null;
+    // Ensure we don't duplicate the bucket prefix
     const p = path.replace(/^ProductFiles\//,'');
-    return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(p)}`;
+    return https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(p)};
   }
 
-  /* Modal refs + state */
+  /* Modal refs */
   const pdModal = document.getElementById('productDetailsModal');
   const pdImg = document.getElementById('pdImg');
   const pdName = document.getElementById('pdName');
@@ -285,24 +288,22 @@
   const pdBuy = document.getElementById('pdBuyBtn');
   const pdPdf = document.getElementById('pdPdfBtn');
   const pdPage = document.getElementById('pdPageBtn');
-  const pdActions = document.getElementById('pdActions');
+  const pdDesc = document.getElementById('pdDesc');
 
   let CURRENT_SKU = null;
-  let PRODUCT_CACHE = {}; // sku -> merged data
-  let IS_LOGGED_IN = false;
+  let PRODUCT_CACHE = {}; // sku -> merged data for modal/buttons
 
   function openPD(sku){
     const spec = PRODUCT_CACHE[sku] || {};
     CURRENT_SKU = sku;
-
     pdName.textContent = spec.name || sku;
     pdCat.textContent = spec.category || '';
     pdForm.textContent = spec.form || '—';
     pdSize.textContent = spec.size || '—';
     pdIngr.textContent = spec.ingredients || '—';
     pdUse.textContent = spec.usage || '—';
+    pdDesc.textContent = spec.description || '';
     pdSku.textContent = 'SKU: ' + sku;
-    document.getElementById('pdDesc').textContent = spec.description || '';
 
     const imgUrl = spec.image_path ? filePublicUrl(spec.image_path) : (spec.image || '');
     pdImg.src = imgUrl || '';
@@ -311,19 +312,8 @@
     pdPdf.href = (spec.pdf_path ? filePublicUrl(spec.pdf_path) : (spec.pdf || '#')) || '#';
     pdPage.href = spec.page || '#';
 
-    const isAvail = spec.available && (Number(spec.stock_qty||0) > 0);
-
-    // Show / hide Add & Buy based on login; allow modal for everyone
-    if (IS_LOGGED_IN) {
-      pdAdd.style.display = 'inline-block';
-      pdBuy.style.display = 'inline-block';
-      pdAdd.disabled = !isAvail;
-      pdBuy.disabled = !isAvail;
-    } else {
-      // Hide buttons if logged out
-      pdAdd.style.display = 'none';
-      pdBuy.style.display = 'none';
-    }
+    pdAdd.disabled = !(spec.available && (Number(spec.stock_qty||0) > 0));
+    pdBuy.disabled = pdAdd.disabled;
 
     pdModal.classList.add('open');
     pdModal.setAttribute('aria-hidden','false');
@@ -344,14 +334,15 @@
     if(!CURRENT_SKU) return;
     const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
     addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
-    location.href = 'cart.html';
+    const { data:{ user } } = await supa.auth.getUser();
+    if(!user){ location.href = login.html?redirect=${encodeURIComponent('cart.html')}; }
+    else { location.href = 'cart.html'; }
   });
 
-  /* Render grid from DB with fallback */
+  /* Render cards from DB (with fallback content) */
   async function loadAndRenderProducts(){
     const grid = document.getElementById('productGrid');
     grid.innerHTML = '<div class="muted">Loading…</div>';
-
     let rows = [];
     const { data, error } = await supa
       .from('products')
@@ -359,15 +350,27 @@
       .order('sort_order', { ascending:true, nullsFirst:false })
       .order('name', { ascending:true });
 
-    if (!error && Array.isArray(data)) rows = data;
+    if (error){
+      console.warn(error);
+    } else {
+      rows = data || [];
+    }
 
-    if (!rows || !rows.length){
+    // If no DB products yet, synthesize from FALLBACK list (keeps your current 12 cards)
+    if (!rows.length){
       rows = Object.keys(FALLBACK).map((sku, i)=>({
-        sku, name: FALLBACK[sku].name, description: '',
-        stock_qty: 999, available: true, image_path: null, pdf_path: null, sort_order: i+1
+        sku,
+        name: FALLBACK[sku].name,
+        description: '',
+        stock_qty: 999, // treat as in stock
+        available: true, // treat as available
+        image_path: null,
+        pdf_path: null,
+        sort_order: i+1
       }));
     }
 
+    // Build PRODUCT_CACHE (merge DB row with FALLBACK attributes)
     PRODUCT_CACHE = {};
     rows.forEach(r=>{
       const f = FALLBACK[r.sku] || {};
@@ -379,6 +382,7 @@
         available: !!r.available,
         image_path: r.image_path || null,
         pdf_path: r.pdf_path || null,
+        // extra info for modal
         category: f.category || '',
         form: f.form || '',
         size: f.size || '',
@@ -390,6 +394,7 @@
       };
     });
 
+    // Render grid
     grid.innerHTML = '';
     rows.forEach(r=>{
       const p = PRODUCT_CACHE[r.sku];
@@ -404,15 +409,6 @@
       card.className = 'p-card';
       card.setAttribute('data-sku', r.sku);
 
-      // Buttons visibility based on login
-      const addBtnHtml = IS_LOGGED_IN
-        ? `<button class="btn add-btn" type="button" ${!isAvail ? 'disabled' : ''}>Add to Cart</button>`
-        : ``; // To redirect instead: use a ghost button and go to login.html
-
-      const buyBtnHtml = IS_LOGGED_IN
-        ? `<button class="btn ghost buy-btn" type="button" ${!isAvail ? 'disabled' : ''}>Buy Now</button>`
-        : ``;
-
       card.innerHTML = `
         <img src="${imgUrl}" alt="${p.name}">
         <div class="px">
@@ -423,36 +419,39 @@
             ${qtyHtml}
           </div>
           <div class="actions">
-            ${addBtnHtml}
-            ${buyBtnHtml}
-            <button class="btn ghost more-btn" type="button">More details</button>
+            <button class="btn add-btn" type="button" ${!isAvail ? 'disabled' : ''}>Add to Cart</button>
+            <button class="btn ghost buy-btn" type="button" ${!isAvail ? 'disabled' : ''}>Buy Now</button>
+            <button class="btn ghost more-btn" type="button">Click for more details</button>
           </div>
         </div>
       `;
 
-      // Add handlers
+      // Button handlers that work without opening modal first
       const addBtn = card.querySelector('.add-btn');
       addBtn?.addEventListener('click', (ev)=>{
         ev.stopPropagation();
         addToCartBySKU(r.sku, p.name, 1);
-        alert(`${p.name} added to cart`);
+        updateCartBadge();
       });
 
       const buyBtn = card.querySelector('.buy-btn');
-      buyBtn?.addEventListener('click', (ev)=>{
+      buyBtn?.addEventListener('click', async (ev)=>{
         ev.stopPropagation();
         addToCartBySKU(r.sku, p.name, 1);
-        location.href = 'cart.html';
+        const { data:{ user } } = await supa.auth.getUser();
+        if(!user){ location.href = login.html?redirect=${encodeURIComponent('cart.html')}; }
+        else { location.href = 'cart.html'; }
       });
 
       const moreBtn = card.querySelector('.more-btn');
-      moreBtn.addEventListener('click', (ev)=>{
+      moreBtn?.addEventListener('click', (ev)=>{
         ev.stopPropagation();
         openPD(r.sku);
       });
 
-      // Clicking card (except buttons) opens details too
+      // Also allow clicking the image/title area to open details
       card.addEventListener('click', (e)=>{
+        // avoid double trigger when clicking buttons
         if (e.target.closest('.actions')) return;
         openPD(r.sku);
       });
@@ -461,67 +460,16 @@
     });
   }
 
-  /* ===== Header session state (same as index) ===== */
-  const signinBtn = document.getElementById('signinBtn');
-  const signupBtn = document.getElementById('signupBtn');
-  const accountBtn= document.getElementById('accountBtn');
-  const accountMenu=document.getElementById('accountMenu');
-  const accountHeader=document.getElementById('accountHeader');
-  const helloName = document.getElementById('helloName');
-  const acctBlock = document.getElementById('acctBlock');
-  const adminBtn  = document.getElementById('adminBtn');
-  const cartLink  = document.getElementById('cartLink');
-  const logoutBtn = document.getElementById('logoutBtn');
+  /* Keep badge in sync across tabs/devices on same browser */
+  window.addEventListener('storage', (ev)=>{
+    if(ev.key === 'cart') updateCartBadge();
+  });
 
-  signinBtn.addEventListener('click', ()=>{ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); });
-  signupBtn.addEventListener('click', ()=>{ location.href = 'signup.html?redirect=' + encodeURIComponent('Products.html'); });
-
-  function toggleMenu(){
-    const open = accountMenu.classList.toggle('open');
-    accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
-    if (open){
-      const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
-      setTimeout(()=>document.addEventListener('click', onDoc),0);
-    }
-  }
-  accountBtn.addEventListener('click', toggleMenu);
-  logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
-
-  async function refreshHeaderAndGrid(){
-    const { data:{ session } } = await supa.auth.getSession();
-    if (session?.user){
-      IS_LOGGED_IN = true;
-      let display = session.user.email;
-      let isAdmin = false;
-      try {
-        const { data: p } = await supa.from('profiles').select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
-        const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
-        if (full) display = full;
-        isAdmin = !!p?.is_admin;
-      } catch {}
-      signinBtn.style.display = 'none';
-      signupBtn.style.display = 'none';
-      acctBlock.style.display = 'inline-flex';
-      cartLink.style.display = 'inline-block';
-      helloName.textContent = display;
-      accountHeader.textContent = display;
-      adminBtn.style.display = (isAdmin || SUPER_ADMINS.includes(session.user.email)) ? 'inline-block' : 'none';
-    } else {
-      IS_LOGGED_IN = false;
-      signinBtn.style.display = 'inline-block';
-      signupBtn.style.display = 'inline-block';
-      acctBlock.style.display = 'none';
-      cartLink.style.display = 'none';
-      adminBtn.style.display = 'none';
-      helloName.textContent = '';
-      accountHeader.textContent = '';
-      accountMenu.classList.remove('open');
-    }
-    await loadAndRenderProducts(); // re-render buttons visibility
-  }
-
-  document.addEventListener('DOMContentLoaded', refreshHeaderAndGrid);
-  supa.auth.onAuthStateChange(async ()=>{ await refreshHeaderAndGrid(); });
-</script>
+  /* Boot */
+  document.addEventListener('DOMContentLoaded', async ()=>{
+    updateCartBadge();
+    await loadAndRenderProducts();
+  });
+  </script>
 </body>
 </html>
