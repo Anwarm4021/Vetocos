@@ -52,6 +52,7 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
       <a class="btn small" href="Products.html">Products</a>
       <a class="btn small" href="cart.html">Cart</a>
       <a class="btn small" href="account.html">My Account</a>
+      <a id="adminBtn" class="btn small" href="admin.html" style="display:none">Admin</a>
       <a id="checkoutBtnTop" class="btn small" href="checkout.html" style="display:none">Checkout</a>
     </div>
   </div>
@@ -93,7 +94,7 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
   <h2 class="section-title">My Cart (quick edit)</h2>
   <div class="card" id="cartBox">Loading…</div>
 
-  <!-- Product Browser (add more products) -->
+  <!-- Product Browser -->
   <h2 class="section-title">Add more products</h2>
   <div class="card">
     <div class="rowbar" style="margin-bottom:10px">
@@ -145,6 +146,9 @@ const supa = supabase.createClient(
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
+/* ===== Admin config ===== */
+const ADMIN_EMAILS = ["anwar.moumenjamai19@gmail.com"];
+
 /* ===== UI refs ===== */
 const BUCKET = 'Documents';
 const statusBox   = document.getElementById('statusBox');
@@ -156,13 +160,13 @@ const idInput     = document.getElementById('idnum');
 const fileInput   = document.getElementById('file');
 const btn         = document.getElementById('submit');
 const msgEl       = document.getElementById('msg');
+const adminBtn    = document.getElementById('adminBtn');
 const checkoutBtnTop   = document.getElementById('checkoutBtnTop');
 const checkoutBtnRight = document.getElementById('checkoutBtnRight');
 
 const toastEl = document.getElementById('toast');
 function toast(m, err=false){ toastEl.textContent=m; toastEl.style.display='block'; toastEl.style.borderColor = err?'rgba(255,120,120,.4)':'rgba(141,158,199,.25)'; clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.style.display='none',2200); }
 
-/* ===== Helpers ===== */
 function setMsg(t,kind=''){ msgEl.textContent=t; msgEl.className='muted '+kind; }
 function pill(status){
   const s = (status||'pending').toLowerCase();
@@ -171,11 +175,33 @@ function pill(status){
 }
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
-/* ===== Auth + Approval state ===== */
 let currentUser = null;
 let currentApp  = null;
 let CAN_CHECKOUT = false;
 
+function toggleCheckout(show){
+  CAN_CHECKOUT = !!show;
+  checkoutBtnTop.style.display = show ? 'inline-block' : 'none';
+  checkoutBtnRight.style.display = show ? 'inline-block' : 'none';
+}
+
+/* ===== Admin auto-redirect (your request) ===== */
+async function maybeRedirectAdmin(user){
+  const email = (user?.email||'').toLowerCase();
+  if (ADMIN_EMAILS.includes(email)) {
+    // Optional: also check profile.is_admin, but email is enough per your request
+    location.replace('admin.html');
+    return true;
+  }
+  try{
+    const { data: prof } = await supa.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
+    if (prof?.is_admin) { location.replace('admin.html'); return true; }
+    if (ADMIN_EMAILS.includes(email)) { location.replace('admin.html'); return true; }
+  }catch{}
+  return false;
+}
+
+/* ===== Approval / checkout ===== */
 async function checkCanCheckout(userId){
   let ok = false;
   try{
@@ -186,11 +212,6 @@ async function checkCanCheckout(userId){
   toggleCheckout(ok);
   return ok;
 }
-function toggleCheckout(show){
-  CAN_CHECKOUT = !!show;
-  checkoutBtnTop.style.display = show ? 'inline-block' : 'none';
-  checkoutBtnRight.style.display = show ? 'inline-block' : 'none';
-}
 
 /* ===== Boot ===== */
 async function boot(){
@@ -200,7 +221,16 @@ async function boot(){
   if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
   currentUser = user;
 
-  // Load latest application
+  // Show Admin button if admin; also auto-redirect (per your request)
+  const email = (user.email||'').toLowerCase();
+  if (ADMIN_EMAILS.includes(email)) { adminBtn.style.display='inline-block'; }
+  try{ const { data: prof } = await supa.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
+       if (prof?.is_admin) adminBtn.style.display='inline-block';
+  }catch{}
+
+  if (await maybeRedirectAdmin(user)) return;
+
+  // Load most recent application
   setMsg('Loading your application…');
   const { data: rows, error: e2 } = await supa.from('vet_applications')
     .select('id, identity_number, diploma_path, status, created_at')
@@ -302,7 +332,7 @@ btn.onclick = async () => {
   btn.disabled = false; btn.textContent = 'Update submission';
 };
 
-/* ===== Mini Cart ===== */
+/* ===== Mini Cart / Products / Orders / Reviews (unchanged helpers) ===== */
 const CART_KEY='cart';
 function readCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); } catch { return []; } }
 function writeCart(items){ localStorage.setItem(CART_KEY, JSON.stringify((items||[]).filter(x=>x && x.sku && Number(x.qty)>0))); }
@@ -338,7 +368,6 @@ async function renderMiniCart(){
   });
 }
 
-/* ===== Product Browser (add to cart) ===== */
 const prodSearch = document.getElementById('prodSearch');
 const prodList   = document.getElementById('prodList');
 let PRODUCT_CACHE = [];
@@ -353,7 +382,6 @@ async function loadProducts(){
   PRODUCT_CACHE = (data||[]).filter(p=>p.available && Number(p.stock_qty||0) > 0);
   renderProducts();
 }
-
 function renderProducts(){
   const q = (prodSearch.value||'').toLowerCase().trim();
   const rows = PRODUCT_CACHE.filter(p=>{
@@ -375,7 +403,6 @@ function renderProducts(){
   }).join('');
   prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
 
-  // Add handlers
   prodList.querySelectorAll('button[data-add]').forEach(b=>{
     b.onclick = ()=>{
       const sku = b.dataset.add, name = b.dataset.name;
@@ -390,7 +417,6 @@ function renderProducts(){
     };
   });
 
-  // Request approval handler (sends pending + optional admin email)
   prodList.querySelectorAll('button[data-req]').forEach(b=>{
     b.onclick = async ()=>{
       const sku = b.dataset.req;
@@ -400,20 +426,14 @@ function renderProducts(){
       const { data:{ user } } = await supa.auth.getUser();
       if(!user){ toast('Please sign in first.', true); return; }
 
-      // 1) Insert pending approval
       const ins = await supa.from('vet_product_approvals').insert({
-        user_id: user.id,
-        product_sku: sku,
-        quantity: qty,
-        status: 'pending'
+        user_id: user.id, product_sku: sku, quantity: qty, status: 'pending'
       });
       if (ins.error){ toast(ins.error.message, true); return; }
 
-      // 2) Notify admins (best-effort; requires mail_queue insert policy or Edge Function)
       try {
         const { data: prof } = await supa.from('profiles')
-          .select('email,first_name,last_name')
-          .eq('id', user.id).maybeSingle();
+          .select('email,first_name,last_name').eq('id', user.id).maybeSingle();
 
         const who = [prof?.first_name, prof?.last_name].filter(Boolean).join(' ') || (prof?.email || user.email || 'User');
         const subject = `VetoCos – New product approval request (${sku})`;
@@ -426,7 +446,7 @@ function renderProducts(){
           </ul>
           <p>Open the admin portal → Per-product Approvals to approve or adjust.</p>
         `;
-        const ADMINS = ["Anwar.moumenjamai19@gmail.com"];
+        const ADMINS = ["anwar.moumenjamai19@gmail.com"];
         await supa.from('mail_queue').insert(ADMINS.map(e => ({ to_email: e, subject, html })));
       } catch(_) {}
 
@@ -435,7 +455,6 @@ function renderProducts(){
   });
 }
 
-/* ===== Orders ===== */
 async function renderOrders(){
   const box = document.getElementById('ordersBox');
   const { data:{ user } } = await supa.auth.getUser();
@@ -456,7 +475,6 @@ async function renderOrders(){
   }).join('');
 }
 
-/* ===== Reviews ===== */
 const revSku = document.getElementById('revSku');
 const revRating = document.getElementById('revRating');
 const revComment = document.getElementById('revComment');
