@@ -21,11 +21,6 @@
     .btn[disabled]{opacity:.55;cursor:not-allowed}
     .muted{color:var(--muted)}
     .hidden{display:none}
-    .row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
-    .ok{background:rgba(131,240,165,.12)}
-    .bad{background:rgba(255,180,180,.12)}
-    .pend{background:rgba(109,213,255,.12)}
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap}
     .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
             background:rgba(255,255,255,.05);color:var(--text)}
@@ -33,16 +28,18 @@
                    background:rgba(255,255,255,.05);color:white;text-align:center}
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
            border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
-    #diag{color:var(--muted);font-size:.85rem;white-space:pre-wrap;margin-top:6px}
     label{display:block;font-size:.9rem;color:var(--muted)}
-    input[type="text"], input[type="number"], textarea, input[type="file"]{
+    input[type="text"], input[type="number"], textarea, input[type="file"], select{
       width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
       background:rgba(255,255,255,.05);color:var(--text)
     }
     textarea{min-height:90px;resize:vertical}
-    .switch{display:flex;align-items:center;gap:8px}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
+    .ok{background:rgba(131,240,165,.12)}
+    .bad{background:rgba(255,180,180,.12)}
+    .pend{background:rgba(109,213,255,.12)}
     .mini{font-size:.88rem}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -65,7 +62,6 @@
       <button id="loginBtn" class="btn hidden">Login as Admin</button>
       <button id="logoutBtn" class="btn hidden">Logout</button>
     </div>
-    <div id="diag"></div>
   </div>
 
   <!-- PRODUCTS -->
@@ -93,11 +89,9 @@
           </label>
         </div>
       </div>
-
       <label style="margin-top:10px">Description
-        <textarea id="apDesc" placeholder="Short description shown on product card and details"></textarea>
+        <textarea id="apDesc" placeholder="Short description"></textarea>
       </label>
-
       <div class="grid3" style="margin-top:10px">
         <div>
           <label>Quantity available
@@ -115,12 +109,18 @@
           </label>
         </div>
       </div>
-
-      <div class="switch" style="margin-top:10px">
-        <input id="apAvail" type="checkbox" checked>
-        <label for="apAvail">Available</label>
+      <div class="grid2" style="margin-top:10px">
+        <div>
+          <label>Available
+            <select id="apAvail"><option value="true">Yes</option><option value="false">No</option></select>
+          </label>
+        </div>
+        <div>
+          <label>Requires verification
+            <select id="apReq"><option value="false">No</option><option value="true">Yes</option></select>
+          </label>
+        </div>
       </div>
-
       <div style="display:flex;gap:8px;margin-top:12px">
         <button class="btn" id="apCreate">Create product</button>
         <div id="apMsg" class="muted"></div>
@@ -132,7 +132,52 @@
     <div id="prodList"></div>
   </div>
 
-  <!-- NEWS + REGIONS -->
+  <!-- VET APPLICATIONS -->
+  <div class="card hidden" id="appsWrap">
+    <div class="toolbar">
+      <h2>Vet Applications</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="appsSearch" class="search" placeholder="Search by name / email / ID#">
+        <button class="btn small" id="appsRefresh">Refresh</button>
+      </div>
+    </div>
+    <div id="appsMsg" class="muted"></div>
+    <div id="appsList"></div>
+  </div>
+
+  <!-- PER-PRODUCT APPROVALS -->
+  <div class="card hidden" id="vpaWrap">
+    <div class="toolbar">
+      <h2>Per-product Approvals</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="vpaSearch" class="search" placeholder="Search by email / SKU">
+        <button class="btn small" id="vpaRefresh">Refresh</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin:-4px 0 12px">
+      <h3 style="margin:0 0 10px">Grant / Update approval</h3>
+      <div class="grid3">
+        <label>User email<input id="vpaEmail" type="text" placeholder="user@example.com"></label>
+        <label>Product SKU<input id="vpaSku" type="text" placeholder="SKU123"></label>
+        <label>Approved quantity<input id="vpaQty" type="number" min="0" value="1"></label>
+      </div>
+      <div class="grid2" style="margin-top:10px">
+        <label>Status
+          <select id="vpaStatus"><option value="approved">approved</option><option value="revoked">revoked</option></select>
+        </label>
+        <div style="display:flex;align-items:flex-end;gap:8px">
+          <button class="btn" id="vpaUpsert">Save</button>
+          <div id="vpaMsg" class="muted"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="vpaMsg2" class="muted"></div>
+    <div id="vpaList"></div>
+  </div>
+
+  <!-- NEWS -->
   <div class="card hidden" id="newsWrap">
     <div class="toolbar">
       <h2>News & Regions</h2>
@@ -154,46 +199,31 @@
     <div class="card" style="margin:-4px 0 12px">
       <h3 style="margin:0 0 8px">Create / Update News</h3>
       <div class="grid2">
-        <div>
-          <label>Title<input id="nTitle" type="text" /></label>
-        </div>
+        <div><label>Title<input id="nTitle" type="text" /></label></div>
         <div>
           <label>Region
-            <select id="nRegion" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text)">
-              <option value="Global">Global</option>
-              <option value="Africa">Africa</option>
-              <option value="Europe">Europe</option>
-              <option value="Middle East">Middle East</option>
-              <option value="Americas">Americas</option>
-              <option value="Asia">Asia</option>
+            <select id="nRegion">
+              <option value="Global">Global</option><option>Africa</option><option>Europe</option>
+              <option>Middle East</option><option>Americas</option><option>Asia</option>
             </select>
           </label>
         </div>
       </div>
-      <label>Body
-        <textarea id="nBody" placeholder="Write your announcement… (You can also attach an image and/or PDF)"></textarea>
-      </label>
+      <label>Body<textarea id="nBody" placeholder="Write your announcement…"></textarea></label>
       <div class="grid2" style="margin-top:10px">
-        <div>
-          <label>Image (JPG/PNG)
-            <input id="nImg" type="file" accept=".jpg,.jpeg,.png">
-          </label>
-        </div>
-        <div>
-          <label>Attachment (PDF)
-            <input id="nFile" type="file" accept=".pdf">
-          </label>
-        </div>
+        <div><label>Image (JPG/PNG)<input id="nImg" type="file" accept=".jpg,.jpeg,.png"></label></div>
+        <div><label>Attachment (PDF)<input id="nFile" type="file" accept=".pdf"></label></div>
       </div>
-      <div class="switch" style="margin-top:10px">
-        <input id="nPub" type="checkbox" checked>
-        <label for="nPub">Published</label>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="btn" id="nCreate">Create</button>
-        <button class="btn" id="nUpdate" disabled>Update</button>
-        <button class="btn danger" id="nClear">Clear</button>
-        <div id="nMsg" class="muted"></div>
+      <div class="grid2" style="margin-top:10px">
+        <label>Published
+          <select id="nPub"><option value="true">Yes</option><option value="false">No</option></select>
+        </label>
+        <div style="display:flex;align-items:flex-end;gap:8px">
+          <button class="btn" id="nCreate">Create</button>
+          <button class="btn" id="nUpdate" disabled>Update</button>
+          <button class="btn danger" id="nClear">Clear</button>
+          <div id="nMsg" class="muted"></div>
+        </div>
       </div>
       <input id="nId" type="hidden" />
     </div>
@@ -249,19 +279,17 @@ async function checkAdmin(){
   if (!session?.user){ authMsg.textContent="Not signed in."; loginBtn.classList.remove('hidden'); return false; }
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove('hidden');
-  // Gate by allow-list OR profiles.is_admin
   if (ADMIN_EMAILS.includes(session.user.email)) return true;
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
-  if (!prof?.is_admin){
-    location.replace('index.html');
-    return false;
-  }
+  if (!prof?.is_admin){ location.replace('index.html'); return false; }
   return true;
 }
 
 /* =======================================================================
-   PRODUCTS (CRUD)
-   Table: products(sku text pk, name text, description text, stock_qty int, available bool, image_path text, pdf_path text, updated_at timestamptz)
+   PRODUCTS (CRUD)  — includes requires_verification flag
+   Table: products(sku text pk, name text, description text, stock_qty int,
+          available bool, requires_verification bool default false,
+          image_path text, pdf_path text, updated_at timestamptz)
 ======================================================================= */
 const prodWrap    = document.getElementById('prodWrap');
 const prodSearch  = document.getElementById('prodSearch');
@@ -276,6 +304,7 @@ const apQty  = document.getElementById('apQty');
 const apImg  = document.getElementById('apImg');
 const apPdf  = document.getElementById('apPdf');
 const apAvail= document.getElementById('apAvail');
+const apReq  = document.getElementById('apReq');
 const apCreate=document.getElementById('apCreate');
 const apMsg  = document.getElementById('apMsg');
 
@@ -284,7 +313,7 @@ let PROD_CACHE = [];
 async function loadProducts(){
   prodMsg.textContent = "Loading products…";
   const { data, error } = await supa.from('products')
-    .select('sku,name,description,stock_qty,available,image_path,pdf_path,updated_at')
+    .select('sku,name,description,stock_qty,available,requires_verification,image_path,pdf_path,updated_at')
     .order('name', { ascending:true });
   if (error){ prodMsg.textContent = error.message; return; }
   PROD_CACHE = data || [];
@@ -311,22 +340,18 @@ function renderProducts(){
         </div>
         <div>
           <label>Available<br>
-            <select data-field="available" style="width:100%;padding:8px;border-radius:10px;background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.15)">
-              <option value="true" ${p.available?'selected':''}>Yes</option>
-              <option value="false" ${!p.available?'selected':''}>No</option>
-            </select>
+            <select data-field="available"><option value="true" ${p.available?'selected':''}>Yes</option><option value="false" ${!p.available?'selected':''}>No</option></select>
           </label>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${img}${pdf}
-          <label class="btn small" style="cursor:pointer">
-            Upload image<input type="file" accept=".jpg,.jpeg,.png" data-action="upload-img" class="hidden">
-          </label>
-          <label class="btn small" style="cursor:pointer">
-            Upload PDF<input type="file" accept=".pdf" data-action="upload-pdf" class="hidden">
+        <div>
+          <label>Requires verification<br>
+            <select data-field="requires_verification"><option value="false" ${!p.requires_verification?'selected':''}>No</option><option value="true" ${p.requires_verification?'selected':''}>Yes</option></select>
           </label>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          ${img}${pdf}
+          <label class="btn small" style="cursor:pointer">Upload image<input type="file" accept=".jpg,.jpeg,.png" data-action="upload-img" class="hidden"></label>
+          <label class="btn small" style="cursor:pointer">Upload PDF<input type="file" accept=".pdf" data-action="upload-pdf" class="hidden"></label>
           <button class="btn small" data-action="save">Save</button>
           <button class="btn danger small" data-action="delete">Delete</button>
         </div>
@@ -345,9 +370,9 @@ apCreate.onclick = async ()=>{
   if (!name || !sku){ apMsg.textContent="Enter name and SKU"; apCreate.disabled=false; return; }
   const desc = (apDesc.value||'').trim();
   const qty  = Math.max(0, Number(apQty.value||0)|0);
-  const available = !!apAvail.checked;
+  const available = apAvail.value === 'true';
+  const requires_verification = apReq.value === 'true';
 
-  // Optional uploads
   let image_path=null, pdf_path=null;
   const img = apImg.files[0]||null, pdf = apPdf.files[0]||null;
 
@@ -366,17 +391,16 @@ apCreate.onclick = async ()=>{
     pdf_path = up.data.path;
   }
 
-  const row = { sku, name, description:desc, stock_qty:qty, available, image_path, pdf_path };
+  const row = { sku, name, description:desc, stock_qty:qty, available, requires_verification, image_path, pdf_path };
   const { error } = await supa.from('products').insert(row);
   if (error){ apMsg.textContent = error.message; apCreate.disabled=false; return; }
   apMsg.textContent = "Created.";
   toast('Product created');
-  apName.value=''; apSku.value=''; apDesc.value=''; apQty.value='0'; apImg.value=''; apPdf.value=''; apAvail.checked=true;
+  apName.value=''; apSku.value=''; apDesc.value=''; apQty.value='0'; apImg.value=''; apPdf.value=''; apAvail.value='true'; apReq.value='false';
   apCreate.disabled=false;
   await loadProducts();
 };
 
-// Product list actions
 prodList.addEventListener('click', async (e)=>{
   const card = e.target.closest('.card[data-sku]'); if (!card) return;
   const sku = card.dataset.sku;
@@ -384,26 +408,25 @@ prodList.addEventListener('click', async (e)=>{
   if (e.target.matches('button[data-action="save"]')){
     const qtyEl  = card.querySelector('input[data-field="stock_qty"]');
     const avaEl  = card.querySelector('select[data-field="available"]');
+    const reqEl  = card.querySelector('select[data-field="requires_verification"]');
     const patch = {
       stock_qty: Math.max(0, Number(qtyEl.value||0)|0),
-      available: String(avaEl.value) === 'true'
+      available: avaEl.value === 'true',
+      requires_verification: reqEl.value === 'true'
     };
     const { error } = await supa.from('products').update(patch).eq('sku', sku);
     if (error) return toast(error.message, true);
-    toast('Saved');
-    await loadProducts();
+    toast('Saved'); await loadProducts();
   }
 
   if (e.target.matches('button[data-action="delete"]')){
     if (!confirm(`Delete product ${sku}? This cannot be undone.`)) return;
     const { error } = await supa.from('products').delete().eq('sku', sku);
     if (error) return toast(error.message, true);
-    toast('Deleted');
-    await loadProducts();
+    toast('Deleted'); await loadProducts();
   }
 });
 
-// Uploads inside product row
 prodList.addEventListener('change', async (e)=>{
   const input = e.target;
   const card = input.closest('.card[data-sku]'); if (!card) return;
@@ -415,9 +438,7 @@ prodList.addEventListener('change', async (e)=>{
     const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
     if (up.error){ toast(up.error.message, true); input.value=''; return; }
     await supa.from('products').update({ image_path: up.data.path }).eq('sku', sku);
-    toast('Image uploaded');
-    input.value='';
-    await loadProducts();
+    toast('Image uploaded'); input.value=''; await loadProducts();
   }
   if (input.dataset.action === 'upload-pdf'){
     const f = input.files[0]; if(!f) return;
@@ -426,17 +447,196 @@ prodList.addEventListener('change', async (e)=>{
     const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
     if (up.error){ toast(up.error.message, true); input.value=''; return; }
     await supa.from('products').update({ pdf_path: up.data.path }).eq('sku', sku);
-    toast('PDF uploaded');
-    input.value='';
-    await loadProducts();
+    toast('PDF uploaded'); input.value=''; await loadProducts();
   }
 });
 
 /* =======================================================================
-   NEWS + REGIONS
+   VET APPLICATIONS
    Tables:
-     - news(id bigserial pk, title text, body text, region text, published bool, archived bool, image_path text, file_path text, created_at, updated_at)
-     - site_settings(key text pk, value jsonb) with active_regions
+     - profiles(id uuid pk, email text, first_name text, last_name text, can_purchase bool, is_admin bool)
+     - vet_applications(id, user_id, identity_number, diploma_path, status)
+======================================================================= */
+const appsWrap   = document.getElementById('appsWrap');
+const appsSearch = document.getElementById('appsSearch');
+const appsRefresh= document.getElementById('appsRefresh');
+const appsMsg    = document.getElementById('appsMsg');
+const appsList   = document.getElementById('appsList');
+
+appsSearch.addEventListener('input', renderApps);
+appsRefresh.addEventListener('click', loadApps);
+
+let APP_CACHE = [];
+async function loadApps(){
+  appsMsg.textContent = 'Loading…';
+  const { data, error } = await supa
+    .from('vet_applications')
+    .select('id,user_id,identity_number,diploma_path,status,created_at, profiles:profiles!inner(email,first_name,last_name)')
+    .order('created_at', { ascending:false });
+  if (error){ appsMsg.textContent = error.message; return; }
+  APP_CACHE = data || [];
+  appsMsg.textContent = '';
+  renderApps();
+}
+function renderApps(){
+  const q = (appsSearch.value||'').toLowerCase().trim();
+  appsList.innerHTML = (APP_CACHE.filter(a=>{
+    const name = [(a.profiles?.first_name||''),(a.profiles?.last_name||'')].join(' ').toLowerCase();
+    const email= (a.profiles?.email||'').toLowerCase();
+    const idn  = (a.identity_number||'').toLowerCase();
+    const blob = [name,email,idn].join(' ');
+    return !q || blob.includes(q);
+  }).map(a=>{
+    const full = [a.profiles?.first_name, a.profiles?.last_name].filter(Boolean).join(' ') || '(no name)';
+    const statusPill = a.status==='approved' ? 'ok' : a.status==='rejected' ? 'bad' : 'pend';
+    const diplomaLink = a.diploma_path ? `<a class="btn small" href="${filePublicUrl('Documents', a.diploma_path)}" target="_blank" rel="noopener">Open file</a>` : '';
+    return `<div class="card" data-app="${a.id}" data-user="${a.user_id}">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;align-items:center">
+        <div>
+          <div style="font-weight:600">${full}</div>
+          <div class="muted mini">${a.profiles?.email||''}</div>
+          <div class="muted mini">ID #: ${a.identity_number||'-'}</div>
+          <div class="muted mini">${new Date(a.created_at).toLocaleString()}</div>
+        </div>
+        <div><span class="pill ${statusPill}">${a.status||'pending'}</span></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          ${diplomaLink}
+          <button class="btn small" data-action="approve">Approve</button>
+          <button class="btn danger small" data-action="reject">Reject</button>
+          <button class="btn small" data-action="grant-full">Grant full purchasing</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('')) || '<div class="muted">No applications.</div>';
+}
+
+appsList.addEventListener('click', async (e)=>{
+  const b = e.target.closest('button[data-action]'); if(!b) return;
+  const card = b.closest('[data-app]'); const appId = card.dataset.app; const userId = card.dataset.user;
+  const action = b.dataset.action;
+
+  if(action==='approve'){
+    const { error } = await supa.from('vet_applications').update({ status:'approved' }).eq('id', appId);
+    if (error) return toast(error.message, true);
+    toast('Application approved'); await loadApps();
+  }
+  if(action==='reject'){
+    const { error } = await supa.from('vet_applications').update({ status:'rejected' }).eq('id', appId);
+    if (error) return toast(error.message, true);
+    toast('Application rejected'); await loadApps();
+  }
+  if(action==='grant-full'){
+    const { error } = await supa.from('profiles').update({ can_purchase:true }).eq('id', userId);
+    if (error) return toast(error.message, true);
+    // Mark most recent app as approved for clarity
+    await supa.from('vet_applications').update({ status:'approved' }).eq('id', appId);
+    toast('Full purchasing granted'); await loadApps();
+  }
+});
+
+/* =======================================================================
+   PER-PRODUCT APPROVALS
+   Table: vet_product_approvals(user_id uuid, product_sku text, quantity int, status text)
+======================================================================= */
+const vpaWrap   = document.getElementById('vpaWrap');
+const vpaSearch = document.getElementById('vpaSearch');
+const vpaRefresh= document.getElementById('vpaRefresh');
+const vpaMsg    = document.getElementById('vpaMsg');
+const vpaMsg2   = document.getElementById('vpaMsg2');
+const vpaList   = document.getElementById('vpaList');
+const vpaEmail  = document.getElementById('vpaEmail');
+const vpaSku    = document.getElementById('vpaSku');
+const vpaQty    = document.getElementById('vpaQty');
+const vpaStatus = document.getElementById('vpaStatus');
+const vpaUpsert = document.getElementById('vpaUpsert');
+
+let VPA_CACHE = [];
+
+vpaSearch.addEventListener('input', renderVPA);
+vpaRefresh.addEventListener('click', loadVPA);
+
+vpaUpsert.onclick = async ()=>{
+  vpaMsg.textContent = 'Saving…';
+  const email = (vpaEmail.value||'').trim().toLowerCase();
+  const sku   = (vpaSku.value||'').trim();
+  const qty   = Math.max(0, Number(vpaQty.value||0)|0);
+  const status= vpaStatus.value;
+  if(!email || !sku){ vpaMsg.textContent='Enter email and SKU'; return; }
+
+  const { data: user } = await supa.from('profiles').select('id').eq('email', email).maybeSingle();
+  if (!user?.id){ vpaMsg.textContent='User not found'; return; }
+
+  const payload = { user_id: user.id, product_sku: sku, quantity: qty, status };
+  const { error } = await supa.from('vet_product_approvals')
+    .upsert(payload, { onConflict: 'user_id,product_sku' });
+  if (error){ vpaMsg.textContent = error.message; return; }
+  vpaMsg.textContent = 'Saved';
+  await loadVPA();
+};
+
+async function loadVPA(){
+  vpaMsg2.textContent='Loading…';
+  const { data, error } = await supa
+    .from('vet_product_approvals')
+    .select('user_id,product_sku,quantity,status, profiles:profiles!inner(email,first_name,last_name)')
+    .order('user_id');
+  if (error){ vpaMsg2.textContent = error.message; return; }
+  VPA_CACHE = data || [];
+  vpaMsg2.textContent='';
+  renderVPA();
+}
+function renderVPA(){
+  const q = (vpaSearch.value||'').toLowerCase().trim();
+  vpaList.innerHTML = (VPA_CACHE.filter(r=>{
+    const email = (r.profiles?.email||'').toLowerCase();
+    const sku   = (r.product_sku||'').toLowerCase();
+    return !q || email.includes(q) || sku.includes(q);
+  }).map(r=>{
+    const name = [r.profiles?.first_name, r.profiles?.last_name].filter(Boolean).join(' ');
+    return `<div class="card" data-user="${r.user_id}" data-sku="${r.product_sku}">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;align-items:center">
+        <div>
+          <div style="font-weight:600">${name || '(no name)'}</div>
+          <div class="muted mini">${r.profiles?.email||''}</div>
+          <div class="muted mini">SKU: ${r.product_sku}</div>
+        </div>
+        <div><label>Quantity<br><input class="qty-edit" type="number" min="0" value="${Number(r.quantity||0)}"></label></div>
+        <div><label>Status<br>
+          <select>
+            <option value="approved" ${r.status==='approved'?'selected':''}>approved</option>
+            <option value="revoked"  ${r.status==='revoked'?'selected':''}>revoked</option>
+          </select>
+        </label></div>
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn small" data-action="save">Save</button>
+          <button class="btn danger small" data-action="delete">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('')) || '<div class="muted">No approvals.</div>';
+}
+vpaList.addEventListener('click', async (e)=>{
+  const b = e.target.closest('button[data-action]'); if(!b) return;
+  const card = b.closest('[data-user][data-sku]');
+  const user_id = card.dataset.user, product_sku = card.dataset.sku;
+
+  if (b.dataset.action==='save'){
+    const qty = Math.max(0, Number(card.querySelector('input[type="number"]').value||0)|0);
+    const status = card.querySelector('select').value;
+    const { error } = await supa.from('vet_product_approvals').upsert({ user_id, product_sku, quantity:qty, status }, { onConflict:'user_id,product_sku' });
+    if (error) return toast(error.message, true);
+    toast('Saved'); await loadVPA();
+  }
+  if (b.dataset.action==='delete'){
+    if(!confirm('Delete this approval?')) return;
+    const { error } = await supa.from('vet_product_approvals').delete().eq('user_id', user_id).eq('product_sku', product_sku);
+    if (error) return toast(error.message, true);
+    toast('Deleted'); await loadVPA();
+  }
+});
+
+/* =======================================================================
+   NEWS + REGIONS  (unchanged from previous answer, uses public.news & site_settings)
 ======================================================================= */
 const newsWrap   = document.getElementById('newsWrap');
 const newsMsg    = document.getElementById('newsMsg');
@@ -462,10 +662,8 @@ const regMsg        = document.getElementById('regMsg');
 async function ensureSettings(){
   try{
     const { data } = await supa.from('site_settings').select('key').eq('key','active_regions').maybeSingle();
-    if(!data){
-      await supa.from('site_settings').insert({ key:'active_regions', value: JSON.stringify(["Global"]) });
-    }
-  }catch(e){ /* ignore */ }
+    if(!data){ await supa.from('site_settings').insert({ key:'active_regions', value: JSON.stringify(["Global"]) }); }
+  }catch{}
 }
 async function loadRegions(){
   await ensureSettings();
@@ -474,15 +672,14 @@ async function loadRegions(){
   const all = ["Global","Africa","Europe","Middle East","Americas","Asia"];
   regionToggles.innerHTML = all.map(r=>{
     const on = active.includes(r);
-    return `<label class="switch"><input type="checkbox" class="reg" value="${r}" ${on?'checked':''}/> ${r}</label>`;
+    return `<label style="display:flex;align-items:center;gap:8px"><input type="checkbox" class="reg" value="${r}" ${on?'checked':''}/> ${r}</label>`;
   }).join(' ');
 }
 saveRegions.onclick = async ()=>{
   const chosen = [...regionToggles.querySelectorAll('input.reg:checked')].map(i=>i.value);
   const { error } = await supa.from('site_settings').upsert({ key:'active_regions', value: chosen }, { onConflict:'key' });
   if (error){ regMsg.textContent = error.message; return; }
-  regMsg.textContent = "Saved.";
-  setTimeout(()=> regMsg.textContent = "", 1500);
+  regMsg.textContent = "Saved."; setTimeout(()=> regMsg.textContent = "", 1500);
 };
 
 async function loadNews(){
@@ -517,47 +714,32 @@ async function loadNews(){
 }
 
 newsList.addEventListener('click', async (e)=>{
-  const b = e.target.closest('button[data-action]');
-  if(!b) return;
+  const b = e.target.closest('button[data-action]'); if(!b) return;
   const { action, id } = b.dataset;
-
   if(action==='edit'){
     const { data } = await supa.from('news').select('*').eq('id', id).maybeSingle();
     if (!data) return;
-    nId.value = data.id;
-    nTitle.value = data.title||'';
-    nBody.value  = data.body||'';
-    nRegion.value= data.region||'Global';
-    nPub.checked = !!data.published;
-    nUpdate.disabled = false;
-    nCreate.disabled = true;
-    nMsg.textContent = 'Loaded for editing.';
-  }
-
-  if (action==='toggle-archive'){
+    nId.value = data.id; nTitle.value = data.title||''; nBody.value  = data.body||'';
+    nRegion.value= data.region||'Global'; nPub.value = data.published ? 'true' : 'false';
+    nUpdate.disabled = false; nCreate.disabled = true; nMsg.textContent = 'Loaded for editing.';
+  } else if (action==='toggle-archive'){
     const { data: row } = await supa.from('news').select('archived').eq('id', id).maybeSingle();
     const next = !row?.archived;
     const { error } = await supa.from('news').update({ archived: next }).eq('id', id);
     if (error) return toast(error.message, true);
-    toast(next ? 'Archived' : 'Unarchived');
-    await loadNews();
-  }
-
-  if (action==='delete'){
-    if(!confirm('Permanently delete this news item? This cannot be undone.')) return;
+    toast(next ? 'Archived' : 'Unarchived'); await loadNews();
+  } else if (action==='delete'){
+    if(!confirm('Permanently delete this news item?')) return;
     const { error } = await supa.from('news').delete().eq('id', id);
     if (error) return toast(error.message, true);
-    toast('Deleted');
-    await loadNews();
-    clearNewsForm();
+    toast('Deleted'); await loadNews(); clearNewsForm();
   }
 });
 
 function clearNewsForm(){
-  nId.value=""; nTitle.value=""; nBody.value=""; nRegion.value="Global"; nPub.checked=true;
+  nId.value=""; nTitle.value=""; nBody.value=""; nRegion.value="Global"; nPub.value='true';
   nImg.value=""; nFile.value="";
-  nCreate.disabled=false; nUpdate.disabled=true;
-  nMsg.textContent="";
+  nCreate.disabled=false; nUpdate.disabled=true; nMsg.textContent="";
 }
 nClear.onclick = clearNewsForm;
 
@@ -583,7 +765,7 @@ nCreate.onclick = async ()=>{
     title: (nTitle.value||'').trim(),
     body:  (nBody.value||'').trim(),
     region: nRegion.value||'Global',
-    published: !!nPub.checked,
+    published: nPub.value==='true',
     archived: false,
     image_path, file_path
   };
@@ -591,9 +773,7 @@ nCreate.onclick = async ()=>{
 
   const { error } = await supa.from('news').insert(row);
   if (error){ nMsg.textContent = error.message; nCreate.disabled=false; return; }
-  nMsg.textContent = "Created.";
-  toast('News created');
-  clearNewsForm(); await loadNews();
+  nMsg.textContent = "Created."; toast('News created'); clearNewsForm(); await loadNews();
 };
 
 nUpdate.onclick = async ()=>{
@@ -619,25 +799,24 @@ nUpdate.onclick = async ()=>{
     title: (nTitle.value||'').trim(),
     body:  (nBody.value||'').trim(),
     region: nRegion.value||'Global',
-    published: !!nPub.checked
+    published: nPub.value==='true'
   };
   if (image_path) patch.image_path = image_path;
   if (file_path)  patch.file_path  = file_path;
 
   const { error } = await supa.from('news').update(patch).eq('id', id);
   if (error){ nMsg.textContent = error.message; nUpdate.disabled=false; return; }
-  nMsg.textContent = "Updated.";
-  toast('News updated');
-  nUpdate.disabled=false;
-  await loadNews();
+  nMsg.textContent = "Updated."; toast('News updated'); nUpdate.disabled=false; await loadNews();
 };
 
 /* ================= Boot ================= */
 document.addEventListener('DOMContentLoaded', async ()=>{
   const ok = await checkAdmin();
   if (!ok) return;
-  ["prodWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
+  ["prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
   await loadProducts();
+  await loadApps();
+  await loadVPA();
   await loadRegions();
   await loadNews();
   newsRefresh.onclick = ()=> loadNews();
@@ -646,4 +825,3 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 </script>
 </body>
 </html>
-
