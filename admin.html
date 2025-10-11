@@ -194,7 +194,7 @@
     <!-- Regions -->
     <div class="card" style="margin:-4px 0 12px">
       <h3 style="margin:0 0 8px">Active Regions</h3>
-      <p class="muted mini" style="margin:0 0 8px">Enable which regions are visible to users (e.g., keep only “Global / Worldwide” enabled).</p>
+      <p class="muted mini" style="margin:0 0 8px">Enable which regions are visible to users.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap" id="regionToggles"></div>
       <div style="margin-top:8px"><button id="saveRegions" class="btn small">Save regions</button> <span id="regMsg" class="muted"></span></div>
     </div>
@@ -251,7 +251,7 @@ const supa = supabase.createClient(
 /* ================= Config ================= */
 const PRODUCT_BUCKET = "ProductFiles";
 const NEWS_BUCKET    = "NewsFiles";
-const ADMIN_EMAILS   = ["Anwar.moumenjamai19@gmail.com"];
+const ADMIN_EMAILS   = ["anwar.moumenjamai19@gmail.com"];
 
 /* ================= Helpers/UI ================= */
 const toastEl  = document.getElementById("toast");
@@ -283,14 +283,16 @@ async function checkAdmin(){
   if (!session?.user){ authMsg.textContent="Not signed in."; loginBtn.classList.remove('hidden'); return false; }
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove('hidden');
-  if (ADMIN_EMAILS.includes(session.user.email)) return true;
+
+  // Email allowlist OR profile.is_admin
+  if (ADMIN_EMAILS.includes((session.user.email||'').toLowerCase())) return true;
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){ location.replace('index.html'); return false; }
   return true;
 }
 
 /* =======================================================================
-   PRODUCTS (CRUD) — requires_verification supported
+   PRODUCTS (CRUD)
 ======================================================================= */
 const prodWrap    = document.getElementById('prodWrap');
 const prodSearch  = document.getElementById('prodSearch');
@@ -453,7 +455,7 @@ prodList.addEventListener('change', async (e)=>{
 });
 
 /* =======================================================================
-   VET APPLICATIONS
+   VET APPLICATIONS — uses explicit FK name
 ======================================================================= */
 const appsWrap   = document.getElementById('appsWrap');
 const appsSearch = document.getElementById('appsSearch');
@@ -469,7 +471,10 @@ async function loadApps(){
   appsMsg.textContent = 'Loading…';
   const { data, error } = await supa
     .from('vet_applications')
-    .select('id,user_id,identity_number,diploma_path,status,created_at, profiles:profiles!inner(email,first_name,last_name)')
+    .select(`
+      id,user_id,identity_number,diploma_path,status,created_at,
+      profiles:profiles!vet_applications_user_id_fkey(email,first_name,last_name)
+    `)
     .order('created_at', { ascending:false });
   if (error){ appsMsg.textContent = error.message; return; }
   APP_CACHE = data || [];
@@ -532,7 +537,7 @@ appsList.addEventListener('click', async (e)=>{
 });
 
 /* =======================================================================
-   PER-PRODUCT APPROVALS (pending/approved/revoked)
+   PER-PRODUCT APPROVALS — join with explicit FK too (via user_id)
 ======================================================================= */
 const vpaWrap   = document.getElementById('vpaWrap');
 const vpaSearch = document.getElementById('vpaSearch');
@@ -574,7 +579,10 @@ async function loadVPA(){
   vpaMsg2.textContent='Loading…';
   const { data, error } = await supa
     .from('vet_product_approvals')
-    .select('user_id,product_sku,quantity,status, profiles:profiles!inner(email,first_name,last_name)')
+    .select(`
+      user_id,product_sku,quantity,status,
+      profiles:profiles!inner(id,email,first_name,last_name)
+    `)
     .order('status', { ascending: true })
     .order('product_sku', { ascending: true });
   if (error){ vpaMsg2.textContent = error.message; return; }
