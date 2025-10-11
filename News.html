@@ -1,279 +1,648 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>VetoCos | News</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="VetoCos news and updates.">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="utf-8"/>
+  <title>VetoCos | Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.25)}
+    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px}
     *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif;line-height:1.6}
-    a{text-decoration:none;color:inherit}
-    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
-
-    /* Header */
-    header.site{position:sticky;top:0;z-index:50;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
-    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-    .brand{display:flex;align-items:center;gap:12px;font-weight:700}
-    .brand-logo{width:60px;height:auto;display:block;filter: drop-shadow(0 6px 12px rgba(0,0,0,.35))}
-    .links{display:flex;gap:12px;align-items:center}
-    .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
-    .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
-    .contact-btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
-    .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
-    @media(max-width:900px){
-      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:240px}
-      .links.open{display:flex}
-      .hamb{display:block}
-    }
-
-    /* Account menu */
-    .acct{position:relative;display:inline-flex;align-items:center;gap:8px}
-    .avatar{width:28px;height:28px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:inline-block;border:1px solid rgba(141,158,199,.3)}
-    .menu{position:absolute;top:42px;right:0;background:rgba(16,24,53,.98);border:1px solid rgba(141,158,199,.2);border-radius:12px;min-width:240px;display:none;box-shadow:var(--shadow)}
-    .menu.open{display:block}
-    .menu a,.menu button{display:block;width:100%;text-align:left;padding:10px 12px;background:transparent;border:0;color:var(--text);cursor:pointer}
-    .menu a:hover,.menu button:hover{background:rgba(141,158,199,.15)}
-    .menu .muted{font-size:12px}
+    body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
+    main{max-width:1120px;margin:40px auto;padding:0 18px}
+    h1,h2{margin:0 0 14px}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+         background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));
+         color:var(--text);font-weight:600;cursor:pointer}
+    .btn.small{padding:6px 10px;font-size:.9rem}
+    .btn.danger{background:linear-gradient(135deg,rgba(255,120,120,.18),rgba(255,80,80,.16))}
+    .btn[disabled]{opacity:.55;cursor:not-allowed}
     .muted{color:var(--muted)}
-
-    /* Page header */
-    .hero{padding:36px 0 18px}
-    h1{font-size:clamp(28px,5vw,42px);margin:0}
-    .lead{color:var(--muted);margin-top:6px}
-
-    /* News list */
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0 28px}
-    @media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:680px){.grid{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
-    .thumb{width:100%;height:170px;object-fit:cover;background:#0d1330}
-    .px{padding:12px}
-    .title{margin:.2rem 0 .1rem}
-    .meta{font-size:12px;color:var(--muted)}
-    .btn{display:inline-block;margin-top:8px;padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
-    .btn.ghost{background:transparent}
-    .empty{color:var(--muted);text-align:center;padding:28px;border:1px dashed rgba(141,158,199,.25);border-radius:12px}
-
-    /* Modal */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
-    .modal.open{display:flex}
-    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
-    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
-    .sheet-title{margin:0;font-size:1.1rem}
-    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
-    .sheet-body{padding:16px}
+    .hidden{display:none}
+    .row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
+    .ok{background:rgba(131,240,165,.12)}
+    .bad{background:rgba(255,180,180,.12)}
+    .pend{background:rgba(109,213,255,.12)}
+    .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+    .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+            background:rgba(255,255,255,.05);color:var(--text)}
+    input.qty-edit{width:84px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.15);
+                   background:rgba(255,255,255,.05);color:white;text-align:center}
+    #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
+           border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
+    #diag{color:var(--muted);font-size:.85rem;white-space:pre-wrap;margin-top:6px}
+    label{display:block;font-size:.9rem;color:var(--muted)}
+    input[type="text"], input[type="number"], textarea, input[type="file"]{
+      width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+      background:rgba(255,255,255,.05);color:var(--text)
+    }
+    textarea{min-height:90px;resize:vertical}
+    .switch{display:flex;align-items:center;gap:8px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .mini{font-size:.88rem}
   </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<header class="site">
-  <div class="wrap nav">
-    <div class="brand">
-      <a href="index.html" aria-label="VetoCos home">
-        <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
-      </a>
-      <span>VetoCos</span>
+<main>
+  <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+    <h1 style="margin:0">Admin</h1>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn small" href="Products.html" target="_blank" rel="noopener">Open Products</a>
+      <a class="btn small" href="news.html" target="_blank" rel="noopener">Open News</a>
+      <a class="btn small" href="index.html">Home</a>
     </div>
-    <nav class="links" id="navlinks">
-      <a href="index.html">Home</a>
-      <a href="Products.html">Products</a>
-      <a href="World Wide.html">World Wide</a>
-      <a class="active" href="News.html">News</a>
+  </div>
 
-      <button class="contact-btn" type="button" onclick="openContact()">Contact</button>
+  <!-- Auth gate -->
+  <div class="card" id="authGate">
+    <div id="authMsg" class="muted">Checking session…</div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button id="loginBtn" class="btn hidden">Login as Admin</button>
+      <button id="logoutBtn" class="btn hidden">Logout</button>
+    </div>
+    <div id="diag"></div>
+  </div>
 
-      <a class="contact-btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
+  <!-- PRODUCTS -->
+  <div class="card hidden" id="prodWrap">
+    <div class="toolbar">
+      <h2>Products</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="prodSearch" class="search" placeholder="Search by name / SKU">
+        <button class="btn small" id="prodRefresh">Refresh</button>
+      </div>
+    </div>
 
-      <button class="contact-btn" id="signInBtn" type="button">Sign in</button>
-      <button class="contact-btn" id="signUpBtn" type="button">Sign up</button>
-
-      <div class="acct" id="acctBlock" style="display:none">
-        <button class="contact-btn" id="accountBtn" type="button">
-          <span class="avatar" aria-hidden="true"></span>
-          <span id="helloName" class="muted" style="font-size:.9rem"></span>
-        </button>
-        <div class="menu" id="accountMenu" role="menu" aria-hidden="true">
-          <div id="accountHeader" class="muted" style="padding:8px 12px; border-bottom:1px solid rgba(141,158,199,.12)"></div>
-          <a href="account.html" role="menuitem">Account settings</a>
-          <a href="my-order.html" role="menuitem">My orders</a>
-          <a href="cart.html" role="menuitem">Cart</a>
-          <a href="checkout.html" role="menuitem">Checkout</a>
-          <a href="vet-verify.html" role="menuitem">Vet verification</a>
-          <button type="button" role="menuitem" id="logoutBtn">Sign out</button>
+    <!-- Add -->
+    <div class="card" style="margin:-4px 0 12px">
+      <h3 style="margin:0 0 10px">Add new product</h3>
+      <div class="grid2">
+        <div>
+          <label>Product name
+            <input id="apName" type="text" placeholder="e.g., Urocline Chien">
+          </label>
+        </div>
+        <div>
+          <label>SKU
+            <input id="apSku" type="text" placeholder="e.g., URO-CHIEN">
+          </label>
         </div>
       </div>
-    </nav>
-    <button class="hamb" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
-  </div>
-</header>
 
-<main class="wrap">
-  <div class="hero">
-    <h1>News & Updates</h1>
-    <p class="lead">Official announcements, product updates, and events from VetoCos.</p>
+      <label style="margin-top:10px">Description
+        <textarea id="apDesc" placeholder="Short description shown on product card and details"></textarea>
+      </label>
+
+      <div class="grid3" style="margin-top:10px">
+        <div>
+          <label>Quantity available
+            <input id="apQty" type="number" min="0" value="0">
+          </label>
+        </div>
+        <div>
+          <label>Product image (JPG/PNG)
+            <input id="apImg" type="file" accept=".jpg,.jpeg,.png">
+          </label>
+        </div>
+        <div>
+          <label>Product PDF
+            <input id="apPdf" type="file" accept=".pdf">
+          </label>
+        </div>
+      </div>
+
+      <div class="switch" style="margin-top:10px">
+        <input id="apAvail" type="checkbox" checked>
+        <label for="apAvail">Available</label>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn" id="apCreate">Create product</button>
+        <div id="apMsg" class="muted"></div>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div id="prodMsg" class="muted"></div>
+    <div id="prodList"></div>
   </div>
 
-  <div id="newsGrid" class="grid"></div>
-  <div id="newsEmpty" class="empty" style="display:none">No news yet.</div>
+  <!-- NEWS + REGIONS -->
+  <div class="card hidden" id="newsWrap">
+    <div class="toolbar">
+      <h2>News & Regions</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn small" id="newsRefresh">Refresh</button>
+        <a class="btn small" href="news.html" target="_blank" rel="noopener">Open public news</a>
+      </div>
+    </div>
+
+    <!-- Regions -->
+    <div class="card" style="margin:-4px 0 12px">
+      <h3 style="margin:0 0 8px">Active Regions</h3>
+      <p class="muted mini" style="margin:0 0 8px">Enable which regions are visible to users (e.g., keep only “Global / Worldwide” enabled).</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap" id="regionToggles"></div>
+      <div style="margin-top:8px"><button id="saveRegions" class="btn small">Save regions</button> <span id="regMsg" class="muted"></span></div>
+    </div>
+
+    <!-- Create/Update -->
+    <div class="card" style="margin:-4px 0 12px">
+      <h3 style="margin:0 0 8px">Create / Update News</h3>
+      <div class="grid2">
+        <div>
+          <label>Title<input id="nTitle" type="text" /></label>
+        </div>
+        <div>
+          <label>Region
+            <select id="nRegion" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text)">
+              <option value="Global">Global</option>
+              <option value="Africa">Africa</option>
+              <option value="Europe">Europe</option>
+              <option value="Middle East">Middle East</option>
+              <option value="Americas">Americas</option>
+              <option value="Asia">Asia</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <label>Body
+        <textarea id="nBody" placeholder="Write your announcement… (You can also attach an image and/or PDF)"></textarea>
+      </label>
+      <div class="grid2" style="margin-top:10px">
+        <div>
+          <label>Image (JPG/PNG)
+            <input id="nImg" type="file" accept=".jpg,.jpeg,.png">
+          </label>
+        </div>
+        <div>
+          <label>Attachment (PDF)
+            <input id="nFile" type="file" accept=".pdf">
+          </label>
+        </div>
+      </div>
+      <div class="switch" style="margin-top:10px">
+        <input id="nPub" type="checkbox" checked>
+        <label for="nPub">Published</label>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn" id="nCreate">Create</button>
+        <button class="btn" id="nUpdate" disabled>Update</button>
+        <button class="btn danger" id="nClear">Clear</button>
+        <div id="nMsg" class="muted"></div>
+      </div>
+      <input id="nId" type="hidden" />
+    </div>
+
+    <!-- List -->
+    <div id="newsMsg" class="muted"></div>
+    <div id="newsList"></div>
+  </div>
 </main>
 
-<footer class="wrap" style="padding:24px 0;color:var(--muted)">
-  © <span id="y"></span> VetoCos
-</footer>
-
-<!-- News modal -->
-<div id="newsModal" class="modal" aria-hidden="true">
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="newsTitle">
-    <div class="sheet-head">
-      <h2 id="newsTitle" class="sheet-title">News</h2>
-      <button class="close" type="button" onclick="closeNews()">Close</button>
-    </div>
-    <div class="sheet-body">
-      <img id="newsCover" class="thumb" alt="" style="height:240px;border-radius:12px;border:1px solid rgba(141,158,199,.18);object-fit:cover;display:none;margin-bottom:10px">
-      <div class="muted" id="newsDate"></div>
-      <p id="newsBody" style="white-space:pre-wrap;margin-top:10px"></p>
-      <div id="newsAttachBox" style="margin-top:10px"></div>
-    </div>
-  </div>
-</div>
+<div id="toast"></div>
 
 <script>
-  function openContact() {}
-  function closeNews(){ document.getElementById('newsModal').classList.remove('open'); document.getElementById('newsModal').setAttribute('aria-hidden','true'); }
-  document.getElementById('newsModal').addEventListener('click', (e)=>{ if(e.target.id==='newsModal'){ closeNews(); } });
-  document.getElementById('y').textContent = new Date().getFullYear();
-</script>
+/* ================= Supabase client ================= */
+const supa = supabase.createClient(
+  "https://qdepgviimbcdlozjpbhm.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+  { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
+);
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-  const supa = supabase.createClient(
-    "https://qdepgviimbcdlozjpbhm.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
-    { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
-  );
-  const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
+/* ================= Config ================= */
+const PRODUCT_BUCKET = "ProductFiles";   // public bucket for product images/pdfs
+const NEWS_BUCKET    = "NewsFiles";      // public bucket for news images/pdfs
+const ADMIN_EMAILS   = ["Anwar.moumenjamai19@gmail.com"]; // optional allow-list
 
-  // Header wiring (same pattern as Products)
-  const signInBtn  = document.getElementById('signInBtn');
-  const signUpBtn  = document.getElementById('signUpBtn');
-  const acctBlock  = document.getElementById('acctBlock');
-  const accountBtn = document.getElementById('accountBtn');
-  const accountMenu= document.getElementById('accountMenu');
-  const accountHeader=document.getElementById('accountHeader');
-  const helloName  = document.getElementById('helloName');
-  const adminBtn   = document.getElementById('adminBtn');
-  const logoutBtn  = document.getElementById('logoutBtn');
+/* ================= Helpers/UI ================= */
+const toastEl  = document.getElementById("toast");
+function toast(msg, isErr=false){
+  toastEl.textContent = msg;
+  toastEl.style.display = "block";
+  toastEl.style.borderColor = isErr ? "rgba(255,120,120,.4)" : "rgba(141,158,199,.25)";
+  clearTimeout(toast._t); toast._t = setTimeout(()=> toastEl.style.display="none", 2200);
+}
+function filePublicUrl(bucket, path){
+  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${bucket}/${encodeURI(String(path||'').replace(new RegExp('^'+bucket+'/'),''))}`;
+}
 
-  signInBtn.addEventListener('click', ()=>{ location.href='login.html?redirect='+encodeURIComponent('News.html'); });
-  signUpBtn.addEventListener('click', ()=>{ location.href='signup.html?redirect='+encodeURIComponent('News.html'); });
+/* ================= Auth Gate ================= */
+const authMsg  = document.getElementById("authMsg");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn= document.getElementById("logoutBtn");
+loginBtn.onclick = () => {
+  const u = new URL("login.html", location.href);
+  u.searchParams.set("redirect", "admin.html");
+  u.searchParams.set("force", "1");
+  location.href = u.toString();
+};
+logoutBtn.onclick = async () => { await supa.auth.signOut(); location.href='index.html'; };
 
-  accountBtn.addEventListener('click', ()=>{
-    const open = accountMenu.classList.toggle('open');
-    accountMenu.setAttribute('aria-hidden', open ? 'false':'true');
-    if (open){
-      const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
-      setTimeout(()=>document.addEventListener('click', onDoc),0);
+async function checkAdmin(){
+  authMsg.textContent = "Checking session…";
+  const { data:{ session } } = await supa.auth.getSession();
+  if (!session?.user){ authMsg.textContent="Not signed in."; loginBtn.classList.remove('hidden'); return false; }
+  authMsg.textContent = `Signed in as ${session.user.email}`;
+  logoutBtn.classList.remove('hidden');
+  // Gate by allow-list OR profiles.is_admin
+  if (ADMIN_EMAILS.includes(session.user.email)) return true;
+  const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
+  if (!prof?.is_admin){
+    location.replace('index.html');
+    return false;
+  }
+  return true;
+}
+
+/* =======================================================================
+   PRODUCTS (CRUD)
+   Table: products(sku text pk, name text, description text, stock_qty int, available bool, image_path text, pdf_path text, updated_at timestamptz)
+======================================================================= */
+const prodWrap    = document.getElementById('prodWrap');
+const prodSearch  = document.getElementById('prodSearch');
+const prodRefresh = document.getElementById('prodRefresh');
+const prodMsg     = document.getElementById('prodMsg');
+const prodList    = document.getElementById('prodList');
+
+const apName = document.getElementById('apName');
+const apSku  = document.getElementById('apSku');
+const apDesc = document.getElementById('apDesc');
+const apQty  = document.getElementById('apQty');
+const apImg  = document.getElementById('apImg');
+const apPdf  = document.getElementById('apPdf');
+const apAvail= document.getElementById('apAvail');
+const apCreate=document.getElementById('apCreate');
+const apMsg  = document.getElementById('apMsg');
+
+let PROD_CACHE = [];
+
+async function loadProducts(){
+  prodMsg.textContent = "Loading products…";
+  const { data, error } = await supa.from('products')
+    .select('sku,name,description,stock_qty,available,image_path,pdf_path,updated_at')
+    .order('name', { ascending:true });
+  if (error){ prodMsg.textContent = error.message; return; }
+  PROD_CACHE = data || [];
+  renderProducts();
+  prodMsg.textContent = "";
+}
+function renderProducts(){
+  const q = (prodSearch.value||'').toLowerCase().trim();
+  const rows = PROD_CACHE.filter(p=>{
+    if (!q) return true;
+    return (p.sku||'').toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q);
+  }).map(p=>{
+    const img = p.image_path ? `<a class="btn small" href="${filePublicUrl(PRODUCT_BUCKET, p.image_path)}" target="_blank" rel="noopener">Image</a>` : '';
+    const pdf = p.pdf_path   ? `<a class="btn small" href="${filePublicUrl(PRODUCT_BUCKET, p.pdf_path)}" target="_blank" rel="noopener">PDF</a>` : '';
+    return `<div class="card" data-sku="${p.sku}">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;align-items:center">
+        <div>
+          <div style="font-weight:600">${p.name} <span class="muted mini">(${p.sku})</span></div>
+          <div class="muted mini" style="max-height:3.5em;overflow:auto">${p.description||''}</div>
+          <div class="muted mini">${p.updated_at?('Updated: '+new Date(p.updated_at).toLocaleString()):''}</div>
+        </div>
+        <div>
+          <label>Qty<br><input class="qty-edit" type="number" min="0" value="${Number(p.stock_qty||0)}" data-field="stock_qty"></label>
+        </div>
+        <div>
+          <label>Available<br>
+            <select data-field="available" style="width:100%;padding:8px;border-radius:10px;background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.15)">
+              <option value="true" ${p.available?'selected':''}>Yes</option>
+              <option value="false" ${!p.available?'selected':''}>No</option>
+            </select>
+          </label>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${img}${pdf}
+          <label class="btn small" style="cursor:pointer">
+            Upload image<input type="file" accept=".jpg,.jpeg,.png" data-action="upload-img" class="hidden">
+          </label>
+          <label class="btn small" style="cursor:pointer">
+            Upload PDF<input type="file" accept=".pdf" data-action="upload-pdf" class="hidden">
+          </label>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="btn small" data-action="save">Save</button>
+          <button class="btn danger small" data-action="delete">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
+}
+prodSearch.addEventListener('input', renderProducts);
+prodRefresh.addEventListener('click', loadProducts);
+
+apCreate.onclick = async ()=>{
+  apMsg.textContent = "Creating…"; apCreate.disabled=true;
+  const name = (apName.value||'').trim();
+  const sku  = (apSku.value||'').trim();
+  if (!name || !sku){ apMsg.textContent="Enter name and SKU"; apCreate.disabled=false; return; }
+  const desc = (apDesc.value||'').trim();
+  const qty  = Math.max(0, Number(apQty.value||0)|0);
+  const available = !!apAvail.checked;
+
+  // Optional uploads
+  let image_path=null, pdf_path=null;
+  const img = apImg.files[0]||null, pdf = apPdf.files[0]||null;
+
+  if (img){
+    if (!['image/jpeg','image/png'].includes(img.type)){ apMsg.textContent='Image must be JPG/PNG'; apCreate.disabled=false; return; }
+    const p = `img/${Date.now()}_${img.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, img, { upsert:false, cacheControl:'3600', contentType: img.type });
+    if (up.error){ apMsg.textContent = up.error.message; apCreate.disabled=false; return; }
+    image_path = up.data.path;
+  }
+  if (pdf){
+    if (pdf.type !== 'application/pdf'){ apMsg.textContent='Attachment must be PDF'; apCreate.disabled=false; return; }
+    const p = `files/${Date.now()}_${pdf.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, pdf, { upsert:false, cacheControl:'3600', contentType: pdf.type });
+    if (up.error){ apMsg.textContent = up.error.message; apCreate.disabled=false; return; }
+    pdf_path = up.data.path;
+  }
+
+  const row = { sku, name, description:desc, stock_qty:qty, available, image_path, pdf_path };
+  const { error } = await supa.from('products').insert(row);
+  if (error){ apMsg.textContent = error.message; apCreate.disabled=false; return; }
+  apMsg.textContent = "Created.";
+  toast('Product created');
+  apName.value=''; apSku.value=''; apDesc.value=''; apQty.value='0'; apImg.value=''; apPdf.value=''; apAvail.checked=true;
+  apCreate.disabled=false;
+  await loadProducts();
+};
+
+// Product list actions
+prodList.addEventListener('click', async (e)=>{
+  const card = e.target.closest('.card[data-sku]'); if (!card) return;
+  const sku = card.dataset.sku;
+
+  if (e.target.matches('button[data-action="save"]')){
+    const qtyEl  = card.querySelector('input[data-field="stock_qty"]');
+    const avaEl  = card.querySelector('select[data-field="available"]');
+    const patch = {
+      stock_qty: Math.max(0, Number(qtyEl.value||0)|0),
+      available: String(avaEl.value) === 'true'
+    };
+    const { error } = await supa.from('products').update(patch).eq('sku', sku);
+    if (error) return toast(error.message, true);
+    toast('Saved');
+    await loadProducts();
+  }
+
+  if (e.target.matches('button[data-action="delete"]')){
+    if (!confirm(`Delete product ${sku}? This cannot be undone.`)) return;
+    const { error } = await supa.from('products').delete().eq('sku', sku);
+    if (error) return toast(error.message, true);
+    toast('Deleted');
+    await loadProducts();
+  }
+});
+
+// Uploads inside product row
+prodList.addEventListener('change', async (e)=>{
+  const input = e.target;
+  const card = input.closest('.card[data-sku]'); if (!card) return;
+  const sku = card.dataset.sku;
+  if (input.dataset.action === 'upload-img'){
+    const f = input.files[0]; if(!f) return;
+    if (!['image/jpeg','image/png'].includes(f.type)){ toast('Image must be JPG/PNG', true); input.value=''; return; }
+    const p = `img/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
+    if (up.error){ toast(up.error.message, true); input.value=''; return; }
+    await supa.from('products').update({ image_path: up.data.path }).eq('sku', sku);
+    toast('Image uploaded');
+    input.value='';
+    await loadProducts();
+  }
+  if (input.dataset.action === 'upload-pdf'){
+    const f = input.files[0]; if(!f) return;
+    if (f.type !== 'application/pdf'){ toast('Attachment must be PDF', true); input.value=''; return; }
+    const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
+    if (up.error){ toast(up.error.message, true); input.value=''; return; }
+    await supa.from('products').update({ pdf_path: up.data.path }).eq('sku', sku);
+    toast('PDF uploaded');
+    input.value='';
+    await loadProducts();
+  }
+});
+
+/* =======================================================================
+   NEWS + REGIONS
+   Tables:
+     - news(id bigserial pk, title text, body text, region text, published bool, archived bool, image_path text, file_path text, created_at, updated_at)
+     - site_settings(key text pk, value jsonb) with active_regions
+======================================================================= */
+const newsWrap   = document.getElementById('newsWrap');
+const newsMsg    = document.getElementById('newsMsg');
+const newsList   = document.getElementById('newsList');
+const newsRefresh= document.getElementById('newsRefresh');
+
+const nId   = document.getElementById('nId');
+const nTitle= document.getElementById('nTitle');
+const nBody = document.getElementById('nBody');
+const nRegion=document.getElementById('nRegion');
+const nImg  = document.getElementById('nImg');
+const nFile = document.getElementById('nFile');
+const nPub  = document.getElementById('nPub');
+const nCreate=document.getElementById('nCreate');
+const nUpdate=document.getElementById('nUpdate');
+const nClear =document.getElementById('nClear');
+const nMsg   = document.getElementById('nMsg');
+
+const regionToggles = document.getElementById('regionToggles');
+const saveRegions   = document.getElementById('saveRegions');
+const regMsg        = document.getElementById('regMsg');
+
+async function ensureSettings(){
+  try{
+    const { data } = await supa.from('site_settings').select('key').eq('key','active_regions').maybeSingle();
+    if(!data){
+      await supa.from('site_settings').insert({ key:'active_regions', value: JSON.stringify(["Global"]) });
     }
-  });
-  logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
+  }catch(e){ /* ignore */ }
+}
+async function loadRegions(){
+  await ensureSettings();
+  const { data } = await supa.from('site_settings').select('value').eq('key','active_regions').maybeSingle();
+  const active = Array.isArray(data?.value) ? data.value : ["Global"];
+  const all = ["Global","Africa","Europe","Middle East","Americas","Asia"];
+  regionToggles.innerHTML = all.map(r=>{
+    const on = active.includes(r);
+    return `<label class="switch"><input type="checkbox" class="reg" value="${r}" ${on?'checked':''}/> ${r}</label>`;
+  }).join(' ');
+}
+saveRegions.onclick = async ()=>{
+  const chosen = [...regionToggles.querySelectorAll('input.reg:checked')].map(i=>i.value);
+  const { error } = await supa.from('site_settings').upsert({ key:'active_regions', value: chosen }, { onConflict:'key' });
+  if (error){ regMsg.textContent = error.message; return; }
+  regMsg.textContent = "Saved.";
+  setTimeout(()=> regMsg.textContent = "", 1500);
+};
 
-  async function refreshHeader(){
-    const { data:{ session } } = await supa.auth.getSession();
-    if (!session?.user){
-      signInBtn.style.display='inline-block';
-      signUpBtn.style.display='inline-block';
-      acctBlock.style.display='none';
-      adminBtn.style.display='none';
-      return;
-    }
-    let display = session.user.email;
-    let isAdmin = false;
-    try{
-      const { data: p } = await supa.from('profiles').select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
-      const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
-      if (full) display = full;
-      isAdmin = !!p?.is_admin;
-    }catch{}
-    helloName.textContent = display;
-    accountHeader.textContent = display;
-    signInBtn.style.display='none';
-    signUpBtn.style.display='none';
-    acctBlock.style.display='inline-flex';
-    adminBtn.style.display = (isAdmin || SUPER_ADMINS.includes(session.user.email)) ? 'inline-block' : 'none';
-  }
-  document.addEventListener('DOMContentLoaded', refreshHeader);
-  supa.auth.onAuthStateChange(()=>{ refreshHeader(); });
+async function loadNews(){
+  newsMsg.textContent = "Loading…";
+  const { data, error } = await supa.from('news')
+    .select('id,title,body,region,published,archived,image_path,file_path,created_at,updated_at')
+    .order('created_at',{ ascending:false });
+  if (error){ newsMsg.textContent = error.message; return; }
+  const rows = data || [];
+  newsList.innerHTML = rows.map(n=>{
+    const img = n.image_path ? `<a class="btn small" href="${filePublicUrl(NEWS_BUCKET, n.image_path)}" target="_blank" rel="noopener">Image</a>` : '';
+    const att = n.file_path  ? `<a class="btn small" href="${filePublicUrl(NEWS_BUCKET, n.file_path)}" target="_blank" rel="noopener">PDF</a>` : '';
+    return `<div class="card">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;align-items:center">
+        <div>
+          <div style="font-weight:600">${n.title}</div>
+          <div class="muted mini" style="max-height:3.5em;overflow:auto">${(n.body||'')}</div>
+          <div class="muted mini">${new Date(n.created_at).toLocaleString()}</div>
+        </div>
+        <div>${n.region}</div>
+        <div>${n.published?'<span class="pill ok">Published</span>':'<span class="pill">Draft</span>'} ${n.archived?'<span class="pill bad">Archived</span>':''}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          ${img} ${att}
+          <button class="btn small" data-action="edit" data-id="${n.id}">Edit</button>
+          <button class="btn small" data-action="toggle-archive" data-id="${n.id}">${n.archived?'Unarchive':'Archive'}</button>
+          <button class="btn danger small" data-action="delete" data-id="${n.id}">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  newsMsg.textContent = rows.length ? "" : "No news yet.";
+}
 
-  /* ----- NEWS RENDER ----- */
-  const NEWS_BUCKET = "NewsFiles";
-  function filePublicUrl(path){
-    if(!path) return null;
-    const p = String(path).replace(/^NewsFiles\//,'');
-    return "https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/" + NEWS_BUCKET + "/" + encodeURI(p);
-  }
+newsList.addEventListener('click', async (e)=>{
+  const b = e.target.closest('button[data-action]');
+  if(!b) return;
+  const { action, id } = b.dataset;
 
-  async function renderNews(){
-    const box = document.getElementById('newsGrid');
-    const empty = document.getElementById('newsEmpty');
-    box.innerHTML = '<div class="muted" style="grid-column:1/-1">Loading…</div>';
-
-    let rows = [];
-    const { data, error } = await supa
-      .from('news')
-      .select('id,title,body,created_at,cover_path,file_path,is_published,region')
-      .eq('is_published', true)
-      .order('created_at', { ascending:false })
-      .limit(60);
-
-    if (!error && Array.isArray(data)) rows = data;
-
-    if (!rows.length){
-      box.innerHTML = '';
-      empty.style.display = 'block';
-      return;
-    }
-    empty.style.display = 'none';
-    box.innerHTML = '';
-
-    rows.forEach(n=>{
-      const card = document.createElement('div');
-      card.className = 'card';
-      const cover = n.cover_path ? filePublicUrl(n.cover_path) : '';
-      card.innerHTML =
-        (cover ? `<img class="thumb" src="${cover}" alt="${n.title}">` : `<div class="thumb" aria-hidden="true"></div>`) +
-        `<div class="px">
-           <div class="meta">${new Date(n.created_at).toLocaleDateString()}${n.region ? ' · '+n.region : ''}</div>
-           <h3 class="title">${escapeHtml(n.title||'Untitled')}</h3>
-           <p class="muted">${escapeHtml((n.body||'').slice(0,160))}${(n.body||'').length>160?'…':''}</p>
-           <button class="btn" data-id="${n.id}">Read more</button>
-         </div>`;
-      card.querySelector('.btn').addEventListener('click', ()=>openNews(n));
-      box.appendChild(card);
-    });
+  if(action==='edit'){
+    const { data } = await supa.from('news').select('*').eq('id', id).maybeSingle();
+    if (!data) return;
+    nId.value = data.id;
+    nTitle.value = data.title||'';
+    nBody.value  = data.body||'';
+    nRegion.value= data.region||'Global';
+    nPub.checked = !!data.published;
+    nUpdate.disabled = false;
+    nCreate.disabled = true;
+    nMsg.textContent = 'Loaded for editing.';
   }
 
-  function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m])); }
-
-  function openNews(n){
-    const modal = document.getElementById('newsModal');
-    document.getElementById('newsTitle').textContent = n.title || 'News';
-    const cover = n.cover_path ? filePublicUrl(n.cover_path) : '';
-    const img = document.getElementById('newsCover');
-    if (cover){ img.src = cover; img.style.display='block'; } else { img.style.display='none'; }
-    document.getElementById('newsDate').textContent = new Date(n.created_at).toLocaleString();
-    document.getElementById('newsBody').textContent = n.body || '';
-    const attachBox = document.getElementById('newsAttachBox');
-    const fileUrl = n.file_path ? filePublicUrl(n.file_path) : '';
-    attachBox.innerHTML = fileUrl ? `<a class="btn ghost" href="${fileUrl}" target="_blank" rel="noopener">Open attachment</a>` : '';
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden','false');
+  if (action==='toggle-archive'){
+    const { data: row } = await supa.from('news').select('archived').eq('id', id).maybeSingle();
+    const next = !row?.archived;
+    const { error } = await supa.from('news').update({ archived: next }).eq('id', id);
+    if (error) return toast(error.message, true);
+    toast(next ? 'Archived' : 'Unarchived');
+    await loadNews();
   }
 
-  document.addEventListener('DOMContentLoaded', renderNews);
+  if (action==='delete'){
+    if(!confirm('Permanently delete this news item? This cannot be undone.')) return;
+    const { error } = await supa.from('news').delete().eq('id', id);
+    if (error) return toast(error.message, true);
+    toast('Deleted');
+    await loadNews();
+    clearNewsForm();
+  }
+});
+
+function clearNewsForm(){
+  nId.value=""; nTitle.value=""; nBody.value=""; nRegion.value="Global"; nPub.checked=true;
+  nImg.value=""; nFile.value="";
+  nCreate.disabled=false; nUpdate.disabled=true;
+  nMsg.textContent="";
+}
+nClear.onclick = clearNewsForm;
+
+nCreate.onclick = async ()=>{
+  nMsg.textContent = "Creating…"; nCreate.disabled=true;
+  let image_path=null, file_path=null;
+  const i = nImg.files[0]||null, f = nFile.files[0]||null;
+  if(i){
+    if(!['image/jpeg','image/png'].includes(i.type)) { nMsg.textContent='Image must be JPG/PNG'; nCreate.disabled=false; return; }
+    const p = `img/${Date.now()}_${i.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(NEWS_BUCKET).upload(p, i, { upsert:false, cacheControl:'3600', contentType:i.type });
+    if (up.error){ nMsg.textContent = up.error.message; nCreate.disabled=false; return; }
+    image_path = up.data.path;
+  }
+  if(f){
+    if(f.type!=='application/pdf'){ nMsg.textContent='Attachment must be PDF'; nCreate.disabled=false; return; }
+    const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType: f.type });
+    if (up.error){ nMsg.textContent = up.error.message; nCreate.disabled=false; return; }
+    file_path = up.data.path;
+  }
+  const row = {
+    title: (nTitle.value||'').trim(),
+    body:  (nBody.value||'').trim(),
+    region: nRegion.value||'Global',
+    published: !!nPub.checked,
+    archived: false,
+    image_path, file_path
+  };
+  if(!row.title){ nMsg.textContent='Enter a title'; nCreate.disabled=false; return; }
+
+  const { error } = await supa.from('news').insert(row);
+  if (error){ nMsg.textContent = error.message; nCreate.disabled=false; return; }
+  nMsg.textContent = "Created.";
+  toast('News created');
+  clearNewsForm(); await loadNews();
+};
+
+nUpdate.onclick = async ()=>{
+  const id = nId.value; if(!id) return;
+  nMsg.textContent = "Updating…"; nUpdate.disabled=true;
+  let image_path=null, file_path=null;
+  const i = nImg.files[0]||null, f = nFile.files[0]||null;
+  if(i){
+    if(!['image/jpeg','image/png'].includes(i.type)) { nMsg.textContent='Image must be JPG/PNG'; nUpdate.disabled=false; return; }
+    const p = `img/${Date.now()}_${i.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(NEWS_BUCKET).upload(p, i, { upsert:false, cacheControl:'3600', contentType:i.type });
+    if (up.error){ nMsg.textContent = up.error.message; nUpdate.disabled=false; return; }
+    image_path = up.data.path;
+  }
+  if(f){
+    if(f.type!=='application/pdf'){ nMsg.textContent='Attachment must be PDF'; nUpdate.disabled=false; return; }
+    const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType: f.type });
+    if (up.error){ nMsg.textContent = up.error.message; nUpdate.disabled=false; return; }
+    file_path = up.data.path;
+  }
+  const patch = {
+    title: (nTitle.value||'').trim(),
+    body:  (nBody.value||'').trim(),
+    region: nRegion.value||'Global',
+    published: !!nPub.checked
+  };
+  if (image_path) patch.image_path = image_path;
+  if (file_path)  patch.file_path  = file_path;
+
+  const { error } = await supa.from('news').update(patch).eq('id', id);
+  if (error){ nMsg.textContent = error.message; nUpdate.disabled=false; return; }
+  nMsg.textContent = "Updated.";
+  toast('News updated');
+  nUpdate.disabled=false;
+  await loadNews();
+};
+
+/* ================= Boot ================= */
+document.addEventListener('DOMContentLoaded', async ()=>{
+  const ok = await checkAdmin();
+  if (!ok) return;
+  ["prodWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
+  await loadProducts();
+  await loadRegions();
+  await loadNews();
+  newsRefresh.onclick = ()=> loadNews();
+  prodRefresh.onclick = ()=> loadProducts();
+});
 </script>
 </body>
 </html>
-
-
