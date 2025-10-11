@@ -39,6 +39,7 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
 .search{padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);min-width:240px}
 .qtybtn{padding:6px 10px;border-radius:8px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}
 .kicker{font-size:.9rem;color:var(--muted)}
+.toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);border-radius:12px;padding:10px 14px;color:#fff;display:none;z-index:9999}
 </style>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -96,7 +97,7 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
   <div class="card">
     <div class="rowbar" style="margin-bottom:10px">
       <input id="prodSearch" class="search" placeholder="Search products by name or SKU">
-      <span class="kicker">Only available items are shown. Stock limits apply.</span>
+      <span class="kicker">Every product requires approval. Approved qty is shown below.</span>
     </div>
     <div id="prodList" class="muted">Loading…</div>
   </div>
@@ -133,6 +134,8 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
   </div>
 </main>
 
+<div id="toast" class="toast"></div>
+
 <script>
 /* ===== Supabase ===== */
 const supa = supabase.createClient(
@@ -154,6 +157,7 @@ const btn         = document.getElementById('submit');
 const msgEl       = document.getElementById('msg');
 const checkoutBtnTop   = document.getElementById('checkoutBtnTop');
 const checkoutBtnRight = document.getElementById('checkoutBtnRight');
+const toastEl = document.getElementById('toast');
 
 /* ===== Helpers ===== */
 function setMsg(t,kind=''){ msgEl.textContent=t; msgEl.className='muted '+kind; }
@@ -163,6 +167,12 @@ function pill(status){
   statusPill.className = 'badge ' + (s==='approved'?'ok':s==='rejected'?'bad':'pend');
 }
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+function toast(t, err=false){
+  toastEl.textContent = t;
+  toastEl.style.display='block';
+  toastEl.style.borderColor = err ? 'rgba(255,120,120,.4)' : 'rgba(141,158,199,.25)';
+  clearTimeout(toastEl._t); toastEl._t = setTimeout(()=>toastEl.style.display='none', 2200);
+}
 
 /* ===== Auth + Approval state ===== */
 let currentUser = null;
@@ -222,7 +232,8 @@ async function boot(){
 
   await checkCanCheckout(user.id);
   await renderMiniCart();
-  await loadProducts();
+  await loadApprovals();       // per-SKU approvals
+  await loadProducts();        // uses approvals in the UI
   await renderOrders();
   await populateReviewSKUs();
 }
@@ -294,13 +305,13 @@ btn.onclick = async () => {
   btn.disabled = false; btn.textContent = 'Update submission';
 };
 
-/* ===== Mini Cart ===== */
+/* ===== Mini Cart (approval-enforced) ===== */
 const CART_KEY='cart';
 function readCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); } catch { return []; } }
 function writeCart(items){ localStorage.setItem(CART_KEY, JSON.stringify((items||[]).filter(x=>x && x.sku && Number(x.qty)>0))); }
 function renderMiniCartRow(it, i){
   return `<tr>
-    <td>${escapeHtml(it.name || it.sku)} <span class="kicker">(${escapeHtml(it.sku)})</span></td>
+    <td><a href="Products.html#${encodeURIComponent(it.sku)}" target="_blank" class="kicker" style="text-decoration:underline">${escapeHtml(it.name || it.sku)}</a> <span class="kicker">(${escapeHtml(it.sku)})</span></td>
     <td>
       <button class="qtybtn" data-cart="${i}" data-d="-1">−</button>
       <span style="display:inline-block;width:34px;text-align:center">${Number(it.qty||0)}</span>
@@ -309,18 +320,38 @@ function renderMiniCartRow(it, i){
     <td><button class="qtybtn" data-rem="${i}">Remove</button></td>
   </tr>`;
 }
+function clampByApprovalAndStock(sku, desiredQty){
+  const approved = Number(APPROVALS[sku]||0);
+  const prod = PRODUCT_CACHE.find(p=>p.sku===sku);
+  const stock = Number(prod?.stock_qty||0);
+  return Math.max(0, Math.min(desiredQty, approved, stock));
+}
 async function renderMiniCart(){
   const cart = readCart();
   const box = document.getElementById('cartBox');
   if (!cart.length){ box.innerHTML = `<div class="muted">Cart is empty. You can add from the products list below.</div>`; return; }
+
+  // Enforce caps whenever we render
+  let changed=false;
+  const fixed = cart.map(it=>{
+    const capped = clampByApprovalAndStock(it.sku, Number(it.qty||0));
+    if (capped !== Number(it.qty||0)){ changed=true; return { ...it, qty:capped }; }
+    return it;
+  }).filter(x=>x.qty>0);
+  if (changed){ writeCart(fixed); }
+
+  const cur = readCart();
   box.innerHTML = `<table><thead><tr><th>Product</th><th>Qty</th><th>Action</th></tr></thead>
-    <tbody>${cart.map(renderMiniCartRow).join('')}</tbody></table>
-    <div class="small muted" style="margin-top:8px">Total items: ${cart.reduce((n,x)=>n+Number(x.qty||0),0)}</div>`;
+    <tbody>${cur.map(renderMiniCartRow).join('')}</tbody></table>
+    <div class="small muted" style="margin-top:8px">Total items: ${cur.reduce((n,x)=>n+Number(x.qty||0),0)}</div>`;
   box.querySelectorAll('button[data-cart]').forEach(b=>{
     b.onclick = ()=>{
       const idx = Number(b.dataset.cart); const d = Number(b.dataset.d);
       const c = readCart(); if (!c[idx]) return;
-      c[idx].qty = Math.max(0, Number(c[idx].qty||0) + d);
+      const nextDesired = Math.max(0, Number(c[idx].qty||0) + d);
+      const next = clampByApprovalAndStock(c[idx].sku, nextDesired);
+      if (next===0 && nextDesired>0){ toast('Approval limit reached for this product'); }
+      c[idx].qty = next;
       if (c[idx].qty===0) c.splice(idx,1);
       writeCart(c); renderMiniCart();
     };
@@ -330,7 +361,24 @@ async function renderMiniCart(){
   });
 }
 
-/* ===== Product Browser (add to cart, obey stock & availability) ===== */
+/* ===== APPROVALS: per-SKU approved qty ===== */
+let APPROVALS = {}; // sku -> approvedQty
+async function loadApprovals(){
+  APPROVALS = {};
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user) return;
+  const { data, error } = await supa.from('vet_product_approvals')
+    .select('product_sku,quantity,status')
+    .eq('user_id', user.id)
+    .eq('status', 'approved');
+  if (error || !Array.isArray(data)) return;
+  data.forEach(r=>{
+    const cur = Number(APPROVALS[r.product_sku]||0);
+    APPROVALS[r.product_sku] = cur + Number(r.quantity||0);
+  });
+}
+
+/* ===== Product Browser (require approval before cart) ===== */
 const prodSearch = document.getElementById('prodSearch');
 const prodList   = document.getElementById('prodList');
 let PRODUCT_CACHE = [];
@@ -339,7 +387,7 @@ prodSearch.addEventListener('input', renderProducts);
 async function loadProducts(){
   prodList.textContent = 'Loading…';
   const { data, error } = await supa.from('products')
-    .select('sku,name,stock_qty,available,requires_verification')
+    .select('sku,name,stock_qty,available')
     .order('name', { ascending:true });
   if (error){ prodList.textContent = error.message; return; }
   PRODUCT_CACHE = (data||[]).filter(p=>p.available && Number(p.stock_qty||0) > 0);
@@ -352,32 +400,56 @@ function renderProducts(){
     if(!q) return true;
     return (p.name||'').toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q);
   }).map(p=>{
-    const badge = p.requires_verification ? `<span class="pill">Requires verification</span>` : `<span class="pill ok">Open</span>`;
+    const approved = Number(APPROVALS[p.sku]||0);
+    const prodLink = `Products.html#${encodeURIComponent(p.sku)}`;
     return `<div class="pair" style="border-top:1px solid rgba(141,158,199,.18);padding:10px 0">
       <div>
-        <div style="font-weight:600">${escapeHtml(p.name)} <span class="kicker">(${escapeHtml(p.sku)})</span></div>
-        <div class="kicker">In stock: ${p.stock_qty|0}</div>
+        <div style="font-weight:600"><a href="${prodLink}" target="_blank" class="kicker" style="text-decoration:underline">${escapeHtml(p.name)}</a> <span class="kicker">(${escapeHtml(p.sku)})</span></div>
+        <div class="kicker">In stock: ${p.stock_qty|0} · Approved: ${approved|0}</div>
       </div>
       <div class="rowbar">
-        ${badge}
+        <span class="pill">Requires verification</span>
+        <button class="btn small" data-req="${escapeHtml(p.sku)}">Request approval</button>
         <button class="btn small" data-sku="${escapeHtml(p.sku)}" data-name="${escapeHtml(p.name)}">Add to cart</button>
       </div>
     </div>`;
   }).join('');
   prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
 
-  // Add handlers
+  // Request approval handler
+  prodList.querySelectorAll('button[data-req]').forEach(b=>{
+    b.onclick = async ()=>{
+      const sku = b.dataset.req;
+      const qtyStr = prompt(`Request how many units for ${sku}?`, "1");
+      const qty = Math.max(1, Number(qtyStr||1)|0);
+      const { data:{ user } } = await supa.auth.getUser();
+      if(!user){ toast('Please sign in first.', true); return; }
+      const ins = await supa.from('vet_product_approvals').insert({
+        user_id: user.id, product_sku: sku, quantity: qty, status: 'pending'
+      });
+      if (ins.error){ toast(ins.error.message, true); return; }
+      toast('Approval request submitted');
+    };
+  });
+
+  // Add-to-cart handler (blocked unless approved > 0)
   prodList.querySelectorAll('button[data-sku]').forEach(b=>{
     b.onclick = ()=>{
       const sku = b.dataset.sku, name = b.dataset.name;
+      const approved = Number(APPROVALS[sku]||0);
+      if (approved <= 0){ toast('Approval required for this product. Please request approval first.', true); return; }
+
       const cart = readCart();
       const i = cart.findIndex(x=>x.sku===sku);
       const prod = PRODUCT_CACHE.find(x=>x.sku===sku);
+      const stock = Number(prod?.stock_qty||0);
       const currentQty = i>-1 ? Number(cart[i].qty||0) : 0;
-      const nextQty = Math.min(currentQty+1, Number(prod?.stock_qty||1));
-      if (i>-1) cart[i].qty = nextQty; else cart.push({ sku, name, qty: 1 });
+      const next = Math.min(currentQty+1, approved, stock);
+      if (next === currentQty){ toast('You reached your approved or stock limit.', true); return; }
+      if (i>-1) cart[i].qty = next; else cart.push({ sku, name, qty: 1 });
       writeCart(cart);
       renderMiniCart();
+      toast('Added to cart');
     };
   });
 }
@@ -403,9 +475,7 @@ async function renderOrders(){
   }).join('');
 }
 
-/* ===== Reviews =====
-   Table: reviews(id, user_id, product_sku, rating, comment, created_at)
-*/
+/* ===== Reviews ===== */
 const revSku = document.getElementById('revSku');
 const revRating = document.getElementById('revRating');
 const revComment = document.getElementById('revComment');
@@ -415,15 +485,13 @@ const revViewProduct = document.getElementById('revViewProduct');
 
 revSku.addEventListener('change', ()=>{
   const sku = revSku.value;
-  if(!sku){ revViewProduct.href = 'Products.html'; return; }
-  // If you have product detail pages, change this to that URL. For now, go to Products.html with hash.
-  revViewProduct.href = `Products.html#${encodeURIComponent(sku)}`;
+  revViewProduct.href = sku ? `Products.html#${encodeURIComponent(sku)}` : 'Products.html';
 });
 
 async function populateReviewSKUs(){
   const { data:{ user } } = await supa.auth.getUser(); if (!user) return;
 
-  // Gather purchased SKUs (prefer order_items if you have it)
+  // Gather purchased SKUs
   let skus = [];
   try{
     const { data: items } = await supa.from('order_items').select('product_sku').eq('user_id', user.id);
