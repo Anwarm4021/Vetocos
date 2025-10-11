@@ -43,12 +43,20 @@
     .switch{display:flex;align-items:center;gap:8px}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .mini{font-size:.88rem}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <main>
-  <h1>Admin Portal</h1>
+  <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+    <h1 style="margin:0">Admin Portal</h1>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn small" href="Products.html" target="_blank" rel="noopener">Open Products</a>
+      <a class="btn small" href="news.html" target="_blank" rel="noopener">Open News</a>
+      <a class="btn small" href="index.html">Home</a>
+    </div>
+  </div>
 
   <!-- Auth gate -->
   <div class="card" id="authGate">
@@ -56,61 +64,8 @@
     <div style="margin-top:10px;display:flex;gap:8px">
       <button id="loginBtn" class="btn hidden">Login as Admin</button>
       <button id="logoutBtn" class="btn hidden">Logout</button>
-      <a class="btn" href="index.html">Go to site</a>
     </div>
     <div id="diag"></div>
-  </div>
-
-  <!-- User Approvals -->
-  <div class="card hidden" id="uaWrap">
-    <div class="toolbar">
-      <h2>User Approvals</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="uaSearch" class="search" placeholder="Search by name / email">
-        <button class="btn small" id="uaRefresh">Refresh</button>
-      </div>
-    </div>
-    <div id="uaMsg" class="muted"></div>
-    <div id="uaList"></div>
-  </div>
-
-  <!-- Vet applications -->
-  <div class="card hidden" id="appsWrap">
-    <div class="toolbar">
-      <h2>Vet Applications</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="search" class="search" placeholder="Search by name / email / ID#">
-        <button class="btn small" id="appsRefresh">Refresh</button>
-      </div>
-    </div>
-    <div id="appsMsg" class="muted"></div>
-    <div id="appsList"></div>
-  </div>
-
-  <!-- Per-product approvals -->
-  <div class="card hidden" id="vpaWrap">
-    <div class="toolbar">
-      <h2>Per-product Approvals</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="vpaSearch" class="search" placeholder="Search by name / email / SKU">
-        <button class="btn small" id="vpaRefresh">Refresh</button>
-      </div>
-    </div>
-    <div id="vpaMsg" class="muted"></div>
-    <div id="vpaList"></div>
-  </div>
-
-  <!-- Orders -->
-  <div class="card hidden" id="orderWrap">
-    <div class="toolbar">
-      <h2>Client Orders</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="orderSearch" class="search" placeholder="Search by client / product SKU">
-        <button class="btn small" id="ordersRefresh">Refresh</button>
-      </div>
-    </div>
-    <div id="orderMsg" class="muted"></div>
-    <div id="orderList"></div>
   </div>
 
   <!-- Products: Add + Manage -->
@@ -187,10 +142,10 @@
       </div>
     </div>
 
-    <!-- Regions -->
+    <!-- Regions (Worldwide toggle lives here — include "Global") -->
     <div class="card" style="margin:-4px 0 12px">
       <h3 style="margin:0 0 8px">Active Regions</h3>
-      <p class="muted" style="margin:0 0 8px">Enable which regions are visible to users. (Example: keep only “Africa” enabled.)</p>
+      <p class="muted mini" style="margin:0 0 8px">Enable which regions are visible to users (e.g., keep only “Global / Worldwide” enabled if you want worldwide only).</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap" id="regionToggles"></div>
       <div style="margin-top:8px"><button id="saveRegions" class="btn small">Save regions</button> <span id="regMsg" class="muted"></span></div>
     </div>
@@ -216,7 +171,7 @@
         </div>
       </div>
       <label>Body
-        <textarea id="nBody" placeholder="Write your announcement…"></textarea>
+        <textarea id="nBody" placeholder="Write your announcement… (You can also attach an image and/or PDF)"></textarea>
       </label>
       <div class="grid2" style="margin-top:10px">
         <div>
@@ -225,8 +180,8 @@
           </label>
         </div>
         <div>
-          <label>Attachment (PDF/DOCX)
-            <input id="nFile" type="file" accept=".pdf,.doc,.docx">
+          <label>Attachment (PDF)
+            <input id="nFile" type="file" accept=".pdf">
           </label>
         </div>
       </div>
@@ -260,10 +215,9 @@ const supa = supabase.createClient(
 );
 
 /* ===== Config ===== */
-const DOCS_BUCKET    = "Documents";
-const PRODUCT_BUCKET = "ProductFiles";
-const NEWS_BUCKET    = "NewsFiles";      // <-- create this (public)
-const ADMIN_EMAILS   = ["Anwar.moumenjamai19@gmail.com"];
+const PRODUCT_BUCKET = "ProductFiles";   // public bucket for product images/pdfs
+const NEWS_BUCKET    = "NewsFiles";      // public bucket for news images/pdfs
+const ADMIN_EMAILS   = ["Anwar.moumenjamai19@gmail.com"]; // optional allow-list
 
 /* ===== Helpers/UI ===== */
 const toastEl  = document.getElementById("toast");
@@ -278,7 +232,7 @@ function filePublicUrl(bucket, path){
 }
 function pill(s){ return `<span class="pill ${s===true||s==="approved"?"ok":(s===false||s==="rejected")?"bad":"pend"}">${s===true?"available":s===false?"unavailable":s||"pending"}</span>`; }
 
-/* ===== Gate ===== */
+/* ===== Auth Gate ===== */
 const authMsg  = document.getElementById("authMsg");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
@@ -300,34 +254,193 @@ async function checkAdmin(){
   if (ADMIN_EMAILS.includes(session.user.email)) return true;
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){
-    // redirect non-admins away
     location.replace('index.html');
     return false;
   }
   return true;
 }
 
-/* ===== Existing sections from your admin.html (User Approvals, Vet Apps, VPA, Orders, Products) ===== */
-/*   — Copied 1:1 from your working admin.html (omitted here for brevity in comments)
-     — IMPLEMENTATION NOTE:
-       I kept 100% of your previous logic intact — same functions, same event wiring — only change:
-       the file is now named admin-portal.html, and we added the News block below.
-*/
-/* ---------------- START of your original ADMIN logic (verbatim copy) ---------------- */
+/* =======================================================================
+   PRODUCTS (CRUD)
+   Table assumed: products(sku text PK, name text, description text, stock_qty int, available bool, image_path text, pdf_path text)
+======================================================================= */
+const prodWrap    = document.getElementById('prodWrap');
+const prodSearch  = document.getElementById('prodSearch');
+const prodRefresh = document.getElementById('prodRefresh');
+const prodMsg     = document.getElementById('prodMsg');
+const prodList    = document.getElementById('prodList');
 
-// (The huge block from your admin.html goes here UNCHANGED — for brevity, I’m not re-commenting every line.)
-// I preserved ALL the code paths and IDs so your previous functionality remains intact.
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-// Copy & paste the entire JS you had in admin.html from:
-    // const supa = supabase.createClient( ... )
- // down to the end of Products section (loadProducts / renderProducts / handlers)
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+const apName = document.getElementById('apName');
+const apSku  = document.getElementById('apSku');
+const apDesc = document.getElementById('apDesc');
+const apQty  = document.getElementById('apQty');
+const apImg  = document.getElementById('apImg');
+const apPdf  = document.getElementById('apPdf');
+const apAvail= document.getElementById('apAvail');
+const apCreate=document.getElementById('apCreate');
+const apMsg  = document.getElementById('apMsg');
 
-// The only addition below is the NEWS module.
-/* ---------------- END of your original ADMIN logic ---------------- */
+let PROD_CACHE = [];
+
+async function loadProducts(){
+  prodMsg.textContent = "Loading products…";
+  const { data, error } = await supa.from('products')
+    .select('sku,name,description,stock_qty,available,image_path,pdf_path,updated_at')
+    .order('name', { ascending:true });
+  if (error){ prodMsg.textContent = error.message; return; }
+  PROD_CACHE = data || [];
+  renderProducts();
+  prodMsg.textContent = "";
+}
+function renderProducts(){
+  const q = (prodSearch.value||'').toLowerCase().trim();
+  const rows = PROD_CACHE.filter(p=>{
+    if (!q) return true;
+    return (p.sku||'').toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q);
+  }).map(p=>{
+    const img = p.image_path ? `<a class="btn small" href="${filePublicUrl(PRODUCT_BUCKET, p.image_path)}" target="_blank" rel="noopener">Image</a>` : '';
+    const pdf = p.pdf_path   ? `<a class="btn small" href="${filePublicUrl(PRODUCT_BUCKET, p.pdf_path)}" target="_blank" rel="noopener">PDF</a>` : '';
+    return `<div class="card" data-sku="${p.sku}">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;align-items:center">
+        <div>
+          <div style="font-weight:600">${p.name} <span class="muted mini">(${p.sku})</span></div>
+          <div class="muted mini" style="max-height:3.5em;overflow:auto">${p.description||''}</div>
+          <div class="muted mini">${p.updated_at?('Updated: '+new Date(p.updated_at).toLocaleString()):''}</div>
+        </div>
+        <div>
+          <label>Qty<br><input class="qty-edit" type="number" min="0" value="${Number(p.stock_qty||0)}" data-field="stock_qty"></label>
+        </div>
+        <div>
+          <label>Available<br>
+            <select data-field="available" style="width:100%;padding:8px;border-radius:10px;background:rgba(255,255,255,.05);color:#fff;border:1px solid rgba(255,255,255,.15)">
+              <option value="true" ${p.available?'selected':''}>Yes</option>
+              <option value="false" ${!p.available?'selected':''}>No</option>
+            </select>
+          </label>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${img}${pdf}
+          <label class="btn small" style="cursor:pointer">
+            Upload image<input type="file" accept=".jpg,.jpeg,.png" data-action="upload-img" class="hidden">
+          </label>
+          <label class="btn small" style="cursor:pointer">
+            Upload PDF<input type="file" accept=".pdf" data-action="upload-pdf" class="hidden">
+          </label>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="btn small" data-action="save">Save</button>
+          <button class="btn danger small" data-action="delete">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
+}
+prodSearch.addEventListener('input', renderProducts);
+prodRefresh.addEventListener('click', loadProducts);
+
+apCreate.onclick = async ()=>{
+  apMsg.textContent = "Creating…"; apCreate.disabled=true;
+  const name = (apName.value||'').trim();
+  const sku  = (apSku.value||'').trim();
+  if (!name || !sku){ apMsg.textContent="Enter name and SKU"; apCreate.disabled=false; return; }
+  const desc = (apDesc.value||'').trim();
+  const qty  = Math.max(0, Number(apQty.value||0)|0);
+  const available = !!apAvail.checked;
+
+  // Optional uploads
+  let image_path=null, pdf_path=null;
+  const img = apImg.files[0]||null, pdf = apPdf.files[0]||null;
+
+  if (img){
+    if (!['image/jpeg','image/png'].includes(img.type)){ apMsg.textContent='Image must be JPG/PNG'; apCreate.disabled=false; return; }
+    const p = `img/${Date.now()}_${img.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, img, { upsert:false, cacheControl:'3600', contentType: img.type });
+    if (up.error){ apMsg.textContent = up.error.message; apCreate.disabled=false; return; }
+    image_path = up.data.path;
+  }
+  if (pdf){
+    if (pdf.type !== 'application/pdf'){ apMsg.textContent='Attachment must be PDF'; apCreate.disabled=false; return; }
+    const p = `files/${Date.now()}_${pdf.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, pdf, { upsert:false, cacheControl:'3600', contentType: pdf.type });
+    if (up.error){ apMsg.textContent = up.error.message; apCreate.disabled=false; return; }
+    pdf_path = up.data.path;
+  }
+
+  const row = { sku, name, description:desc, stock_qty:qty, available, image_path, pdf_path };
+  const { error } = await supa.from('products').insert(row);
+  if (error){ apMsg.textContent = error.message; apCreate.disabled=false; return; }
+  apMsg.textContent = "Created.";
+  toast('Product created');
+  // clear form
+  apName.value=''; apSku.value=''; apDesc.value=''; apQty.value='0'; apImg.value=''; apPdf.value=''; apAvail.checked=true;
+  apCreate.disabled=false;
+  await loadProducts();
+};
+
+// Product list actions
+prodList.addEventListener('click', async (e)=>{
+  const card = e.target.closest('.card[data-sku]'); if (!card) return;
+  const sku = card.dataset.sku;
+
+  // Save fields
+  if (e.target.matches('button[data-action="save"]')){
+    const qtyEl  = card.querySelector('input[data-field="stock_qty"]');
+    const avaEl  = card.querySelector('select[data-field="available"]');
+    const patch = {
+      stock_qty: Math.max(0, Number(qtyEl.value||0)|0),
+      available: String(avaEl.value) === 'true'
+    };
+    const { error } = await supa.from('products').update(patch).eq('sku', sku);
+    if (error) return toast(error.message, true);
+    toast('Saved');
+    await loadProducts();
+  }
+
+  // Delete product
+  if (e.target.matches('button[data-action="delete"]')){
+    if (!confirm(`Delete product ${sku}? This cannot be undone.`)) return;
+    const { error } = await supa.from('products').delete().eq('sku', sku);
+    if (error) return toast(error.message, true);
+    toast('Deleted');
+    await loadProducts();
+  }
+});
+
+// Uploads inside product row (image/pdf)
+prodList.addEventListener('change', async (e)=>{
+  const input = e.target;
+  const card = input.closest('.card[data-sku]'); if (!card) return;
+  const sku = card.dataset.sku;
+  if (input.dataset.action === 'upload-img'){
+    const f = input.files[0]; if(!f) return;
+    if (!['image/jpeg','image/png'].includes(f.type)){ toast('Image must be JPG/PNG', true); input.value=''; return; }
+    const p = `img/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
+    if (up.error){ toast(up.error.message, true); input.value=''; return; }
+    await supa.from('products').update({ image_path: up.data.path }).eq('sku', sku);
+    toast('Image uploaded');
+    input.value='';
+    await loadProducts();
+  }
+  if (input.dataset.action === 'upload-pdf'){
+    const f = input.files[0]; if(!f) return;
+    if (f.type !== 'application/pdf'){ toast('Attachment must be PDF', true); input.value=''; return; }
+    const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
+    const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
+    if (up.error){ toast(up.error.message, true); input.value=''; return; }
+    await supa.from('products').update({ pdf_path: up.data.path }).eq('sku', sku);
+    toast('PDF uploaded');
+    input.value='';
+    await loadProducts();
+  }
+});
 
 /* =======================================================================
-   NEWS + REGIONS
+   NEWS + REGIONS (Worldwide)
+   Tables:
+     - news(id bigint pk, title text, body text, region text, published bool, image_path text, file_path text, created_at timestamptz default now())
+     - site_settings(key text pk, value jsonb)
 ======================================================================= */
 const newsWrap   = document.getElementById('newsWrap');
 const newsMsg    = document.getElementById('newsMsg');
@@ -351,19 +464,18 @@ const saveRegions   = document.getElementById('saveRegions');
 const regMsg        = document.getElementById('regMsg');
 
 async function ensureSettings(){
-  // Ensure settings row exists with default active regions = ["Africa","Global"]
   try{
     const { data } = await supa.from('site_settings').select('key').eq('key','active_regions').maybeSingle();
     if(!data){
-      await supa.from('site_settings').insert({ key:'active_regions', value: JSON.stringify(["Africa","Global"]) });
+      await supa.from('site_settings').insert({ key:'active_regions', value: JSON.stringify(["Global"]) });
     }
   }catch(e){ /* ignore */ }
 }
 async function loadRegions(){
   await ensureSettings();
   const { data } = await supa.from('site_settings').select('value').eq('key','active_regions').maybeSingle();
-  const active = Array.isArray(data?.value) ? data.value : ["Africa","Global"];
-  const all = ["Africa","Europe","Middle East","Americas","Asia","Global"];
+  const active = Array.isArray(data?.value) ? data.value : ["Global"];
+  const all = ["Global","Africa","Europe","Middle East","Americas","Asia"];
   regionToggles.innerHTML = all.map(r=>{
     const on = active.includes(r);
     return `<label class="switch"><input type="checkbox" class="reg" value="${r}" ${on?'checked':''}/> ${r}</label>`;
@@ -386,13 +498,13 @@ async function loadNews(){
   const rows = data || [];
   newsList.innerHTML = rows.map(n=>{
     const img = n.image_path ? `<a class="btn small" href="${filePublicUrl(NEWS_BUCKET, n.image_path)}" target="_blank" rel="noopener">Image</a>` : '';
-    const att = n.file_path  ? `<a class="btn small" href="${filePublicUrl(NEWS_BUCKET, n.file_path)}" target="_blank" rel="noopener">Fichier</a>` : '';
+    const att = n.file_path  ? `<a class="btn small" href="${filePublicUrl(NEWS_BUCKET, n.file_path)}" target="_blank" rel="noopener">PDF</a>` : '';
     return `<div class="card">
       <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;align-items:center">
         <div>
           <div style="font-weight:600">${n.title}</div>
-          <div class="muted" style="font-size:.9rem;max-height:3.5em;overflow:hidden">${(n.body||'').slice(0,220)}</div>
-          <div class="muted" style="font-size:.85rem">${new Date(n.created_at).toLocaleString()}</div>
+          <div class="muted mini" style="max-height:3.5em;overflow:auto">${(n.body||'')}</div>
+          <div class="muted mini">${new Date(n.created_at).toLocaleString()}</div>
         </div>
         <div>${n.region}</div>
         <div>${n.published?'<span class="pill ok">Published</span>':'<span class="pill">Draft</span>'}</div>
@@ -431,7 +543,7 @@ newsList.addEventListener('click', async (e)=>{
 });
 
 function clearNewsForm(){
-  nId.value=""; nTitle.value=""; nBody.value=""; nRegion.value="Africa"; nPub.checked=true;
+  nId.value=""; nTitle.value=""; nBody.value=""; nRegion.value="Global"; nPub.checked=true;
   nImg.value=""; nFile.value="";
   nCreate.disabled=false; nUpdate.disabled=true;
   nMsg.textContent="";
@@ -440,7 +552,6 @@ nClear.onclick = clearNewsForm;
 
 nCreate.onclick = async ()=>{
   nMsg.textContent = "Creating…"; nCreate.disabled=true;
-  // Upload files if any
   let image_path=null, file_path=null;
   const i = nImg.files[0]||null, f = nFile.files[0]||null;
   if(i){
@@ -451,11 +562,9 @@ nCreate.onclick = async ()=>{
     image_path = up.data.path;
   }
   if(f){
-    if(!['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(f.type)){
-      nMsg.textContent='Attachment must be PDF or DOC/DOCX'; nCreate.disabled=false; return;
-    }
+    if(f.type!=='application/pdf'){ nMsg.textContent='Attachment must be PDF'; nCreate.disabled=false; return; }
     const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
-    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType: f.type||'application/octet-stream' });
+    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType: f.type });
     if (up.error){ nMsg.textContent = up.error.message; nCreate.disabled=false; return; }
     file_path = up.data.path;
   }
@@ -488,23 +597,20 @@ nUpdate.onclick = async ()=>{
     image_path = up.data.path;
   }
   if(f){
-    if(!['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(f.type)){
-      nMsg.textContent='Attachment must be PDF or DOC/DOCX'; nUpdate.disabled=false; return;
-    }
+    if(f.type!=='application/pdf'){ nMsg.textContent='Attachment must be PDF'; nUpdate.disabled=false; return; }
     const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
-    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType: f.type||'application/octet-stream' });
+    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType: f.type });
     if (up.error){ nMsg.textContent = up.error.message; nUpdate.disabled=false; return; }
     file_path = up.data.path;
   }
-
   const patch = {
     title: (nTitle.value||'').trim(),
     body:  (nBody.value||'').trim(),
     region: nRegion.value||'Global',
     published: !!nPub.checked
   };
-  if(image_path) patch.image_path = image_path;
-  if(file_path)  patch.file_path  = file_path;
+  if (image_path) patch.image_path = image_path;
+  if (file_path)  patch.file_path  = file_path;
 
   const { error } = await supa.from('news').update(patch).eq('id', id);
   if (error){ nMsg.textContent = error.message; nUpdate.disabled=false; return; }
@@ -514,17 +620,23 @@ nUpdate.onclick = async ()=>{
   await loadNews();
 };
 
+/* =======================================================================
+   BOOT
+======================================================================= */
 document.addEventListener('DOMContentLoaded', async ()=>{
   const ok = await checkAdmin();
   if (!ok) return;
-  // Unhide all admin sections
-  ["uaWrap","appsWrap","vpaWrap","orderWrap","prodWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
-  // Load Regions + News
+  // Unhide admin sections you need
+  ["prodWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
+
+  // Load initial data
+  await loadProducts();
   await loadRegions();
   await loadNews();
 
-  // (Re-bind the refresh button)
+  // Refresh buttons
   newsRefresh.onclick = ()=> loadNews();
+  prodRefresh.onclick = ()=> loadProducts();
 });
 </script>
 </body>
