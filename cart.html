@@ -237,7 +237,7 @@
           <div class="summary">Total items: ${current.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
           <div class="row" style="margin-top:10px">
             <button class="btn secondary" onclick="clearCart()">Clear cart</button>
-            <span class="muted">Secure checkout via magic link sign-in.</span>
+            <span class="muted">Secure checkout for signed-in customers.</span>
             <button class="btn" onclick="proceedCheckout()">Proceed to Checkout</button>
           </div>
         </div>
@@ -265,16 +265,25 @@
       writeCart([]);
     }
 
-    /* ======================= Checkout flow ======================= */
+    /* ======================= Checkout flow (FIXED) ======================= */
     async function proceedCheckout(){
       const cart = readCart();
-      if (!cart.length) { return; }
-      // Save a one-time backup for auth redirects (stays local)
+      if (!cart.length) return;
+
+      // Keep a local backup across auth redirects
       localStorage.setItem('cart_backup', JSON.stringify(cart));
-      // Pass cart via URL once; receiving page will adopt-once and strip it
-      const cartParam = encodeURIComponent(JSON.stringify(cart));
-      const loginUrl  = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}&force=1`;
-      location.href = loginUrl;
+
+      // Check current auth session
+      const { data: { session } } = await supa.auth.getSession();
+
+      if (session?.user) {
+        // Already signed in → go straight to checkout
+        location.href = 'checkout.html';
+      } else {
+        // Not signed in → send to login, then bounce back to checkout (also pass cart once)
+        const cartParam = encodeURIComponent(JSON.stringify(cart));
+        location.href = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}&force=1`;
+      }
     }
 
     /* ======================= Order history (signed-in users) ======================= */
@@ -373,4 +382,3 @@
   </script>
 </body>
 </html>
-
