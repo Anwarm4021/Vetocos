@@ -164,7 +164,11 @@
       </div>
       <div class="grid2" style="margin-top:10px">
         <label>Status
-          <select id="vpaStatus"><option value="approved">approved</option><option value="revoked">revoked</option></select>
+          <select id="vpaStatus">
+            <option value="pending">pending</option>
+            <option value="approved">approved</option>
+            <option value="revoked">revoked</option>
+          </select>
         </label>
         <div style="display:flex;align-items:flex-end;gap:8px">
           <button class="btn" id="vpaUpsert">Save</button>
@@ -245,9 +249,9 @@ const supa = supabase.createClient(
 );
 
 /* ================= Config ================= */
-const PRODUCT_BUCKET = "ProductFiles";   // public bucket for product images/pdfs
-const NEWS_BUCKET    = "NewsFiles";      // public bucket for news images/pdfs
-const ADMIN_EMAILS   = ["Anwar.moumenjamai19@gmail.com"]; // optional allow-list
+const PRODUCT_BUCKET = "ProductFiles";
+const NEWS_BUCKET    = "NewsFiles";
+const ADMIN_EMAILS   = ["Anwar.moumenjamai19@gmail.com"];
 
 /* ================= Helpers/UI ================= */
 const toastEl  = document.getElementById("toast");
@@ -286,10 +290,7 @@ async function checkAdmin(){
 }
 
 /* =======================================================================
-   PRODUCTS (CRUD)  — includes requires_verification flag
-   Table: products(sku text pk, name text, description text, stock_qty int,
-          available bool, requires_verification bool default false,
-          image_path text, pdf_path text, updated_at timestamptz)
+   PRODUCTS (CRUD) — requires_verification supported
 ======================================================================= */
 const prodWrap    = document.getElementById('prodWrap');
 const prodSearch  = document.getElementById('prodSearch');
@@ -442,7 +443,7 @@ prodList.addEventListener('change', async (e)=>{
   }
   if (input.dataset.action === 'upload-pdf'){
     const f = input.files[0]; if(!f) return;
-    if (f.type !== 'application/pdf'){ toast('Attachment must be PDF', true); input.value=''; return; }
+    if (f.type!=='application/pdf'){ toast('Attachment must be PDF', true); input.value=''; return; }
     const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
     const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
     if (up.error){ toast(up.error.message, true); input.value=''; return; }
@@ -453,9 +454,6 @@ prodList.addEventListener('change', async (e)=>{
 
 /* =======================================================================
    VET APPLICATIONS
-   Tables:
-     - profiles(id uuid pk, email text, first_name text, last_name text, can_purchase bool, is_admin bool)
-     - vet_applications(id, user_id, identity_number, diploma_path, status)
 ======================================================================= */
 const appsWrap   = document.getElementById('appsWrap');
 const appsSearch = document.getElementById('appsSearch');
@@ -528,15 +526,13 @@ appsList.addEventListener('click', async (e)=>{
   if(action==='grant-full'){
     const { error } = await supa.from('profiles').update({ can_purchase:true }).eq('id', userId);
     if (error) return toast(error.message, true);
-    // Mark most recent app as approved for clarity
     await supa.from('vet_applications').update({ status:'approved' }).eq('id', appId);
     toast('Full purchasing granted'); await loadApps();
   }
 });
 
 /* =======================================================================
-   PER-PRODUCT APPROVALS
-   Table: vet_product_approvals(user_id uuid, product_sku text, quantity int, status text)
+   PER-PRODUCT APPROVALS (pending/approved/revoked)
 ======================================================================= */
 const vpaWrap   = document.getElementById('vpaWrap');
 const vpaSearch = document.getElementById('vpaSearch');
@@ -579,7 +575,8 @@ async function loadVPA(){
   const { data, error } = await supa
     .from('vet_product_approvals')
     .select('user_id,product_sku,quantity,status, profiles:profiles!inner(email,first_name,last_name)')
-    .order('user_id');
+    .order('status', { ascending: true })
+    .order('product_sku', { ascending: true });
   if (error){ vpaMsg2.textContent = error.message; return; }
   VPA_CACHE = data || [];
   vpaMsg2.textContent='';
@@ -587,33 +584,42 @@ async function loadVPA(){
 }
 function renderVPA(){
   const q = (vpaSearch.value||'').toLowerCase().trim();
-  vpaList.innerHTML = (VPA_CACHE.filter(r=>{
-    const email = (r.profiles?.email||'').toLowerCase();
-    const sku   = (r.product_sku||'').toLowerCase();
-    return !q || email.includes(q) || sku.includes(q);
-  }).map(r=>{
-    const name = [r.profiles?.first_name, r.profiles?.last_name].filter(Boolean).join(' ');
-    return `<div class="card" data-user="${r.user_id}" data-sku="${r.product_sku}">
-      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;align-items:center">
-        <div>
-          <div style="font-weight:600">${name || '(no name)'}</div>
-          <div class="muted mini">${r.profiles?.email||''}</div>
-          <div class="muted mini">SKU: ${r.product_sku}</div>
+  const orderScore = s => s==='pending'?0 : s==='approved'?1 : 2;
+
+  const rows = (VPA_CACHE||[])
+    .filter(r=>{
+      const email = (r.profiles?.email||'').toLowerCase();
+      const sku   = (r.product_sku||'').toLowerCase();
+      return !q || email.includes(q) || sku.includes(q);
+    })
+    .sort((a,b)=> orderScore(a.status) - orderScore(b.status) || (a.profiles?.email||'').localeCompare(b.profiles?.email||''))
+    .map(r=>{
+      const name = [r.profiles?.first_name, r.profiles?.last_name].filter(Boolean).join(' ');
+      const pill = r.status==='approved' ? 'ok' : r.status==='revoked' ? 'bad' : 'pend';
+      return `<div class="card" data-user="${r.user_id}" data-sku="${r.product_sku}">
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;align-items:center">
+          <div>
+            <div style="font-weight:600">${name || '(no name)'} <span class="muted mini">(${r.profiles?.email||''})</span></div>
+            <div class="muted mini">SKU: <strong>${r.product_sku}</strong></div>
+            <div><span class="pill ${pill}">${r.status||'pending'}</span></div>
+          </div>
+          <div><label>Quantity<br><input class="qty-edit" type="number" min="0" value="${Number(r.quantity||0)}"></label></div>
+          <div><label>Status<br>
+            <select>
+              <option value="pending"  ${r.status==='pending'?'selected':''}>pending</option>
+              <option value="approved" ${r.status==='approved'?'selected':''}>approved</option>
+              <option value="revoked"  ${r.status==='revoked'?'selected':''}>revoked</option>
+            </select>
+          </label></div>
+          <div style="display:flex;gap:6px;justify-content:flex-end">
+            <button class="btn small" data-action="save">Save</button>
+            <button class="btn danger small" data-action="delete">Delete</button>
+          </div>
         </div>
-        <div><label>Quantity<br><input class="qty-edit" type="number" min="0" value="${Number(r.quantity||0)}"></label></div>
-        <div><label>Status<br>
-          <select>
-            <option value="approved" ${r.status==='approved'?'selected':''}>approved</option>
-            <option value="revoked"  ${r.status==='revoked'?'selected':''}>revoked</option>
-          </select>
-        </label></div>
-        <div style="display:flex;gap:6px;justify-content:flex-end">
-          <button class="btn small" data-action="save">Save</button>
-          <button class="btn danger small" data-action="delete">Delete</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('')) || '<div class="muted">No approvals.</div>';
+      </div>`;
+    }).join('');
+
+  vpaList.innerHTML = rows || '<div class="muted">No approvals.</div>';
 }
 vpaList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
@@ -636,7 +642,7 @@ vpaList.addEventListener('click', async (e)=>{
 });
 
 /* =======================================================================
-   NEWS + REGIONS  (unchanged from previous answer, uses public.news & site_settings)
+   NEWS + REGIONS
 ======================================================================= */
 const newsWrap   = document.getElementById('newsWrap');
 const newsMsg    = document.getElementById('newsMsg');
