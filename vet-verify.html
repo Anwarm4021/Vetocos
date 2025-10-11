@@ -29,6 +29,7 @@ input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius
 .preview a{color:#6dd5ff;text-decoration:none}
 .help{font-size:.85rem;color:#8ea0c8}
 .pair{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.notice{margin-top:10px;padding:10px;border:1px dashed rgba(141,158,199,.35);border-radius:12px;background:rgba(255,255,255,.03)}
 </style>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -67,7 +68,11 @@ input[type="text"],input[type="file"]{width:100%;padding:12px 14px;border-radius
     <input id="file" type="file" accept=".pdf,.png,.jpg,.jpeg" />
 
     <button class="btn" id="submit" type="button">Submit for review</button>
+    <button class="btn" id="continueCheckout" type="button" style="display:none;margin-top:8px">Continue to checkout</button>
+
     <p id="msg" class="muted" aria-live="polite"></p>
+
+    <div id="tips" class="notice small" style="display:none"></div>
 
     <p class="help">We’ll email you when your application status changes. If you update the file or ID, the status returns to <em>pending</em> for re-review.</p>
   </div>
@@ -130,8 +135,10 @@ const previewLink = document.getElementById('previewLink');
 const replaceBtn  = document.getElementById('replaceBtn');
 const idInput     = document.getElementById('idnum');
 const fileInput   = document.getElementById('file');
-const btn         = document.getElementById('submit');
+const btnSubmit   = document.getElementById('submit');
+const btnContinue = document.getElementById('continueCheckout');
 const msgEl       = document.getElementById('msg');
+const tipsEl      = document.getElementById('tips');
 
 const BUCKET = 'Documents';
 function setMsg(t,kind=''){ msgEl.textContent=t; msgEl.className='muted '+kind; }
@@ -164,6 +171,7 @@ async function boot(){
   if (e2) { setMsg(e2.message,'error'); return; }
   currentApp = rows && rows[0] ? rows[0] : null;
 
+  // Draw state
   if (currentApp){
     statusBox.style.display = 'grid';
     pill(currentApp.status);
@@ -183,37 +191,56 @@ async function boot(){
     if (currentApp.status === 'approved'){
       idInput.disabled = true;
       fileInput.disabled = true;
-      btn.disabled = true;
-      btn.textContent = 'Already approved';
-      setMsg('Your account is approved. Click “Replace file” if you need to update.','success');
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Already approved';
+      setMsg('Your account is approved. You can proceed to checkout.', 'success');
+      btnContinue.style.display = 'block';
+      tipsEl.style.display = 'none';
     } else if (currentApp.status === 'rejected'){
       setMsg('Your previous submission was rejected. Update your ID and upload a new file for review.','error');
+      btnContinue.style.display = 'none';
+      showTips();
     } else {
       setMsg('Your application is pending. You can replace the file or update ID while it is under review.','');
+      btnContinue.style.display = 'none';
+      showTips();
     }
   } else {
     setMsg('No submission yet. Please fill in your details below.','');
+    btnContinue.style.display = 'none';
+    showTips();
   }
 }
 document.addEventListener('DOMContentLoaded', boot);
+
+function showTips(){
+  tipsEl.innerHTML = `
+    <ul style="margin:0 0 0 18px;padding:0">
+      <li>Enter your official license / registration number.</li>
+      <li>Upload a clear scan or photo of your diploma or professional ID (PDF/JPG/PNG).</li>
+      <li>After changes, status returns to <em>pending</em> until reviewed by admin.</li>
+    </ul>
+  `;
+  tipsEl.style.display = 'block';
+}
 
 /* ===== Replace flow ===== */
 replaceBtn?.addEventListener('click', ()=>{
   idInput.disabled = false;
   fileInput.disabled = false;
-  btn.disabled = false;
-  btn.textContent = 'Submit updated file';
+  btnSubmit.disabled = false;
+  btnSubmit.textContent = 'Submit updated file';
   setMsg('You can select a new file and save.','');
 });
 
 /* ===== Submit or update ===== */
-btn.onclick = async () => {
-  if (btn.disabled) return;
-  btn.disabled = true;
+btnSubmit.onclick = async () => {
+  if (btnSubmit.disabled) return;
+  btnSubmit.disabled = true;
   setMsg('Preparing submission…');
 
   const { data:{ user }, error: uErr } = await supa.auth.getUser();
-  if (uErr) { setMsg(uErr.message, 'error'); btn.disabled=false; return; }
+  if (uErr) { setMsg(uErr.message, 'error'); btnSubmit.disabled=false; return; }
   if (!user) {
     const cartParam = encodeURIComponent(JSON.stringify(readCart()));
     location.replace(`login.html?redirect=${encodeURIComponent('vet-verify.html')}&cart=${cartParam}`);
@@ -225,17 +252,17 @@ btn.onclick = async () => {
 
   // For first-time submission: both required. For update: allow only ID or only file changes.
   if (!currentApp){
-    if(!idnum || !f){ setMsg('Please enter ID number and choose a file.','error'); btn.disabled=false; return; }
+    if(!idnum || !f){ setMsg('Please enter ID number and choose a file.','error'); btnSubmit.disabled=false; return; }
   } else if (!idnum && !f){
-    setMsg('Nothing to update. Change ID and/or choose a new file.','error'); btn.disabled=false; return;
+    setMsg('Nothing to update. Change ID and/or choose a new file.','error'); btnSubmit.disabled=false; return;
   }
 
   let newPath = currentApp?.diploma_path || null;
 
   if (f){
-    if (f.size > 10 * 1024 * 1024) { setMsg('File too large (max 10 MB).','error'); btn.disabled=false; return; }
+    if (f.size > 10 * 1024 * 1024) { setMsg('File too large (max 10 MB).','error'); btnSubmit.disabled=false; return; }
     const okTypes = ['application/pdf','image/jpeg','image/png'];
-    if (f.type && !okTypes.includes(f.type)) { setMsg('Unsupported file type.','error'); btn.disabled=false; return; }
+    if (f.type && !okTypes.includes(f.type)) { setMsg('Unsupported file type.','error'); btnSubmit.disabled=false; return; }
 
     const cleanName = f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
     const path = `${user.id}/${Date.now()}_${cleanName || 'diploma'}`;
@@ -246,7 +273,7 @@ btn.onclick = async () => {
       contentType: f.type || 'application/octet-stream',
       cacheControl: '3600'
     });
-    if(up.error) { setMsg(up.error.message,'error'); btn.disabled=false; return; }
+    if(up.error) { setMsg(up.error.message,'error'); btnSubmit.disabled=false; return; }
     newPath = up.data.path;
   }
 
@@ -259,7 +286,7 @@ btn.onclick = async () => {
       diploma_path: newPath,
       status: 'pending'
     }).select().single();
-    if(ins.error){ setMsg(ins.error.message,'error'); btn.disabled=false; return; }
+    if(ins.error){ setMsg(ins.error.message,'error'); btnSubmit.disabled=false; return; }
     currentApp = ins.data;
   } else {
     setMsg('Updating application…');
@@ -272,7 +299,7 @@ btn.onclick = async () => {
       .eq('id', currentApp.id)
       .select()
       .single();
-    if(upd.error){ setMsg(upd.error.message,'error'); btn.disabled=false; return; }
+    if(upd.error){ setMsg(upd.error.message,'error'); btnSubmit.disabled=false; return; }
     currentApp = upd.data;
   }
 
@@ -306,8 +333,18 @@ btn.onclick = async () => {
     }catch(e){}
   }
   setMsg('Submitted. We will review and approve your account.','success');
-  btn.disabled = false;
-  btn.textContent = 'Update submission';
+  btnSubmit.disabled = false;
+  btnSubmit.textContent = 'Update submission';
+  btnContinue.style.display = 'none';
+  showTips();
+};
+
+/* ===== Continue to checkout when approved ===== */
+btnContinue.onclick = () => {
+  const cart = readCart();
+  const cartParam = encodeURIComponent(JSON.stringify(cart||[]));
+  // Go back to checkout with cart preserved; checkout will compute eligibility.
+  location.href = `checkout.html?cart=${cartParam}&from=verify`;
 };
 </script>
 </body>
