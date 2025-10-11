@@ -122,7 +122,7 @@
         <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
         <a href="News.html" data-i18n="nav.news">News</a>
 
-        <a class="cart-link" href="cart.html" aria-label="Cart">
+        <a class="cart-link" id="cartLink" href="cart.html" aria-label="Cart" style="display:none">
           <span>Cart</span>
           <span id="cartCount" class="cart-badge" style="display:none">0</span>
         </a>
@@ -192,71 +192,10 @@
   <script>
     const supa = supabase.createClient(
       "https://qdepgviimbcdlozjpbhm.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+      { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
     const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
-
-    /* ===== Header auth UI ===== */
-    const signInBtn  = document.getElementById('signInBtn');
-    const signUpBtn  = document.getElementById('signUpBtn');
-    const acctBlock  = document.getElementById('acctBlock');
-    const accountBtn = document.getElementById('accountBtn');
-    const accountMenu= document.getElementById('accountMenu');
-    const accountHeader = document.getElementById('accountHeader');
-    const helloName  = document.getElementById('helloName');
-    const adminBtn   = document.getElementById('adminBtn');
-    const logoutBtn  = document.getElementById('logoutBtn');
-
-    signInBtn.addEventListener('click', ()=>{ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); });
-    signUpBtn.addEventListener('click', ()=>{ location.href = 'signup.html?redirect=' + encodeURIComponent('Products.html'); });
-
-    accountBtn.addEventListener('click', ()=>{
-      const open = accountMenu.classList.toggle('open');
-      accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
-      if (open){
-        const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
-        setTimeout(()=>document.addEventListener('click', onDoc),0);
-      }
-    });
-    logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
-
-    let IS_LOGGED_IN = false;
-
-    async function refreshHeader(){
-      const { data:{ session } } = await supa.auth.getSession();
-      if (!session?.user){
-        IS_LOGGED_IN = false;
-        signInBtn.style.display = 'inline-block';
-        signUpBtn.style.display = 'inline-block';
-        acctBlock.style.display = 'none';
-        adminBtn.style.display = 'none';
-        return;
-      }
-      IS_LOGGED_IN = true;
-      let display = session.user.email;
-      let isAdmin = false;
-      try{
-        const { data: p } = await supa.from('profiles')
-          .select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
-        const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
-        if (full) display = full;
-        isAdmin = !!p?.is_admin;
-      }catch(_){}
-      helloName.textContent = display;
-      accountHeader.textContent = display;
-
-      signInBtn.style.display = 'none';
-      signUpBtn.style.display = 'none';
-      acctBlock.style.display = 'inline-flex';
-      if (isAdmin || SUPER_ADMINS.includes(session.user.email)) {
-        adminBtn.style.display = 'inline-block';
-      } else {
-        adminBtn.style.display = 'none';
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', refreshHeader);
-    supa.auth.onAuthStateChange(refreshHeader);
   </script>
 
   <!-- Product Details Modal (HTML) -->
@@ -273,26 +212,12 @@
             <h3 id="pdName" style="margin:0 0 6px"></h3>
             <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
             <div class="specs">
-              <div class="spec">
-                <h5>Form</h5>
-                <div id="pdForm" class="muted"></div>
-              </div>
-              <div class="spec">
-                <h5>Pack size</h5>
-                <div id="pdSize" class="muted"></div>
-              </div>
-              <div class="spec">
-                <h5>Key ingredients</h5>
-                <div id="pdIngredients" class="muted"></div>
-              </div>
-              <div class="spec">
-                <h5>Feeding guidance</h5>
-                <div id="pdUsage" class="muted"></div>
-              </div>
+              <div class="spec"><h5>Form</h5><div id="pdForm" class="muted"></div></div>
+              <div class="spec"><h5>Pack size</h5><div id="pdSize" class="muted"></div></div>
+              <div class="spec"><h5>Key ingredients</h5><div id="pdIngredients" class="muted"></div></div>
+              <div class="spec"><h5>Feeding guidance</h5><div id="pdUsage" class="muted"></div></div>
             </div>
-
             <p id="pdDesc" class="muted" style="margin-top:10px"></p>
-
             <div class="sheet-actions">
               <button class="btn" id="pdAddBtn" type="button">Add to Cart</button>
               <button class="btn ghost" id="pdBuyBtn" type="button">Buy Now</button>
@@ -312,13 +237,8 @@
   <!-- Cart + Product render logic -->
   <script>
     /* ---------- Cart helpers ---------- */
-    function readCart(){
-      try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; }
-    }
-    function writeCart(items){
-      localStorage.setItem("cart", JSON.stringify(items));
-      updateCartBadge();
-    }
+    function readCart(){ try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; } }
+    function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items)); updateCartBadge(); }
     function countCart(){ return readCart().reduce((n,x)=>n + Number(x.qty||0), 0); }
     function updateCartBadge(){
       const n = countCart();
@@ -327,7 +247,6 @@
       if(n>0){ b.style.display='inline-grid'; b.textContent = n; }
       else { b.style.display='none'; }
     }
-
     function addToCartBySKU(sku, name, qty=1){
       const items = readCart();
       const i = items.findIndex(x=>x.sku===sku);
@@ -336,7 +255,7 @@
       writeCart(items);
     }
 
-    /* Fallback product specs (keeps your original catalog visuals) */
+    /* Fallback catalog (keeps your original visuals) */
     const FALLBACK = {
       "URO-CHIEN": { name:"Urocline Chien", image:"images/Product1.jpg", category:"Urinary care", form:"Chewable tablets", size:"60 / 120 tabs", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", page:"Product1.html", pdf:"pdf/Product1.pdf" },
       "HEP-AT":    { name:"Hepatiale", image:"images/Product2.jpg", category:"Liver support",   form:"Capsules", size:"30 / 60 caps", ingredients:"Silybin-phospholipid, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", page:"Product2.html", pdf:"pdf/Product2.pdf" },
@@ -402,9 +321,13 @@
       if (!IS_LOGGED_IN){
         pdAdd.disabled = true;
         pdBuy.disabled = true;
+        pdAdd.onclick = ()=>{ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); };
+        pdBuy.onclick = ()=>{ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); };
       } else {
         pdAdd.disabled = !isAvail;
         pdBuy.disabled = !isAvail;
+        pdAdd.onclick = ()=>{ addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1); alert((spec.name || CURRENT_SKU) + " added to cart"); };
+        pdBuy.onclick = ()=>{ addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1); location.href = 'cart.html'; };
       }
 
       pdModal.classList.add('open');
@@ -416,25 +339,11 @@
     }
     pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
 
-    pdAdd.addEventListener('click', ()=>{
-      if(!CURRENT_SKU) return;
-      if(!IS_LOGGED_IN){ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); return; }
-      const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
-      addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
-      alert((spec.name || CURRENT_SKU) + " added to cart");
-    });
-    pdBuy.addEventListener('click', async ()=>{
-      if(!CURRENT_SKU) return;
-      if(!IS_LOGGED_IN){ location.href = 'login.html?redirect=' + encodeURIComponent('cart.html'); return; }
-      const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
-      addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
-      location.href = 'cart.html';
-    });
-
     /* Render cards from DB (with fallback content) */
     async function loadAndRenderProducts(){
       const grid = document.getElementById('productGrid');
       grid.innerHTML = '<div class="muted">Loading…</div>';
+
       let rows = [];
       const { data, error } = await supa
         .from('products')
@@ -444,6 +353,7 @@
 
       if (!error && Array.isArray(data)) rows = data;
 
+      // If no DB records, use fallback to ensure public browsing always works
       if (!rows.length){
         rows = Object.keys(FALLBACK).map((sku, i)=>({
           sku,
@@ -489,11 +399,6 @@
           : '<span class="status bad">Unavailable</span>';
         const qtyHtml = '<span class="qty">' + (p.stock_qty>0 ? (p.stock_qty + ' in stock') : 'Out of stock') + '</span>';
 
-        const card = document.createElement('div');
-        card.className = 'p-card';
-        card.setAttribute('data-sku', r.sku);
-
-        // Auth-aware actions
         const actionsWhenLoggedOut = `
           <button class="btn" type="button" data-action="signin">Sign in to purchase</button>
           <button class="btn ghost more-btn" type="button">Click for more details</button>
@@ -504,6 +409,10 @@
           <button class="btn ghost more-btn" type="button">Click for more details</button>
         `;
 
+        const card = document.createElement('div');
+        card.className = 'p-card';
+        card.setAttribute('data-sku', r.sku);
+
         card.innerHTML =
           '<img src="'+imgUrl+'" alt="'+p.name+'">' +
           '<div class="px">' +
@@ -512,7 +421,13 @@
             '<div class="actions">' + (IS_LOGGED_IN ? actionsWhenLoggedIn : actionsWhenLoggedOut) + '</div>' +
           '</div>';
 
-        // Button handlers
+        // Handlers
+        const signInAction = card.querySelector('[data-action="signin"]');
+        signInAction?.addEventListener('click', (ev)=>{
+          ev.stopPropagation();
+          location.href = 'login.html?redirect=' + encodeURIComponent('Products.html');
+        });
+
         const addBtn = card.querySelector('.add-btn');
         addBtn?.addEventListener('click', (ev)=>{
           ev.stopPropagation();
@@ -525,12 +440,6 @@
           ev.stopPropagation();
           addToCartBySKU(r.sku, p.name, 1);
           location.href = 'cart.html';
-        });
-
-        const signInAction = card.querySelector('[data-action="signin"]');
-        signInAction?.addEventListener('click', (ev)=>{
-          ev.stopPropagation();
-          location.href = 'login.html?redirect=' + encodeURIComponent('Products.html');
         });
 
         const moreBtn = card.querySelector('.more-btn');
@@ -549,75 +458,76 @@
       });
     }
 
+    /* ---------- Header auth UI ---------- */
+    const signInBtn  = document.getElementById('signInBtn');
+    const signUpBtn  = document.getElementById('signUpBtn');
+    const acctBlock  = document.getElementById('acctBlock');
+    const accountBtn = document.getElementById('accountBtn');
+    const accountMenu= document.getElementById('accountMenu');
+    const accountHeader = document.getElementById('accountHeader');
+    const helloName  = document.getElementById('helloName');
+    const adminBtn   = document.getElementById('adminBtn');
+    const cartLink   = document.getElementById('cartLink');
+    const logoutBtn  = document.getElementById('logoutBtn');
+
+    signInBtn.addEventListener('click', ()=>{ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); });
+    signUpBtn.addEventListener('click', ()=>{ location.href = 'signup.html?redirect=' + encodeURIComponent('Products.html'); });
+
+    accountBtn.addEventListener('click', ()=>{
+      const open = accountMenu.classList.toggle('open');
+      accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
+      if (open){
+        const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
+        setTimeout(()=>document.addEventListener('click', onDoc),0);
+      }
+    });
+    logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
+
+    async function refreshHeaderAndGrid(){
+      const { data:{ session } } = await supa.auth.getSession();
+      if (!session?.user){
+        IS_LOGGED_IN = false;
+        signInBtn.style.display = 'inline-block';
+        signUpBtn.style.display = 'inline-block';
+        acctBlock.style.display = 'none';
+        adminBtn.style.display = 'none';
+        cartLink.style.display = 'none';   // hide cart when logged out
+      } else {
+        IS_LOGGED_IN = true;
+        let display = session.user.email;
+        let isAdmin = false;
+        try{
+          const { data: p } = await supa.from('profiles')
+            .select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
+          const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
+          if (full) display = full;
+          isAdmin = !!p?.is_admin;
+        }catch(_){}
+        helloName.textContent = display;
+        accountHeader.textContent = display;
+
+        signInBtn.style.display = 'none';
+        signUpBtn.style.display = 'none';
+        acctBlock.style.display = 'inline-flex';
+        cartLink.style.display = 'inline-flex'; // show cart when logged in
+        if (isAdmin || SUPER_ADMINS.includes(session.user.email)) {
+          adminBtn.style.display = 'inline-block';
+        } else {
+          adminBtn.style.display = 'none';
+        }
+      }
+      // re-render products so action buttons match auth state
+      await loadAndRenderProducts();
+      // update badge if any
+      updateCartBadge();
+    }
+
+    document.addEventListener('DOMContentLoaded', refreshHeaderAndGrid);
+    supa.auth.onAuthStateChange(refreshHeaderAndGrid);
+
     /* Keep badge in sync across tabs/devices on same browser */
     window.addEventListener('storage', (ev)=>{ if(ev.key === 'cart') updateCartBadge(); });
-
-    /* Boot */
-    document.addEventListener('DOMContentLoaded', async ()=>{
-      updateCartBadge();
-      // determine login state for rendering
-      const { data:{ session } } = await supa.auth.getSession();
-      IS_LOGGED_IN = !!session?.user;
-
-      // prepare header (name/admin)
-      await (async function refreshHeader(){
-        const { data:{ session } } = await supa.auth.getSession();
-        const signInBtn = document.getElementById('signInBtn');
-        const signUpBtn = document.getElementById('signUpBtn');
-        const acctBlock = document.getElementById('acctBlock');
-        const adminBtn = document.getElementById('adminBtn');
-        const helloName = document.getElementById('helloName');
-        const accountHeader = document.getElementById('accountHeader');
-
-        if (!session?.user){
-          signInBtn.style.display='inline-block';
-          signUpBtn.style.display='inline-block';
-          acctBlock.style.display='none';
-          adminBtn.style.display='none';
-        } else {
-          signInBtn.style.display='none';
-          signUpBtn.style.display='none';
-          acctBlock.style.display='inline-flex';
-
-          let display = session.user.email;
-          let isAdmin = false;
-          try{
-            const { data: p } = await supa.from('profiles')
-              .select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
-            const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
-            if (full) display = full;
-            isAdmin = !!p?.is_admin;
-          }catch(_){}
-          helloName.textContent = display;
-          accountHeader.textContent = display;
-
-          if (isAdmin || SUPER_ADMINS.includes(session.user.email)) {
-            adminBtn.style.display='inline-block';
-          } else {
-            adminBtn.style.display='none';
-          }
-        }
-      })();
-
-      await loadAndRenderProducts();
-    });
-
-    // account menu toggle (header)
-    (function accountMenuWiring(){
-      const accountBtn = document.getElementById('accountBtn');
-      const accountMenu = document.getElementById('accountMenu');
-      const logoutBtn  = document.getElementById('logoutBtn');
-      if (!accountBtn) return;
-      accountBtn.addEventListener('click', ()=>{
-        const open = accountMenu.classList.toggle('open');
-        accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
-        if (open){
-          const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
-          setTimeout(()=>document.addEventListener('click', onDoc),0);
-        }
-      });
-      logoutBtn?.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
-    })();
   </script>
 </body>
 </html>
+
