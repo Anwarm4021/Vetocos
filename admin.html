@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex, nofollow"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px;--accent:#6dd5ff;--accent2:#83f0a5}
+    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px;--accent:#6dd5ff}
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
     main{max-width:1200px;margin:34px auto;padding:0 18px}
@@ -39,6 +39,10 @@
     .bad{background:rgba(255,180,180,.12)}
     .pend{background:rgba(109,213,255,.12)}
     .mini{font-size:.88rem}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px 10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
+    .link{color:var(--accent);text-decoration:none}
     /* Drawer */
     .drawer{position:fixed;top:0;right:-520px;width:520px;max-width:96vw;height:100vh;background:#0f162f;
             border-left:1px solid rgba(141,158,199,.18);box-shadow:-8px 0 24px rgba(0,0,0,.25);transition:right .28s ease;
@@ -46,10 +50,6 @@
     .drawer.open{right:0}
     .drawer header{display:flex;align-items:center;justify-content:space-between;padding:14px;border-bottom:1px solid rgba(141,158,199,.18)}
     .drawer main{padding:14px;overflow:auto;flex:1}
-    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px 10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
-    .link{color:var(--accent);text-decoration:none}
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
            border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
   </style>
@@ -75,7 +75,7 @@
     </div>
   </div>
 
-  <!-- USERS (with Full Control column) -->
+  <!-- USERS -->
   <div class="card hidden" id="usersWrap">
     <div class="toolbar">
       <h2>Users</h2>
@@ -179,13 +179,23 @@
     <div id="vpaList"></div>
   </div>
 
-  <!-- NEWS -->
+  <!-- NEWS & VET NOTICE -->
   <div class="card hidden" id="newsWrap">
     <div class="toolbar">
       <h2>News & Regions</h2>
       <div class="row">
         <button class="btn small" id="newsRefresh">Refresh</button>
         <a class="btn small" href="news.html" target="_blank" rel="noopener">Open public news</a>
+      </div>
+    </div>
+
+    <!-- Global Vet Notice -->
+    <div class="card" style="margin:-4px 0 12px">
+      <h3 style="margin:0 0 8px">Vet page global notice</h3>
+      <textarea id="vetNotice" placeholder="Short message shown on the Vet verification page for all users"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn small" id="saveVetNotice">Save notice</button>
+        <div id="vetNoticeMsg" class="muted"></div>
       </div>
     </div>
 
@@ -236,7 +246,7 @@
   </div>
 </main>
 
-<!-- RIGHT DRAWER: Full Control for a user -->
+<!-- RIGHT DRAWER: Full Control -->
 <aside id="drawer" class="drawer" aria-hidden="true">
   <header>
     <div>
@@ -268,14 +278,6 @@
           </select>
           <button id="dwSaveVpa" class="btn small">Save / Upsert</button>
         </div>
-      </div>
-    </section>
-
-    <section class="card">
-      <h3 style="margin:0 0 8px">Quick Links</h3>
-      <div class="row">
-        <a class="btn small" href="#prodWrap">Manage Products</a>
-        <a class="btn small" href="#newsWrap">Manage News</a>
       </div>
     </section>
   </main>
@@ -315,8 +317,8 @@ const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
 loginBtn.onclick = () => {
   const u = new URL("login.html", location.href);
+  u.searchParams.set("admin", "1");            // tell login page this is an admin login
   u.searchParams.set("redirect", "admin.html");
-  u.searchParams.set("force", "1");
   location.href = u.toString();
 };
 logoutBtn.onclick = async () => { await supa.auth.signOut(); location.href='index.html'; };
@@ -328,7 +330,7 @@ async function checkAdmin(){
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove('hidden');
 
-  if (ADMIN_EMAILS.includes((session.user.email||'').toLowerCase())) return true;
+  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){ location.replace('index.html'); return false; }
   return true;
@@ -349,7 +351,6 @@ usersRefresh.addEventListener('click', loadUsers);
 let USERS_CACHE = [];
 async function loadUsers(){
   usersMsg.textContent = 'Loading…';
-  // Users with any vet application OR any per-product approval
   const { data: profs, error } = await supa
     .from('profiles')
     .select('id,email,first_name,last_name,is_admin,can_purchase')
@@ -357,13 +358,11 @@ async function loadUsers(){
     .limit(3000);
   if (error){ usersMsg.textContent = error.message; return; }
 
-  // Pull latest vet application per user
   const { data: apps } = await supa
     .from('vet_applications')
-    .select('id,user_id,status,identity_number,diploma_path,created_at')
+    .select('id,user_id,status,identity_number,diploma_path,created_at,admin_note')
     .order('created_at',{ ascending:false });
 
-  // Count approvals per user (pending)
   const { data: vpa } = await supa
     .from('vet_product_approvals')
     .select('user_id,status,product_sku,quantity');
@@ -416,7 +415,7 @@ function renderUsers(){
   });
 }
 
-/* Drawer: fetch & control data for one user */
+/* Drawer */
 const drawer  = document.getElementById('drawer');
 const dwClose = document.getElementById('dwClose');
 const dwName  = document.getElementById('dwName');
@@ -432,11 +431,12 @@ const dwSaveVpa = document.getElementById('dwSaveVpa');
 let DRAWER_USER_ID = null;
 dwClose.onclick = ()=>{ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); };
 
+function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
 async function openDrawer(userId){
   DRAWER_USER_ID = userId;
   drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
 
-  // Profile
   const { data: p } = await supa.from('profiles').select('email,first_name,last_name').eq('id', userId).maybeSingle();
   dwName.textContent = [p?.first_name, p?.last_name].filter(Boolean).join(' ') || '(no name)';
   dwEmail.textContent= p?.email || '';
@@ -445,11 +445,12 @@ async function openDrawer(userId){
   dwAppBox.textContent = 'Loading…';
   const { data: appRows } = await supa
     .from('vet_applications')
-    .select('id,identity_number,diploma_path,status,created_at')
+    .select('id,identity_number,diploma_path,status,created_at,admin_note')
     .eq('user_id', userId)
     .order('created_at', { ascending:false })
     .limit(1);
   const app = (appRows||[])[0] || null;
+
   if (!app){
     dwAppBox.innerHTML = '<div class="muted">No application.</div>';
   } else {
@@ -461,14 +462,25 @@ async function openDrawer(userId){
       }catch{}
     }
     const pill = app.status==='approved'?'ok':app.status==='rejected'?'bad':'pend';
+    const adminNote = app.admin_note || '';
+
     dwAppBox.innerHTML = `
-      <div class="row">
+      <div class="row" style="margin-bottom:8px">
         <div>Status: <span class="pill ${pill}">${app.status}</span></div>
         <button class="btn small" data-appact="approve">Approve</button>
         <button class="btn danger small" data-appact="reject">Reject</button>
       </div>
-      <div class="mini muted" style="margin-top:6px">ID: ${app.identity_number || '-' }${fileLink}</div>
+      <div class="mini muted" style="margin-bottom:8px">ID: ${escapeHtml(app.identity_number || '-')}${fileLink}</div>
+
+      <label style="display:block;margin:8px 0 6px">Admin note to user</label>
+      <textarea id="dwAdminNote" placeholder="Write a short note the user will see on their vet page…">${escapeHtml(adminNote)}</textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn small" id="dwSaveNote">Save note</button>
+        <div class="muted" id="dwNoteMsg"></div>
+      </div>
     `;
+
+    // Approve/reject
     dwAppBox.querySelector('[data-appact="approve"]').onclick = async ()=>{
       const { error } = await supa.from('vet_applications').update({ status:'approved' }).eq('id', app.id);
       if (error) return toast(error.message,true);
@@ -479,11 +491,23 @@ async function openDrawer(userId){
       if (error) return toast(error.message,true);
       toast('Application rejected'); openDrawer(userId);
     };
+
+    // Save note
+    const saveBtn = document.getElementById('dwSaveNote');
+    const noteMsg = document.getElementById('dwNoteMsg');
+    const noteEl  = document.getElementById('dwAdminNote');
+    saveBtn.onclick = async ()=>{
+      noteMsg.textContent = 'Saving…';
+      const { error } = await supa.from('vet_applications').update({ admin_note: noteEl.value || null }).eq('id', app.id);
+      if (error){ noteMsg.textContent = error.message; return; }
+      noteMsg.textContent = 'Saved.';
+      toast('Note saved');
+    };
   }
 
   await loadDrawerApprovals();
 }
-dwReloadApprovals.onclick = ()=> loadDrawerApprovals();
+document.getElementById('dwReloadApprovals').onclick = ()=> loadDrawerApprovals();
 
 async function loadDrawerApprovals(){
   dwVPABox.textContent = 'Loading…';
@@ -543,8 +567,7 @@ async function loadDrawerApprovals(){
     };
   });
 }
-
-dwSaveVpa.onclick = async ()=>{
+document.getElementById('dwSaveVpa').onclick = async ()=>{
   const sku = (dwSku.value||'').trim(); const qty = Math.max(0, Number(dwQty.value||0)|0); const status = dwStatus.value;
   if(!sku){ toast('Enter SKU', true); return; }
   const { error } = await supa.from('vet_product_approvals').upsert({
@@ -555,7 +578,7 @@ dwSaveVpa.onclick = async ()=>{
 };
 
 /* =======================================================================
-   PRODUCTS (CRUD) — (same capabilities as before)
+   PRODUCTS
 ======================================================================= */
 const prodWrap    = document.getElementById('prodWrap');
 const prodSearch  = document.getElementById('prodSearch');
@@ -712,7 +735,7 @@ prodList.addEventListener('change', async (e)=>{
 });
 
 /* =======================================================================
-   VET APPLICATIONS (with Full control button)
+   VET APPLICATIONS
 ======================================================================= */
 const appsWrap   = document.getElementById('appsWrap');
 const appsSearch = document.getElementById('appsSearch');
@@ -729,7 +752,7 @@ async function loadApps(){
   const { data, error } = await supa
     .from('vet_applications')
     .select(`
-      id,user_id,identity_number,diploma_path,status,created_at,
+      id,user_id,identity_number,diploma_path,status,created_at,admin_note,
       profiles:profiles!vet_applications_user_id_fkey(email,first_name,last_name)
     `)
     .order('created_at', { ascending:false });
@@ -750,13 +773,15 @@ function renderApps(){
     const full = [a.profiles?.first_name, a.profiles?.last_name].filter(Boolean).join(' ') || '(no name)';
     const statusPill = a.status==='approved' ? 'ok' : a.status==='rejected' ? 'bad' : 'pend';
     const diplomaLink = a.diploma_path ? `<a class="btn small" href="${filePublicUrl(DOCS_BUCKET, a.diploma_path)}" target="_blank" rel="noopener">Open file</a>` : '';
+    const note = a.admin_note ? `<div class="mini muted">Note: ${escapeHtml(a.admin_note)}</div>` : '';
     return `<div class="card" data-app="${a.id}" data-user="${a.user_id}">
       <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;align-items:center">
         <div>
           <div style="font-weight:600">${full}</div>
           <div class="muted mini">${a.profiles?.email||''}</div>
-          <div class="muted mini">ID #: ${a.identity_number||'-'}</div>
+          <div class="muted mini">ID #: ${escapeHtml(a.identity_number||'-')}</div>
           <div class="muted mini">${new Date(a.created_at).toLocaleString()}</div>
+          ${note}
         </div>
         <div><span class="pill ${statusPill}">${a.status||'pending'}</span></div>
         <div class="row" style="justify-content:flex-end">
@@ -778,7 +803,7 @@ function renderApps(){
 
 appsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
-  const card = b.closest('[data-app]'); const appId = card.dataset.app; const userId = card.dataset.user;
+  const card = b.closest('[data-app]'); const appId = card.dataset.app;
   const action = b.dataset.action;
 
   if(action==='approve'){
@@ -825,8 +850,7 @@ vpaUpsert.onclick = async ()=>{
   if (!user?.id){ vpaMsg.textContent='User not found'; return; }
 
   const payload = { user_id: user.id, product_sku: sku, quantity: qty, status };
-  const { error } = await supa.from('vet_product_approvals')
-    .upsert(payload, { onConflict: 'user_id,product_sku' });
+  const { error } = await supa.from('vet_product_approvals').upsert(payload, { onConflict: 'user_id,product_sku' });
   if (error){ vpaMsg.textContent = error.message; return; }
   vpaMsg.textContent = 'Saved';
   await loadVPA();
@@ -911,7 +935,7 @@ vpaList.addEventListener('click', async (e)=>{
 });
 
 /* =======================================================================
-   NEWS + REGIONS
+   NEWS + REGIONS + VET NOTICE
 ======================================================================= */
 const newsWrap   = document.getElementById('newsWrap');
 const newsMsg    = document.getElementById('newsMsg');
@@ -933,6 +957,23 @@ const nMsg   = document.getElementById('nMsg');
 const regionToggles = document.getElementById('regionToggles');
 const saveRegions   = document.getElementById('saveRegions');
 const regMsg        = document.getElementById('regMsg');
+
+const vetNoticeEl = document.getElementById('vetNotice');
+const vetNoticeMsg= document.getElementById('vetNoticeMsg');
+
+async function loadVetNotice(){
+  try{
+    const { data } = await supa.from('site_settings').select('value').eq('key','vet_notice').maybeSingle();
+    vetNoticeEl.value = (typeof data?.value === 'string') ? data.value : '';
+  }catch{}
+}
+document.getElementById('saveVetNotice').onclick = async ()=>{
+  vetNoticeMsg.textContent='Saving…';
+  const val = vetNoticeEl.value || '';
+  const { error } = await supa.from('site_settings').upsert({ key:'vet_notice', value: val }, { onConflict:'key' });
+  if (error){ vetNoticeMsg.textContent = error.message; return; }
+  vetNoticeMsg.textContent='Saved.'; toast('Vet notice saved');
+};
 
 async function ensureSettings(){
   try{
@@ -1084,45 +1125,18 @@ document.getElementById('nUpdate').onclick = async ()=>{
   nMsg.textContent = "Updated."; toast('News updated'); nUpdate.disabled=false; await loadNews();
 };
 
-/* ================= Regions load/save ================= */
-async function ensureSettings(){
-  try{
-    const { data } = await supa.from('site_settings').select('key').eq('key','active_regions').maybeSingle();
-    if(!data){ await supa.from('site_settings').insert({ key:'active_regions', value: JSON.stringify(["Global"]) }); }
-  }catch{}
-}
-async function loadRegions(){
-  await ensureSettings();
-  const { data } = await supa.from('site_settings').select('value').eq('key','active_regions').maybeSingle();
-  const active = Array.isArray(data?.value) ? data.value : ["Global"];
-  const all = ["Global","Africa","Europe","Middle East","Americas","Asia"];
-  regionToggles.innerHTML = all.map(r=>{
-    const on = active.includes(r);
-    return `<label style="display:flex;align-items:center;gap:8px"><input type="checkbox" class="reg" value="${r}" ${on?'checked':''}/> ${r}</label>`;
-  }).join(' ');
-}
-document.getElementById('saveRegions').onclick = async ()=>{
-  const chosen = [...regionToggles.querySelectorAll('input.reg:checked')].map(i=>i.value);
-  const { error } = await supa.from('site_settings').upsert({ key:'active_regions', value: chosen }, { onConflict:'key' });
-  if (error){ regMsg.textContent = error.message; return; }
-  regMsg.textContent = "Saved."; setTimeout(()=> regMsg.textContent = "", 1500);
-};
-
 /* =======================================================================
-   Realtime notifications (new vet application / new product approval)
+   Realtime notifications
 ======================================================================= */
 function subscribeRealtime(){
   try{
     supa.channel('rt_vet_apps')
-      .on('postgres_changes', { event: '*', schema:'public', table:'vet_applications' }, payload=>{
-        toast('Vet application updated/added'); loadApps(); loadUsers();
-      })
+      .on('postgres_changes', { event: '*', schema:'public', table:'vet_applications' }, ()=>{ toast('Vet application updated'); loadApps(); loadUsers(); })
       .subscribe();
 
     supa.channel('rt_vpa')
-      .on('postgres_changes', { event: '*', schema:'public', table:'vet_product_approvals' }, payload=>{
-        toast('Product approval updated/added'); loadVPA(); loadUsers();
-        if (DRAWER_USER_ID) loadDrawerApprovals();
+      .on('postgres_changes', { event: '*', schema:'public', table:'vet_product_approvals' }, ()=>{
+        toast('Product approval updated'); loadVPA(); loadUsers(); if (DRAWER_USER_ID) loadDrawerApprovals();
       })
       .subscribe();
   }catch{}
@@ -1134,14 +1148,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   if (!ok) return;
   ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
 
-  await Promise.all([
-    loadUsers(),
-    loadProducts(),
-    loadApps(),
-    loadVPA(),
-    loadRegions(),
-    loadNews()
-  ]);
+  await Promise.all([ loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice() ]);
 
   document.getElementById('newsRefresh').onclick = ()=> loadNews();
   document.getElementById('prodRefresh').onclick = ()=> loadProducts();
