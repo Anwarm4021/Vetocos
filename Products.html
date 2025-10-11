@@ -1,467 +1,140 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>VetoCos | Products</title>
+  <title>VetoCos | Produits</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="VetoCos complementary feed for dogs & cats.">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta name="description" content="Catalogue produits VetoCos" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;
-      --brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;
-      --shadow:0 10px 30px rgba(0,0,0,.25)
-    }
+    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px}
     *{box-sizing:border-box}
-    body{margin:0;padding:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif;line-height:1.6}
-    a{text-decoration:none;color:inherit}
-    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
-
-    /* Header */
-    header.site{position:sticky;top:0;z-index:50;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
-    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
-    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:var(--shadow)}
-    .links{display:flex;gap:18px;align-items:center}
-    .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
-    .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
-
-    /* Cart button in header */
-    .cart-link{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.04)}
-    .cart-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;display:grid;place-items:center;font-size:12px;background:#ff6d6d;border-radius:999px;padding:0 6px;color:white}
-
-    .contact-btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
-
-    .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
-    @media(max-width:820px){
-      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:200px}
-      .links.open{display:flex}
-      .hamb{display:block}
-      .contact-btn,#lang-switch{width:100%;text-align:left}
-    }
-
-    /* Hero */
-    .hero{padding:40px 0 20px;text-align:center}
-    .badge{display:inline-flex;gap:8px;align-items:center;background:rgba(141,158,199,.15);border:1px solid rgba(141,158,199,.25);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
-    h1{font-size:clamp(28px,5vw,42px);margin:14px 0}
-    .lead{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:700px;margin:0 auto 18px}
-
-    /* Product grid */
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
-    @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:520px){.grid{grid-template-columns:1fr}}
-    .p-card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:.2s}
-    .p-card:hover{transform:translateY(-3px);border-color:rgba(131,240,165,.3)}
-    .p-card img{width:100%;height:170px;object-fit:cover}
-    .px{padding:12px}
-    .px h4{margin:.2rem 0 .1rem}
-    .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .status{font-size:12px;border-radius:999px;padding:2px 8px;border:1px solid rgba(141,158,199,.25)}
-    .status.ok{background:rgba(131,240,165,.14)}
-    .status.bad{background:rgba(255,120,120,.14)}
-    .qty{font-size:12px;color:var(--muted)}
-
-    /* Buttons */
-    .btn{
-      display:inline-block;
-      padding:10px 14px;
-      border-radius:10px;
-      border:1px solid rgba(141,158,199,.25);
-      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));
-      color:var(--text);
-      cursor:pointer;
-      font-weight:600
-    }
-    .btn.ghost{background:transparent}
-    .btn[disabled]{opacity:.6;cursor:not-allowed}
-
-    /* Footer */
-    footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
-    .footer-links{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
-
-    /* --- Product Details Modal --- */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
-    .modal.open{display:flex}
-    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
-    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
-    .sheet-title{margin:0;font-size:1.1rem}
-    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
-    .sheet-body{padding:16px}
-    .pd-cols{display:grid;grid-template-columns:220px 1fr;gap:16px}
-    @media(max-width:720px){.pd-cols{grid-template-columns:1fr}}
-    .pd-img{width:100%;height:220px;object-fit:cover;border-radius:12px;border:1px solid rgba(141,158,199,.18)}
-    .specs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:720px){.specs{grid-template-columns:1fr}}
-    .spec{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:12px}
-    .spec h5{margin:.2rem 0 .3rem;font-size:0.95rem}
+    body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
+    main{max-width:1120px;margin:40px auto;padding:0 18px}
+    h1{margin:0 0 12px}
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media(max-width:1024px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:14px}
     .muted{color:var(--muted)}
-    .sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-
-    /* RTL */
-    body.rtl .links a{text-align:right}
+    .search{width:320px;max-width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text)}
+    .prod{display:grid;grid-template-columns:120px 1fr;gap:12px}
+    .prod img{width:120px;height:96px;object-fit:cover;border-radius:10px;border:1px solid rgba(141,158,199,.18)}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+         background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer}
+    .btn[disabled]{opacity:.55;cursor:not-allowed}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.9rem}
+    .ok{background:rgba(131,240,165,.12)}
+    a{color:#6dd5ff;text-decoration:none}
+    .mini{font-size:.9rem}
   </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<header class="site">
-  <div class="wrap nav">
-    <div class="brand"><span class="logo"></span> VetoCos</div>
-    <nav class="links" id="navlinks">
-      <a href="index.html" data-i18n="nav.home">Home</a>
-      <a class="active" href="Products.html" data-i18n="nav.products">Products</a>
-      <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
-      <a href="News.html" data-i18n="nav.news">News</a>
-
-      <a class="cart-link" href="cart.html" aria-label="Cart">
-        <span>Cart</span>
-        <span id="cartCount" class="cart-badge" style="display:none">0</span>
-      </a>
-
-      <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
-      <select id="lang-switch" aria-label="Language">
-        <option value="en">English</option>
-        <option value="fr">Français</option>
-        <option value="ar">العربية</option>
-      </select>
-    </nav>
-    <button class="hamb" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
-  </div>
-</header>
-
-<main class="wrap">
-  <div class="hero">
-    <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
-    <h1 data-i18n="products.title">Our Product Range</h1>
-    <p class="lead" data-i18n="products.lead">Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.</p>
-  </div>
-
-  <div class="grid" id="productGrid"></div>
-</main>
-
-<footer>
-  © <span id="y"></span> VetoCos · <span data-i18n="footer.tagline">Complementary feed for companion animals</span>
-  <div class="footer-links">
-    <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
-    <a href="#" onclick="openContact();return false;" data-i18n="nav.contact">Contact</a>
-  </div>
-</footer>
-
-<!-- Minimal stubs for the modal open/close (to avoid errors) -->
-<script>
-  function openContact() {}
-  function openPolicy() {}
-  document.getElementById("y") && (document.getElementById("y").textContent = new Date().getFullYear());
-</script>
-
-<!-- Supabase -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-const supa = supabase.createClient(
-  "https://qdepgviimbcdlozjpbhm.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
-);
-</script>
-
-<!-- Product Details Modal (HTML) -->
-<div id="productDetailsModal" class="modal" aria-hidden="true">
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
-    <div class="sheet-head">
-      <h2 id="pdTitle" class="sheet-title">Product details</h2>
-      <button class="close" type="button" onclick="closePD()">Close</button>
+  <main>
+    <div class="row">
+      <h1>Produits</h1>
+      <input id="q" class="search" placeholder="Rechercher par nom ou SKU" />
     </div>
-    <div class="sheet-body">
-      <div class="pd-cols">
-        <img id="pdImg" class="pd-img" alt="">
-        <div>
-          <h3 id="pdName" style="margin:0 0 6px"></h3>
-          <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
-          <div class="specs">
-            <div class="spec">
-              <h5>Form</h5>
-              <div id="pdForm" class="muted"></div>
-            </div>
-            <div class="spec">
-              <h5>Pack size</h5>
-              <div id="pdSize" class="muted"></div>
-            </div>
-            <div class="spec">
-              <h5>Key ingredients</h5>
-              <div id="pdIngredients" class="muted"></div>
-            </div>
-            <div class="spec">
-              <h5>Feeding guidance</h5>
-              <div id="pdUsage" class="muted"></div>
-            </div>
-          </div>
-
-          <p id="pdDesc" class="muted" style="margin-top:10px"></p>
-
-          <div class="sheet-actions">
-            <button class="btn" id="pdAddBtn" type="button">Add to Cart</button>
-            <button class="btn ghost" id="pdBuyBtn" type="button">Buy Now</button>
-            <a class="btn" id="pdPdfBtn" href="#" target="_blank" rel="noopener">Download PDF</a>
-            <a class="btn ghost" id="pdPageBtn" href="#">View full page</a>
-            <span class="muted" id="pdSku" style="margin-left:auto"></span>
-          </div>
-        </div>
+    <div class="row" style="margin:6px 0 10px">
+      <div id="gate" class="muted mini">Vous n’êtes pas connecté. Vous pouvez parcourir, mais l’ajout au panier est réservé aux vétérinaires approuvés.</div>
+      <div class="row" style="gap:8px">
+        <a class="btn" href="login.html?redirect=Products.html">Se connecter</a>
+        <a class="btn" href="vet-verify.html">Vérification vétérinaire</a>
+        <a class="btn" href="cart.html">Panier</a>
       </div>
-      <p class="muted" style="margin-top:12px">
-        Complementary feed — not a medicine. Always follow your vet’s advice.
-      </p>
     </div>
-  </div>
-</div>
+    <div id="list" class="grid"></div>
+  </main>
 
-<!-- Cart + Product render logic -->
 <script>
-/* ---------- Cart helpers ---------- */
-function readCart(){
-  try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; }
-}
-function writeCart(items){
-  localStorage.setItem("cart", JSON.stringify(items));
-  updateCartBadge();
-}
-function countCart(){ return readCart().reduce((n,x)=>n + Number(x.qty||0), 0); }
-function updateCartBadge(){
-  const n = countCart();
-  const b = document.getElementById('cartCount');
-  if(!b) return;
-  if(n>0){ b.style.display='inline-grid'; b.textContent = n; }
-  else   { b.style.display='none'; }
-}
+  const supa = supabase.createClient(
+    "https://qdepgviimbcdlozjpbhm.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+    { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
+  );
 
-/* Single source of truth for adding to cart */
-function addToCartBySKU(sku, name, qty=1){
-  const items = readCart();
-  const i = items.findIndex(x=>x.sku===sku);
-  if(i>-1) items[i].qty += qty;
-  else items.push({ sku, name, qty });
-  writeCart(items);
-}
+  const qEl = document.getElementById('q');
+  const list = document.getElementById('list');
+  const gate = document.getElementById('gate');
 
-/* Fallback product specs (to keep your original products content) */
-const FALLBACK = {
-  "URO-CHIEN": { name:"Urocline Chien", image:"images/Product1.jpg", category:"Urinary care", form:"Chewable tablets", size:"60 / 120 tabs", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", page:"Product1.html", pdf:"pdf/Product1.pdf" },
-  "HEP-AT":    { name:"Hepatiale", image:"images/Product2.jpg", category:"Liver support", form:"Capsules", size:"30 / 60 caps", ingredients:"Silybin-phospholipid, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", page:"Product2.html", pdf:"pdf/Product2.pdf" },
-  "NEU-VIEW":  { name:"Neuroview", image:"images/Product3.jpg", category:"Cognitive", form:"Soft chews", size:"60 chews", ingredients:"Phosphatidylserine, DHA, L-theanine, B-vitamins", usage:"1 chew / 10 kg daily", page:"Product3.html", pdf:"pdf/Product3.pdf" },
-  "MUNI-SAN":  { name:"Munisan", image:"images/Product4.jpg", category:"Immune", form:"Powder", size:"120 g", ingredients:"Beta-glucans, Colostrum, Zinc, Vitamin C", usage:"Mix with food once daily", page:"Product4.html", pdf:"pdf/Product4.pdf" },
-  "PILO-SAN":  { name:"Pilosan", image:"images/Product5.jpg", category:"Skin & coat", form:"Syrup", size:"150 ml", ingredients:"Biotin, Omega-3 & 6, Zinc", usage:"1 ml / 5 kg daily", page:"Product5.html", pdf:"pdf/Product5.pdf" },
-  "HEMO-VET":  { name:"HemoVet", image:"images/Product6.jpg", category:"Vitamins & minerals", form:"Tablets", size:"60 tabs", ingredients:"Iron, B12, Folic acid, Copper", usage:"As directed by your vet", page:"Product6.html", pdf:"pdf/Product6.pdf" },
-  "URO-STONES":{ name:"Urocline-Stones", image:"images/Product7.jpg", category:"Urinary care", form:"Tablets", size:"60 tabs", ingredients:"DL-methionine, Potassium citrate, Cranberry", usage:"Supports urinary environment", page:"Product7.html", pdf:"pdf/Product7.pdf" },
-  "VIT-MIN":   { name:"Vit&Min", image:"images/Product8.jpg", category:"Vitamins & minerals", form:"Powder", size:"200 g", ingredients:"Balanced vitamins & trace minerals", usage:"Daily multivitamin per weight", page:"Product8.html", pdf:"pdf/Product8.pdf" },
-  "ART-ASUH":  { name:"Art-Asuh", image:"images/Product9.jpg", category:"Mobility", form:"Chewable tablets", size:"90 tabs", ingredients:"Glucosamine, Chondroitin, MSM, Hyaluronic acid", usage:"Initial 4–6 weeks then maintenance", page:"Product9.html", pdf:"pdf/Product9.pdf" },
-  "CARBO-DIG": { name:"Carbo Digest", image:"images/Product10.jpg", category:"Digestive comfort", form:"Capsules", size:"30 caps", ingredients:"Activated charcoal, Prebiotics", usage:"Short-term digestive comfort", page:"Product10.html", pdf:"pdf/Product10.pdf" },
-  "RENO-SAN":  { name:"Renosan", image:"images/Product11.jpg", category:"Renal support", form:"Powder", size:"150 g", ingredients:"Calcium carbonate, Chitosan, Omega-3", usage:"Supports renal function (dietary)", page:"Product11.html", pdf:"pdf/Product11.pdf" },
-  "QAL-MIL":   { name:"Qalmil", image:"images/Product12.jpg", category:"Calming", form:"Soft chews", size:"60 chews", ingredients:"L-tryptophan, L-theanine, Lemon balm", usage:"Use before stressful events or daily", page:"Product12.html", pdf:"pdf/Product12.pdf" }
-};
-
-/* Build public file URL for ProductFiles bucket */
-const PRODUCT_BUCKET = "ProductFiles";
-function filePublicUrl(path){
-  if(!path) return null;
-  // Ensure we don't duplicate the bucket prefix
-  const p = path.replace(/^ProductFiles\//,'');
-  return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(p)}`;
-}
-
-/* Modal refs */
-const pdModal = document.getElementById('productDetailsModal');
-const pdImg   = document.getElementById('pdImg');
-const pdName  = document.getElementById('pdName');
-const pdCat   = document.getElementById('pdCategory');
-const pdForm  = document.getElementById('pdForm');
-const pdSize  = document.getElementById('pdSize');
-const pdIngr  = document.getElementById('pdIngredients');
-const pdUse   = document.getElementById('pdUsage');
-const pdSku   = document.getElementById('pdSku');
-const pdAdd   = document.getElementById('pdAddBtn');
-const pdBuy   = document.getElementById('pdBuyBtn');
-const pdPdf   = document.getElementById('pdPdfBtn');
-const pdPage  = document.getElementById('pdPageBtn');
-const pdDesc  = document.getElementById('pdDesc');
-
-let CURRENT_SKU = null;
-let PRODUCT_CACHE = {}; // sku -> merged data for modal/buttons
-
-function openPD(sku){
-  const spec = PRODUCT_CACHE[sku] || {};
-  CURRENT_SKU = sku;
-  pdName.textContent = spec.name || sku;
-  pdCat.textContent  = spec.category || '';
-  pdForm.textContent = spec.form || '—';
-  pdSize.textContent = spec.size || '—';
-  pdIngr.textContent = spec.ingredients || '—';
-  pdUse.textContent  = spec.usage || '—';
-  pdDesc.textContent = spec.description || '';
-  pdSku.textContent  = 'SKU: ' + sku;
-
-  const imgUrl = spec.image_path ? filePublicUrl(spec.image_path) : (spec.image || '');
-  pdImg.src = imgUrl || '';
-  pdImg.alt = spec.name || sku;
-
-  pdPdf.href  = (spec.pdf_path ? filePublicUrl(spec.pdf_path) : (spec.pdf || '#')) || '#';
-  pdPage.href = spec.page || '#';
-
-  pdAdd.disabled = !(spec.available && (Number(spec.stock_qty||0) > 0));
-  pdBuy.disabled = pdAdd.disabled;
-
-  pdModal.classList.add('open');
-  pdModal.setAttribute('aria-hidden','false');
-}
-function closePD(){
-  pdModal.classList.remove('open');
-  pdModal.setAttribute('aria-hidden','true');
-}
-pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
-
-pdAdd.addEventListener('click', ()=>{
-  if(!CURRENT_SKU) return;
-  const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
-  addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
-  alert((spec.name || CURRENT_SKU) + " added to cart");
-});
-pdBuy.addEventListener('click', async ()=>{
-  if(!CURRENT_SKU) return;
-  const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
-  addToCartBySKU(CURRENT_SKU, spec.name || CURRENT_SKU, 1);
-  const { data:{ user } } = await supa.auth.getUser();
-  if(!user){ location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`; }
-  else { location.href = 'cart.html'; }
-});
-
-/* Render cards from DB (with fallback content) */
-async function loadAndRenderProducts(){
-  const grid = document.getElementById('productGrid');
-  grid.innerHTML = '<div class="muted">Loading…</div>';
-  let rows = [];
-  const { data, error } = await supa
-    .from('products')
-    .select('sku,name,description,stock_qty,available,image_path,pdf_path,sort_order,updated_at')
-    .order('sort_order', { ascending:true, nullsFirst:false })
-    .order('name', { ascending:true });
-
-  if (error){
-    console.warn(error);
-  } else {
-    rows = data || [];
+  /* Cart (local) */
+  function readCart(){ try{ return JSON.parse(localStorage.getItem('cart')||'[]'); }catch{ return []; } }
+  function writeCart(items){ localStorage.setItem('cart', JSON.stringify(items)); }
+  function addToCart(sku, name){
+    const items = readCart();
+    const i = items.findIndex(x=>x.sku===sku);
+    if(i>-1) items[i].qty = Number(items[i].qty||0)+1; else items.push({ sku, name: name||sku, qty:1 });
+    writeCart(items);
+  }
+  function imgUrl(path){
+    return path ? `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/ProductFiles/${encodeURI(path.replace(/^ProductFiles\//,''))}` : '';
   }
 
-  // If no DB products yet, synthesize from FALLBACK list (keeps your current 12 cards)
-  if (!rows.length){
-    rows = Object.keys(FALLBACK).map((sku, i)=>({
-      sku,
-      name: FALLBACK[sku].name,
-      description: '',
-      stock_qty: 999,      // treat as in stock
-      available: true,     // treat as available
-      image_path: null,
-      pdf_path: null,
-      sort_order: i+1
-    }));
+  let PRODUCTS=[], PROFILE=null, USER=null;
+  function searchable(p){ return `${(p.name||'')} ${(p.sku||'')}`.toLowerCase(); }
+
+  function render(){
+    const q=(qEl.value||'').toLowerCase();
+    const allowAdd = !!(PROFILE && PROFILE.can_purchase);
+    gate.textContent = allowAdd
+      ? `Connecté${PROFILE.first_name||PROFILE.last_name?` : ${[PROFILE.first_name,PROFILE.last_name].filter(Boolean).join(' ')}`:''} · ✅ achat autorisé`
+      : (USER ? 'Connecté, en attente d’approbation vétérinaire. Vous pouvez demander la vérification.' :
+                'Vous n’êtes pas connecté. Vous pouvez parcourir, mais l’ajout au panier est réservé aux vétérinaires approuvés.');
+
+    list.innerHTML = PRODUCTS.filter(p=>!q || searchable(p).includes(q)).map(p=>{
+      const ok = p.available && Number(p.stock_qty||0)>0;
+      const badge = ok ? '<span class="pill ok">Disponible</span>' : '<span class="pill">Indisponible</span>';
+      const img = imgUrl(p.image_path);
+      const addBtn = (allowAdd && ok)
+        ? `<button class="btn" data-action="add" data-sku="${p.sku}" data-name="${p.name||p.sku}">Ajouter au panier</button>`
+        : `<button class="btn" disabled>Ajouter au panier</button>`;
+      return `<div class="card">
+        <div class="prod">
+          ${img?`<img src="${img}" alt="${p.name}">`:'<div style="width:120px;height:96px;border:1px solid rgba(141,158,199,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#789">—</div>'}
+          <div>
+            <div style="font-weight:600">${p.name||p.sku}</div>
+            <div class="muted mini">${p.sku}</div>
+            <div class="muted mini" style="margin-top:6px">${p.description||''}</div>
+            <div style="margin:8px 0">${badge}</div>
+            <div class="row" style="gap:8px;justify-content:flex-start">
+              ${addBtn}
+              ${p.pdf_path ? `<a class="btn" href="${imgUrl(p.pdf_path)}" target="_blank" rel="noopener">Fiche PDF</a>`:''}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
   }
 
-  // Build PRODUCT_CACHE (merge DB row with FALLBACK attributes)
-  PRODUCT_CACHE = {};
-  rows.forEach(r=>{
-    const f = FALLBACK[r.sku] || {};
-    PRODUCT_CACHE[r.sku] = {
-      sku: r.sku,
-      name: r.name || f.name || r.sku,
-      description: r.description || '',
-      stock_qty: Number(r.stock_qty||0),
-      available: !!r.available,
-      image_path: r.image_path || null,
-      pdf_path: r.pdf_path || null,
-      // extra info for modal
-      category: f.category || '',
-      form: f.form || '',
-      size: f.size || '',
-      ingredients: f.ingredients || '',
-      usage: f.usage || '',
-      image: f.image || '',
-      page: f.page || '',
-      pdf: f.pdf || ''
-    };
+  list.addEventListener('click', (e)=>{
+    const b = e.target.closest('button[data-action="add"]');
+    if(!b) return;
+    addToCart(b.dataset.sku, b.dataset.name);
+    b.textContent = 'Ajouté ✓';
+    b.disabled = true;
   });
 
-  // Render grid
-  grid.innerHTML = '';
-  rows.forEach(r=>{
-    const p = PRODUCT_CACHE[r.sku];
-    const imgUrl = r.image_path ? filePublicUrl(r.image_path) : (p.image || '');
-    const isAvail = p.available && (p.stock_qty > 0);
-    const statusHtml = isAvail
-      ? `<span class="status ok">Available</span>`
-      : `<span class="status bad">Unavailable</span>`;
-    const qtyHtml = `<span class="qty">${p.stock_qty>0 ? (p.stock_qty + ' in stock') : 'Out of stock'}</span>`;
+  qEl.addEventListener('input', render);
 
-    const card = document.createElement('div');
-    card.className = 'p-card';
-    card.setAttribute('data-sku', r.sku);
-
-    card.innerHTML = `
-      <img src="${imgUrl}" alt="${p.name}">
-      <div class="px">
-        <h4>${p.name}</h4>
-        <div class="p-meta">
-          ${statusHtml}
-          <span>•</span>
-          ${qtyHtml}
-        </div>
-        <div class="actions">
-          <button class="btn add-btn" type="button" ${!isAvail ? 'disabled' : ''}>Add to Cart</button>
-          <button class="btn ghost buy-btn" type="button" ${!isAvail ? 'disabled' : ''}>Buy Now</button>
-          <button class="btn ghost more-btn" type="button">Click for more details</button>
-        </div>
-      </div>
-    `;
-
-    // Button handlers that work without opening modal first
-    const addBtn = card.querySelector('.add-btn');
-    addBtn?.addEventListener('click', (ev)=>{
-      ev.stopPropagation();
-      addToCartBySKU(r.sku, p.name, 1);
-      updateCartBadge();
-    });
-
-    const buyBtn = card.querySelector('.buy-btn');
-    buyBtn?.addEventListener('click', async (ev)=>{
-      ev.stopPropagation();
-      addToCartBySKU(r.sku, p.name, 1);
-      const { data:{ user } } = await supa.auth.getUser();
-      if(!user){ location.href = `login.html?redirect=${encodeURIComponent('cart.html')}`; }
-      else { location.href = 'cart.html'; }
-    });
-
-    const moreBtn = card.querySelector('.more-btn');
-    moreBtn?.addEventListener('click', (ev)=>{
-      ev.stopPropagation();
-      openPD(r.sku);
-    });
-
-    // Also allow clicking the image/title area to open details
-    card.addEventListener('click', (e)=>{
-      // avoid double trigger when clicking buttons
-      if (e.target.closest('.actions')) return;
-      openPD(r.sku);
-    });
-
-    grid.appendChild(card);
-  });
-}
-
-/* Keep badge in sync across tabs/devices on same browser */
-window.addEventListener('storage', (ev)=>{
-  if(ev.key === 'cart') updateCartBadge();
-});
-
-/* Boot */
-document.addEventListener('DOMContentLoaded', async ()=>{
-  updateCartBadge();
-  await loadAndRenderProducts();
-});
+  async function boot(){
+    const { data:{ user } } = await supa.auth.getUser();
+    USER = user || null;
+    if (USER){
+      const { data } = await supa.from('profiles').select('first_name,last_name,can_purchase').eq('id', USER.id).maybeSingle();
+      PROFILE = data || { can_purchase:false };
+    }
+    const { data: prods } = await supa.from('products')
+      .select('sku,name,description,stock_qty,available,image_path,pdf_path')
+      .order('sort_order', { ascending:true, nullsFirst:false })
+      .order('name');
+    PRODUCTS = prods || [];
+    render();
+  }
+  document.addEventListener('DOMContentLoaded', boot);
+  supa.auth.onAuthStateChange((_evt, session)=>{ USER=session?.user||null; boot(); });
 </script>
 </body>
 </html>
+
