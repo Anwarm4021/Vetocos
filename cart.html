@@ -33,9 +33,12 @@
     .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:space-between }
     .badge{ display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid rgba(141,158,199,.25); font-size:12px }
     .badge.ok{ background:rgba(131,240,165,.12) }
-    .badge.warn{ background:rgba(255,180,180,.12) }
+    .badge.warn{ background:rgba(255,200,120,.12) }
+    .badge.bad{ background:rgba(255,120,120,.12) }
     a{ color:#6dd5ff; text-decoration:none }
     .hint{ font-size:.92rem }
+    .note{ font-size:.88rem; color:var(--muted) }
+    .namecell{ display:flex; flex-direction:column; gap:4px }
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -44,6 +47,7 @@
     <h1>Your Cart</h1>
     <div id="cartBox" aria-live="polite"></div>
 
+    <!-- Optional: signed-in user’s recent orders -->
     <section class="orders">
       <div class="row">
         <h2 style="margin:0">Your Purchases</h2>
@@ -61,10 +65,13 @@
       { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
 
-    /* ======================= Cart utils ======================= */
+    /* ======================= Cart + stock state ======================= */
     const CART_KEY = 'cart';
     const CART_UPDATED_KEY = 'cart_updated_at';
-    const CART_RESTORED_KEY = 'cart_restored_v2'; // per-tab, adopt-once guard
+    const CART_RESTORED_KEY = 'cart_restored_v2';
+
+    // sku -> { sku, name?, stock_qty:number|null, available:boolean|null }
+    let PRODUCTS = Object.create(null);
 
     function getLocalBundle() {
       try {
@@ -86,11 +93,14 @@
     function readCart(){ return getLocalBundle().items; }
     async function writeCart(items){
       const updated_at = new Date().toISOString();
-      setLocalBundle(items, updated_at);
+      // Clamp quantities to stock before saving
+      const clamped = clampCartToStock(items);
+      setLocalBundle(clamped, updated_at);
       renderCart();
       const { data:{ user } } = await supa.auth.getUser();
-      if (user) { await supa.from('carts').upsert({ user_id:user.id, items, updated_at }); }
+      if (user) { await supa.from('carts').upsert({ user_id:user.id, items:clamped, updated_at }); }
     }
+
     function overlayBySku(baseArr, incomingArr){
       const map = {};
       (baseArr || []).forEach(it => { if (it?.sku) map[it.sku] = { ...it, qty:Number(it.qty||0) }; });
@@ -98,7 +108,43 @@
       return Object.values(map).filter(x => x.qty > 0);
     }
 
-    /* ======================= Adopt cart (once per tab) ======================= */
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+    function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
+
+    /* ======================= Stock helpers ======================= */
+    function getMaxForSKU(sku){
+      const p = PRODUCTS[sku] || {};
+      if (p.available === false) return 0;
+      if (typeof p.stock_qty === 'number' && p.stock_qty >= 0) return p.stock_qty;
+      return Infinity; // unknown stock -> no limit
+    }
+    function clampCartToStock(items){
+      return (items||[]).map(it=>{
+        const max = getMaxForSKU(it.sku);
+        const newQty = Math.max(0, Math.min(Number(it.qty||0), Number.isFinite(max)?max:it.qty));
+        return { ...it, qty:newQty };
+      }).filter(x=>x.qty>0);
+    }
+
+    async function loadProductsForCart(){
+      const skus = [...new Set(readCart().map(x=>x.sku))];
+      if (!skus.length){ PRODUCTS = {}; return; }
+      const { data, error } = await supa
+        .from('products')
+        .select('sku,name,stock_qty,available')
+        .in('sku', skus);
+      if (!error && Array.isArray(data)){
+        PRODUCTS = {};
+        data.forEach(p => PRODUCTS[p.sku] = p);
+      }
+      // Fill missing names into cart for display
+      const nameMap = Object.fromEntries((data||[]).map(p => [p.sku, p.name]));
+      const withNames = readCart().map(i => ({ ...i, name: i.name || nameMap[i.sku] || i.sku }));
+      // Clamp to current stock immediately
+      await writeCart(withNames);
+    }
+
+    /* ======================= Adopt cart once ======================= */
     function adoptQueryCartOnce(){
       if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
       const qs = new URLSearchParams(location.search);
@@ -124,7 +170,7 @@
         const incoming = JSON.parse(backup);
         const merged = overlayBySku(readCart(), Array.isArray(incoming) ? incoming : []);
         setLocalBundle(merged, new Date().toISOString());
-      } catch(e){ console.warn('cart restore from backup failed', e); }
+      } catch(e){ console.warn('backup restore failed', e); }
       finally {
         localStorage.removeItem('cart_backup');
         sessionStorage.setItem(CART_RESTORED_KEY, '1');
@@ -170,14 +216,12 @@
         chosenItems = []; setLocalBundle([], chosenUpdatedAt);
       }
 
-      renderCart();
+      // After sync, ensure we have product stock and clamp
+      await loadProductsForCart();
+      await renderCart();
     }
 
-    /* ======================= Escaping helpers ======================= */
-    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
-    function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
-
-    /* ======================= Rendering ======================= */
+    /* ======================= UI render ======================= */
     async function renderCart() {
       const cart = readCart();
       const box = document.getElementById("cartBox");
@@ -187,29 +231,45 @@
         return;
       }
 
-      // Fill missing names to improve display
-      const missing = cart.filter(i => !i.name).map(i => i.sku);
-      if (missing.length > 0) {
-        const { data: products } = await supa.from("products").select("sku,name").in("sku", missing);
-        if (Array.isArray(products)) {
-          const nameMap = Object.fromEntries(products.map(p => [p.sku, p.name]));
-          const updated = cart.map(i => ({ ...i, name: i.name || nameMap[i.sku] || i.sku }));
-          setLocalBundle(updated, new Date().toISOString());
-        }
+      // Ensure product stock is present for all SKUs currently in cart
+      const missingStocks = cart.some(it => !(it.sku in PRODUCTS));
+      if (missingStocks) {
+        await loadProductsForCart();
       }
 
-      const current = readCart(); // re-read in case names filled
-      const rows = current.map(item => `
-        <tr>
-          <td>${escapeHtml(item.name || item.sku)}</td>
-          <td>
-            <button class="qty-btn" aria-label="Decrease ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', -1)">-</button>
-            ${Number(item.qty || 0)}
-            <button class="qty-btn" aria-label="Increase ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', 1)">+</button>
-          </td>
-          <td><button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)" onclick="removeItem('${escapeAttr(item.sku)}')">Remove</button></td>
-        </tr>
-      `).join("");
+      const current = readCart(); // may be clamped by loadProductsForCart()
+      const rows = current.map(item => {
+        const p = PRODUCTS[item.sku] || {};
+        const max = getMaxForSKU(item.sku);
+        const qty = Number(item.qty || 0);
+        const plusDisabled = !(max === Infinity || qty < max);
+        const minusDisabled = qty <= 1;
+        const unavailable = max === 0;
+
+        let badge = '<span class="badge ok">OK</span>';
+        if (unavailable) badge = '<span class="badge bad">Unavailable</span>';
+        else if (Number.isFinite(max) && max >= 0) {
+          if (max === 0) badge = '<span class="badge bad">Unavailable</span>';
+          else if (qty >= max) badge = `<span class="badge warn">Only ${max} left</span>`;
+          else if (max <= 5) badge = `<span class="badge warn">Only ${max} left</span>`;
+        }
+
+        return `
+          <tr>
+            <td class="namecell">
+              <strong>${escapeHtml(item.name || item.sku)}</strong>
+              <span class="note">${escapeHtml(item.sku)}</span>
+              <span>${badge}</span>
+            </td>
+            <td>
+              <button class="qty-btn" aria-label="Decrease ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', -1)" ${minusDisabled?'disabled':''}>-</button>
+              ${qty}
+              <button class="qty-btn" aria-label="Increase ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', 1)" ${plusDisabled?'disabled':''}>+</button>
+            </td>
+            <td><button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)" onclick="removeItem('${escapeAttr(item.sku)}')">Remove</button></td>
+          </tr>
+        `;
+      }).join("");
 
       box.innerHTML = `
         <div class="card">
@@ -220,53 +280,66 @@
           <div class="summary">Total items: ${current.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
           <div class="row" style="margin-top:10px">
             <button class="btn secondary" onclick="clearCart()">Clear cart</button>
-            <span class="muted">Checkout won’t ask you to sign in again if you’re already signed in.</span>
+            <span class="muted">Stock limits enforced automatically.</span>
             <button class="btn" onclick="proceedCheckout()">Proceed</button>
           </div>
         </div>
       `;
     }
 
-    /* ======================= Cart operations ======================= */
-    function changeQty(sku, delta) {
+    /* ======================= Cart ops (stock-aware) ======================= */
+    async function changeQty(sku, delta) {
       const cart = readCart();
       const i = cart.findIndex(x => x.sku === sku);
-      if (i > -1) {
-        cart[i].qty = Number(cart[i].qty || 0) + Number(delta || 0);
-        if (cart[i].qty <= 0) cart.splice(i, 1);
-        writeCart(cart);
+      if (i === -1) return;
+
+      const p = PRODUCTS[sku] || {};
+      const max = getMaxForSKU(sku);
+
+      if (delta > 0) {
+        // if unavailable or at max, ignore
+        if (!Number.isFinite(max) ? false : (max <= 0)) return;
+        const next = Number(cart[i].qty || 0) + 1;
+        if (Number.isFinite(max) && next > max) return;
+        cart[i].qty = next;
+      } else if (delta < 0) {
+        const next = Number(cart[i].qty || 0) - 1;
+        if (next <= 0) {
+          cart.splice(i, 1);
+        } else {
+          cart[i].qty = next;
+        }
       }
-    }
-    function removeItem(sku) {
-      writeCart(readCart().filter(x => x.sku !== sku));
-    }
-    function clearCart() {
-      writeCart([]);
+      await writeCart(cart);
     }
 
-    /* ======================= Proceed flow (no re-login if signed in) ======================= */
+    async function removeItem(sku) {
+      await writeCart(readCart().filter(x => x.sku !== sku));
+    }
+    async function clearCart() {
+      await writeCart([]);
+    }
+
+    /* ======================= Proceed flow (skip re-login if signed in) ======================= */
     async function proceedCheckout(){
       const cart = readCart();
       if (!cart.length) return;
 
-      // Always keep a local backup (for safety across any redirect)
       localStorage.setItem('cart_backup', JSON.stringify(cart));
 
-      // Fast local session check
       const { data:{ session } } = await supa.auth.getSession();
+      const cartParam = encodeURIComponent(JSON.stringify(cart));
 
       if (session?.user) {
-        // Already signed in → go directly to vet verification (which can route/approve)
-        const cartParam = encodeURIComponent(JSON.stringify(cart));
+        // Signed in → go to vet verification directly (it can route/approve further)
         location.href = `vet-verify.html?cart=${cartParam}&from=cart`;
       } else {
-        // Not signed in → send to login once, then land on vet-verify with the cart restored
-        const cartParam = encodeURIComponent(JSON.stringify(cart));
+        // Not signed in → login, then come back to verification with restored cart
         location.href = `login.html?redirect=${encodeURIComponent('vet-verify.html')}&cart=${cartParam}&force=1`;
       }
     }
 
-    /* ======================= Order history ======================= */
+    /* ======================= Orders (optional) ======================= */
     async function renderOrders(){
       const ordersBox = document.getElementById('ordersBox');
       const hint = document.getElementById('ordersHint');
@@ -322,8 +395,9 @@
     document.addEventListener('DOMContentLoaded', async () => {
       adoptQueryCartOnce();
       adoptBackupCartOnce();
+      await loadProductsForCart();   // fetch stock & names for current cart SKUs
       await renderCart();
-      await syncCartFromDB();
+      await syncCartFromDB();        // reconcile server cart, then re-load stocks
       await renderOrders();
     });
 
