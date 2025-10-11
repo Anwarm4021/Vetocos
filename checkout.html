@@ -196,6 +196,8 @@ function renderIssues(ineligible, issues){
   issuesBox.style.display='block';
 }
 
+function showMsg(t, kind=""){ msgEl.textContent=t||""; msgEl.className="muted "+kind; }
+
 /* ================== Load everything ================== */
 async function ensureLogin(){
   const { data:{ user } } = await supa.auth.getUser();
@@ -239,8 +241,6 @@ async function loadApprovalsForCart(){
     APPROVALS[r.product_sku] = cur + Number(r.quantity||0);
   });
 }
-
-function showMsg(t, kind=""){ msgEl.textContent=t||""; msgEl.className="muted "+kind; }
 
 /* ================== Place order ================== */
 async function placeOrder(){
@@ -297,6 +297,20 @@ async function placeOrder(){
 /* ================== Init ================== */
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
+    // Adopt cart from URL once (coming from cart.html)
+    const qs = new URLSearchParams(location.search);
+    const raw = qs.get('cart');
+    if (raw){
+      try{
+        const incoming = JSON.parse(decodeURIComponent(raw));
+        if (Array.isArray(incoming)) localStorage.setItem('cart', JSON.stringify(incoming));
+      }catch(e){}
+      finally{
+        qs.delete('cart');
+        history.replaceState({}, '', location.pathname + (qs.toString()?('?'+qs.toString()):''));
+      }
+    }
+
     // Load cart
     CART = (readCart()||[]).filter(it=>it && it.sku && Number(it.qty)>0);
     renderCart();
@@ -313,6 +327,14 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     const { ineligible, issues } = computeEligibility();
     renderIssues(ineligible, issues);
     renderCart();
+
+    // If approval needed and user isn't globally allowed, go straight to vet-verify
+    const needsApproval = (!PROFILE?.can_purchase) && ineligible.some(x=>/Approval/.test(x.reason));
+    if (needsApproval){
+      const cartParam = encodeURIComponent(JSON.stringify(CART));
+      location.replace(`vet-verify.html?cart=${cartParam}`);
+      return;
+    }
 
     // If cart empty post-login
     if (!CART.length){ btnOrder.disabled = true; }
