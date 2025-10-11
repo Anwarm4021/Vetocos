@@ -237,7 +237,7 @@
           <div class="summary">Total items: ${current.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
           <div class="row" style="margin-top:10px">
             <button class="btn secondary" onclick="clearCart()">Clear cart</button>
-            <span class="muted">Secure checkout for signed-in customers.</span>
+            <span class="muted">Secure checkout via magic link sign-in.</span>
             <button class="btn" onclick="proceedCheckout()">Proceed to Checkout</button>
           </div>
         </div>
@@ -265,24 +265,26 @@
       writeCart([]);
     }
 
-    /* ======================= Checkout flow (FIXED) ======================= */
+    /* ======================= Checkout flow ======================= */
     async function proceedCheckout(){
       const cart = readCart();
-      if (!cart.length) return;
+      if (!cart.length) { return; }
 
-      // Keep a local backup across auth redirects
+      // Save a one-time backup for auth redirects (stays local)
       localStorage.setItem('cart_backup', JSON.stringify(cart));
 
-      // Check current auth session
-      const { data: { session } } = await supa.auth.getSession();
+      // Pass cart via URL once
+      const cartParam = encodeURIComponent(JSON.stringify(cart));
 
-      if (session?.user) {
-        // Already signed in → go straight to checkout
-        location.href = 'checkout.html';
+      // ✅ Only send to login if the user is NOT signed in.
+      const { data: { user } } = await supa.auth.getUser();
+      if (user) {
+        // Already signed in → go straight to checkout (which will auto-route to vet-verify if needed)
+        location.href = `checkout.html?cart=${cartParam}&from=cart`;
       } else {
-        // Not signed in → send to login, then bounce back to checkout (also pass cart once)
-        const cartParam = encodeURIComponent(JSON.stringify(cart));
-        location.href = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}&force=1`;
+        // Not signed in → go to login (original behavior)
+        const loginUrl  = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}&force=1`;
+        location.href = loginUrl;
       }
     }
 
@@ -346,8 +348,6 @@
         const { data: { session } } = await supa.auth.getSession();
         if (!session) { alert('Please sign in first.'); return; }
 
-        // Replace with your deployed Edge Function URL or relative path if proxied.
-        // Example (if you deployed as 'send-receipt'):
         const resp = await fetch('/functions/v1/send-receipt', {
           method: 'POST',
           headers: {
