@@ -19,26 +19,22 @@ input[type="text"],input[type="file"],select,textarea{width:100%;padding:12px 14
 .btn.small{padding:8px 12px}
 .btn.ghost{background:transparent}
 .btn[disabled]{opacity:.6;cursor:not-allowed}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rowbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.muted{color:#8ea0c8;margin-top:10px}
+.muted{color:#8ea0c8}
 .success{color:#83f0a5} .error{color:#ffb4b4}
 .small{font-size:.92rem}
 .badge{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.3);font-size:.85rem}
 .ok{background:rgba(131,240,165,.12)} .pend{background:rgba(109,213,255,.12)} .bad{background:rgba(255,180,180,.12)}
 .hr{height:1px;background:rgba(141,158,199,.15);margin:14px 0}
 .preview{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.preview a{color:#6dd5ff;text-decoration:none}
-.help{font-size:.85rem;color:#8ea0c8}
-.pair{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
-.section-title{margin:18px 0 10px}
-.pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
-.rowbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.search{padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);min-width:240px}
+.link{color:#6dd5ff;text-decoration:none}
 .qtybtn{padding:6px 10px;border-radius:8px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}
 .kicker{font-size:.9rem;color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
 #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
        border-radius:12px;padding:10px 14px;color:#fff;max-width:70vw;display:none;z-index:9999}
 </style>
@@ -46,26 +42,25 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
 </head>
 <body>
 <main class="wrap">
-  <div class="pair" style="margin-bottom:12px">
+  <div class="row" style="justify-content:space-between;margin-bottom:12px">
     <h1>Vet verification</h1>
-    <div class="preview">
+    <div class="row">
       <a class="btn small" href="Products.html">Products</a>
       <a class="btn small" href="cart.html">Cart</a>
       <a class="btn small" href="account.html">My Account</a>
-      <a id="adminBtn" class="btn small" href="admin.html" style="display:none">Admin</a>
       <a id="checkoutBtnTop" class="btn small" href="checkout.html" style="display:none">Checkout</a>
     </div>
   </div>
 
   <!-- Verification card -->
   <div class="card">
-    <div class="rowbar" style="justify-content:space-between">
+    <div class="rowbar">
       <p class="kicker">Provide your credentials to unlock purchasing. Once approved, the checkout button will appear.</p>
       <a id="checkoutBtnRight" class="btn" href="checkout.html" style="display:none">Go to Checkout</a>
     </div>
 
     <!-- Status area -->
-    <div id="statusBox" class="row" style="display:none">
+    <div id="statusBox" class="grid2" style="display:none">
       <div>
         <div class="small muted">Current status</div>
         <div id="statusPill" class="badge pend" aria-live="polite">pending</div>
@@ -87,14 +82,25 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
     <button class="btn" id="submit" type="button">Submit for review</button>
     <p id="msg" class="muted" aria-live="polite"></p>
 
-    <p class="help">We’ll email you when your application status changes. If you update the file or ID, the status returns to <em>pending</em> for re-review.</p>
+    <p class="help kicker">We’ll email you when your application status changes. If you update the file or ID, the status returns to <em>pending</em> for re-review.</p>
+  </div>
+
+  <!-- Admin notices to user -->
+  <div id="globalNotice" class="card" style="display:none">
+    <div class="kicker" style="margin-bottom:6px">Message from admin</div>
+    <div id="globalNoticeBody"></div>
+  </div>
+
+  <div id="appNotice" class="card" style="display:none">
+    <div class="kicker" style="margin-bottom:6px">Note about your verification</div>
+    <div id="appNoticeBody"></div>
   </div>
 
   <!-- Mini Cart -->
   <h2 class="section-title">My Cart (quick edit)</h2>
   <div class="card" id="cartBox">Loading…</div>
 
-  <!-- Product Browser -->
+  <!-- Product Browser (add more products) -->
   <h2 class="section-title">Add more products</h2>
   <div class="card">
     <div class="rowbar" style="margin-bottom:10px">
@@ -146,9 +152,6 @@ const supa = supabase.createClient(
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
-/* ===== Admin config ===== */
-const ADMIN_EMAILS = ["anwar.moumenjamai19@gmail.com"];
-
 /* ===== UI refs ===== */
 const BUCKET = 'Documents';
 const statusBox   = document.getElementById('statusBox');
@@ -160,13 +163,13 @@ const idInput     = document.getElementById('idnum');
 const fileInput   = document.getElementById('file');
 const btn         = document.getElementById('submit');
 const msgEl       = document.getElementById('msg');
-const adminBtn    = document.getElementById('adminBtn');
 const checkoutBtnTop   = document.getElementById('checkoutBtnTop');
 const checkoutBtnRight = document.getElementById('checkoutBtnRight');
 
 const toastEl = document.getElementById('toast');
 function toast(m, err=false){ toastEl.textContent=m; toastEl.style.display='block'; toastEl.style.borderColor = err?'rgba(255,120,120,.4)':'rgba(141,158,199,.25)'; clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.style.display='none',2200); }
 
+/* ===== Helpers ===== */
 function setMsg(t,kind=''){ msgEl.textContent=t; msgEl.className='muted '+kind; }
 function pill(status){
   const s = (status||'pending').toLowerCase();
@@ -175,33 +178,11 @@ function pill(status){
 }
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
+/* ===== Auth + Approval state ===== */
 let currentUser = null;
 let currentApp  = null;
 let CAN_CHECKOUT = false;
 
-function toggleCheckout(show){
-  CAN_CHECKOUT = !!show;
-  checkoutBtnTop.style.display = show ? 'inline-block' : 'none';
-  checkoutBtnRight.style.display = show ? 'inline-block' : 'none';
-}
-
-/* ===== Admin auto-redirect (your request) ===== */
-async function maybeRedirectAdmin(user){
-  const email = (user?.email||'').toLowerCase();
-  if (ADMIN_EMAILS.includes(email)) {
-    // Optional: also check profile.is_admin, but email is enough per your request
-    location.replace('admin.html');
-    return true;
-  }
-  try{
-    const { data: prof } = await supa.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
-    if (prof?.is_admin) { location.replace('admin.html'); return true; }
-    if (ADMIN_EMAILS.includes(email)) { location.replace('admin.html'); return true; }
-  }catch{}
-  return false;
-}
-
-/* ===== Approval / checkout ===== */
 async function checkCanCheckout(userId){
   let ok = false;
   try{
@@ -212,6 +193,40 @@ async function checkCanCheckout(userId){
   toggleCheckout(ok);
   return ok;
 }
+function toggleCheckout(show){
+  CAN_CHECKOUT = !!show;
+  checkoutBtnTop.style.display = show ? 'inline-block' : 'none';
+  checkoutBtnRight.style.display = show ? 'inline-block' : 'none';
+}
+
+/* ===== Notices ===== */
+const globalNotice = document.getElementById('globalNotice');
+const globalNoticeBody = document.getElementById('globalNoticeBody');
+const appNotice = document.getElementById('appNotice');
+const appNoticeBody = document.getElementById('appNoticeBody');
+
+async function loadGlobalNotice(){
+  try{
+    const { data } = await supa.from('site_settings').select('value').eq('key','vet_notice').maybeSingle();
+    const msg = typeof data?.value === 'string' ? data.value : (Array.isArray(data?.value) ? data.value.join(' ') : '');
+    if (msg){
+      globalNotice.style.display = 'block';
+      globalNoticeBody.textContent = msg;
+    }
+  }catch{}
+}
+async function showApplicationAdminNote(){
+  if (!currentUser) return;
+  try{
+    const { data: rows } = await supa.from('vet_applications')
+      .select('admin_note').eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(1);
+    const note = rows && rows[0]?.admin_note;
+    if (note){
+      appNotice.style.display = 'block';
+      appNoticeBody.textContent = note;
+    }
+  }catch{}
+}
 
 /* ===== Boot ===== */
 async function boot(){
@@ -221,16 +236,7 @@ async function boot(){
   if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
   currentUser = user;
 
-  // Show Admin button if admin; also auto-redirect (per your request)
-  const email = (user.email||'').toLowerCase();
-  if (ADMIN_EMAILS.includes(email)) { adminBtn.style.display='inline-block'; }
-  try{ const { data: prof } = await supa.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
-       if (prof?.is_admin) adminBtn.style.display='inline-block';
-  }catch{}
-
-  if (await maybeRedirectAdmin(user)) return;
-
-  // Load most recent application
+  // Load latest application
   setMsg('Loading your application…');
   const { data: rows, error: e2 } = await supa.from('vet_applications')
     .select('id, identity_number, diploma_path, status, created_at')
@@ -259,6 +265,8 @@ async function boot(){
   }
 
   await checkCanCheckout(user.id);
+  await loadGlobalNotice();
+  await showApplicationAdminNote();
   await renderMiniCart();
   await loadProducts();
   await renderOrders();
@@ -332,13 +340,13 @@ btn.onclick = async () => {
   btn.disabled = false; btn.textContent = 'Update submission';
 };
 
-/* ===== Mini Cart / Products / Orders / Reviews (unchanged helpers) ===== */
+/* ===== Mini Cart ===== */
 const CART_KEY='cart';
 function readCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); } catch { return []; } }
 function writeCart(items){ localStorage.setItem(CART_KEY, JSON.stringify((items||[]).filter(x=>x && x.sku && Number(x.qty)>0))); }
 function renderMiniCartRow(it, i){
   return `<tr>
-    <td>${escapeHtml(it.name || it.sku)} <span class="kicker">(${escapeHtml(it.sku)})</span></td>
+    <td><a class="link" href="Products.html#${encodeURIComponent(it.sku)}" target="_blank" rel="noopener">${escapeHtml(it.name || it.sku)}</a> <span class="kicker">(${escapeHtml(it.sku)})</span></td>
     <td>
       <button class="qtybtn" data-cart="${i}" data-d="-1">−</button>
       <span style="display:inline-block;width:34px;text-align:center">${Number(it.qty||0)}</span>
@@ -368,6 +376,7 @@ async function renderMiniCart(){
   });
 }
 
+/* ===== Product Browser ===== */
 const prodSearch = document.getElementById('prodSearch');
 const prodList   = document.getElementById('prodList');
 let PRODUCT_CACHE = [];
@@ -382,47 +391,78 @@ async function loadProducts(){
   PRODUCT_CACHE = (data||[]).filter(p=>p.available && Number(p.stock_qty||0) > 0);
   renderProducts();
 }
+
+function getCart(){ try { return JSON.parse(localStorage.getItem('cart')||'[]'); } catch { return []; } }
+function setCart(items){ localStorage.setItem('cart', JSON.stringify(items)); }
+function findCartIndex(cart, sku){ return cart.findIndex(x => x && x.sku === sku); }
+
 function renderProducts(){
   const q = (prodSearch.value||'').toLowerCase().trim();
   const rows = PRODUCT_CACHE.filter(p=>{
     if(!q) return true;
     return (p.name||'').toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q);
   }).map(p=>{
-    const badge = p.requires_verification ? `<span class="pill">Requires verification</span>` : `<span class="pill ok">Open</span>`;
-    return `<div class="pair" style="border-top:1px solid rgba(141,158,199,.18);padding:10px 0">
-      <div>
-        <div style="font-weight:600">${escapeHtml(p.name)} <span class="kicker">(${escapeHtml(p.sku)})</span></div>
+    const badge = p.requires_verification
+      ? `<span class="badge">Requires verification</span>`
+      : `<span class="badge ok">Open</span>`;
+    const cart = getCart();
+    const idx = findCartIndex(cart, p.sku);
+    const cur = idx > -1 ? Number(cart[idx].qty||0) : 0;
+
+    return `<div class="row" style="border-top:1px solid rgba(141,158,199,.18);padding:10px 0" data-sku="${escapeHtml(p.sku)}">
+      <div style="flex:1 1 auto">
+        <div style="font-weight:600">
+          <a class="link" href="Products.html#${encodeURIComponent(p.sku)}" target="_blank" rel="noopener">${escapeHtml(p.name)}</a>
+          <span class="kicker">(${escapeHtml(p.sku)})</span>
+        </div>
         <div class="kicker">In stock: ${p.stock_qty|0}</div>
       </div>
-      <div class="rowbar">
+      <div class="row" style="flex:0 0 auto">
         ${badge}
-        <button class="btn small" data-add="${escapeHtml(p.sku)}" data-name="${escapeHtml(p.name)}">Add to cart</button>
-        <button class="btn small" data-req="${escapeHtml(p.sku)}">Request approval</button>
+        <div class="row">
+          <button class="qtybtn" data-q="-1">−</button>
+          <input class="qty-input" type="number" min="0" step="1" value="${cur}" style="width:70px;text-align:center"/>
+          <button class="qtybtn" data-q="1">+</button>
+        </div>
+        <button class="btn small" data-add>Save to cart</button>
+        <button class="btn small" data-req>Request approval</button>
       </div>
     </div>`;
   }).join('');
   prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
 
-  prodList.querySelectorAll('button[data-add]').forEach(b=>{
-    b.onclick = ()=>{
-      const sku = b.dataset.add, name = b.dataset.name;
-      const cart = readCart();
-      const i = cart.findIndex(x=>x.sku===sku);
-      const prod = PRODUCT_CACHE.find(x=>x.sku===sku);
-      const currentQty = i>-1 ? Number(cart[i].qty||0) : 0;
-      const nextQty = Math.min(currentQty+1, Number(prod?.stock_qty||1));
-      if (i>-1) cart[i].qty = nextQty; else cart.push({ sku, name, qty: 1 });
-      writeCart(cart);
+  prodList.querySelectorAll('[data-sku]').forEach(row=>{
+    const sku = row.dataset.sku;
+    const input = row.querySelector('.qty-input');
+
+    row.querySelectorAll('button[data-q]').forEach(b=>{
+      b.onclick = ()=>{
+        const delta = Number(b.dataset.q||0);
+        const next = Math.max(0, Number(input.value||0) + delta);
+        input.value = next;
+      };
+    });
+
+    row.querySelector('[data-add]')?.addEventListener('click', ()=>{
+      const qty = Math.max(0, Number(input.value||0));
+      const cart = getCart();
+      const idx = findCartIndex(cart, sku);
+      const prod = PRODUCT_CACHE.find(x => x.sku === sku);
+      const capped = Math.min(qty, Number(prod?.stock_qty||0));
+
+      if (idx > -1){
+        if (capped === 0) cart.splice(idx,1);
+        else cart[idx].qty = capped;
+      } else if (capped > 0){
+        cart.push({ sku, name: prod?.name || sku, qty: capped });
+      }
+      setCart(cart);
       renderMiniCart();
-    };
-  });
+      toast('Cart updated');
+    });
 
-  prodList.querySelectorAll('button[data-req]').forEach(b=>{
-    b.onclick = async ()=>{
-      const sku = b.dataset.req;
-      const qtyStr = prompt(`Request how many units for ${sku}?`, "1");
-      const qty = Math.max(1, Number(qtyStr||1)|0);
-
+    row.querySelector('[data-req]')?.addEventListener('click', async ()=>{
+      const qty = Math.max(1, Number(input.value||1));
       const { data:{ user } } = await supa.auth.getUser();
       if(!user){ toast('Please sign in first.', true); return; }
 
@@ -431,10 +471,9 @@ function renderProducts(){
       });
       if (ins.error){ toast(ins.error.message, true); return; }
 
+      // Optional notify admins
       try {
-        const { data: prof } = await supa.from('profiles')
-          .select('email,first_name,last_name').eq('id', user.id).maybeSingle();
-
+        const { data: prof } = await supa.from('profiles').select('email,first_name,last_name').eq('id', user.id).maybeSingle();
         const who = [prof?.first_name, prof?.last_name].filter(Boolean).join(' ') || (prof?.email || user.email || 'User');
         const subject = `VetoCos – New product approval request (${sku})`;
         const html = `
@@ -444,17 +483,18 @@ function renderProducts(){
             <li>Quantity requested: <strong>${qty}</strong></li>
             <li>User: ${prof?.email || user.email || ''}</li>
           </ul>
-          <p>Open the admin portal → Per-product Approvals to approve or adjust.</p>
+          <p>Open Admin → Per-product Approvals or the user’s Full Control panel.</p>
         `;
         const ADMINS = ["anwar.moumenjamai19@gmail.com"];
         await supa.from('mail_queue').insert(ADMINS.map(e => ({ to_email: e, subject, html })));
       } catch(_) {}
 
       toast('Approval request submitted');
-    };
+    });
   });
 }
 
+/* ===== Orders ===== */
 async function renderOrders(){
   const box = document.getElementById('ordersBox');
   const { data:{ user } } = await supa.auth.getUser();
@@ -468,13 +508,14 @@ async function renderOrders(){
     const d = new Date(o.created_at);
     const badge = (o.status||'').toLowerCase()==='paid' ? 'ok' : 'pend';
     const rec = o.receipt_url ? `<a class="btn small" href="${o.receipt_url}" target="_blank" rel="noopener">Receipt</a>` : '';
-    return `<div class="pair" style="border-top:1px solid rgba(141,158,199,.18);padding:10px 0">
-      <div><strong>Order #${o.id}</strong> · <span class="muted">${d.toLocaleString()}</span><div class="muted small">Items: ${o.total_qty||0} · Amount: ${o.total_amount!=null?Number(o.total_amount).toFixed(2):'-'}</div></div>
-      <div style="display:flex;gap:8px;align-items:center"><span class="badge ${badge}">${o.status||'pending'}</span>${rec}</div>
+    return `<div class="row" style="border-top:1px solid rgba(141,158,199,.18);padding:10px 0">
+      <div style="flex:1 1 auto"><strong>Order #${o.id}</strong> · <span class="muted">${d.toLocaleString()}</span><div class="muted small">Items: ${o.total_qty||0} · Amount: ${o.total_amount!=null?Number(o.total_amount).toFixed(2):'-'}</div></div>
+      <div style="flex:0 0 auto" class="row"><span class="badge ${badge}">${o.status||'pending'}</span>${rec}</div>
     </div>`;
   }).join('');
 }
 
+/* ===== Reviews ===== */
 const revSku = document.getElementById('revSku');
 const revRating = document.getElementById('revRating');
 const revComment = document.getElementById('revComment');
