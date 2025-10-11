@@ -96,7 +96,7 @@
     .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
     .sheet-body{padding:16px}
 
-    /* Login modal specific */
+    /* Login modal specifics */
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:720px){.row{grid-template-columns:1fr}}
     label{font-size:.9rem;color:var(--muted);display:block}
@@ -107,10 +107,17 @@
     .tiny{font-size:.85rem;color:var(--muted);margin-top:8px}
     .success{color:#83f0a5}.error{color:#ffb4b4}
 
+    /* Tabs */
+    .tabs{display:flex;gap:8px;margin:0 0 12px;border-bottom:1px solid rgba(141,158,199,.12)}
+    .tab{padding:8px 12px;border-radius:10px 10px 0 0;cursor:pointer}
+    .tab.active{background:rgba(141,158,199,.15)}
+    .pane{display:none}
+    .pane.active{display:block}
+
     /* RTL */
     body.rtl .links a{text-align:right}
 
-    /* Company section */
+    /* Company section (unchanged look) */
     .company-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-top:18px}
     @media(max-width:900px){.company-grid{grid-template-columns:1fr}}
     .facts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -135,7 +142,7 @@
 
       <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
 
-      <!-- Admin button is hidden by default; shown only for admins via JS -->
+      <!-- Admin button hidden; shown only for admins via JS -->
       <a class="contact-btn" id="adminBtn" href="admin.html" style="display:none" onclick="return goToAdmin(event)">Admin</a>
 
       <select id="lang-switch" aria-label="Language">
@@ -146,7 +153,7 @@
 
       <!-- Account block -->
       <div class="acct" id="acctBlock">
-        <button class="contact-btn" id="signinBtn" type="button">Sign in</button>
+        <button class="contact-btn" id="signinBtn" type="button">Sign in / Sign up</button>
         <button class="contact-btn" id="accountBtn" type="button" style="display:none">
           <span class="avatar" aria-hidden="true"></span>
           <span id="helloName" class="muted" style="font-size:.9rem"></span>
@@ -154,7 +161,7 @@
         <div class="menu" id="accountMenu" role="menu" aria-hidden="true">
           <div id="accountHeader" class="muted" style="padding:8px 12px; border-bottom:1px solid rgba(141,158,199,.12)"></div>
           <a href="account.html" role="menuitem">My Account</a>
-          <a href="my-order.html" role="menuitem">My Orders</a>
+          <a href="orders.html" role="menuitem">My Orders</a>
           <a href="cart.html" role="menuitem">Cart</a>
           <a href="checkout.html" role="menuitem">Checkout</a>
           <a href="vet-verify.html" role="menuitem">Vet verification</a>
@@ -284,7 +291,6 @@
           </p>
         </div>
         <div>
-          <!-- OpenStreetMap embed (no API key needed) -->
           <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(141,158,199,.18)">
             <iframe
               title="VETOCOS SAHIB Location Map"
@@ -326,7 +332,6 @@
           <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
           <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
           <div class="socials" aria-label="Social links" style="display:flex;gap:10px;flex-wrap:wrap">
-            <!-- Replaced Facebook/Instagram with WhatsApp (as requested) -->
             <a href="https://wa.me/212537742213" target="_blank" rel="noopener">WhatsApp</a>
             <a href="https://www.tiktok.com/@yourpage" target="_blank" rel="noopener">TikTok</a>
           </div>
@@ -398,47 +403,76 @@
   </div>
 </div>
 
-<!-- LOGIN MODAL (Magic link + optional OTP) -->
+<!-- LOGIN / SIGNUP MODAL -->
 <div id="loginModal" class="modal" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
     <div class="sheet-head">
-      <h2 id="loginTitle" class="sheet-title">Sign in</h2>
+      <h2 id="loginTitle" class="sheet-title">Access your account</h2>
       <button class="close" type="button" onclick="closeLogin()">Close</button>
     </div>
     <div class="sheet-body">
-      <p class="muted">Enter your details. We’ll email you a magic link and, if enabled, a 6-digit code.</p>
-
-      <div class="row">
-        <div>
-          <label for="first">First name
-            <input id="first" autocomplete="given-name" />
-          </label>
-        </div>
-        <div>
-          <label for="last">Last name
-            <input id="last" autocomplete="family-name" />
-          </label>
-        </div>
+      <div class="tabs">
+        <button id="tabSignIn"  class="tab active" type="button">Sign in</button>
+        <button id="tabSignUp"  class="tab" type="button">Sign up</button>
       </div>
 
-      <label for="loginEmail" style="margin-top:10px">Email
-        <input id="loginEmail" type="email" autocomplete="email" required />
-      </label>
-
-      <button class="btn" id="send">Send login email</button>
-
-      <div id="codeBox" style="display:none;margin-top:8px" aria-live="polite">
-        <label for="otp" style="margin-top:10px">Enter 6-digit code (if your email shows one)
-          <input id="otp" inputmode="numeric" pattern="[0-9]*" maxlength="6" />
+      <!-- Sign in pane -->
+      <div id="paneSignIn" class="pane active" aria-live="polite">
+        <p class="tiny">Enter your email. We’ll send a magic link (and a 6-digit code if enabled).</p>
+        <label for="loginEmailIn">Email
+          <input id="loginEmailIn" type="email" autocomplete="email" required />
         </label>
-        <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
-          <button class="btn" id="verify">Verify & continue</button>
-          <button class="btn" id="resend" style="display:none;min-width:170px"></button>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+          <button class="btn" id="sendIn">Send magic link</button>
         </div>
+
+        <div id="codeBoxIn" style="display:none;margin-top:12px">
+          <label for="otpIn">Enter 6-digit code
+            <input id="otpIn" inputmode="numeric" pattern="[0-9]*" maxlength="6" />
+          </label>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+            <button class="btn" id="verifyIn">Verify & continue</button>
+            <button class="btn" id="resendIn" style="display:none;min-width:170px"></button>
+          </div>
+        </div>
+        <p id="msgIn" class="tiny" aria-live="polite"></p>
       </div>
 
-      <p id="msg" class="tiny" aria-live="polite"></p>
-      <p class="tiny">Tip: open the magic link in the <strong>same browser</strong> where you started login.</p>
+      <!-- Sign up pane -->
+      <div id="paneSignUp" class="pane" aria-live="polite">
+        <p class="tiny">Create your account with a magic link. No password needed.</p>
+        <div class="row">
+          <div>
+            <label for="firstUp">First name
+              <input id="firstUp" autocomplete="given-name" />
+            </label>
+          </div>
+          <div>
+            <label for="lastUp">Last name
+              <input id="lastUp" autocomplete="family-name" />
+            </label>
+          </div>
+        </div>
+        <label for="loginEmailUp" style="margin-top:10px">Email
+          <input id="loginEmailUp" type="email" autocomplete="email" required />
+        </label>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+          <button class="btn" id="sendUp">Send sign-up link</button>
+        </div>
+
+        <div id="codeBoxUp" style="display:none;margin-top:12px">
+          <label for="otpUp">Enter 6-digit code
+            <input id="otpUp" inputmode="numeric" pattern="[0-9]*" maxlength="6" />
+          </label>
+          <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+            <button class="btn" id="verifyUp">Verify & continue</button>
+            <button class="btn" id="resendUp" style="display:none;min-width:170px"></button>
+          </div>
+        </div>
+        <p id="msgUp" class="tiny" aria-live="polite"></p>
+      </div>
+
+      <p class="tiny">Tip: open the magic link in the <strong>same browser</strong> where you started.</p>
     </div>
   </div>
 </div>
@@ -517,7 +551,8 @@
   /* ===== Supabase ===== */
   const supa = supabase.createClient(
     "https://qdepgviimbcdlozjpbhm.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+    { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
   );
 
   /* ===== Admin navigation (hidden unless admin) ===== */
@@ -527,10 +562,11 @@
     try{
       const { data:{ session } } = await supa.auth.getSession();
       if (!session?.user){
-        location.href = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
+        // send to a dedicated login page if you have one; else show modal
+        openLogin();
         return false;
       }
-      if (SUPER_ADMINS.includes(session.user.email)){
+      if (SUPER_ADMINS.includes((session.user.email||"").trim())){
         location.href = 'admin.html';
         return false;
       }
@@ -546,7 +582,7 @@
   }
   window.goToAdmin = goToAdmin;
 
-  /* ===== Account dropdown + login modal wiring ===== */
+  /* ===== Header session state ===== */
   const signinBtn = document.getElementById('signinBtn');
   const accountBtn= document.getElementById('accountBtn');
   const accountMenu=document.getElementById('accountMenu');
@@ -567,168 +603,195 @@
   function logout(){ supa.auth.signOut().then(()=>location.reload()); }
   window.logout = logout;
 
-  // Login modal controls
+  /* ===== Login modal controls ===== */
   const loginModal = document.getElementById('loginModal');
   function openLogin(){ loginModal.classList.add('open'); loginModal.setAttribute('aria-hidden','false'); }
   function closeLogin(){ loginModal.classList.remove('open'); loginModal.setAttribute('aria-hidden','true'); }
-  if (signinBtn) signinBtn.addEventListener('click', openLogin);
+  signinBtn?.addEventListener('click', openLogin);
 
-  /* ===== Inline magic-link + optional OTP ===== */
-  const msgEl = document.getElementById("msg");
-  const sendBtn = document.getElementById("send");
-  const verifyBtn = document.getElementById("verify");
-  const resendBtn = document.getElementById("resend");
-  const codeBox = document.getElementById("codeBox");
-  const emailInput = document.getElementById("loginEmail");
-  const firstInput = document.getElementById("first");
-  const lastInput = document.getElementById("last");
-  const otpInput = document.getElementById("otp");
+  // Tabs
+  const tabSignIn=document.getElementById('tabSignIn');
+  const tabSignUp=document.getElementById('tabSignUp');
+  const paneSignIn=document.getElementById('paneSignIn');
+  const paneSignUp=document.getElementById('paneSignUp');
+  function setTab(which){
+    const isIn = which==='in';
+    tabSignIn.classList.toggle('active', isIn);
+    tabSignUp.classList.toggle('active', !isIn);
+    paneSignIn.classList.toggle('active', isIn);
+    paneSignUp.classList.toggle('active', !isIn);
+  }
+  tabSignIn.onclick=()=>setTab('in');
+  tabSignUp.onclick=()=>setTab('up');
 
-  function show(t, kind=""){ msgEl.textContent=t||""; msgEl.className="tiny "+kind; }
+  /* ===== Magic link + optional OTP (Sign in) ===== */
+  const msgIn = document.getElementById("msgIn");
+  const sendIn = document.getElementById("sendIn");
+  const verifyIn = document.getElementById("verifyIn");
+  const resendIn = document.getElementById("resendIn");
+  const codeBoxIn = document.getElementById("codeBoxIn");
+  const emailIn = document.getElementById("loginEmailIn");
+  const otpIn = document.getElementById("otpIn");
+
+  /* ===== Magic link + optional OTP (Sign up) ===== */
+  const msgUp = document.getElementById("msgUp");
+  const sendUp = document.getElementById("sendUp");
+  const verifyUp = document.getElementById("verifyUp");
+  const resendUp = document.getElementById("resendUp");
+  const codeBoxUp = document.getElementById("codeBoxUp");
+  const emailUp = document.getElementById("loginEmailUp");
+  const firstUp = document.getElementById("firstUp");
+  const lastUp  = document.getElementById("lastUp");
+  const otpUp = document.getElementById("otpUp");
+
+  function showMsg(el, t, kind=""){ el.textContent=t||""; el.className="tiny "+kind; }
   function disable(el, on=true){ if(el) el.disabled=!!on; }
   function normEmail(v){ return (v||"").trim().toLowerCase(); }
 
-  async function saveNamesToProfileIfAny(userId, email){
-    const first = localStorage.getItem("pending_first") || firstInput.value.trim();
-    const last = localStorage.getItem("pending_last") || lastInput.value.trim();
-    const em = normEmail(email);
-    if (first || last || em) {
-      try {
-        await supa.from("profiles")
-          .upsert({ id: userId, first_name:first || null, last_name:last || null, email:em || null }, { onConflict: 'id' });
-      } catch (err) { console.warn("Profile update failed:", err?.message || err); }
-      localStorage.removeItem("pending_first");
-      localStorage.removeItem("pending_last");
-    }
+  async function saveNamesToProfile(userId, email, first, last){
+    try {
+      await supa.from("profiles")
+        .upsert({ id: userId, first_name:first || null, last_name:last || null, email:email || null }, { onConflict: 'id' });
+    } catch (err) { console.warn("Profile update failed:", err?.message || err); }
   }
 
-  let resendTimer=null;
-  function startResend(seconds=45){
+  function startResend(btn, seconds=45){
     let left=seconds;
-    resendBtn.style.display="inline-block";
-    resendBtn.textContent=`Resend email (${left})`;
-    resendBtn.disabled=true;
-    clearInterval(resendTimer);
-    resendTimer=setInterval(()=>{
+    btn.style.display="inline-block";
+    btn.textContent=`Resend email (${left})`;
+    btn.disabled=true;
+    const id = setInterval(()=>{
       left -= 1;
-      if(left<=0){ clearInterval(resendTimer); resendBtn.textContent="Resend email"; resendBtn.disabled=false; }
-      else { resendBtn.textContent=`Resend email (${left})`; }
+      if(left<=0){ clearInterval(id); btn.textContent="Resend email"; btn.disabled=false; }
+      else { btn.textContent=`Resend email (${left})`; }
     },1000);
+    return id;
   }
 
-  sendBtn.onclick = async function(){
-    show("");
-    const email = normEmail(emailInput.value);
-    const first = firstInput.value.trim();
-    const last  = lastInput.value.trim();
-    if (!first || !last) return show("Please enter your first and last name.","error");
-    if (!email) return show("Please enter your email.","error");
-
-    localStorage.setItem("pending_first", first);
-    localStorage.setItem("pending_last", last);
-
-    const absoluteLoginUrl = location.href.split('#')[0];
-    disable(sendBtn,true); show("Sending email…");
-
-    const { error } = await supa.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: absoluteLoginUrl }
-    });
-
-    disable(sendBtn,false);
-    if (error) return show(error.message,"error");
-
-    show(`Email sent to ${email}. Open the magic link here. If you also got a 6-digit code, enter it below.`, "success");
-    codeBox.style.display = "block";
-    startResend(45);
-    setTimeout(()=>otpInput.focus(),50);
-    resendBtn.onclick = () => sendBtn.click();
+  // SIGN IN flow
+  let timerIn=null;
+  sendIn.onclick = async function(){
+    showMsg(msgIn,"");
+    const email = normEmail(emailIn.value);
+    if (!email) return showMsg(msgIn,"Please enter your email.","error");
+    disable(sendIn,true); showMsg(msgIn,"Sending email…");
+    const redirectTo = location.href.split('#')[0];
+    const { error } = await supa.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo } });
+    disable(sendIn,false);
+    if (error) return showMsg(msgIn,error.message,"error");
+    showMsg(msgIn,`Email sent to ${email}. Open the magic link here. If you also got a 6-digit code, enter it below.`,"success");
+    codeBoxIn.style.display="block";
+    clearInterval(timerIn); timerIn = startResend(resendIn,45);
+    setTimeout(()=>otpIn.focus(),50);
+    resendIn.onclick = () => sendIn.click();
   };
 
-  verifyBtn.onclick = async function(){
-    show("");
-    const email = normEmail(emailInput.value);
-    const token = (otpInput.value || "").trim();
-    if (!email) return show("Enter your email again to verify.","error");
-    if (token.length !== 6) return show("Enter the 6-digit code from your email.","error");
-
-    disable(verifyBtn,true); show("Verifying…");
+  verifyIn.onclick = async function(){
+    showMsg(msgIn,"");
+    const email = normEmail(emailIn.value);
+    const token = (otpIn.value||"").trim();
+    if (!email) return showMsg(msgIn,"Enter your email again to verify.","error");
+    if (token.length !== 6) return showMsg(msgIn,"Enter the 6-digit code from your email.","error");
+    disable(verifyIn,true); showMsg(msgIn,"Verifying…");
     const { data, error } = await supa.auth.verifyOtp({ email, token, type:"email" });
-    disable(verifyBtn,false);
-    if (error) return show(error.message,"error");
-
-    await saveNamesToProfileIfAny(data.user.id, email);
-    show("Verified. Signing you in…","success");
+    disable(verifyIn,false);
+    if (error) return showMsg(msgIn,error.message,"error");
+    showMsg(msgIn,"Verified. Signing you in…","success");
     closeLogin();
   };
-  otpInput?.addEventListener("keydown", (e)=>{ if (e.key === "Enter"){ e.preventDefault(); verifyBtn.click(); } });
 
-  /* ===== Purchase History (recent) ===== */
-  async function loadRecentPurchases(userId){
-    const box = document.getElementById('recentOrders');
-    if (!box) return;
-    box.innerHTML = '<div class="muted">Recent purchases</div><div class="muted" style="margin-top:6px">Loading…</div>';
+  // SIGN UP flow
+  let timerUp=null;
+  sendUp.onclick = async function(){
+    showMsg(msgUp,"");
+    const email = normEmail(emailUp.value);
+    const first = firstUp.value.trim();
+    const last  = lastUp.value.trim();
+    if (!first || !last) return showMsg(msgUp,"Please enter your first and last name.","error");
+    if (!email) return showMsg(msgUp,"Please enter your email.","error");
+    // save temporarily in localStorage (used if verification happens on different load)
+    localStorage.setItem("pending_first", first);
+    localStorage.setItem("pending_last", last);
+    disable(sendUp,true); showMsg(msgUp,"Sending email…");
+    const redirectTo = location.href.split('#')[0];
+    const { error } = await supa.auth.signInWithOtp({ email, options:{ emailRedirectTo: redirectTo } });
+    disable(sendUp,false);
+    if (error) return showMsg(msgUp,error.message,"error");
+    showMsg(msgUp,`Email sent to ${email}. Open the magic link here. If you also got a 6-digit code, enter it below.`,"success");
+    codeBoxUp.style.display="block";
+    clearInterval(timerUp); timerUp = startResend(resendUp,45);
+    setTimeout(()=>otpUp.focus(),50);
+    resendUp.onclick = () => sendUp.click();
+  };
 
-    const { data, error } = await supa
-      .from('orders')
-      .select('id, created_at, total_amount, currency')
-      .eq('user_id', userId)
-      .order('created_at', { ascending:false })
-      .limit(3);
+  verifyUp.onclick = async function(){
+    showMsg(msgUp,"");
+    const email = normEmail(emailUp.value);
+    const token = (otpUp.value||"").trim();
+    if (!email) return showMsg(msgUp,"Enter your email again to verify.","error");
+    if (token.length !== 6) return showMsg(msgUp,"Enter the 6-digit code from your email.","error");
+    disable(verifyUp,true); showMsg(msgUp,"Verifying…");
+    const { data, error } = await supa.auth.verifyOtp({ email, token, type:"email" });
+    disable(verifyUp,false);
+    if (error) return showMsg(msgUp,error.message,"error");
+    // store first/last onto profile
+    const first = localStorage.getItem("pending_first") || firstUp.value.trim();
+    const last  = localStorage.getItem("pending_last") || lastUp.value.trim();
+    await saveNamesToProfile(data.user.id, email, first, last);
+    localStorage.removeItem("pending_first");
+    localStorage.removeItem("pending_last");
+    showMsg(msgUp,"Verified. Creating your account…","success");
+    closeLogin();
+  };
 
-    if (error){ box.innerHTML = '<div class="muted">Could not load orders.</div>'; return; }
-    if (!data || !data.length){ box.innerHTML = '<div class="muted">No purchases yet.</div>'; return; }
-
-    box.innerHTML = `
-      <div class="muted" style="margin-bottom:6px">Recent purchases</div>
-      ${data.map(o=>{
-        const d = new Date(o.created_at);
-        const when = d.toLocaleDateString();
-        const amt = (o.total_amount ?? 0).toFixed(2) + ' ' + (o.currency || '');
-        return `
-          <div style="padding:6px 0;border-top:1px solid rgba(141,158,199,.12)">
-            <div><strong>Order #${o.id}</strong> · <span class="muted">${when}</span></div>
-            <div class="muted">${amt}</div>
-          </div>
-        `;
-      }).join('')}
-      <a href="my-order.html" role="menuitem" style="display:block;padding:8px 0">View all orders →</a>
-    `;
-  }
-
-  /* ===== Header session state (and show Admin button if admin) ===== */
+  // Close modal automatically once session is present (after magic link)
   async function refreshHeader(){
     const { data:{ session } } = await supa.auth.getSession();
     if (session?.user){
-      let display = session.user.email;
+      let display = session.user.email || "";
       let isAdmin = false;
       try {
         const { data: p } = await supa.from('profiles').select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
         const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
         if (full) display = full;
-        isAdmin = !!p?.is_admin || SUPER_ADMINS.includes(session.user.email);
-      } catch {}
-      signinBtn.style.display = 'none';
-      accountBtn.style.display = 'inline-flex';
-      helloName.textContent = display;
-      accountHeader.textContent = display;
+        isAdmin = !!p?.is_admin || SUPER_ADMINS.includes((session.user.email||"").trim());
+        // If just signed up and we have pending names, save them
+        const pf = localStorage.getItem("pending_first");
+        const pl = localStorage.getItem("pending_last");
+        if (pf || pl){
+          await saveNamesToProfile(session.user.id, session.user.email, pf||"", pl||"");
+          localStorage.removeItem("pending_first");
+          localStorage.removeItem("pending_last");
+        }
+      } catch(e){}
 
-      // Show Admin button only for admins
-      if (isAdmin) { adminBtn.style.display = 'inline-block'; }
+      // Update header UI
+      document.getElementById('signinBtn').style.display = 'none';
+      document.getElementById('accountBtn').style.display = 'inline-flex';
+      document.getElementById('helloName').textContent = display;
+      document.getElementById('accountHeader').textContent = display;
+      if (isAdmin) { document.getElementById('adminBtn').style.display = 'inline-block'; }
 
-      loadRecentPurchases(session.user.id);
+      // Ensure modal closed if it was open
+      closeLogin();
     } else {
-      signinBtn.style.display = 'inline-block';
-      accountBtn.style.display = 'none';
-      helloName.textContent = '';
-      accountHeader.textContent = '';
-      accountMenu.classList.remove('open');
-      adminBtn.style.display = 'none';
+      document.getElementById('signinBtn').style.display = 'inline-block';
+      document.getElementById('accountBtn').style.display = 'none';
+      document.getElementById('helloName').textContent = '';
+      document.getElementById('accountHeader').textContent = '';
+      document.getElementById('accountMenu').classList.remove('open');
+      document.getElementById('adminBtn').style.display = 'none';
     }
   }
 
   document.addEventListener('DOMContentLoaded', refreshHeader);
   supa.auth.onAuthStateChange(async ()=>{ await refreshHeader(); });
+
+  // Account dropdown outside-click handled in toggleMenu()
+
+  // Menu toggle for mobile
+  // (already present via the ☰ button)
+
 </script>
 </body>
 </html>
