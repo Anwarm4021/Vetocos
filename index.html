@@ -1,658 +1,271 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>VetoCos | Complementary Feed for Pets</title>
+  <title>VetoCos | Accueil</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="VetoCos — complementary feed (alimentary) for dogs & cats. Trusted quality, vet-inspired formulations.">
-  <meta name="robots" content="index, follow">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta name="description" content="VETOCOS SAHIB — Importation, vente et distribution en gros de produits vétérinaires, cosmétiques, paramédicaux et matériel de chirurgie au Maroc." />
+  <meta name="theme-color" content="#0b1020" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;
-      --brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.25)
-    }
+    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--accent:#6dd5ff;--br:16px}
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
-    a{color:var(--brand);text-decoration:none}
-    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
-
-    /* Header */
-    header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
-    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-    .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.3px}
-    .brand-logo{
-      width:60px;height:auto;display:block;background:transparent;border:0;outline:0;
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,.35));
-      image-rendering:auto;
-    }
-    .brand-logo:hover{ filter: drop-shadow(0 8px 16px rgba(0,0,0,.4)) contrast(1.03) saturate(1.02); }
-
-    .links{display:flex;gap:12px;align-items:center}
-    .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
-    .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
-    .contact-btn,#lang-switch,.btn{
-      padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
-      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer
-    }
-    #lang-switch{background:rgba(255,255,255,.04)}
-    .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
-    @media(max-width:900px){
-      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:240px}
-      .links.open{display:flex}
-      .hamb{display:block}
-      .contact-btn,#lang-switch{width:100%;text-align:left}
-    }
-
-    /* Account button / menu */
-    .acct{position:relative;display:inline-flex;align-items:center;gap:8px}
-    .avatar{width:30px;height:30px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:inline-block;border:1px solid rgba(141,158,199,.3)}
-    .menu{position:absolute;top:42px;right:0;background:rgba(16,24,53,.98);border:1px solid rgba(141,158,199,.2);border-radius:12px;min-width:260px;display:none;box-shadow:var(--shadow);max-height:70vh;overflow:auto}
-    .menu.open{display:block}
-    .menu a,.menu button{display:block;width:100%;text-align:left;padding:10px 12px;background:transparent;border:0;color:var(--text);cursor:pointer}
-    .menu a:hover,.menu button:hover{background:rgba(141,158,199,.15)}
-    .menu .muted{font-size:12px}
-
-    /* Hero */
-    .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:26px;padding:50px 0 40px;align-items:center}
-    .badge{display:inline-flex;gap:8px;align-items:center;background:rgba(141,158,199,.15);border:1px solid rgba(141,158,199,.25);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
-    h1{font-size:clamp(32px,5vw,52px);line-height:1.15;margin:14px 0}
-    .lead{font-size:clamp(16px,2.2vw,20px);color:var(--muted);margin:0 0 22px}
-    .cta{display:flex;gap:12px;flex-wrap:wrap}
-    .btn.ghost{background:transparent;border:1px solid rgba(141,158,199,.25)}
-
-    .hero-card{background:radial-gradient(1200px 500px at 80% -20%, rgba(131,240,165,.18), transparent 40%), var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:0;box-shadow:var(--shadow);overflow:hidden;display:grid;place-items:center;text-align:center;min-height:350px}
-    .hero-card img{width:100%;height:100%;max-height:500px;object-fit:cover}
-    @media(max-width:980px){.hero{grid-template-columns:1fr}.hero-card{order:-1}}
-
-    /* Pillars */
-    .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
-    .card h3{margin:.2rem 0 .3rem}
+    body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
+    header,main,footer{max-width:1100px;margin:0 auto;padding:0 18px}
+    header{padding:18px 18px 0}
+    nav{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{font-weight:700;letter-spacing:.4px}
+    nav .links{display:flex;gap:14px;flex-wrap:wrap}
+    nav a{color:var(--text);text-decoration:none;opacity:.9}
+    nav a:hover{opacity:1}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer}
+    .btn.secondary{background:rgba(255,255,255,.04)}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .hero{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:center;margin:32px 0}
+    @media(max-width:900px){.hero{grid-template-columns:1fr}}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px}
+    h1{margin:.4rem 0 1rem;font-size:2rem}
     .muted{color:var(--muted)}
-    @media(max-width:980px){.pillars{grid-template-columns:1fr}}
-
-    /* Product grid */
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:8px}
-    @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:520px){.grid{grid-template-columns:1fr}}
-    .p-card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
-    .p-card img{width:100%;height:170px;object-fit:cover}
-    .p-card .px{padding:12px}
-    .p-card .px h4{margin:.2rem 0 .1rem}
-    .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
-
-    footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
-    .footer-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
-    .footer-links a{color:var(--muted)}
-
-    /* Modals (Contact / Policy / Login) */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(4px);z-index:80}
-    .modal.open{display:flex}
-    .sheet{width:min(720px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
-    .sheet-title{margin:0;font-size:1.1rem}
-    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
-    .sheet-body{padding:16px}
-
-    /* Login modal specific */
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media(max-width:720px){.row{grid-template-columns:1fr}}
-    label{font-size:.9rem;color:var(--muted);display:block}
-    input{
-      width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);
-      background:rgba(255,255,255,.03);color:var(--text);margin-top:6px
-    }
-    .tiny{font-size:.85rem;color:var(--muted);margin-top:8px}
-    .success{color:#83f0a5}.error{color:#ffb4b4}
-
-    /* RTL */
-    body.rtl .links a{text-align:right}
+    input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text)}
+    label{display:block;font-size:.92rem;color:var(--muted);margin:8px 0 6px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media(max-width:860px){.grid3{grid-template-columns:1fr}}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
+    .ok{background:rgba(131,240,165,.12)}
+    .list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media(max-width:1000px){.list{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:680px){.list{grid-template-columns:1fr}}
+    .prod{display:flex;gap:10px;align-items:center}
+    .prod img{width:84px;height:64px;object-fit:cover;border-radius:10px;border:1px solid rgba(141,158,199,.18)}
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .notice{padding:10px;border:1px dashed rgba(141,158,199,.35);border-radius:12px;background:rgba(255,255,255,.03)}
+    a{text-decoration:none;color:var(--accent)}
+    footer{padding:30px 18px 50px;color:var(--muted)}
+    iframe{border:0;width:100%;height:320px;border-radius:12px}
+    .whats{display:inline-flex;gap:8px;align-items:center}
   </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <header class="site">
-    <div class="wrap nav">
-      <div class="brand">
-        <a href="index.html" aria-label="VetoCos home">
-          <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
-        </a>
-        <span>VetoCos</span>
-      </div>
-      <nav class="links" id="navlinks">
-        <a class="active" href="index.html" data-i18n="nav.home">Home</a>
-        <a href="Products.html" data-i18n="nav.products">Products</a>
-        <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
-        <a href="News.html" data-i18n="nav.news">News</a>
-
-        <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
-
-        <!-- Admin link (handled by JS to enforce login/admin check) -->
-        <a class="contact-btn" id="adminBtn" href="admin.html" onclick="return goToAdmin(event)">Admin</a>
-
-        <select id="lang-switch" aria-label="Language">
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="ar">العربية</option>
-        </select>
-
-        <!-- Account block -->
-        <div class="acct" id="acctBlock">
-          <button class="contact-btn" id="signinBtn" type="button">Sign in</button>
-          <button class="contact-btn" id="accountBtn" type="button" style="display:none">
-            <span class="avatar" aria-hidden="true"></span>
-            <span id="helloName" class="muted" style="font-size:.9rem"></span>
-          </button>
-          <div class="menu" id="accountMenu" role="menu" aria-hidden="true">
-            <div id="accountHeader" class="muted" style="padding:8px 12px; border-bottom:1px solid rgba(141,158,199,.12)"></div>
-            <a href="account.html" role="menuitem">My Account</a>
-            <a href="orders.html" role="menuitem">My Orders</a>
-            <a href="cart.html" role="menuitem">Cart</a>
-            <a href="checkout.html" role="menuitem">Checkout</a>
-            <a href="vet-verify.html" role="menuitem">Vet verification</a>
-            <div id="recentOrders" style="padding:8px 12px; border-top:1px solid rgba(141,158,199,.12)"></div>
-            <button type="button" role="menuitem" onclick="logout()">Logout</button>
-          </div>
-        </div>
-      </nav>
-      <button class="hamb" aria-label="Open menu" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
+<header>
+  <nav>
+    <div class="brand">VetoCos</div>
+    <div class="links">
+      <a href="Products.html">Produits</a>
+      <a href="news.html">Actualités</a>
+      <a href="vet-verify.html">Vérification vétérinaire</a>
+      <a href="cart.html">Panier</a>
+      <button id="loginBtn" class="btn">Se connecter / S’inscrire</button>
+      <button id="logoutBtn" class="btn secondary" style="display:none">Se déconnecter</button>
     </div>
-  </header>
+  </nav>
+</header>
 
-  <main class="wrap">
-    <div class="hero">
-      <div>
-        <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
-        <h1 data-i18n="hero.title">Vet-expert inspired nutrition for dogs & cats</h1>
-        <p class="lead" data-i18n="hero.lead">We create complementary alimentary products to support urinary, hepatic, renal, joint, and overall well-being. No therapeutic claims — just smart nutrition your vet can stand behind.</p>
-        <div class="cta">
-          <a class="btn" href="Products.html" data-i18n="hero.ctaProducts">Browse products →</a>
-          <a class="btn ghost" href="World Wide.html" data-i18n="hero.ctaWhere">Where to buy</a>
-        </div>
+<main>
+  <section class="hero">
+    <div class="card">
+      <h1>Fournisseur vétérinaire professionnel</h1>
+      <p class="muted">VETOCOS SAHIB · S.A.R.L, capital 1 200 000 DHS · RC 90543 Rabat · ICE 001544252000064 · Créée en 2012.</p>
+      <div class="notice" style="margin:14px 0">
+        <strong>Important :</strong> les produits sont visibles par tous, mais l’achat est réservé aux <em>vétérinaires vérifiés</em>. Créez votre compte et validez votre statut via pièce justificative et n° de carte professionnelle.
       </div>
-      <div class="hero-card" aria-hidden="true">
-        <img alt="VetoCos hero" src="images/header.jpg" onerror="this.src='images/Product1.jpg'">
+      <div class="row" style="gap:8px">
+        <button class="btn" id="ctaSignup">Créer un compte</button>
+        <a class="btn secondary" href="Products.html">Voir les produits</a>
       </div>
+      <p id="who" class="muted" style="margin-top:6px"></p>
     </div>
 
-    <section class="pillars">
-      <div class="card">
-        <h3 data-i18n="pillars.vetTitle">Vet-aligned formulas</h3>
-        <p class="muted" data-i18n="pillars.vetText">Developed with veterinary input for targeted dietary support across common life-stage and lifestyle needs.</p>
-      </div>
-      <div class="card">
-        <h3 data-i18n="pillars.labelTitle">Label clarity</h3>
-        <p class="muted" data-i18n="pillars.labelText">Transparent ingredients, usage guidance, and category labels like <em>urinary care</em>, <em>liver support</em>, and <em>mobility</em>.</p>
-      </div>
-      <div class="card">
-        <h3 data-i18n="pillars.qualityTitle">Quality first</h3>
-        <p class="muted" data-i18n="pillars.qualityText">Manufactured to high food-grade standards with batch traceability.</p>
-      </div>
-    </section>
-
-    <section style="margin-top:28px">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2 style="margin:0" data-i18n="popular.title">Popular products</h2>
-          <a class="btn ghost" href="Products.html" data-i18n="popular.viewAll">View all</a>
-        </div>
-        <div class="grid">
-          <a class="p-card" href="Product1.html">
-            <img src="images/Product1.jpg" alt="Urocline Chien">
-            <div class="px">
-              <h4>Urocline Chien</h4>
-              <div class="p-meta"><span data-i18n="cat.urinary">Urinary care</span><span data-i18n="cat.dogsCats">Dogs & Cats</span></div>
-            </div>
-          </a>
-          <a class="p-card" href="Product2.html">
-            <img src="images/Product2.jpg" alt="Hepatiale">
-            <div class="px">
-              <h4>Hepatiale</h4>
-              <div class="p-meta"><span data-i18n="cat.liver">Liver support</span><span data-i18n="cat.dogsCats">Dogs & Cats</span></div>
-            </div>
-          </a>
-          <a class="p-card" href="Product9.html">
-            <img src="images/Product9.jpg" alt="Art-Asuh">
-            <div class="px">
-              <h4>Art-Asuh</h4>
-              <div class="p-meta"><span data-i18n="cat.mobility">Mobility</span><span data-i18n="cat.dogsCats">Dogs & Cats</span></div>
-            </div>
-          </a>
-          <a class="p-card" href="Product11.html">
-            <img src="images/Product11.jpg" alt="Renosan">
-            <div class="px">
-              <h4>Renosan</h4>
-              <div class="p-meta"><span data-i18n="cat.renal">Renal support</span><span data-i18n="cat.dogsCats">Dogs & Cats</span></div>
-            </div>
-          </a>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="wrap">
-      <div>© <span id="y"></span> VetoCos. <span data-i18n="footer.tag">Complementary feed for companion animals. Not intended to diagnose, treat, cure, or prevent disease.</span></div>
-      <div class="footer-links">
-        <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
-        <a href="#" onclick="openContact();return false;" data-i18n="footer.contact">Contact</a>
-      </div>
-    </div>
-  </footer>
-
-  <!-- CONTACT MODAL -->
-  <div id="contactModal" class="modal" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
-      <div class="sheet-head">
-        <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
-        <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
-      </div>
-      <div class="sheet-body">
-        <div class="cols" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div class="info-card" style="background:rgba(16,24,53,.55);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:14px">
-            <h3 data-i18n="contact.reach">Reach us</h3>
-            <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
-            <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212 537742213">+212 537742213</a></p>
-            <div class="socials" aria-label="Social links" style="display:flex;gap:10px;flex-wrap:wrap">
-              <a href="https://facebook.com/yourpage" target="_blank" rel="noopener">Facebook</a>
-              <a href="https://instagram.com/yourpage" target="_blank" rel="noopener">Instagram</a>
-              <a href="https://www.tiktok.com/@yourpage" target="_blank" rel="noopener">TikTok</a>
-            </div>
-          </div>
-          <div class="info-card" style="background:rgba(16,24,53,.55);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:14px">
-            <h3 data-i18n="contact.help">Help message & Comments</h3>
-            <form id="contactForm" onsubmit="return sendMailto(event)">
-              <div class="row">
-                <div><label for="name" data-i18n="form.name">Name</label><br><input id="name" name="name" required></div>
-                <div><label for="email" data-i18n="form.email">Email</label><br><input id="email" name="email" type="email" required></div>
-              </div>
-              <div style="margin-top:10px">
-                <label for="subject" data-i18n="form.subject">Subject</label><br>
-                <input id="subject" name="subject" placeholder="Question about a product…">
-              </div>
-              <div style="margin-top:10px">
-                <label for="message" data-i18n="form.message">Message / Comments</label><br>
-                <textarea id="message" name="message" style="min-height:120px;resize:vertical" placeholder="Write your help request or comment…" required></textarea>
-              </div>
-              <div class="form-actions" style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px">
-                <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
-                <button class="contact-btn" type="submit" data-i18n="form.send">Send</button>
-              </div>
-              <p class="muted" style="margin-top:8px" data-i18n="form.note">This sends via your email app (no account needed).</p>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PRIVACY & POLICY MODAL -->
-  <div id="policyModal" class="modal" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
-      <div class="sheet-head">
-        <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
-        <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
-      </div>
-      <div class="sheet-body policy-body">
-        <h3 data-i18n="policy.overviewTitle">Overview</h3>
-        <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.</p>
-
-        <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
-        <ul>
-          <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
-          <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
-        </ul>
-
-        <h3 data-i18n="policy.useTitle">How we use data</h3>
-        <ul>
-          <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
-          <li data-i18n="policy.use2">We do not sell personal data.</li>
-        </ul>
-
-        <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
-        <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
-
-        <h3 data-i18n="policy.choiceTitle">Your choices</h3>
-        <ul>
-          <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
-          <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
-        </ul>
-
-        <h3 data-i18n="policy.contactTitle">Contact</h3>
-        <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
-
-        <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
-      </div>
-    </div>
-  </div>
-
-  <!-- LOGIN MODAL (Magic link + optional OTP) -->
-  <div id="loginModal" class="modal" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-      <div class="sheet-head">
-        <h2 id="loginTitle" class="sheet-title">Sign in</h2>
-        <button class="close" type="button" onclick="closeLogin()">Close</button>
-      </div>
-      <div class="sheet-body">
-        <p class="muted">Enter your details. We’ll email you a magic link and, if enabled, a 6-digit code.</p>
-
-        <div class="row">
-          <div>
-            <label for="first">First name
-              <input id="first" autocomplete="given-name" />
-            </label>
-          </div>
-          <div>
-            <label for="last">Last name
-              <input id="last" autocomplete="family-name" />
-            </label>
-          </div>
-        </div>
-
-        <label for="loginEmail" style="margin-top:10px">Email
-          <input id="loginEmail" type="email" autocomplete="email" required />
-        </label>
-
-        <button class="btn" id="send">Send login email</button>
-
-        <div id="codeBox" style="display:none;margin-top:8px" aria-live="polite">
-          <label for="otp" style="margin-top:10px">Enter 6-digit code (if your email shows one)
-            <input id="otp" inputmode="numeric" pattern="[0-9]*" maxlength="6" />
+    <!-- Sign up / sign in card -->
+    <div class="card">
+      <h2 style="margin:.2rem 0 8px">Connexion rapide</h2>
+      <p class="muted" style="margin:0 0 6px">Recevez un lien magique (ou un code à 6 chiffres) par email.</p>
+      <div class="grid2">
+        <div>
+          <label>Prénom
+            <input id="first" autocomplete="given-name" />
           </label>
-          <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
-            <button class="btn" id="verify">Verify & continue</button>
-            <button class="btn" id="resend" style="display:none;min-width:170px"></button>
-          </div>
         </div>
+        <div>
+          <label>Nom
+            <input id="last" autocomplete="family-name" />
+          </label>
+        </div>
+      </div>
+      <label>Email
+        <input id="email" type="email" autocomplete="email" />
+      </label>
+      <div class="row" style="margin-top:10px">
+        <button id="send" class="btn">Recevoir le lien de connexion</button>
+      </div>
+      <div id="codeWrap" style="display:none;margin-top:8px">
+        <label>Code à 6 chiffres (si reçu)
+          <input id="otp" inputmode="numeric" maxlength="6" pattern="[0-9]*" />
+        </label>
+        <button id="verify" class="btn" style="margin-top:8px">Vérifier & continuer</button>
+      </div>
+      <p id="msg" class="muted" aria-live="polite" style="min-height:1.2em;margin-top:8px"></p>
+      <p class="muted" style="font-size:.9rem;margin-top:6px">Astuce : ouvrez le lien magique dans le <strong>même navigateur</strong>.</p>
+    </div>
+  </section>
 
-        <p id="msg" class="tiny" aria-live="polite"></p>
-        <p class="tiny">Tip: open the magic link in the <strong>same browser</strong> where you started login.</p>
+  <!-- Product preview -->
+  <section class="card" aria-labelledby="prodPrev">
+    <div class="row">
+      <h2 id="prodPrev" style="margin:0">Quelques produits</h2>
+      <a class="btn small" href="Products.html">Voir tout</a>
+    </div>
+    <div id="prodList" class="list" style="margin-top:12px"></div>
+  </section>
+
+  <!-- Company info -->
+  <section class="card" style="margin-top:14px">
+    <h2 style="margin:.2rem 0 10px">VETOCOS SAHIB — Informations</h2>
+    <div class="grid3">
+      <div>
+        <p><strong>Adresse</strong><br>LOT HAOUID EL MAA N°63, Skhirat — Rabat, Maroc</p>
+        <p><strong>Téléphone</strong><br><a class="whats" href="https://wa.me/212" target="_blank" rel="noopener">WhatsApp | Afficher le téléphone</a></p>
+      </div>
+      <div>
+        <p><strong>Forme juridique</strong><br>S.A.R.L.</p>
+        <p><strong>Capital</strong><br>1 200 000 DHS</p>
+        <p><strong>Année de création</strong><br>2012</p>
+      </div>
+      <div>
+        <p><strong>RC</strong> : 90543 Rabat<br>
+           <strong>ICE</strong> : 001544252000064<br>
+           <strong>Activité</strong> : Importation, vente et distribution en gros de produits vétérinaires, cosmétiques, paramédicaux et matériel de chirurgie, et plus généralement toutes opérations commerciales, industrielles, financières, mobilières ou immobilières s’y rattachant, depuis 13 années.</p>
       </div>
     </div>
-  </div>
+    <div style="margin-top:10px">
+      <iframe
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps?q=Lot%20Hao%C3%BCid%20El%20Maa%2063%20Skhirat%20Maroc&output=embed">
+      </iframe>
+    </div>
+  </section>
+</main>
 
-  <!-- Supabase SDK -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<footer>
+  © <span id="year"></span> VETOCOS SAHIB — Tous droits réservés.
+</footer>
 
-  <script>
-    /* ===== i18n ===== */
-    const I18N={en:{"nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact",
-      "hero.badge":"Complementary feed — not medicine","hero.title":"Vet-expert inspired nutrition for dogs & cats",
-      "hero.lead":"We create complementary alimentary products to support urinary, hepatic, renal, joint, and overall well-being. No therapeutic claims — just smart nutrition your vet can stand behind.",
-      "hero.ctaProducts":"Browse products →","hero.ctaWhere":"Where to buy",
-      "pillars.vetTitle":"Vet-aligned formulas","pillars.vetText":"Developed with veterinary input for targeted dietary support across common life-stage and lifestyle needs.",
-      "pillars.labelTitle":"Label clarity","pillars.labelText":"Transparent ingredients, usage guidance, and category labels like urinary care, liver support, and mobility.",
-      "pillars.qualityTitle":"Quality first","pillars.qualityText":"Manufactured to high food-grade standards with batch traceability.",
-      "popular.title":"Popular products","popular.viewAll":"View all",
-      "cat.urinary":"Urinary care","cat.liver":"Liver support","cat.mobility":"Mobility","cat.renal":"Renal support","cat.dogsCats":"Dogs & Cats",
-      "footer.tag":"Complementary feed for companion animals. Not intended to diagnose, treat, cure, or prevent disease.",
-      "footer.policy":"Privacy & Policy","footer.contact":"Contact",
-      "contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.reachText":"We’re happy to help with product questions, availability, or feedback.","contact.phone":"Phone:",
-      "contact.help":"Help message & Comments",
-      "form.name":"Name","form.email":"Email","form.subject":"Subject","form.message":"Message / Comments","form.cancel":"Cancel","form.send":"Send","form.note":"This sends via your email app (no account needed).",
-      "policy.title":"Privacy & Policy","policy.close":"Close","policy.overviewTitle":"Overview","policy.overviewText":"VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.",
-      "policy.dataTitle":"Data we may receive","policy.data1":"Messages you send via the contact form (your name, email, and message content).","policy.data2":"Basic, anonymized analytics (page views, device type) to improve the site.",
-      "policy.useTitle":"How we use data","policy.use1":"To respond to your requests and improve our products and site experience.","policy.use2":"We do not sell personal data.",
-      "policy.cookiesTitle":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.",
-      "policy.choiceTitle":"Your choices","policy.choice1":"You can request that we delete your message and contact details at any time.","policy.choice2":"You can disable cookies in your browser settings.",
-      "policy.contactTitle":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Last updated:"},
-    fr:{}, ar:{}};
+<script>
+  /* ===== Supabase config ===== */
+  const supa = supabase.createClient(
+    "https://qdepgviimbcdlozjpbhm.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+    { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
+  );
 
-    function applyLang(lang){
-      const dict=I18N[lang]||I18N.en;
-      document.querySelectorAll("[data-i18n]").forEach(el=>{
-        const k=el.getAttribute("data-i18n");
-        if(dict[k]) el.innerHTML=dict[k];
-      });
-      const html=document.documentElement; html.lang=lang;
-      if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
-      else { html.dir="ltr"; document.body.classList.remove("rtl"); }
-      localStorage.setItem("lang",lang);
-      const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
+  /* ===== UI ===== */
+  const first = document.getElementById('first');
+  const last  = document.getElementById('last');
+  const email = document.getElementById('email');
+  const send  = document.getElementById('send');
+  const verify= document.getElementById('verify');
+  const otp   = document.getElementById('otp');
+  const msg   = document.getElementById('msg');
+  const codeWrap = document.getElementById('codeWrap');
+  const loginBtn  = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const who = document.getElementById('who');
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  function say(t, kind=""){ msg.textContent=t||""; msg.className="muted "+kind; }
+
+  loginBtn.onclick = ()=> location.href='login.html?redirect=' + encodeURIComponent('Products.html');
+  logoutBtn.onclick = async ()=>{ await supa.auth.signOut(); location.reload(); };
+  document.getElementById('ctaSignup').onclick = ()=> loginBtn.click();
+
+  /* ===== Session banner ===== */
+  (async ()=>{
+    const { data:{ user } } = await supa.auth.getUser();
+    if (user){
+      logoutBtn.style.display='inline-block';
+      loginBtn.style.display='none';
+      const { data: prof } = await supa.from('profiles').select('first_name,last_name,email,can_purchase').eq('id', user.id).maybeSingle();
+      who.textContent = `Connecté${(prof?.first_name||prof?.last_name)?' : ':''}${[prof?.first_name,prof?.last_name].filter(Boolean).join(' ')}${prof?.can_purchase?' · ✅ vétérinaire approuvé':''}`;
     }
+  })();
 
-    // Modals
-    const contactModal=document.getElementById('contactModal');
-    const policyModal=document.getElementById('policyModal');
-    function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
-    function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
-    function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
-    function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
-    [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+  /* ===== Signup/Signin (magic link + optional OTP) ===== */
+  send.onclick = async ()=>{
+    say("");
+    const f = (first.value||'').trim(), l=(last.value||'').trim(), e=(email.value||'').trim();
+    if(!f || !l) return say("Entrez votre prénom et nom.","error");
+    if(!e) return say("Entrez votre email.","error");
 
-    // Mailto
-    function sendMailto(e){
-      e.preventDefault();
-      const name=encodeURIComponent(document.getElementById('name').value.trim());
-      const email=encodeURIComponent(document.getElementById('email').value.trim());
-      const subject=encodeURIComponent(document.getElementById('subject').value.trim()||'Website enquiry');
-      const message=encodeURIComponent(document.getElementById('message').value.trim());
-      const body=`Name: ${name}%0AEmail: ${email}%0A%0A${message}`;
-      const to='info@vetocos.com';
-      window.location.href=`mailto:${to}?subject=${subject}&body=${body}`;
-      return false;
-    }
+    localStorage.setItem("pending_first", f);
+    localStorage.setItem("pending_last", l);
 
-    // Year + policy date + language
-    document.addEventListener("DOMContentLoaded", ()=>{
-      const y=document.getElementById('y'); if(y) y.textContent=new Date().getFullYear();
-      const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
-      const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
-      applyLang(localStorage.getItem("lang")||"en");
-      const sel=document.getElementById("lang-switch"); sel&&sel.addEventListener("change",e=>applyLang(e.target.value));
+    send.disabled = true; say("Envoi de l'email…");
+    const absoluteLoginUrl = `${location.origin}/login.html?redirect=${encodeURIComponent('Products.html')}`;
+    const { error } = await supa.auth.signInWithOtp({
+      email: e,
+      options: { emailRedirectTo: absoluteLoginUrl }
     });
+    send.disabled = false;
 
-    /* ===== Supabase ===== */
-    const supa = supabase.createClient(
-      "https://qdepgviimbcdlozjpbhm.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
-    );
+    if (error) return say(error.message, "error");
+    say("Email envoyé. Ouvrez le lien dans ce navigateur. Si vous avez reçu un code à 6 chiffres, saisissez-le ci-dessous.","ok");
+    codeWrap.style.display='block'; setTimeout(()=>otp.focus(), 50);
+  };
 
-    /* ===== Admin navigation (force login if needed; then admin.html) ===== */
-    async function goToAdmin(e){
-      if (e) e.preventDefault();
-      try{
-        const { data:{ session } } = await supa.auth.getSession();
-        if (!session?.user){
-          location.href = `login.html?redirect=${encodeURIComponent('admin.html')}&force=1`;
-          return false;
-        }
-        const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
-        if (SUPER_ADMINS.includes(session.user.email)){
-          location.href = 'admin.html';
-          return false;
-        }
-        const { data: prof, error } = await supa
-          .from('profiles').select('is_admin').eq('id', session.user.id).maybeSingle();
-        if (error){ alert('Could not read admin status: ' + error.message); return false; }
-        if (prof?.is_admin){ location.href = 'admin.html'; }
-        else { alert('This account is not an admin.'); }
-      } catch(err){
-        alert('Admin check failed: ' + (err?.message || err));
-      }
-      return false;
-    }
-    window.goToAdmin = goToAdmin;
+  verify.onclick = async ()=>{
+    say("");
+    const e=(email.value||'').trim(), code=(otp.value||'').trim();
+    if (!e) return say("Renseignez votre email pour vérifier.","error");
+    if (code.length!==6) return say("Entrez le code à 6 chiffres.","error");
 
-    /* ===== Account dropdown + login modal wiring ===== */
-    const signinBtn = document.getElementById('signinBtn');
-    const accountBtn= document.getElementById('accountBtn');
-    const accountMenu=document.getElementById('accountMenu');
-    const accountHeader=document.getElementById('accountHeader');
-    const helloName = document.getElementById('helloName');
+    verify.disabled=true; say("Vérification…");
+    const { data, error } = await supa.auth.verifyOtp({ email:e, token:code, type:'email' });
+    verify.disabled=false;
+    if (error) return say(error.message, "error");
 
-    function toggleMenu(){
-      const open = accountMenu.classList.toggle('open');
-      accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
-      if (open){
-        const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
-        setTimeout(()=>document.addEventListener('click', onDoc),0);
-      }
-    }
-    accountBtn.addEventListener('click', toggleMenu);
+    try{
+      const f=localStorage.getItem('pending_first') || first.value.trim();
+      const l=localStorage.getItem('pending_last')  || last.value.trim();
+      await supa.from('profiles').upsert({
+        id: data.user.id, first_name: f||null, last_name: l||null, email:e||null
+      }, { onConflict: 'id' });
+      localStorage.removeItem('pending_first'); localStorage.removeItem('pending_last');
+    }catch{}
+    say("Connecté. Redirection vers les produits…","ok");
+    setTimeout(()=> location.href='Products.html', 400);
+  };
 
-    function logout(){ supa.auth.signOut().then(()=>location.reload()); }
-    window.logout = logout;
-
-    // Login modal controls
-    const loginModal = document.getElementById('loginModal');
-    function openLogin(){ loginModal.classList.add('open'); loginModal.setAttribute('aria-hidden','false'); }
-    function closeLogin(){ loginModal.classList.remove('open'); loginModal.setAttribute('aria-hidden','true'); }
-    if (signinBtn) signinBtn.addEventListener('click', openLogin);
-
-    /* ===== Inline magic-link + optional OTP ===== */
-    const msgEl = document.getElementById("msg");
-    const sendBtn = document.getElementById("send");
-    const verifyBtn = document.getElementById("verify");
-    const resendBtn = document.getElementById("resend");
-    const codeBox = document.getElementById("codeBox");
-    const emailInput = document.getElementById("loginEmail");
-    const firstInput = document.getElementById("first");
-    const lastInput  = document.getElementById("last");
-    const otpInput   = document.getElementById("otp");
-
-    function show(t, kind=""){ msgEl.textContent=t||""; msgEl.className="tiny "+kind; }
-    function disable(el, on=true){ if(el) el.disabled=!!on; }
-    function normEmail(v){ return (v||"").trim().toLowerCase(); }
-
-    async function saveNamesToProfileIfAny(userId, email){
-      const first = localStorage.getItem("pending_first") || firstInput.value.trim();
-      const last  = localStorage.getItem("pending_last")  || lastInput.value.trim();
-      const em    = normEmail(email);
-      if (first || last || em) {
-        try {
-          await supa.from("profiles")
-            .upsert({ id: userId, first_name:first || null, last_name:last || null, email:em || null }, { onConflict: 'id' });
-        } catch (err) { console.warn("Profile update failed:", err?.message || err); }
-        localStorage.removeItem("pending_first");
-        localStorage.removeItem("pending_last");
-      }
-    }
-
-    let resendTimer=null;
-    function startResend(seconds=45){
-      let left=seconds;
-      resendBtn.style.display="inline-block";
-      resendBtn.textContent=`Resend email (${left})`;
-      resendBtn.disabled=true;
-      clearInterval(resendTimer);
-      resendTimer=setInterval(()=>{
-        left -= 1;
-        if(left<=0){ clearInterval(resendTimer); resendBtn.textContent="Resend email"; resendBtn.disabled=false; }
-        else { resendBtn.textContent=`Resend email (${left})`; }
-      },1000);
-    }
-
-    sendBtn.onclick = async function(){
-      show("");
-      const email = normEmail(emailInput.value);
-      const first = firstInput.value.trim();
-      const last  = lastInput.value.trim();
-      if (!first || !last) return show("Please enter your first and last name.","error");
-      if (!email) return show("Please enter your email.","error");
-
-      localStorage.setItem("pending_first", first);
-      localStorage.setItem("pending_last",  last);
-
-      const absoluteLoginUrl = location.href.split('#')[0];
-      disable(sendBtn,true); show("Sending email…");
-
-      const { error } = await supa.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: absoluteLoginUrl }
-      });
-
-      disable(sendBtn,false);
-      if (error) return show(error.message,"error");
-
-      show(`Email sent to ${email}. Open the magic link here. If you also got a 6-digit code, enter it below.`, "success");
-      codeBox.style.display = "block";
-      startResend(45);
-      setTimeout(()=>otpInput.focus(),50);
-      resendBtn.onclick = () => sendBtn.click();
-    };
-
-    verifyBtn.onclick = async function(){
-      show("");
-      const email = normEmail(emailInput.value);
-      const token = (otpInput.value || "").trim();
-      if (!email) return show("Enter your email again to verify.","error");
-      if (token.length !== 6) return show("Enter the 6-digit code from your email.","error");
-
-      disable(verifyBtn,true); show("Verifying…");
-      const { data, error } = await supa.auth.verifyOtp({ email, token, type:"email" });
-      disable(verifyBtn,false);
-      if (error) return show(error.message,"error");
-
-      await saveNamesToProfileIfAny(data.user.id, email);
-      show("Verified. Signing you in…","success");
-      closeLogin();
-    };
-    otpInput?.addEventListener("keydown", (e)=>{ if (e.key === "Enter"){ e.preventDefault(); verifyBtn.click(); } });
-
-    /* ===== Purchase History (recent) ===== */
-    async function loadRecentPurchases(userId){
-      const box = document.getElementById('recentOrders');
-      if (!box) return;
-      box.innerHTML = '<div class="muted">Recent purchases</div><div class="muted" style="margin-top:6px">Loading…</div>';
-
-      const { data, error } = await supa
-        .from('orders')
-        .select('id, created_at, total_amount, currency')
-        .eq('user_id', userId)
-        .order('created_at', { ascending:false })
-        .limit(3);
-
-      if (error){ box.innerHTML = '<div class="muted">Could not load orders.</div>'; return; }
-      if (!data || !data.length){ box.innerHTML = '<div class="muted">No purchases yet.</div>'; return; }
-
-      box.innerHTML = `
-        <div class="muted" style="margin-bottom:6px">Recent purchases</div>
-        ${data.map(o=>{
-          const d = new Date(o.created_at);
-          const when = d.toLocaleDateString();
-          const amt = (o.total_amount ?? 0).toFixed(2) + ' ' + (o.currency || '');
-          return `<div style="padding:6px 0;border-top:1px solid rgba(141,158,199,.12)">
-            <div><strong>Order #${o.id}</strong> · <span class="muted">${when}</span></div>
-            <div class="muted">${amt}</div>
-          </div>`;
-        }).join('')}
-        <a href="orders.html" role="menuitem" style="display:block;padding:8px 0">View all orders →</a>
-      `;
-    }
-
-    /* ===== Header session state ===== */
-    async function refreshHeader(){
-      const { data:{ session } } = await supa.auth.getSession();
-      if (session?.user){
-        let display = session.user.email;
-        let isAdmin = false;
-        try {
-          const { data: p } = await supa.from('profiles').select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
-          const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
-          if (full) display = full;
-          isAdmin = !!p?.is_admin;
-        } catch {}
-        signinBtn.style.display = 'none';
-        accountBtn.style.display = 'inline-flex';
-        helloName.textContent = display;
-        accountHeader.textContent = display;
-
-        // Admin link is always visible; goToAdmin enforces checks.
-        loadRecentPurchases(session.user.id);
-      } else {
-        signinBtn.style.display = 'inline-block';
-        accountBtn.style.display = 'none';
-        helloName.textContent = '';
-        accountHeader.textContent = '';
-        accountMenu.classList.remove('open');
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', refreshHeader);
-    supa.auth.onAuthStateChange(async ()=>{ await refreshHeader(); });
-  </script>
+  /* ===== Product preview (3 items) ===== */
+  async function loadPreview(){
+    const list = document.getElementById('prodList');
+    list.innerHTML = '<div class="muted">Chargement…</div>';
+    const { data, error } = await supa.from('products')
+      .select('sku,name,description,image_path,available,stock_qty')
+      .order('sort_order', { ascending:true, nullsFirst:false })
+      .order('name')
+      .limit(6);
+    if (error){ list.innerHTML = `<div class="muted">${error.message}</div>`; return; }
+    if (!data || !data.length){ list.innerHTML = `<div class="muted">Aucun produit pour le moment.</div>`; return; }
+    list.innerHTML = data.map(p=>{
+      const img = p.image_path
+        ? `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/ProductFiles/${encodeURI(p.image_path.replace(/^ProductFiles\//,''))}`
+        : '';
+      const flag = (!p.available || (Number(p.stock_qty||0)<=0)) ? '<span class="pill">Indisponible</span>' : '<span class="pill ok">Disponible</span>';
+      return `<div class="card">
+        <div class="prod">
+          ${img?`<img src="${img}" alt="${p.name}">`:'<div style="width:84px;height:64px;border-radius:10px;border:1px solid rgba(141,158,199,.18);display:flex;align-items:center;justify-content:center;color:#789">—</div>'}
+          <div>
+            <div style="font-weight:600">${p.name||p.sku}</div>
+            <div class="muted" style="font-size:.9rem">${p.sku}</div>
+            <div style="margin-top:6px">${flag}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.addEventListener('DOMContentLoaded', loadPreview);
+</script>
 </body>
 </html>
-
