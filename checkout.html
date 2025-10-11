@@ -1,78 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>VetoCos | Checkout</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:16px}
-    *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
-    main{max-width:960px;margin:5vh auto;padding:0 18px}
-    h1,h2{margin:.5rem 0 1rem}
-    .grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-    @media(max-width:860px){.grid{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px}
-    .muted{color:var(--muted)}
-    .btn{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);
-         background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);
-         cursor:pointer;font-weight:600}
-    .btn[disabled]{opacity:.55;cursor:not-allowed}
-    .table{width:100%;border-collapse:collapse}
-    .table th,.table td{padding:10px;border-bottom:1px solid rgba(141,158,199,.15);text-align:left}
-    .badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem}
-    .ok{background:rgba(131,240,165,.12)}
-    .warn{background:rgba(255,200,120,.12)}
-    .bad{background:rgba(255,120,120,.12)}
-    .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
-    .notice{padding:10px;border:1px dashed rgba(141,158,199,.35);border-radius:12px;background:rgba(255,255,255,.03);margin:10px 0}
-    .small{font-size:.92rem}
-    #msg{min-height:1.2em;margin-top:8px}
-    a{color:inherit}
-  </style>
-</head>
-<body>
-<main>
-  <h1>Checkout</h1>
-
-  <div class="grid">
-    <!-- Left: Cart review -->
-    <section class="card">
-      <h2>Your Cart</h2>
-      <div id="cartBox" class="muted">Loading…</div>
-      <div id="issuesBox" class="notice small" style="display:none"></div>
-      <div class="row" style="margin-top:10px">
-        <a class="badge" href="Products.html">← Continue shopping</a>
-        <span class="muted small" id="userInfo"></span>
-      </div>
-    </section>
-
-    <!-- Right: Summary / Place order -->
-    <aside class="card">
-      <h2>Summary</h2>
-      <div class="row small">
-        <span>Items</span>
-        <strong id="sumItems">0</strong>
-      </div>
-      <div class="row small">
-        <span>Estimated total</span>
-        <strong id="sumTotal">—</strong>
-      </div>
-      <button id="placeOrder" class="btn" style="margin-top:12px">Place order</button>
-      <div id="msg" class="muted" aria-live="polite"></div>
-      <div class="small muted" style="margin-top:8px">
-        Note: Some products may require vet verification or admin approval. If so, your order will be submitted for review.
-      </div>
-    </aside>
-  </div>
-</main>
-
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
 /* ================== Supabase ================== */
 const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
-const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4QyI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"; // <-- fixed "exp"
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
 });
@@ -133,61 +63,40 @@ function renderCart(){
 /* ================== Eligibility & Issues ================== */
 function computeEligibility(){
   const canAll = !!PROFILE?.can_purchase;
-  const issues = []; // human messages
+  const issues = [];
   const eligibleSKUs = new Set();
-  const ineligible = []; // {sku, reason}
+  const ineligible = [];
 
   CART.forEach(it=>{
     const sku = it.sku;
     const qty = Number(it.qty||0);
     const prod = PRODUCTS[sku] || {};
 
-    // basic product constraints
-    if (prod.available === false){
-      ineligible.push({sku, reason:'Product is unavailable'});
-      return;
-    }
-    if (typeof prod.stock_qty === 'number' && prod.stock_qty < qty){
-      ineligible.push({sku, reason:`Insufficient stock (only ${prod.stock_qty|0} left)`});
-      return;
-    }
+    if (prod.available === false){ ineligible.push({sku, reason:'Product is unavailable'}); return; }
+    if (typeof prod.stock_qty === 'number' && prod.stock_qty < qty){ ineligible.push({sku, reason:`Insufficient stock (only ${prod.stock_qty|0} left)`}); return; }
 
-    if (canAll){
-      eligibleSKUs.add(sku);
-      return;
-    }
+    if (canAll){ eligibleSKUs.add(sku); return; }
 
-    // per-product approvals
     const approvedQty = Number(APPROVALS[sku]||0);
-    if (approvedQty >= qty){
-      eligibleSKUs.add(sku);
-    } else {
+    if (approvedQty >= qty){ eligibleSKUs.add(sku); }
+    else {
       const needed = qty - approvedQty;
-      ineligible.push({sku, reason: approvedQty>0
-        ? `Approval short by ${needed} unit(s)`
-        : 'Approval required'});
+      ineligible.push({sku, reason: approvedQty>0 ? `Approval short by ${needed} unit(s)` : 'Approval required'});
     }
   });
 
-  if (!canAll){
-    const lacking = ineligible.filter(x=>/Approval/.test(x.reason));
-    if (lacking.length){
-      issues.push(`Some items require approval. You can request vet verification here: <a href="vet-verify.html">vet-verify.html</a>.`);
-    }
+  if (!canAll && ineligible.some(x=>/Approval/.test(x.reason))){
+    issues.push(`Some items require approval. You can request vet verification here: <a href="vet-verify.html">vet-verify.html</a>.`);
   }
-
-  const stockIssues = ineligible.filter(x=>/stock|unavailable/i.test(x.reason));
-  if (stockIssues.length){
-    issues.push(`Some items are currently out of stock or unavailable. You can remove them or adjust quantities on the products page.`);
+  if (ineligible.some(x=>/stock|unavailable/i.test(x.reason))){
+    issues.push(`Some items are out of stock/unavailable. Adjust quantities or remove them on the products page.`);
   }
 
   return { eligibleSKUs, ineligible, issues };
 }
 
 function renderIssues(ineligible, issues){
-  if (!CART.length){ issuesBox.style.display='none'; issuesBox.innerHTML=''; return; }
-  if (!ineligible.length && !issues.length){ issuesBox.style.display='none'; issuesBox.innerHTML=''; return; }
-
+  if (!CART.length || (!ineligible.length && !issues.length)){ issuesBox.style.display='none'; issuesBox.innerHTML=''; return; }
   const list = [
     ...issues.map(x=>`<li>${x}</li>`),
     ...ineligible.map(x=>`<li><strong>${x.sku}</strong>: ${x.reason}</li>`)
@@ -198,14 +107,15 @@ function renderIssues(ineligible, issues){
 
 /* ================== Load everything ================== */
 async function ensureLogin(){
-  const { data:{ user } } = await supa.auth.getUser();
-  if (!user){
-    const url = `login.html?redirect=${encodeURIComponent('checkout.html')}`;
+  // More robust than getUser() right on load
+  const { data:{ session } } = await supa.auth.getSession();
+  if (!session?.user){
+    const url = `login.html?redirect=${encodeURIComponent('Checkout.html')}`; // <-- fixed casing
     location.replace(url);
-    return Promise.reject('redirecting to login…');
+    throw new Error('redirecting to login…');
   }
-  USER = user;
-  return user;
+  USER = session.user;
+  return USER;
 }
 async function loadProfile(){
   const { data, error } = await supa.from('profiles')
@@ -213,7 +123,7 @@ async function loadProfile(){
     .eq('id', USER.id).maybeSingle();
   if (error){ throw new Error(error.message); }
   PROFILE = data || { id: USER.id, email: USER.email, can_purchase:false };
-  userInfo.textContent = `${PROFILE.first_name||''} ${PROFILE.last_name||''} · ${PROFILE.email||USER.email||''}`.trim();
+  userInfo.textContent = `${(PROFILE.first_name||'').trim()} ${(PROFILE.last_name||'').trim()} · ${PROFILE.email||USER.email||''}`.replace(/\s+·/,' ·').trim();
 }
 async function loadProductsForCart(){
   const skus = [...new Set(CART.map(x=>x.sku))];
@@ -224,7 +134,7 @@ async function loadProductsForCart(){
   PRODUCTS={}; (data||[]).forEach(p=>PRODUCTS[p.sku]=p);
 }
 async function loadApprovalsForCart(){
-  if (PROFILE?.can_purchase){ APPROVALS={}; return; } // not needed
+  if (PROFILE?.can_purchase){ APPROVALS={}; return; }
   const skus = [...new Set(CART.map(x=>x.sku))];
   if (!skus.length){ APPROVALS={}; return; }
   const { data, error } = await supa.from('vet_product_approvals')
@@ -247,7 +157,6 @@ async function placeOrder(){
   showMsg("");
   btnOrder.disabled = true;
 
-  // Refresh product/approvals to avoid stale decisions
   await loadProductsForCart();
   await loadApprovalsForCart();
 
@@ -255,12 +164,11 @@ async function placeOrder(){
   const eligibleItems = CART.filter(it => eligibleSKUs.has(it.sku));
 
   if (!eligibleItems.length){
-    showMsg("Nothing eligible to order yet. See notes above.", ""); 
+    showMsg("Nothing eligible to order yet. See notes above."); 
     btnOrder.disabled = false;
     return;
   }
 
-  // Insert one order row per eligible item
   const payload = eligibleItems.map(it => ({
     user_id: USER.id,
     product_sku: it.sku,
@@ -275,18 +183,15 @@ async function placeOrder(){
     return;
   }
 
-  // Remove only the successfully submitted SKUs from cart
   removeManyFromCart(eligibleItems.map(x=>x.sku));
-  CART = readCart(); // refresh local
+  CART = readCart();
 
-  // Rerender UI
   renderCart();
   const issuesMsg = ineligible.length
     ? "Order placed for eligible items. Some items still need approval/stock—see notes above."
     : "Order placed. You'll receive updates after admin review.";
   showMsg(issuesMsg, "success");
 
-  // Optional: suggest where to manage approvals
   if (ineligible.some(x=>/Approval/.test(x.reason))){
     issuesBox.style.display='block';
   }
@@ -297,32 +202,23 @@ async function placeOrder(){
 /* ================== Init ================== */
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
-    // Load cart
     CART = (readCart()||[]).filter(it=>it && it.sku && Number(it.qty)>0);
     renderCart();
 
-    // Ensure logged in
-    await ensureLogin();
-
-    // Load profile, products, approvals
+    await ensureLogin();          // now respects existing session
     await loadProfile();
     await loadProductsForCart();
     await loadApprovalsForCart();
 
-    // Compute + show issues
     const { ineligible, issues } = computeEligibility();
     renderIssues(ineligible, issues);
     renderCart();
 
-    // If cart empty post-login
     if (!CART.length){ btnOrder.disabled = true; }
-
   } catch(err){
-    console.warn(err);
+    // Swallow redirect case
   }
 });
 
 btnOrder.addEventListener('click', placeOrder);
 </script>
-</body>
-</html>
