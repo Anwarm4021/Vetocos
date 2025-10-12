@@ -10,23 +10,25 @@
     :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.25)}
     *{box-sizing:border-box}
     body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif;line-height:1.6}
-    a{text-decoration:none;color:inherit}
+    a{text-decoration:none;color:#6dd5ff}
     .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
 
     /* Header */
-    header.site{position:sticky;top:0;z-index:50;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+    header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:12px;font-weight:700}
     .brand-logo{width:60px;height:auto;display:block;filter: drop-shadow(0 6px 12px rgba(0,0,0,.35))}
     .links{display:flex;gap:12px;align-items:center}
     .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
     .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
-    .contact-btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
+    .ghost{background:transparent}
     .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
     @media(max-width:900px){
       .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:240px}
       .links.open{display:flex}
       .hamb{display:block}
+      .btn{width:100%;text-align:left}
     }
 
     /* Account menu */
@@ -53,8 +55,7 @@
     .px{padding:12px}
     .title{margin:.2rem 0 .1rem}
     .meta{font-size:12px;color:var(--muted)}
-    .btn{display:inline-block;margin-top:8px;padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
-    .btn.ghost{background:transparent}
+    .btn.solid{display:inline-block;margin-top:8px;padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
     .empty{color:var(--muted);text-align:center;padding:28px;border:1px dashed rgba(141,158,199,.25);border-radius:12px}
 
     /* Modal */
@@ -65,6 +66,14 @@
     .sheet-title{margin:0;font-size:1.1rem}
     .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
     .sheet-body{padding:16px}
+
+    /* Contact modal inputs */
+    .grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+    @media(max-width:860px){.grid2{grid-template-columns:1fr}}
+    .input,.select,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text);outline:none}
+    .textarea{min-height:140px;resize:vertical}
+    .hint12{font-size:12px;color:var(--muted)}
+    .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
   </style>
 </head>
 <body>
@@ -82,15 +91,13 @@
       <a href="World Wide.html">World Wide</a>
       <a class="active" href="news.html">News</a>
 
-      <button class="contact-btn" type="button" onclick="openContact()">Contact</button>
-
-      <a class="contact-btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
-
-      <button class="contact-btn" id="signInBtn" type="button">Sign in</button>
-      <button class="contact-btn" id="signUpBtn" type="button">Sign up</button>
+      <button class="btn" type="button" onclick="openContact()">Contact</button>
+      <a class="btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
+      <button class="btn" id="signInBtn" type="button">Sign in</button>
+      <button class="btn ghost" id="signUpBtn" type="button">Sign up</button>
 
       <div class="acct" id="acctBlock" style="display:none">
-        <button class="contact-btn" id="accountBtn" type="button">
+        <button class="btn" id="accountBtn" type="button">
           <span class="avatar" aria-hidden="true"></span>
           <span id="helloName" class="muted" style="font-size:.9rem"></span>
         </button>
@@ -139,11 +146,97 @@
   </div>
 </div>
 
+<!-- CONTACT MODAL (professional, no TikTok) -->
+<div id="contactModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="sheet-head">
+      <h2 id="contactTitle" class="sheet-title">Contact Us</h2>
+      <button class="close" type="button" onclick="closeContact()">Close</button>
+    </div>
+    <div class="sheet-body">
+      <div class="grid2">
+        <form id="contactForm" onsubmit="return sendMailto(event)">
+          <label>Topic
+            <select id="topic" class="select">
+              <option value="product">Product question</option>
+              <option value="availability">Availability / Where to buy</option>
+              <option value="order">Order / Delivery</option>
+              <option value="feedback">Feedback</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <label>Name<input id="name" class="input" placeholder="Full name" autocomplete="name" required></label>
+            <label>Email<input id="email2" type="email" class="input" placeholder="name@example.com" autocomplete="email" required></label>
+          </div>
+          <label style="margin-top:10px">Subject
+            <input id="subject" class="input" maxlength="120" placeholder="Question about a product…" required>
+          </label>
+          <label style="margin-top:10px">Message / Comments
+            <textarea id="message" class="textarea" maxlength="1200" placeholder="Write your help request or comment…" required></textarea>
+            <div class="hint12"><span id="msgCount">0</span>/1200</div>
+          </label>
+          <label style="display:flex;gap:8px;align-items:flex-start;margin-top:10px">
+            <input type="checkbox" id="consent" required>
+            <span class="hint12">I consent to VetoCos using my details to respond to this enquiry.</span>
+          </label>
+          <div class="actions-fw">
+            <button class="close" type="button" onclick="closeContact()">Cancel</button>
+            <button class="btn" type="submit">Send</button>
+          </div>
+          <div class="hint12" style="margin-top:6px">Your message is sent via your email app; we don't store it on this site.</div>
+        </form>
+
+        <div class="card" style="height:fit-content">
+          <h3>Reach us</h3>
+          <p class="muted" style="margin:4px 0 10px">We’re happy to help with product questions, availability, or feedback.</p>
+          <p><strong>Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
+          <p><strong>Phone:</strong> <a href="tel:+212537742213">+212 537 74 22 13</a></p>
+          <p><strong>WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537 74 22 13</a></p>
+          <p><strong>Hours:</strong> Mon–Fri, 9:00–17:00</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-  function openContact() {}
-  function closeNews(){ document.getElementById('newsModal').classList.remove('open'); document.getElementById('newsModal').setAttribute('aria-hidden','true'); }
-  document.getElementById('newsModal').addEventListener('click', (e)=>{ if(e.target.id==='newsModal'){ closeNews(); } });
+  // Footer year
   document.getElementById('y').textContent = new Date().getFullYear();
+
+  // News modal helpers
+  function closeNews(){
+    const m=document.getElementById('newsModal');
+    m.classList.remove('open'); m.setAttribute('aria-hidden','true');
+  }
+  document.getElementById('newsModal').addEventListener('click', (e)=>{ if(e.target.id==='newsModal'){ closeNews(); } });
+
+  // Contact modal helpers
+  const contactModal=document.getElementById('contactModal');
+  function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+  function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+  contactModal.addEventListener('click', (e)=>{ if(e.target===contactModal){ closeContact(); } });
+
+  // Contact mailto sender
+  const toAddress='info@vetocos.com';
+  function sendMailto(e){
+    e.preventDefault();
+    const topic=document.getElementById('topic').value;
+    const name=document.getElementById('name').value.trim();
+    const email=document.getElementById('email2').value.trim();
+    const subject=document.getElementById('subject').value.trim()||'Website enquiry';
+    const message=document.getElementById('message').value.trim();
+    if(!document.getElementById('consent').checked) return false;
+    const body=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,'',message].map(encodeURIComponent).join('%0A');
+    window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${body}`;
+    return false;
+  }
+
+  // message counter
+  (function(){
+    const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount');
+    if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+  })();
 </script>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -153,7 +246,7 @@
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
     { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
   );
-  const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
+  const SUPER_ADMINS = ["anwar.moumenjamai19@gmail.com"]; // compare in lower-case
 
   // Header wiring
   const signInBtn  = document.getElementById('signInBtn');
@@ -201,7 +294,9 @@
     signInBtn.style.display='none';
     signUpBtn.style.display='none';
     acctBlock.style.display='inline-flex';
-    adminBtn.style.display = (isAdmin || SUPER_ADMINS.includes(session.user.email)) ? 'inline-block' : 'none';
+
+    const em = (session.user.email||'').toLowerCase();
+    adminBtn.style.display = (isAdmin || SUPER_ADMINS.includes(em)) ? 'inline-block' : 'none';
   }
   document.addEventListener('DOMContentLoaded', refreshHeader);
   supa.auth.onAuthStateChange(()=>{ refreshHeader(); });
@@ -216,7 +311,6 @@
   function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m])); }
 
   async function getActiveRegions(){
-    // site_settings: key='active_regions', value jsonb array
     try{
       const { data } = await supa.from('site_settings').select('value').eq('key','active_regions').maybeSingle();
       return Array.isArray(data?.value) ? data.value : ['Global'];
@@ -230,7 +324,6 @@
 
     const activeRegions = await getActiveRegions();
 
-    let rows = [];
     const { data, error } = await supa
       .from('news')
       .select('id,title,body,region,published,archived,image_path,file_path,created_at')
@@ -239,11 +332,11 @@
       .order('created_at', { ascending:false })
       .limit(60);
 
-    if (error){ 
+    if (error){
       box.innerHTML = `<div class="muted" style="grid-column:1/-1">Could not load news: ${escapeHtml(error.message)}</div>`;
       return;
     }
-    rows = (data || []).filter(n => activeRegions.includes(n.region));
+    const rows = (data || []).filter(n => activeRegions.includes(n.region));
 
     if (!rows.length){
       box.innerHTML = '';
@@ -263,7 +356,7 @@
            <div class="meta">${new Date(n.created_at).toLocaleDateString()}${n.region ? ' · '+escapeHtml(n.region) : ''}</div>
            <h3 class="title">${escapeHtml(n.title||'Untitled')}</h3>
            <p class="muted">${escapeHtml((n.body||'').slice(0,160))}${(n.body||'').length>160?'…':''}</p>
-           <button class="btn" data-id="${n.id}">Read more</button>
+           <button class="btn solid" data-id="${n.id}">Read more</button>
          </div>`;
       card.querySelector('.btn').addEventListener('click', ()=>openNews(n));
       box.appendChild(card);
