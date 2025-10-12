@@ -7,15 +7,33 @@
 <meta name="description" content="Submit your professional credentials to unlock purchasing on VetoCos." />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px;--brand:#6dd5ff;--brand2:#83f0a5}
+:root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px;--brand:#6dd5ff;--brand2:#83f0a5;--shadow:0 10px 30px rgba(0,0,0,.25)}
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
-.wrap{max-width:1100px;margin:6vh auto;padding:0 18px}
-.card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
-h1{margin:0 0 10px}
+html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif;line-height:1.6}
+a{color:#6dd5ff;text-decoration:none}
+.wrap{max-width:1100px;margin:0 auto;padding:0 18px}
+
+/* Header */
+header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.brand-logo{width:60px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+.links{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn, .contact-btn, #lang-switch{
+  padding:10px 12px;border-radius:12px;border:1px solid rgba(141,158,199,.25);
+  background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer
+}
+#lang-switch{background:rgba(255,255,255,.04);min-width:120px}
+
+/* Page */
+main{margin:6vh 0}
+.card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+h1,h2{margin:0 0 10px}
 label{display:block;margin:10px 0 6px}
-input[type="text"],input[type="file"],select,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text)}
-.btn{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
+input[type="text"],input[type="file"],select,textarea{
+  width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);
+  background:rgba(255,255,255,.03);color:var(--text)
+}
 .btn.small{padding:8px 12px}
 .btn.ghost{background:transparent}
 .btn[disabled]{opacity:.6;cursor:not-allowed}
@@ -23,8 +41,8 @@ input[type="text"],input[type="file"],select,textarea{width:100%;padding:12px 14
 .rowbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.muted{color:#8ea0c8}
-.success{color:#83f0a5} .error{color:#ffb4b4}
+@media(max-width:840px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
+.muted{color:#8ea0c8}.success{color:#83f0a5}.error{color:#ffb4b4}
 .small{font-size:.92rem}
 .badge{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.3);font-size:.85rem}
 .ok{background:rgba(131,240,165,.12)} .pend{background:rgba(109,213,255,.12)} .bad{background:rgba(255,180,180,.12)}
@@ -36,99 +54,142 @@ input[type="text"],input[type="file"],select,textarea{width:100%;padding:12px 14
 .search{padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);min-width:240px}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
+footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
+.footer-links{display:flex;gap:14px;flex-wrap:wrap}
+
+/* Toast */
 #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
        border-radius:12px;padding:10px 14px;color:#fff;max-width:70vw;display:none;z-index:9999}
+
+/* Modals */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:90}
+.modal.open{display:flex}
+.sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
+.sheet-title{margin:0;font-size:1.1rem}
+.close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+.sheet-body{padding:16px}
+.pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+@media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.input,.select,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text);outline:none}
+.textarea{min-height:140px;resize:vertical}
+.hint{font-size:12px;color:var(--muted)}
+.actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+.divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
+
+/* RTL */
+body.rtl .wrap, body.rtl main, body.rtl table, body.rtl .pro-grid{direction:rtl}
+body.rtl th, body.rtl td{text-align:inherit}
 </style>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
+<header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a href="index.html" aria-label="VetoCos home">
+        <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
+      </a>
+      <span>VetoCos</span>
+    </div>
+    <nav class="links">
+      <a class="btn" href="Products.html" data-i18n="actions.products">Products</a>
+      <a class="btn" href="cart.html" data-i18n="actions.cart">Cart</a>
+      <a class="btn" href="account.html" data-i18n="actions.account">My Account</a>
+      <a id="checkoutBtnTop" class="btn" href="checkout.html" style="display:none" data-i18n="actions.checkout">Checkout</a>
+      <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
+      <select id="lang-switch" aria-label="Language">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="es">Español</option>
+        <option value="ar">العربية</option>
+      </select>
+    </nav>
+  </div>
+</header>
+
 <main class="wrap">
   <div class="row" style="justify-content:space-between;margin-bottom:12px">
-    <h1>Vet verification</h1>
-    <div class="row">
-      <a class="btn small" href="Products.html">Products</a>
-      <a class="btn small" href="cart.html">Cart</a>
-      <a class="btn small" href="account.html">My Account</a>
-      <a id="checkoutBtnTop" class="btn small" href="checkout.html" style="display:none">Checkout</a>
-    </div>
+    <h1 data-i18n="page.title">Vet verification</h1>
+    <a id="checkoutBtnRight" class="btn" href="checkout.html" style="display:none" data-i18n="actions.gotoCheckout">Go to Checkout</a>
   </div>
 
   <!-- Verification card -->
   <div class="card">
     <div class="rowbar">
-      <p class="kicker">Provide your credentials to unlock purchasing. Once approved, the checkout button will appear.</p>
-      <a id="checkoutBtnRight" class="btn" href="checkout.html" style="display:none">Go to Checkout</a>
+      <p class="kicker" data-i18n="intro.kicker">Provide your credentials to unlock purchasing. Once approved, the checkout button will appear.</p>
     </div>
 
     <!-- Status area -->
     <div id="statusBox" class="grid2" style="display:none">
       <div>
-        <div class="small muted">Current status</div>
-        <div id="statusPill" class="badge pend" aria-live="polite">pending</div>
+        <div class="small muted" data-i18n="status.currentLabel">Current status</div>
+        <div id="statusPill" class="badge pend" aria-live="polite" data-i18n="status.pending">pending</div>
       </div>
       <div id="previewWrap" class="preview" style="display:none">
-        <a id="previewLink" class="btn small" target="_blank" rel="noopener">Open uploaded file</a>
-        <button id="replaceBtn" class="btn small" type="button">Replace file</button>
-        <!-- NEW: withdraw -->
-        <button id="withdrawBtn" class="btn small" type="button" style="display:none">Withdraw application</button>
+        <a id="previewLink" class="btn small" target="_blank" rel="noopener" data-i18n="buttons.openFile">Open uploaded file</a>
+        <button id="replaceBtn" class="btn small" type="button" data-i18n="buttons.replace">Replace file</button>
+        <button id="withdrawBtn" class="btn small" type="button" style="display:none" data-i18n="buttons.withdraw">Withdraw application</button>
       </div>
     </div>
 
     <div class="hr" role="separator" aria-hidden="true"></div>
 
-    <label for="idnum">Identity number</label>
-    <input id="idnum" type="text" placeholder="e.g., License / Registration / ID" autocomplete="off" inputmode="text" />
+    <label for="idnum" data-i18n="labels.id">Identity number</label>
+    <input id="idnum" type="text" autocomplete="off" inputmode="text" data-i18n="ph.id" data-i18n-attr="placeholder" placeholder="e.g., License / Registration / ID" />
 
-    <label for="file">Diploma / professional card (PDF/JPG/PNG, max 10 MB)</label>
+    <label for="file" data-i18n="labels.file">Diploma / professional card (PDF/JPG/PNG, max 10 MB)</label>
     <input id="file" type="file" accept=".pdf,.png,.jpg,.jpeg" />
 
-    <button class="btn" id="submit" type="button">Submit for review</button>
+    <button class="btn" id="submit" type="button" data-i18n="buttons.submit">Submit for review</button>
     <p id="msg" class="muted" aria-live="polite"></p>
 
-    <p class="help kicker">We’ll email you when your application status changes. If you update the file or ID, the status returns to <em>pending</em> for re-review.</p>
+    <p class="help kicker" data-i18n="messages.emailOnChange">We’ll email you when your application status changes. If you update the file or ID, the status returns to <em>pending</em> for re-review.</p>
   </div>
 
   <!-- Admin notices to user -->
   <div id="globalNotice" class="card" style="display:none">
-    <div class="kicker" style="margin-bottom:6px">Message from admin</div>
+    <div class="kicker" style="margin-bottom:6px" data-i18n="notices.adminTitle">Message from admin</div>
     <div id="globalNoticeBody"></div>
   </div>
 
   <div id="appNotice" class="card" style="display:none">
-    <div class="kicker" style="margin-bottom:6px">Note about your verification</div>
+    <div class="kicker" style="margin-bottom:6px" data-i18n="notices.appTitle">Note about your verification</div>
     <div id="appNoticeBody"></div>
   </div>
 
   <!-- Mini Cart -->
-  <h2 class="section-title">My Cart (quick edit)</h2>
-  <div class="card" id="cartBox">Loading…</div>
+  <h2 class="section-title" data-i18n="cart.title">My Cart (quick edit)</h2>
+  <div class="card" id="cartBox" data-i18n="general.loading">Loading…</div>
 
   <!-- Product Browser (add more products) -->
-  <h2 class="section-title">Add more products</h2>
+  <h2 class="section-title" data-i18n="add.title">Add more products</h2>
   <div class="card">
     <div class="rowbar" style="margin-bottom:10px">
-      <input id="prodSearch" class="search" placeholder="Search products by name or SKU">
-      <span class="kicker">Only available items are shown. Stock limits apply. Items may require approval.</span>
+      <input id="prodSearch" class="search" data-i18n="add.searchPH" data-i18n-attr="placeholder" placeholder="Search products by name or SKU">
+      <span class="kicker" data-i18n="messages.stockNote">Only available items are shown. Stock limits apply. Items may require approval.</span>
     </div>
-    <div id="prodList" class="muted">Loading…</div>
+    <div id="prodList" class="muted" data-i18n="general.loading">Loading…</div>
   </div>
 
-  <!-- NEW: My approval requests -->
-  <h2 class="section-title">My approval requests</h2>
-  <div class="card" id="myApprovalsBox">Loading…</div>
+  <!-- My approval requests -->
+  <h2 class="section-title" data-i18n="approvals.title">My approval requests</h2>
+  <div class="card" id="myApprovalsBox" data-i18n="general.loading">Loading…</div>
 
   <!-- Orders -->
-  <h2 class="section-title">My Orders</h2>
-  <div class="card" id="ordersBox">Loading…</div>
+  <h2 class="section-title" data-i18n="orders.title">My Orders</h2>
+  <div class="card" id="ordersBox" data-i18n="general.loading">Loading…</div>
 
   <!-- Reviews -->
-  <h2 class="section-title">Write a Review</h2>
+  <h2 class="section-title" data-i18n="reviews.title">Write a Review</h2>
   <div class="card">
     <div class="grid3">
-      <label>Product purchased
-        <select id="revSku"><option value="">Select a product…</option></select>
+      <label data-i18n="reviews.product">Product purchased
+        <select id="revSku"><option value="" data-i18n="reviews.select">Select a product…</option></select>
       </label>
-      <label>Rating
+      <label data-i18n="reviews.rating">Rating
         <select id="revRating">
           <option value="5">5 – Excellent</option>
           <option value="4">4 – Good</option>
@@ -138,18 +199,350 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
         </select>
       </label>
       <div style="display:flex;align-items:flex-end">
-        <a id="revViewProduct" class="btn ghost" href="Products.html" target="_blank" rel="noopener" style="margin-top:0">View product</a>
+        <a id="revViewProduct" class="btn ghost" href="Products.html" target="_blank" rel="noopener" style="margin-top:0" data-i18n="buttons.viewProduct">View product</a>
       </div>
     </div>
-    <label>Comment
-      <textarea id="revComment" placeholder="Share your experience… (optional)"></textarea>
+    <label data-i18n="reviews.comment">Comment
+      <textarea id="revComment" data-i18n="reviews.commentPH" data-i18n-attr="placeholder" placeholder="Share your experience… (optional)"></textarea>
     </label>
-    <button class="btn" id="revSubmit">Submit review</button>
+    <button class="btn" id="revSubmit" data-i18n="reviews.submit">Submit review</button>
     <div id="revMsg" class="muted"></div>
   </div>
 </main>
 
+<footer>
+  <div class="wrap">
+    © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals. Not intended to diagnose, treat, cure, or prevent disease.</span>
+    <div class="footer-links">
+      <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
+      <a href="#" onclick="openContact();return false;" data-i18n="footer.contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<!-- CONTACT MODAL -->
+<div id="contactModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="sheet-head">
+      <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
+      <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
+    </div>
+    <div class="sheet-body">
+      <div class="pro-grid">
+        <form id="contactForm" onsubmit="return sendMailto(event)">
+          <div class="field">
+            <label for="topic" data-i18n="form.topic">Topic</label>
+            <select id="topic" name="topic" class="select">
+              <option value="product" data-i18n="form.topicProduct">Product question</option>
+              <option value="availability" data-i18n="form.topicAvailability">Availability / Where to buy</option>
+              <option value="order" data-i18n="form.topicOrder">Order / Delivery</option>
+              <option value="feedback" data-i18n="form.topicFeedback">Feedback</option>
+              <option value="other" data-i18n="form.topicOther">Other</option>
+            </select>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <div class="field">
+              <label for="name" data-i18n="form.name">Name</label>
+              <input id="name" name="name" class="input" autocomplete="name" required
+                     data-i18n="form.namePH" data-i18n-attr="placeholder" placeholder="Full name">
+            </div>
+            <div class="field">
+              <label for="email2" data-i18n="form.email">Email</label>
+              <input id="email2" name="email" type="email" class="input" autocomplete="email" required
+                     inputmode="email" data-i18n="form.emailPH" data-i18n-attr="placeholder" placeholder="name@example.com">
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:10px">
+            <label for="subject" data-i18n="form.subject">Subject</label>
+            <input id="subject" name="subject" class="input" maxlength="120" required
+                   data-i18n="form.subjectPH" data-i18n-attr="placeholder" placeholder="Question about a product…">
+          </div>
+
+          <div class="field" style="margin-top:10px">
+            <label for="message" data-i18n="form.message">Message / Comments</label>
+            <textarea id="message" name="message" class="textarea" maxlength="1200" required
+                      data-i18n="form.messagePH" data-i18n-attr="placeholder" placeholder="Write your help request or comment…"></textarea>
+            <div class="hint"><span id="msgCount">0</span>/1200</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="field">
+            <label style="display:flex;gap:8px;align-items:flex-start">
+              <input type="checkbox" id="consent" required>
+              <span data-i18n="form.consent">I consent to VetoCos using my details to respond to this enquiry.</span>
+            </label>
+            <span class="hint" data-i18n="form.privacyNote">Your message is sent via your email app; we don't store it on this site.</span>
+          </div>
+
+          <div class="actions-fw">
+            <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
+            <button class="contact-btn" type="submit" data-i18n="form.send">Send</button>
+          </div>
+        </form>
+
+        <div class="card" style="height:fit-content">
+          <h3 data-i18n="contact.reach">Reach us</h3>
+          <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
+          <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
+          <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
+          <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
+          <p><strong data-i18n="contact.hours">Hours:</strong> <span data-i18n="contact.hoursVal">Mon–Fri, 9:00–17:00</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY & POLICY MODAL -->
+<div id="policyModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+    <div class="sheet-head">
+      <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
+      <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
+    </div>
+    <div class="sheet-body policy-body">
+      <h3 data-i18n="policy.overviewTitle">Overview</h3>
+      <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.</p>
+
+      <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
+      <ul>
+        <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
+        <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
+      </ul>
+
+      <h3 data-i18n="policy.useTitle">How we use data</h3>
+      <ul>
+        <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
+        <li data-i18n="policy.use2">We do not sell personal data.</li>
+      </ul>
+
+      <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
+      <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
+
+      <h3 data-i18n="policy.choiceTitle">Your choices</h3>
+      <ul>
+        <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
+        <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
+      </ul>
+
+      <h3 data-i18n="policy.contactTitle">Contact</h3>
+      <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
+
+      <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
+
+<script>
+/* ================= i18n dictionary ================= */
+const I18N = {
+  en: {
+    "actions.products":"Products","actions.cart":"Cart","actions.account":"My Account","actions.checkout":"Checkout","actions.gotoCheckout":"Go to Checkout",
+    "nav.contact":"Contact","footer.tag":"Complementary feed for companion animals. Not intended to diagnose, treat, cure, or prevent disease.","footer.policy":"Privacy & Policy","footer.contact":"Contact",
+
+    "page.title":"Vet verification",
+    "intro.kicker":"Provide your credentials to unlock purchasing. Once approved, the checkout button will appear.",
+    "status.currentLabel":"Current status",
+    "status.pending":"pending","status.approved":"approved","status.rejected":"rejected","status.withdrawn":"withdrawn",
+
+    "labels.id":"Identity number",
+    "labels.file":"Diploma / professional card (PDF/JPG/PNG, max 10 MB)",
+    "ph.id":"e.g., License / Registration / ID",
+
+    "buttons.submit":"Submit for review","buttons.replace":"Replace file","buttons.withdraw":"Withdraw application","buttons.openFile":"Open uploaded file","buttons.viewProduct":"View product",
+
+    "messages.emailOnChange":"We’ll email you when your application status changes. If you update the file or ID, the status returns to <em>pending</em> for re-review.",
+    "messages.stockNote":"Only available items are shown. Stock limits apply. Items may require approval.",
+    "messages.cartEmpty":"Cart is empty. You can add from the products list below.",
+    "messages.cartItems":"Total items:",
+
+    "notices.adminTitle":"Message from admin","notices.appTitle":"Note about your verification",
+
+    "cart.title":"My Cart (quick edit)",
+
+    "add.title":"Add more products","add.searchPH":"Search products by name or SKU",
+    "approvals.title":"My approval requests",
+    "orders.title":"My Orders",
+
+    "reviews.title":"Write a Review","reviews.product":"Product purchased","reviews.select":"Select a product…","reviews.rating":"Rating","reviews.comment":"Comment","reviews.commentPH":"Share your experience… (optional)","reviews.submit":"Submit review","reviews.thanks":"Thanks for your review!","reviews.choose":"Choose a product.",
+
+    "general.loading":"Loading…","general.signin":"Please sign in.","general.receipt":"Receipt","general.instock":"In stock:","general.qty":"Qty","general.action":"Action",
+
+    "badges.requires":"Requires verification","badges.open":"Open","badges.pending":"Pending",
+
+    "toasts.cartUpdated":"Cart updated","toasts.approvalSubmitted":"Approval request submitted","toasts.cancelled":"Request cancelled",
+
+    "errors.fileTooLarge":"File too large (max 10 MB).","errors.fileType":"Unsupported file type.","errors.nothingToUpdate":"Nothing to update. Change ID and/or choose a new file.","errors.enterIdAndFile":"Please enter ID number and choose a file.","errors.signinFirst":"Please sign in first.","errors.loadOrders":"Could not load orders."
+  },
+  fr: {
+    "actions.products":"Produits","actions.cart":"Panier","actions.account":"Mon compte","actions.checkout":"Paiement","actions.gotoCheckout":"Aller au paiement",
+    "nav.contact":"Contact","footer.tag":"Complément alimentaire pour animaux de compagnie. Non destiné à diagnostiquer, traiter, guérir ou prévenir une maladie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
+
+    "page.title":"Vérification vétérinaire",
+    "intro.kicker":"Fournissez vos justificatifs pour débloquer l’achat. Une fois approuvé, le bouton de paiement s’affichera.",
+    "status.currentLabel":"Statut actuel",
+    "status.pending":"en attente","status.approved":"approuvé","status.rejected":"refusé","status.withdrawn":"retiré",
+
+    "labels.id":"Numéro d’identification",
+    "labels.file":"Diplôme / carte professionnelle (PDF/JPG/PNG, 10 Mo max)",
+    "ph.id":"ex. : Licence / Enregistrement / ID",
+
+    "buttons.submit":"Soumettre à la revue","buttons.replace":"Remplacer le fichier","buttons.withdraw":"Retirer la demande","buttons.openFile":"Ouvrir le fichier","buttons.viewProduct":"Voir le produit",
+
+    "messages.emailOnChange":"Nous vous informerons par e-mail des changements d’état. Toute mise à jour renvoie le statut à <em>en attente</em>.",
+    "messages.stockNote":"Seuls les articles disponibles sont affichés. Limites de stock. Certains articles peuvent nécessiter une approbation.",
+    "messages.cartEmpty":"Votre panier est vide. Ajoutez des produits ci-dessous.",
+    "messages.cartItems":"Articles au total :",
+
+    "notices.adminTitle":"Message de l’administrateur","notices.appTitle":"Note concernant votre vérification",
+
+    "cart.title":"Mon panier (édition rapide)",
+
+    "add.title":"Ajouter des produits","add.searchPH":"Rechercher par nom ou SKU",
+    "approvals.title":"Mes demandes d’approbation",
+    "orders.title":"Mes commandes",
+
+    "reviews.title":"Rédiger un avis","reviews.product":"Produit acheté","reviews.select":"Sélectionnez un produit…","reviews.rating":"Note","reviews.comment":"Commentaire","reviews.commentPH":"Partagez votre expérience… (facultatif)","reviews.submit":"Envoyer l’avis","reviews.thanks":"Merci pour votre avis !","reviews.choose":"Choisissez un produit.",
+
+    "general.loading":"Chargement…","general.signin":"Veuillez vous connecter.","general.receipt":"Reçu","general.instock":"En stock :","general.qty":"Qté","general.action":"Action",
+
+    "badges.requires":"Vérification requise","badges.open":"Ouvert","badges.pending":"En attente",
+
+    "toasts.cartUpdated":"Panier mis à jour","toasts.approvalSubmitted":"Demande d’approbation envoyée","toasts.cancelled":"Demande annulée",
+
+    "errors.fileTooLarge":"Fichier trop volumineux (10 Mo max).","errors.fileType":"Type de fichier non pris en charge.","errors.nothingToUpdate":"Rien à mettre à jour.","errors.enterIdAndFile":"Veuillez saisir l’ID et choisir un fichier.","errors.signinFirst":"Veuillez vous connecter d’abord.","errors.loadOrders":"Impossible de charger les commandes."
+  },
+  es: {
+    "actions.products":"Productos","actions.cart":"Carrito","actions.account":"Mi cuenta","actions.checkout":"Pagar","actions.gotoCheckout":"Ir a pagar",
+    "nav.contact":"Contacto","footer.tag":"Alimento complementario para animales de compañía. No destinado a diagnosticar, tratar, curar ni prevenir enfermedades.","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
+
+    "page.title":"Verificación veterinaria",
+    "intro.kicker":"Proporcione sus credenciales para habilitar las compras. Una vez aprobado, aparecerá el botón de pago.",
+    "status.currentLabel":"Estado actual",
+    "status.pending":"pendiente","status.approved":"aprobado","status.rejected":"rechazado","status.withdrawn":"retirado",
+
+    "labels.id":"Número de identificación",
+    "labels.file":"Diploma / tarjeta profesional (PDF/JPG/PNG, máx. 10 MB)",
+    "ph.id":"p. ej., Licencia / Registro / ID",
+
+    "buttons.submit":"Enviar para revisión","buttons.replace":"Reemplazar archivo","buttons.withdraw":"Retirar solicitud","buttons.openFile":"Abrir archivo","buttons.viewProduct":"Ver producto",
+
+    "messages.emailOnChange":"Le avisaremos por correo cuando cambie el estado. Si actualiza el archivo o el ID, vuelve a <em>pendiente</em> para revisión.",
+    "messages.stockNote":"Solo se muestran artículos disponibles. Se aplican límites de stock. Algunos artículos pueden requerir aprobación.",
+    "messages.cartEmpty":"El carrito está vacío. Agregue productos abajo.",
+    "messages.cartItems":"Artículos totales:",
+
+    "notices.adminTitle":"Mensaje de administración","notices.appTitle":"Nota sobre su verificación",
+
+    "cart.title":"Mi carrito (edición rápida)",
+
+    "add.title":"Añadir más productos","add.searchPH":"Buscar por nombre o SKU",
+    "approvals.title":"Mis solicitudes de aprobación",
+    "orders.title":"Mis pedidos",
+
+    "reviews.title":"Escribir una reseña","reviews.product":"Producto comprado","reviews.select":"Selecciona un producto…","reviews.rating":"Valoración","reviews.comment":"Comentario","reviews.commentPH":"Comparte tu experiencia… (opcional)","reviews.submit":"Enviar reseña","reviews.thanks":"¡Gracias por tu reseña!","reviews.choose":"Elige un producto.",
+
+    "general.loading":"Cargando…","general.signin":"Inicia sesión.","general.receipt":"Recibo","general.instock":"En stock:","general.qty":"Cant.","general.action":"Acción",
+
+    "badges.requires":"Requiere verificación","badges.open":"Disponible","badges.pending":"Pendiente",
+
+    "toasts.cartUpdated":"Carrito actualizado","toasts.approvalSubmitted":"Solicitud enviada","toasts.cancelled":"Solicitud cancelada",
+
+    "errors.fileTooLarge":"Archivo demasiado grande (máx. 10 MB).","errors.fileType":"Tipo de archivo no compatible.","errors.nothingToUpdate":"Nada que actualizar.","errors.enterIdAndFile":"Introduce el ID y el archivo.","errors.signinFirst":"Primero inicia sesión.","errors.loadOrders":"No se pudieron cargar los pedidos."
+  },
+  ar: {
+    "actions.products":"المنتجات","actions.cart":"السلة","actions.account":"حسابي","actions.checkout":"إتمام الشراء","actions.gotoCheckout":"اذهب للدفع",
+    "nav.contact":"اتصل بنا","footer.tag":"غذاء تكميلي للحيوانات الأليفة. غير مخصّص للتشخيص أو العلاج أو الشفاء أو الوقاية.","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
+
+    "page.title":"التحقق البيطري",
+    "intro.kicker":"قدّم بياناتك المهنية لفتح الشراء. عند الموافقة سيظهر زر الدفع.",
+    "status.currentLabel":"الحالة الحالية",
+    "status.pending":"قيد المراجعة","status.approved":"مقبول","status.rejected":"مرفوض","status.withdrawn":"مسحوب",
+
+    "labels.id":"رقم التعريف","labels.file":"شهادة/بطاقة مهنية (PDF/JPG/PNG، 10 م.ب كحد أقصى)","ph.id":"مثال: رخصة / تسجيل / رقم هوية",
+    "buttons.submit":"إرسال للمراجعة","buttons.replace":"استبدال الملف","buttons.withdraw":"سحب الطلب","buttons.openFile":"فتح الملف المرفوع","buttons.viewProduct":"عرض المنتج",
+
+    "messages.emailOnChange":"سنراسلك عند تغيير الحالة. أي تحديث للملف/الرقم يعيد الحالة إلى <em>قيد المراجعة</em>.","messages.stockNote":"يُعرض المتاح فقط. توجد حدود للمخزون. قد تتطلب بعض المنتجات موافقة.","messages.cartEmpty":"سلة التسوق فارغة. يمكنك الإضافة من القائمة أدناه.","messages.cartItems":"إجمالي العناصر:",
+    "notices.adminTitle":"رسالة من الإدارة","notices.appTitle":"ملاحظة حول التحقق الخاص بك",
+
+    "cart.title":"سلتي (تعديل سريع)","add.title":"أضف المزيد من المنتجات","add.searchPH":"ابحث بالاسم أو برمز SKU","approvals.title":"طلبات الموافقة الخاصة بي","orders.title":"طلباتي",
+
+    "reviews.title":"اكتب مراجعة","reviews.product":"المنتج الذي تم شراؤه","reviews.select":"اختر منتجًا…","reviews.rating":"التقييم","reviews.comment":"تعليق","reviews.commentPH":"شارك تجربتك… (اختياري)","reviews.submit":"إرسال المراجعة","reviews.thanks":"شكرًا على مراجعتك!","reviews.choose":"اختر منتجًا.",
+
+    "general.loading":"جارٍ التحميل…","general.signin":"يرجى تسجيل الدخول.","general.receipt":"الإيصال","general.instock":"المتوفر:","general.qty":"الكمية","general.action":"إجراء",
+
+    "badges.requires":"يتطلّب تحقق","badges.open":"متاح","badges.pending":"قيد المراجعة",
+
+    "toasts.cartUpdated":"تم تحديث السلة","toasts.approvalSubmitted":"تم إرسال طلب الموافقة","toasts.cancelled":"تم إلغاء الطلب",
+
+    "errors.fileTooLarge":"الملف كبير جدًا (الحد 10 م.ب).","errors.fileType":"نوع الملف غير مدعوم.","errors.nothingToUpdate":"لا يوجد ما يتم تحديثه.","errors.enterIdAndFile":"أدخل رقم التعريف واختر ملفًا.","errors.signinFirst":"يرجى تسجيل الدخول أولًا.","errors.loadOrders":"تعذّر تحميل الطلبات."
+  }
+};
+
+/* i18n helpers */
+function translateAttributes(dict){
+  document.querySelectorAll("[data-i18n-attr]").forEach(el=>{
+    const key = el.getAttribute("data-i18n");
+    const attrs = (el.getAttribute("data-i18n-attr")||"").split(",").map(s=>s.trim()).filter(Boolean);
+    const val = dict[key];
+    if (val == null) return;
+    attrs.forEach(attr => el.setAttribute(attr, val));
+  });
+}
+function applyLang(lang){
+  const dict = I18N[lang]||I18N.en;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const k = el.getAttribute("data-i18n");
+    if (dict[k] != null) el.innerHTML = dict[k];
+  });
+  translateAttributes(dict);
+  const html=document.documentElement; html.lang=lang;
+  if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
+  else { html.dir="ltr"; document.body.classList.remove("rtl"); }
+  localStorage.setItem("lang",lang);
+  const sel=document.getElementById('lang-switch'); if(sel) sel.value=lang;
+}
+function t(key){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][key])||(I18N.en[key]||key); }
+
+/* Contact & Policy modals */
+const contactModal=document.getElementById('contactModal');
+const policyModal=document.getElementById('policyModal');
+function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+[contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+
+/* Mailto */
+const toAddress='info@vetocos.com';
+function sendMailto(e){
+  e.preventDefault();
+  const topic=document.getElementById('topic').value;
+  const name=document.getElementById('name').value.trim();
+  const email=document.getElementById('email2').value.trim();
+  const subject=document.getElementById('subject')?.value.trim()||'Website enquiry';
+  const message=document.getElementById('message').value.trim();
+  if(!document.getElementById('consent').checked) return false;
+  const lines=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,'',message].join('%0A');
+  window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
+  return false;
+}
+
+/* Small page inits */
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('y').textContent = new Date().getFullYear();
+  const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
+  const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+  const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
+  const sel=document.getElementById('lang-switch'); if(sel){ sel.value=initial; sel.addEventListener('change',e=>applyLang(e.target.value)); }
+  const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+});
+</script>
 
 <script>
 /* ===== Supabase ===== */
@@ -178,10 +571,11 @@ const toastEl = document.getElementById('toast');
 function toast(m, err=false){ toastEl.textContent=m; toastEl.style.display='block'; toastEl.style.borderColor = err?'rgba(255,120,120,.4)':'rgba(141,158,199,.25)'; clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.style.display='none',2200); }
 
 /* ===== Helpers ===== */
-function setMsg(t,kind=''){ msgEl.textContent=t; msgEl.className='muted '+kind; }
+function setMsg(tk,kind=''){ msgEl.innerHTML=tk.startsWith('errors.')||tk.startsWith('messages.')?t(tk):tk; msgEl.className='muted '+kind; }
 function pill(status){
   const s = (status||'pending').toLowerCase();
-  statusPill.textContent = s;
+  const map = {approved:t('status.approved'),rejected:t('status.rejected'),withdrawn:t('status.withdrawn'),pending:t('status.pending')};
+  statusPill.textContent = map[s] || t('status.pending');
   statusPill.className = 'badge ' + (s==='approved'?'ok':s==='rejected'?'bad':'pend');
 }
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
@@ -248,16 +642,16 @@ function renderMiniCartRow(it, i){
       <span style="display:inline-block;width:34px;text-align:center">${Number(it.qty||0)}</span>
       <button class="qtybtn" data-cart="${i}" data-d="1">+</button>
     </td>
-    <td><button class="qtybtn" data-rem="${i}">Remove</button></td>
+    <td><button class="qtybtn" data-rem="${i}">${t('general.action')==='Action'?'Remove':'Remove'}</button></td>
   </tr>`;
 }
 async function renderMiniCart(){
   const cart = readCart();
   const box = document.getElementById('cartBox');
-  if (!cart.length){ box.innerHTML = `<div class="muted">Cart is empty. You can add from the products list below.</div>`; return; }
-  box.innerHTML = `<table><thead><tr><th>Product</th><th>Qty</th><th>Action</th></tr></thead>
+  if (!cart.length){ box.innerHTML = `<div class="muted">${t('messages.cartEmpty')}</div>`; return; }
+  box.innerHTML = `<table><thead><tr><th>Product</th><th>${t('general.qty')}</th><th>${t('general.action')}</th></tr></thead>
     <tbody>${cart.map(renderMiniCartRow).join('')}</tbody></table>
-    <div class="small muted" style="margin-top:8px">Total items: ${cart.reduce((n,x)=>n+Number(x.qty||0),0)}</div>`;
+    <div class="small muted" style="margin-top:8px">${t('messages.cartItems')} ${cart.reduce((n,x)=>n+Number(x.qty||0),0)}</div>`;
   box.querySelectorAll('button[data-cart]').forEach(b=>{
     b.onclick = ()=>{
       const idx = Number(b.dataset.cart); const d = Number(b.dataset.d);
@@ -288,7 +682,7 @@ async function primeMyApprovalsMap(){
 }
 
 async function loadProducts(){
-  prodList.textContent = 'Loading…';
+  prodList.textContent = t('general.loading');
   const { data, error } = await supa.from('products')
     .select('sku,name,stock_qty,available,requires_verification')
     .order('name', { ascending:true });
@@ -310,8 +704,8 @@ function renderProducts(){
   }).map(p=>{
     const existing = MY_APPROVALS.get(p.sku);
     const badge = existing
-      ? `<span class="badge pend">Pending</span>`
-      : (p.requires_verification ? `<span class="badge">Requires verification</span>` : `<span class="badge ok">Open</span>`);
+      ? `<span class="badge pend">${t('badges.pending')}</span>`
+      : (p.requires_verification ? `<span class="badge">${t('badges.requires')}</span>` : `<span class="badge ok">${t('badges.open')}</span>`);
     const cart = getCart();
     const idx = findCartIndex(cart, p.sku);
     const cur = idx > -1 ? Number(cart[idx].qty||0) : 0;
@@ -322,7 +716,7 @@ function renderProducts(){
           <a class="link" href="Products.html#${encodeURIComponent(p.sku)}" target="_blank" rel="noopener">${escapeHtml(p.name)}</a>
           <span class="kicker">(${escapeHtml(p.sku)})</span>
         </div>
-        <div class="kicker">In stock: ${p.stock_qty|0}</div>
+        <div class="kicker">${t('general.instock')} ${p.stock_qty|0}</div>
       </div>
       <div class="row" style="flex:0 0 auto">
         ${badge}
@@ -331,8 +725,8 @@ function renderProducts(){
           <input class="qty-input" type="number" min="0" step="1" value="${cur}" style="width:70px;text-align:center"/>
           <button class="qtybtn" data-q="1">+</button>
         </div>
-        <button class="btn small" data-add>Save to cart</button>
-        <button class="btn small" data-req ${existing ? 'disabled' : ''}>${existing ? 'Requested' : 'Request approval'}</button>
+        <button class="btn small" data-add>${t('toasts.cartUpdated')==='Cart updated'?'Save to cart':'Save to cart'}</button>
+        <button class="btn small" data-req ${existing ? 'disabled' : ''}>${existing ? t('badges.pending') : 'Request approval'}</button>
       </div>
     </div>`;
   }).join('');
@@ -365,13 +759,13 @@ function renderProducts(){
       }
       setCart(cart);
       renderMiniCart();
-      toast('Cart updated');
+      toast(t('toasts.cartUpdated'));
     });
 
     row.querySelector('[data-req]')?.addEventListener('click', async ()=>{
       const qty = Math.max(1, Number(input.value||1));
       const { data:{ user } } = await supa.auth.getUser();
-      if(!user){ toast('Please sign in first.', true); return; }
+      if(!user){ toast(t('errors.signinFirst'), true); return; }
 
       // UPSERT to avoid duplicate key violation
       const up = await supa.from('vet_product_approvals')
@@ -401,7 +795,7 @@ function renderProducts(){
         await supa.from('mail_queue').insert(ADMINS.map(e => ({ to_email: e, subject, html })));
       } catch(_) {}
 
-      toast('Approval request submitted');
+      toast(t('toasts.approvalSubmitted'));
       await primeMyApprovalsMap();
       renderProducts();
       await loadMyApprovals();
@@ -414,7 +808,7 @@ const myApprovalsBox = document.getElementById('myApprovalsBox');
 
 async function loadMyApprovals(){
   const { data:{ user } } = await supa.auth.getUser();
-  if (!user){ myApprovalsBox.textContent = 'Please sign in.'; return; }
+  if (!user){ myApprovalsBox.textContent = t('general.signin'); return; }
 
   const { data, error } = await supa
     .from('vet_product_approvals')
@@ -428,15 +822,16 @@ async function loadMyApprovals(){
 
   myApprovalsBox.innerHTML = `
     <table>
-      <thead><tr><th>SKU</th><th>Qty</th><th>Status</th><th>Action</th></tr></thead>
+      <thead><tr><th>SKU</th><th>${t('general.qty')}</th><th>Status</th><th>${t('general.action')}</th></tr></thead>
       <tbody>
         ${data.map(r=>{
-          const pill = r.status==='approved' ? 'ok' : r.status==='rejected' ? 'bad' : 'pend';
+          const pillCls = r.status==='approved' ? 'ok' : r.status==='rejected' ? 'bad' : 'pend';
+          const pillTxt = r.status==='approved'?t('status.approved'):r.status==='rejected'?t('status.rejected'):t('status.pending');
           return `
             <tr data-sku="${r.product_sku}">
               <td><a class="link" href="Products.html#${encodeURIComponent(r.product_sku)}" target="_blank" rel="noopener">${r.product_sku}</a></td>
               <td>${Number(r.quantity||0)}</td>
-              <td><span class="badge ${pill}">${r.status}</span></td>
+              <td><span class="badge ${pillCls}">${pillTxt}</span></td>
               <td><button class="btn small" data-cancel>Cancel request</button></td>
             </tr>`;
         }).join('')}
@@ -455,7 +850,7 @@ async function loadMyApprovals(){
         .eq('user_id', user.id)
         .eq('product_sku', sku);
       if (error){ toast(error.message, true); return; }
-      toast('Request cancelled');
+      toast(t('toasts.cancelled'));
       await primeMyApprovalsMap();
       renderProducts();
       await loadMyApprovals();
@@ -467,19 +862,19 @@ async function loadMyApprovals(){
 async function renderOrders(){
   const box = document.getElementById('ordersBox');
   const { data:{ user } } = await supa.auth.getUser();
-  if (!user){ box.textContent='Please sign in.'; return; }
+  if (!user){ box.textContent=t('general.signin'); return; }
   const { data: rows, error } = await supa.from('orders')
     .select('id, created_at, status, total_qty, total_amount, receipt_url')
     .eq('user_id', user.id).order('created_at', { ascending:false }).limit(20);
-  if (error){ box.innerHTML = `<div class="muted">Could not load orders: ${escapeHtml(error.message)}</div>`; return; }
+  if (error){ box.innerHTML = `<div class="muted">${t('errors.loadOrders')}: ${escapeHtml(error.message)}</div>`; return; }
   if (!rows || !rows.length){ box.innerHTML = `<div class="muted">No purchases yet.</div>`; return; }
   box.innerHTML = rows.map(o=>{
     const d = new Date(o.created_at);
     const badge = (o.status||'').toLowerCase()==='paid' ? 'ok' : 'pend';
-    const rec = o.receipt_url ? `<a class="btn small" href="${o.receipt_url}" target="_blank" rel="noopener">Receipt</a>` : '';
+    const rec = o.receipt_url ? `<a class="btn small" href="${o.receipt_url}" target="_blank" rel="noopener">${t('general.receipt')}</a>` : '';
     return `<div class="row" style="border-top:1px solid rgba(141,158,199,.18);padding:10px 0">
-      <div style="flex:1 1 auto"><strong>Order #${o.id}</strong> · <span class="muted">${d.toLocaleString()}</span><div class="muted small">Items: ${o.total_qty||0} · Amount: ${o.total_amount!=null?Number(o.total_amount).toFixed(2):'-'}</div></div>
-      <div style="flex:0 0 auto" class="row"><span class="badge ${badge}">${o.status||'pending'}</span>${rec}</div>
+      <div style="flex:1 1 auto"><strong>Order #${o.id}</strong> · <span class="muted">${d.toLocaleString()}</span><div class="muted small">${t('general.qty')}: ${o.total_qty||0} · Amount: ${o.total_amount!=null?Number(o.total_amount).toFixed(2):'-'}</div></div>
+      <div style="flex:0 0 auto" class="row"><span class="badge ${badge}">${o.status||t('status.pending')}</span>${rec}</div>
     </div>`;
   }).join('');
 }
@@ -513,7 +908,7 @@ async function populateReviewSKUs(){
   }
   skus = [...new Set(skus)];
 
-  let options = '<option value="">Select a product…</option>';
+  let options = `<option value="">${t('reviews.select')}</option>`;
   if (skus.length){
     const { data: prods } = await supa.from('products').select('sku,name').in('sku', skus);
     const nameBySku = Object.fromEntries((prods||[]).map(p=>[p.sku, p.name]));
@@ -526,22 +921,22 @@ async function populateReviewSKUs(){
 }
 
 revSubmit.onclick = async ()=>{
-  revMsg.textContent = 'Submitting…';
+  revMsg.textContent = t('general.loading');
   const sku = revSku.value.trim(); const rating = Math.max(1, Math.min(5, Number(revRating.value||5)|0)); const comment = (revComment.value||'').trim();
-  if (!sku){ revMsg.textContent = 'Choose a product.'; return; }
-  const { data:{ user } } = await supa.auth.getUser(); if (!user){ revMsg.textContent = 'Please sign in.'; return; }
+  if (!sku){ revMsg.textContent = t('reviews.choose'); return; }
+  const { data:{ user } } = await supa.auth.getUser(); if (!user){ revMsg.textContent = t('general.signin'); return; }
 
   const { error } = await supa.from('reviews').insert({ user_id: user.id, product_sku: sku, rating, comment });
   if (error){ revMsg.textContent = error.message; return; }
-  revMsg.textContent = 'Thanks for your review!'; revComment.value='';
+  revMsg.textContent = t('reviews.thanks'); revComment.value='';
 };
 
 /* ===== Boot ===== */
 function maybeShowWithdraw(){ if (currentApp) withdrawBtn.style.display = 'inline-block'; }
 
 replaceBtn?.addEventListener('click', ()=>{
-  idInput.disabled = false; fileInput.disabled = false; btn.disabled = false; btn.textContent = 'Submit updated file';
-  setMsg('You can select a new file and save.','');
+  idInput.disabled = false; fileInput.disabled = false; btn.disabled = false; btn.textContent = t('buttons.submit');
+  setMsg('messages.emailOnChange','');
 });
 
 withdrawBtn?.addEventListener('click', async ()=>{
@@ -549,24 +944,23 @@ withdrawBtn?.addEventListener('click', async ()=>{
   if (!confirm('Withdraw your verification application? You can re-submit later.')) return;
   const { error } = await supa.from('vet_applications').update({ status: 'withdrawn' }).eq('id', currentApp.id);
   if (error) { toast(error.message, true); return; }
-  // reset UI so user can submit again
   currentApp = null;
   idInput.disabled = false; idInput.value = '';
   fileInput.disabled = false; fileInput.value = '';
-  btn.disabled = false; btn.textContent = 'Submit for review';
+  btn.disabled = false; btn.textContent = t('buttons.submit');
   statusBox.style.display = 'none';
   setMsg('Application withdrawn. You can submit a new one now.','success');
 });
 
 async function boot(){
-  setMsg('Checking sign-in…');
+  setMsg(t('general.loading'));
   const { data:{ user }, error } = await supa.auth.getUser();
   if (error) { setMsg(error.message,'error'); return; }
   if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
   currentUser = user;
 
   // Load latest application
-  setMsg('Loading your application…');
+  setMsg(t('general.loading'));
   const { data: rows, error: e2 } = await supa.from('vet_applications')
     .select('id, identity_number, diploma_path, status, created_at')
     .eq('user_id', user.id).order('created_at', { ascending:false }).limit(1);
@@ -583,7 +977,7 @@ async function boot(){
     }
     maybeShowWithdraw();
     if (currentApp.status === 'approved'){
-      idInput.disabled = true; fileInput.disabled = true; btn.disabled = true; btn.textContent = 'Already approved';
+      idInput.disabled = true; fileInput.disabled = true; btn.disabled = true; btn.textContent = t('status.approved');
       setMsg('Your account is approved. You can proceed to checkout.','success');
     } else if (currentApp.status === 'rejected'){
       setMsg('Your previous submission was rejected. Update your ID and upload a new file for review.','error');
@@ -618,17 +1012,17 @@ btn.onclick = async () => {
   const f = fileInput.files[0];
 
   if (!currentApp){
-    if(!idnum || !f){ setMsg('Please enter ID number and choose a file.','error'); btn.disabled=false; return; }
+    if(!idnum || !f){ setMsg('errors.enterIdAndFile','error'); btn.disabled=false; return; }
   } else if (!idnum && !f){
-    setMsg('Nothing to update. Change ID and/or choose a new file.','error'); btn.disabled=false; return;
+    setMsg('errors.nothingToUpdate','error'); btn.disabled=false; return;
   }
 
   let newPath = currentApp?.diploma_path || null;
 
   if (f){
-    if (f.size > 10 * 1024 * 1024) { setMsg('File too large (max 10 MB).','error'); btn.disabled=false; return; }
+    if (f.size > 10 * 1024 * 1024) { setMsg('errors.fileTooLarge','error'); btn.disabled=false; return; }
     const okTypes = ['application/pdf','image/jpeg','image/png'];
-    if (f.type && !okTypes.includes(f.type)) { setMsg('Unsupported file type.','error'); btn.disabled=false; return; }
+    if (f.type && !okTypes.includes(f.type)) { setMsg('errors.fileType','error'); btn.disabled=false; return; }
 
     const cleanName = f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
     const path = `${user.id}/${Date.now()}_${cleanName || 'diploma'}`;
@@ -664,7 +1058,7 @@ btn.onclick = async () => {
   }
   maybeShowWithdraw();
   setMsg('Submitted. We will review and approve your account.','success');
-  btn.disabled = false; btn.textContent = 'Update submission';
+  btn.disabled = false; btn.textContent = t('buttons.submit');
 };
 </script>
 </body>
