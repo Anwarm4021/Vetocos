@@ -4,61 +4,330 @@
 <meta charset="utf-8"/>
 <title>VetoCos | My Account</title>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<meta name="description" content="Manage your VetoCos profile, cart and orders." />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px}
+:root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:16px;--max:1100px;--brand:#6dd5ff;--brand2:#83f0a5;--shadow:0 10px 30px rgba(0,0,0,.25)}
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
-main{max-width:980px;margin:40px auto;padding:0 18px}
-.card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px}
-h1,h2{margin:0 0 12px}
+html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
 a{color:#6dd5ff;text-decoration:none}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+
+/* Header */
+header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.brand-logo{width:60px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+.links{display:flex;gap:10px;align-items:center}
+.contact-btn,#lang-switch{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
+#lang-switch{background:rgba(255,255,255,.04);min-width:120px}
+
+/* Content */
+main{margin:28px 0}
+.card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+h1,h2{margin:0 0 12px}
 .muted{color:var(--muted)}
 .badge{display:inline-block;padding:4px 10px;border:1px solid rgba(141,158,199,.25);border-radius:999px}
 .ok{background:rgba(131,240,165,.12)}
 .bad{background:rgba(255,180,180,.12)}
-.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
-     background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer}
+.btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer}
 .btn[disabled]{opacity:.6;cursor:not-allowed}
-.hrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.hrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Footer & Modals */
+footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
+.footer-links{display:flex;gap:14px;flex-wrap:wrap}
+
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
+.modal.open{display:flex}
+.sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
+.sheet-title{margin:0;font-size:1.1rem}
+.close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+.sheet-body{padding:16px}
+.pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+@media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.input,.select,.textarea{
+  width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+  background:rgba(255,255,255,.03);color:var(--text);outline:none
+}
+.textarea{min-height:140px;resize:vertical}
+.hint{font-size:12px;color:var(--muted)}
+.actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+.divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
+
+/* RTL */
+body.rtl .wrap, body.rtl main, body.rtl .pro-grid{direction:rtl}
+body.rtl table{direction:rtl}
+body.rtl th, body.rtl td{text-align:inherit}
 </style>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<main>
-  <div class="hrow" style="justify-content:space-between;margin-bottom:10px">
-    <h1>My Account</h1>
+<header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a href="index.html" aria-label="VetoCos home">
+        <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
+      </a>
+      <span>VetoCos</span>
+    </div>
+    <nav class="links">
+      <a class="btn" href="index.html" data-i18n="nav.home">Home</a>
+      <a class="btn" href="Products.html" data-i18n="nav.products">Products</a>
+      <a class="btn" href="cart.html" data-i18n="nav.cart">Cart</a>
+      <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
+      <select id="lang-switch" aria-label="Language">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="es">Español</option>
+        <option value="ar">العربية</option>
+      </select>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hrow" style="margin-bottom:10px">
+    <h1 data-i18n="account.title">My Account</h1>
     <div class="actions">
-      <a class="btn" href="index.html">Home</a>
-      <a class="btn" href="Products.html">Products</a>
-      <a class="btn" href="cart.html">Cart</a>
+      <a class="btn" href="vet-verify.html" data-i18n="account.verify">Verification</a>
+      <button class="btn" onclick="logout()" data-i18n="auth.logout">Logout</button>
     </div>
   </div>
 
   <div class="card" id="profileBox">
-    <h2>Profile</h2>
-    <div id="profLine" class="muted">Checking session…</div>
-    <div class="actions" style="margin-top:8px">
-      <a class="btn" href="vet-verify.html">Verification</a>
-      <button class="btn" onclick="logout()">Logout</button>
-    </div>
+    <h2 data-i18n="account.profile">Profile</h2>
+    <div id="profLine" class="muted" data-i18n="ui.checking">Checking session…</div>
   </div>
 
   <div class="card">
-    <h2>Saved Cart</h2>
-    <div class="muted" id="cartMsg">Loading…</div>
+    <h2 data-i18n="account.savedCart">Saved Cart</h2>
+    <div class="muted" id="cartMsg" data-i18n="ui.loading">Loading…</div>
     <div id="cartList"></div>
   </div>
 
   <div class="card">
-    <h2>Orders</h2>
-    <div class="muted" id="ordersMsg">Loading…</div>
+    <h2 data-i18n="account.orders">Orders</h2>
+    <div class="muted" id="ordersMsg" data-i18n="ui.loading">Loading…</div>
     <div id="ordersList"></div>
   </div>
 </main>
+
+<footer>
+  <div class="wrap">
+    © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals</span>
+    <div class="footer-links">
+      <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
+      <a href="#" onclick="openContact();return false;" data-i18n="footer.contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<!-- CONTACT MODAL -->
+<div id="contactModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="sheet-head">
+      <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
+      <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
+    </div>
+    <div class="sheet-body">
+      <div class="pro-grid">
+        <form id="contactForm" onsubmit="return sendMailto(event)">
+          <div class="field">
+            <label for="topic" data-i18n="form.topic">Topic</label>
+            <select id="topic" name="topic" class="select">
+              <option value="product" data-i18n="form.topicProduct">Product question</option>
+              <option value="availability" data-i18n="form.topicAvailability">Availability / Where to buy</option>
+              <option value="order" data-i18n="form.topicOrder">Order / Delivery</option>
+              <option value="feedback" data-i18n="form.topicFeedback">Feedback</option>
+              <option value="other" data-i18n="form.topicOther">Other</option>
+            </select>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <div class="field">
+              <label for="name" data-i18n="form.name">Name</label>
+              <input id="name" name="name" class="input" autocomplete="name" required
+                     data-i18n="form.namePH" data-i18n-attr="placeholder" placeholder="Full name">
+            </div>
+            <div class="field">
+              <label for="email2" data-i18n="form.email">Email</label>
+              <input id="email2" name="email" type="email" class="input" autocomplete="email" required
+                     inputmode="email" data-i18n="form.emailPH" data-i18n-attr="placeholder" placeholder="name@example.com">
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:10px">
+            <label for="subject" data-i18n="form.subject">Subject</label>
+            <input id="subject" name="subject" class="input" maxlength="120" required
+                   data-i18n="form.subjectPH" data-i18n-attr="placeholder" placeholder="Question about a product…">
+          </div>
+
+          <div class="field" style="margin-top:10px">
+            <label for="message" data-i18n="form.message">Message / Comments</label>
+            <textarea id="message" name="message" class="textarea" maxlength="1200" required
+                      data-i18n="form.messagePH" data-i18n-attr="placeholder" placeholder="Write your help request or comment…"></textarea>
+            <div class="hint"><span id="msgCount">0</span>/1200</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="field">
+            <label style="display:flex;gap:8px;align-items:flex-start">
+              <input type="checkbox" id="consent" required>
+              <span data-i18n="form.consent">I consent to VetoCos using my details to respond to this enquiry.</span>
+            </label>
+            <span class="hint" data-i18n="form.privacyNote">Your message is sent via your email app; we don't store it on this site.</span>
+          </div>
+
+          <div class="actions-fw">
+            <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
+            <button class="contact-btn" type="submit" data-i18n="form.send">Send</button>
+          </div>
+        </form>
+
+        <div class="card" style="height:fit-content">
+          <h3 data-i18n="contact.reach">Reach us</h3>
+          <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
+
+          <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
+          <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
+          <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
+          <p><strong data-i18n="contact.hours">Hours:</strong> <span data-i18n="contact.hoursVal">Mon–Fri, 9:00–17:00</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY & POLICY MODAL -->
+<div id="policyModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+    <div class="sheet-head">
+      <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
+      <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
+    </div>
+    <div class="sheet-body policy-body">
+      <h3 data-i18n="policy.overviewTitle">Overview</h3>
+      <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.</p>
+
+      <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
+      <ul>
+        <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
+        <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
+      </ul>
+
+      <h3 data-i18n="policy.useTitle">How we use data</h3>
+      <ul>
+        <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
+        <li data-i18n="policy.use2">We do not sell personal data.</li>
+      </ul>
+
+      <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
+      <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
+
+      <h3 data-i18n="policy.choiceTitle">Your choices</h3>
+      <ul>
+        <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
+        <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
+      </ul>
+
+      <h3 data-i18n="policy.contactTitle">Contact</h3>
+      <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
+
+      <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* i18n */
+  const I18N = {
+    en: {
+      "nav.home":"Home","nav.products":"Products","nav.cart":"Cart","nav.contact":"Contact",
+      "footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact",
+      "auth.logout":"Sign out",
+      "ui.checking":"Checking session…","ui.loading":"Loading…",
+      "account.title":"My Account","account.verify":"Verification","account.profile":"Profile","account.savedCart":"Saved Cart","account.orders":"Orders",
+      "profile.noName":"(no name)","profile.approved":"Approved","profile.needs":"Needs approval",
+      "cart.empty":"Your cart is empty.","orders.none":"No orders yet.","orders.receipt":"Open"
+    },
+    fr: {
+      "nav.home":"Accueil","nav.products":"Produits","nav.cart":"Panier","nav.contact":"Contact",
+      "footer.tag":"Complément alimentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
+      "auth.logout":"Déconnexion",
+      "ui.checking":"Vérification de la session…","ui.loading":"Chargement…",
+      "account.title":"Mon compte","account.verify":"Vérification","account.profile":"Profil","account.savedCart":"Panier enregistré","account.orders":"Commandes",
+      "profile.noName":"(aucun nom)","profile.approved":"Approuvé","profile.needs":"Validation requise",
+      "cart.empty":"Votre panier est vide.","orders.none":"Aucune commande.","orders.receipt":"Ouvrir"
+    },
+    es: {
+      "nav.home":"Inicio","nav.products":"Productos","nav.cart":"Carrito","nav.contact":"Contacto",
+      "footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
+      "auth.logout":"Cerrar sesión",
+      "ui.checking":"Comprobando sesión…","ui.loading":"Cargando…",
+      "account.title":"Mi cuenta","account.verify":"Verificación","account.profile":"Perfil","account.savedCart":"Carrito guardado","account.orders":"Pedidos",
+      "profile.noName":"(sin nombre)","profile.approved":"Aprobado","profile.needs":"Requiere aprobación",
+      "cart.empty":"Tu carrito está vacío.","orders.none":"Sin pedidos todavía.","orders.receipt":"Abrir"
+    },
+    ar: {
+      "nav.home":"الصفحة الرئيسية","nav.products":"المنتجات","nav.cart":"السلة","nav.contact":"اتصل بنا",
+      "footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
+      "auth.logout":"تسجيل الخروج",
+      "ui.checking":"جارٍ التحقق من الجلسة…","ui.loading":"جارٍ التحميل…",
+      "account.title":"حسابي","account.verify":"التحقق","account.profile":"الملف الشخصي","account.savedCart":"السلة المحفوظة","account.orders":"الطلبات",
+      "profile.noName":"(بدون اسم)","profile.approved":"موافق عليه","profile.needs":"بحاجة إلى موافقة",
+      "cart.empty":"سلة التسوق فارغة.","orders.none":"لا توجد طلبات بعد.","orders.receipt":"فتح"
+    }
+  };
+
+  function applyLang(lang){
+    const dict = I18N[lang]||I18N.en;
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+      const k=el.getAttribute("data-i18n"); if(dict[k]!=null) el.innerHTML=dict[k];
+    });
+    const html=document.documentElement; html.lang=lang;
+    if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
+    else { html.dir="ltr"; document.body.classList.remove("rtl"); }
+    localStorage.setItem("lang",lang);
+    const sel=document.getElementById('lang-switch'); if(sel) sel.value=lang;
+  }
+  const contactModal=document.getElementById('contactModal');
+  const policyModal=document.getElementById('policyModal');
+  function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+  function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+  function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+  function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+  [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+
+  const toAddress='info@vetocos.com';
+  function sendMailto(e){
+    e.preventDefault();
+    const topic=document.getElementById('topic').value;
+    const name=document.getElementById('name').value.trim();
+    const email=document.getElementById('email2').value.trim();
+    const subject=document.getElementById('subject')?.value.trim()||'Website enquiry';
+    const message=document.getElementById('message').value.trim();
+    if(!document.getElementById('consent').checked) return false;
+    const lines=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,'',message].join('%0A');
+    window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
+    return false;
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const y=document.getElementById('y'); if(y) y.textContent=new Date().getFullYear();
+    const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
+    const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+    const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
+    const sel=document.getElementById('lang-switch'); if(sel){ sel.value=initial; sel.addEventListener('change',e=>applyLang(e.target.value)); }
+    const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+  });
+</script>
 
 <script>
 /* ===== Supabase client ===== */
@@ -70,8 +339,9 @@ const supa = supabase.createClient(
 
 function logout(){ supa.auth.signOut().then(()=>location.href='index.html'); }
 
-/* Simple escaping */
 const esc = s => String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+
+function t(key){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][key])||(I18N.en[key]||key); }
 
 /* ===== Boot ===== */
 (async ()=>{
@@ -89,10 +359,10 @@ const esc = s => String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;',
       .eq('id', user.id)
       .maybeSingle();
 
-    const name = [p?.first_name, p?.last_name].filter(Boolean).join(' ') || '(no name)';
+    const name = [p?.first_name, p?.last_name].filter(Boolean).join(' ') || t('profile.noName');
     const badge = p?.can_purchase
-      ? '<span class="badge ok">Approved</span>'
-      : '<span class="badge bad">Needs approval</span>';
+      ? `<span class="badge ok">${t('profile.approved')}</span>`
+      : `<span class="badge bad">${t('profile.needs')}</span>`;
 
     document.getElementById('profLine').innerHTML =
       `<strong>${esc(name)}</strong> · ${esc(p?.email || user.email || '')} · ${badge}`;
@@ -100,7 +370,7 @@ const esc = s => String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;',
     document.getElementById('profLine').textContent = 'Profile load error.';
   }
 
-  // Server cart (table: carts { user_id uuid, items jsonb, updated_at })
+  // Saved cart
   try {
     const { data: row } = await supa.from('carts')
       .select('items, updated_at')
@@ -112,7 +382,7 @@ const esc = s => String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;',
     const list = document.getElementById('cartList');
 
     if (!items.length){
-      msg.textContent = 'Your cart is empty.';
+      msg.textContent = t('cart.empty');
     } else {
       msg.textContent = '';
       list.innerHTML = `
@@ -129,7 +399,7 @@ const esc = s => String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;',
     document.getElementById('cartMsg').textContent = 'Could not load cart.';
   }
 
-  // Orders (table: orders { id, user_id, status, total_qty, total_amount, currency, receipt_url, created_at })
+  // Orders
   try {
     const { data: orders, error } = await supa
       .from('orders')
@@ -143,7 +413,7 @@ const esc = s => String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;',
     if (error){
       msg.textContent = error.message;
     } else if (!orders?.length){
-      msg.textContent = 'No orders yet.';
+      msg.textContent = t('orders.none');
     } else {
       msg.textContent = '';
       list.innerHTML = `
@@ -153,7 +423,7 @@ const esc = s => String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;',
             ${orders.map(o=>{
               const dt = new Date(o.created_at).toLocaleString();
               const amt = (o.total_amount!=null) ? Number(o.total_amount).toFixed(2) + ' ' + (o.currency||'') : '—';
-              const rec = o.receipt_url ? `<a href="${esc(o.receipt_url)}" target="_blank" rel="noopener">Open</a>` : '—';
+              const rec = o.receipt_url ? `<a href="${esc(o.receipt_url)}" target="_blank" rel="noopener">${t('orders.receipt')}</a>` : '—';
               return `<tr>
                 <td>${esc(dt)}</td>
                 <td>${esc(o.id)}</td>
