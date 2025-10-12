@@ -10,23 +10,25 @@
     :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--brand:#6dd5ff;--brand2:#83f0a5;--max:1100px;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.25)}
     *{box-sizing:border-box}
     body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif;line-height:1.6}
-    a{text-decoration:none;color:inherit}
+    a{text-decoration:none;color:#6dd5ff}
     .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
 
     /* Header */
-    header.site{position:sticky;top:0;z-index:50;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+    header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:12px;font-weight:700}
-    .brand-logo{width:60px;height:auto;display:block;filter: drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+    .brand-logo{width:60px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
     .links{display:flex;gap:12px;align-items:center}
     .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
     .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
-    .contact-btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
+    .ghost{background:transparent}
     .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
     @media(max-width:900px){
       .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:240px}
       .links.open{display:flex}
       .hamb{display:block}
+      .btn{width:100%;text-align:left}
     }
 
     /* Account menu */
@@ -51,7 +53,7 @@
     .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:12px}
     iframe.map{width:100%;height:320px;border:0;border-radius:12px}
 
-    /* Region/distributors */
+    /* Regions/distributors */
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     select{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.04);color:var(--text)}
     table{width:100%;border-collapse:collapse;margin-top:10px}
@@ -59,7 +61,23 @@
     th{color:var(--muted)}
     .empty{color:var(--muted);text-align:center;padding:18px;border:1px dashed rgba(141,158,199,.25);border-radius:12px;margin-top:10px}
 
+    /* Footer */
     footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
+
+    /* Modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:90}
+    .modal.open{display:flex}
+    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
+    .sheet-title{margin:0;font-size:1.1rem}
+    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+    .sheet-body{padding:16px}
+    .grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+    @media(max-width:860px){.grid2{grid-template-columns:1fr}}
+    .input,.select,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text);outline:none}
+    .textarea{min-height:140px;resize:vertical}
+    .hint12{font-size:12px;color:var(--muted)}
+    .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
   </style>
 </head>
 <body>
@@ -77,15 +95,13 @@
       <a class="active" href="World Wide.html">World Wide</a>
       <a href="News.html">News</a>
 
-      <button class="contact-btn" type="button" onclick="openContact()">Contact</button>
-
-      <a class="contact-btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
-
-      <button class="contact-btn" id="signInBtn" type="button">Sign in</button>
-      <button class="contact-btn" id="signUpBtn" type="button">Sign up</button>
+      <button class="btn" type="button" onclick="openContact()">Contact</button>
+      <a class="btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
+      <button class="btn" id="signInBtn" type="button">Sign in</button>
+      <button class="btn ghost" id="signUpBtn" type="button">Sign up</button>
 
       <div class="acct" id="acctBlock" style="display:none">
-        <button class="contact-btn" id="accountBtn" type="button">
+        <button class="btn" id="accountBtn" type="button">
           <span class="avatar" aria-hidden="true"></span>
           <span id="helloName" class="muted" style="font-size:.9rem"></span>
         </button>
@@ -135,7 +151,6 @@
     </div>
     <div class="card">
       <h3 style="margin:.2rem 0 8px">Our location</h3>
-      <!-- Google Maps embed for address (no API key needed for place search) -->
       <iframe class="map"
         src="https://www.google.com/maps?q=LOT%20HAOUID%20EL%20MAA%20N%2063%20Skhirate%20Rabat%20Morocco&output=embed"
         loading="lazy" referrerpolicy="no-referrer-when-downgrade" aria-label="Map to VETOCOS SAHIB"></iframe>
@@ -157,11 +172,136 @@
 
 <footer>
   © <span id="y"></span> VetoCos · <span class="muted">Complementary feed for companion animals</span>
+  <div style="margin-top:8px">
+    <a href="#" onclick="openPolicy();return false;">Privacy & Policy</a>
+  </div>
 </footer>
 
+<!-- CONTACT MODAL (professional, no TikTok) -->
+<div id="contactModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="sheet-head">
+      <h2 id="contactTitle" class="sheet-title">Contact Us</h2>
+      <button class="close" type="button" onclick="closeContact()">Close</button>
+    </div>
+    <div class="sheet-body">
+      <div class="grid2">
+        <form id="contactForm" onsubmit="return sendMailto(event)">
+          <label>Topic
+            <select id="topic" class="select">
+              <option value="product">Product question</option>
+              <option value="availability">Availability / Where to buy</option>
+              <option value="order">Order / Delivery</option>
+              <option value="feedback">Feedback</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <label>Name<input id="name" class="input" placeholder="Full name" autocomplete="name" required></label>
+            <label>Email<input id="email2" type="email" class="input" placeholder="name@example.com" autocomplete="email" required></label>
+          </div>
+          <label style="margin-top:10px">Subject
+            <input id="subject" class="input" maxlength="120" placeholder="Question about a product…" required>
+          </label>
+          <label style="margin-top:10px">Message / Comments
+            <textarea id="message" class="textarea" maxlength="1200" placeholder="Write your help request or comment…" required></textarea>
+            <div class="hint12"><span id="msgCount">0</span>/1200</div>
+          </label>
+          <label style="display:flex;gap:8px;align-items:flex-start;margin-top:10px">
+            <input type="checkbox" id="consent" required>
+            <span class="hint12">I consent to VetoCos using my details to respond to this enquiry.</span>
+          </label>
+          <div class="actions-fw">
+            <button class="close" type="button" onclick="closeContact()">Cancel</button>
+            <button class="btn" type="submit">Send</button>
+          </div>
+          <div class="hint12" style="margin-top:6px">Your message is sent via your email app; we don't store it on this site.</div>
+        </form>
+
+        <div class="card" style="height:fit-content">
+          <h3>Reach us</h3>
+          <p class="muted" style="margin:4px 0 10px">We’re happy to help with product questions, availability, or feedback.</p>
+          <p><strong>Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
+          <p><strong>Phone:</strong> <a href="tel:+212537742213">+212 537 74 22 13</a></p>
+          <p><strong>WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537 74 22 13</a></p>
+          <p><strong>Hours:</strong> Mon–Fri, 9:00–17:00</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY & POLICY MODAL -->
+<div id="policyModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+    <div class="sheet-head">
+      <h2 id="policyTitle" class="sheet-title">Privacy & Policy</h2>
+      <button class="close" type="button" onclick="closePolicy()">Close</button>
+    </div>
+    <div class="sheet-body">
+      <h3>Overview</h3>
+      <p>VetoCos provides complementary feed products. We do not collect personal data unless you choose to contact us.</p>
+      <h3>Data we may receive</h3>
+      <ul>
+        <li>Messages you send via the contact form (your name, email, and message content).</li>
+        <li>Basic, anonymized analytics (page views, device type) to improve the site.</li>
+      </ul>
+      <h3>How we use data</h3>
+      <ul>
+        <li>To respond to your requests and improve our products and site experience.</li>
+        <li>We do not sell personal data.</li>
+      </ul>
+      <h3>Cookies</h3>
+      <p>We use minimal, essential cookies only if required for functionality and anonymous analytics.</p>
+      <h3>Your choices</h3>
+      <ul>
+        <li>You can request that we delete your message and contact details at any time.</li>
+        <li>You can disable cookies in your browser settings.</li>
+      </ul>
+      <h3>Contact</h3>
+      <p>Privacy questions: <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a></p>
+      <p class="muted" style="margin-top:8px">Last updated: <span id="policyDate"></span></p>
+    </div>
+  </div>
+</div>
+
 <script>
-  function openContact() {}
+  // Footer year + policy date + contact modal helpers
   document.getElementById('y').textContent = new Date().getFullYear();
+  (function(){ const d=new Date(); const month=d.toLocaleString('default',{month:'long'}); const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear(); })();
+
+  const contactModal=document.getElementById('contactModal');
+  const policyModal=document.getElementById('policyModal');
+
+  function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+  function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+  function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+  function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+
+  [contactModal, policyModal].forEach(m=>{
+    m?.addEventListener('click', (ev)=>{ if(ev.target===m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } });
+  });
+
+  // Mailto submit (no storage on site)
+  const toAddress='info@vetocos.com';
+  function sendMailto(e){
+    e.preventDefault();
+    const topic=document.getElementById('topic').value;
+    const name=document.getElementById('name').value.trim();
+    const email=document.getElementById('email2').value.trim();
+    const subject=document.getElementById('subject').value.trim()||'Website enquiry';
+    const message=document.getElementById('message').value.trim();
+    if(!document.getElementById('consent').checked) return false;
+    const body=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,'',message].map(encodeURIComponent).join('%0A');
+    window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${body}`;
+    return false;
+  }
+
+  // counter
+  (function(){
+    const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount');
+    if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+  })();
 </script>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -219,7 +359,7 @@
     signInBtn.style.display='none';
     signUpBtn.style.display='none';
     acctBlock.style.display='inline-flex';
-    adminBtn.style.display = (isAdmin || SUPER_ADMINS.includes(session.user.email)) ? 'inline-block' : 'none';
+    adminBtn.style.display = (isAdmin || SUPER_ADMINS.includes((session.user.email||'').toLowerCase())) ? 'inline-block' : 'none';
   }
   document.addEventListener('DOMContentLoaded', refreshHeader);
   supa.auth.onAuthStateChange(()=>{ refreshHeader(); });
@@ -229,7 +369,6 @@
   const distBox   = document.getElementById('distBox');
 
   async function loadRegions(){
-    // Try DB first
     let regions = [];
     const { data, error } = await supa
       .from('regions')
@@ -239,8 +378,6 @@
     if (!error && Array.isArray(data) && data.length){
       regions = data.filter(r=>r.is_enabled!==false);
     }
-
-    // Fallback to a minimal set if table empty
     if (!regions.length){
       regions = [
         { code:'AFRICA', name:'Africa', is_enabled:true },
@@ -248,7 +385,6 @@
         { code:'EU',     name:'Europe', is_enabled:true }
       ];
     }
-
     regionSel.innerHTML = regions.map(r=>`<option value="${r.code}">${r.name}</option>`).join('');
     return regions;
   }
@@ -263,7 +399,6 @@
 
     if (!error && Array.isArray(data)) rows = data;
 
-    // Fallback for Africa with main company details if nothing in DB
     if (!rows.length && code==='AFRICA'){
       rows = [{
         name:'VETOCOS SAHIB',
@@ -322,3 +457,4 @@
 </script>
 </body>
 </html>
+
