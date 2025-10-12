@@ -4,20 +4,60 @@
   <meta charset="utf-8" />
   <title>VetoCos | Checkout</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="description" content="Checkout — VetoCos complementary feed for dogs & cats.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:16px}
+    :root{
+      --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--max:1100px;--br:18px;
+      --brand:#6dd5ff;--brand2:#83f0a5;--shadow:0 10px 30px rgba(0,0,0,.25)
+    }
     *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
-    main{max-width:960px;margin:5vh auto;padding:0 18px}
+    html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
+
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+
+    /* Header */
+    header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .brand-logo{width:60px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+    .brand-logo:hover{filter:drop-shadow(0 8px 16px rgba(0,0,0,.4)) contrast(1.03) saturate(1.02)}
+    .links{display:flex;gap:14px;align-items:center}
+    .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
+    .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
+    .contact-btn,#lang-switch,.btn{
+      padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer
+    }
+    #lang-switch{background:rgba(255,255,255,.04);min-width:120px}
+    .cart-link{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.04)}
+    .cart-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;display:grid;place-items:center;font-size:12px;background:#ff6d6d;border-radius:999px;padding:0 6px;color:white}
+    .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
+    @media(max-width:860px){
+      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:240px}
+      .links.open{display:flex}
+      .hamb{display:block}
+      .contact-btn,#lang-switch{width:100%;text-align:left}
+    }
+
+    /* Account */
+    .acct{position:relative;display:inline-flex;align-items:center;gap:8px}
+    .avatar{width:28px;height:28px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:inline-block;border:1px solid rgba(141,158,199,.3)}
+    .menu{position:absolute;top:42px;right:0;background:rgba(16,24,53,.98);border:1px solid rgba(141,158,199,.2);border-radius:12px;min-width:240px;display:none;box-shadow:var(--shadow)}
+    .menu.open{display:block}
+    .menu a,.menu button{display:block;width:100%;text-align:left;padding:10px 12px;background:transparent;border:0;color:var(--text);cursor:pointer}
+    .menu a:hover,.menu button:hover{background:rgba(141,158,199,.15)}
+    .menu .muted{font-size:12px}
+
+    /* Main layout */
+    main{padding:28px 0}
     h1,h2{margin:.5rem 0 1rem}
     .grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
     @media(max-width:860px){.grid{grid-template-columns:1fr}}
     .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px}
     .muted{color:var(--muted)}
-    .btn{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);
-         background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);
-         cursor:pointer;font-weight:600}
+    .btn.wide{width:100%}
     .btn[disabled]{opacity:.55;cursor:not-allowed}
     .table{width:100%;border-collapse:collapse}
     .table th,.table td{padding:10px;border-bottom:1px solid rgba(141,158,199,.15);text-align:left}
@@ -29,55 +69,532 @@
     .notice{padding:10px;border:1px dashed rgba(141,158,199,.35);border-radius:12px;background:rgba(255,255,255,.03);margin:10px 0}
     .small{font-size:.92rem}
     #msg{min-height:1.2em;margin-top:8px}
-    a{color:inherit}
+
+    footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+
+    /* Modals (Contact / Policy) */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
+    .modal.open{display:flex}
+    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
+    .sheet-title{margin:0;font-size:1.1rem}
+    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+    .sheet-body{padding:16px}
+
+    /* Contact form layout */
+    .pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    @media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .input,.select,.textarea{
+      width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+      background:rgba(255,255,255,.03);color:var(--text);outline:none
+    }
+    .textarea{min-height:140px;resize:vertical}
+    .hint{font-size:12px;color:var(--muted)}
+    .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+    .divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
+
+    /* RTL tweaks */
+    body.rtl .links a{text-align:right}
+    body.rtl .grid, body.rtl .pro-grid{direction:rtl}
+    body.rtl label{text-align:right}
   </style>
 </head>
 <body>
-<main>
-  <h1>Checkout</h1>
+<header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a href="index.html" aria-label="VetoCos home">
+        <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
+      </a>
+      <span>VetoCos</span>
+    </div>
+
+    <nav class="links" id="navlinks">
+      <a href="index.html" data-i18n="nav.home">Home</a>
+      <a href="Products.html" data-i18n="nav.products">Products</a>
+      <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
+      <a href="News.html" data-i18n="nav.news">News</a>
+
+      <a class="cart-link" id="cartLink" href="cart.html" style="display:none">
+        <span data-i18n="nav.cart">Cart</span>
+        <span id="cartCount" class="cart-badge" style="display:none">0</span>
+      </a>
+
+      <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
+
+      <!-- Admin -->
+      <a class="contact-btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
+
+      <!-- Auth -->
+      <button class="contact-btn" id="signInBtn" type="button" data-i18n="auth.login">Sign in</button>
+      <button class="contact-btn" id="signUpBtn" type="button" data-i18n="auth.signup">Sign up</button>
+
+      <!-- Account -->
+      <div class="acct" id="acctBlock" style="display:none">
+        <button class="contact-btn" id="accountBtn" type="button">
+          <span class="avatar" aria-hidden="true"></span>
+          <span id="helloName" class="muted" style="font-size:.9rem"></span>
+        </button>
+        <div class="menu" id="accountMenu" role="menu" aria-hidden="true">
+          <div id="accountHeader" class="muted" style="padding:8px 12px; border-bottom:1px solid rgba(141,158,199,.12)"></div>
+          <a href="account.html" role="menuitem" data-i18n="nav.account">Account settings</a>
+          <a href="my-order.html" role="menuitem" data-i18n="orders.myOrders">My orders</a>
+          <a href="cart.html" role="menuitem" data-i18n="nav.cart">Cart</a>
+          <a href="checkout.html" role="menuitem" data-i18n="nav.checkout">Checkout</a>
+          <a href="vet-verify.html" role="menuitem" data-i18n="auth.vetVerify">Vet verification</a>
+          <button type="button" role="menuitem" id="logoutBtn" data-i18n="auth.logout">Sign out</button>
+        </div>
+      </div>
+
+      <!-- Language -->
+      <select id="lang-switch" aria-label="Language" class="contact-btn">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="es">Español</option>
+        <option value="ar">العربية</option>
+      </select>
+    </nav>
+
+    <button class="hamb" aria-label="Open menu" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 data-i18n="checkout.title">Checkout</h1>
 
   <div class="grid">
     <!-- Left: Cart review -->
     <section class="card">
-      <h2>Your Cart</h2>
-      <div id="cartBox" class="muted">Loading…</div>
+      <h2 data-i18n="checkout.cartTitle">Your Cart</h2>
+      <div id="cartBox" class="muted" data-i18n="ui.loading">Loading…</div>
       <div id="issuesBox" class="notice small" style="display:none"></div>
       <div class="row" style="margin-top:10px">
-        <a class="badge" href="Products.html">← Continue shopping</a>
+        <a class="badge" href="Products.html" data-i18n="checkout.continue">← Continue shopping</a>
         <span class="muted small" id="userInfo"></span>
       </div>
     </section>
 
     <!-- Right: Summary / Place order -->
     <aside class="card">
-      <h2>Summary</h2>
+      <h2 data-i18n="checkout.summary">Summary</h2>
       <div class="row small">
-        <span>Items</span>
+        <span data-i18n="checkout.items">Items</span>
         <strong id="sumItems">0</strong>
       </div>
       <div class="row small">
-        <span>Estimated total</span>
+        <span data-i18n="checkout.total">Estimated total</span>
         <strong id="sumTotal">—</strong>
       </div>
-      <button id="placeOrder" class="btn" style="margin-top:12px">Place order</button>
+      <button id="placeOrder" class="btn wide" style="margin-top:12px" data-i18n="checkout.place">Place order</button>
       <div id="msg" class="muted" aria-live="polite"></div>
-      <div class="small muted" style="margin-top:8px">
+      <div class="small muted" style="margin-top:8px" data-i18n="checkout.note">
         Note: Some products may require vet verification or admin approval. If so, your order will be submitted for review.
       </div>
     </aside>
   </div>
 </main>
 
+<footer>
+  <div class="wrap">
+    © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals</span>
+    <div class="footer-links">
+      <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
+      <a href="#" onclick="openContact();return false;" data-i18n="footer.contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<!-- CONTACT MODAL (Professional) -->
+<div id="contactModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="sheet-head">
+      <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
+      <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
+    </div>
+    <div class="sheet-body">
+      <div class="pro-grid">
+        <!-- Form -->
+        <form id="contactForm" onsubmit="return sendMailto(event)">
+          <div class="field">
+            <label for="topic" data-i18n="form.topic">Topic</label>
+            <select id="topic" name="topic" class="select">
+              <option value="product" data-i18n="form.topicProduct">Product question</option>
+              <option value="availability" data-i18n="form.topicAvailability">Availability / Where to buy</option>
+              <option value="order" data-i18n="form.topicOrder">Order / Delivery</option>
+              <option value="feedback" data-i18n="form.topicFeedback">Feedback</option>
+              <option value="other" data-i18n="form.topicOther">Other</option>
+            </select>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <div class="field">
+              <label for="name" data-i18n="form.name">Name</label>
+              <input id="name" name="name" class="input" autocomplete="name" required
+                     data-i18n="form.namePH" data-i18n-attr="placeholder"
+                     placeholder="Full name">
+            </div>
+            <div class="field">
+              <label for="email" data-i18n="form.email">Email</label>
+              <input id="email" name="email" type="email" class="input" autocomplete="email" required
+                     inputmode="email"
+                     data-i18n="form.emailPH" data-i18n-attr="placeholder"
+                     placeholder="name@example.com">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <div class="field">
+              <label for="country" data-i18n="form.country">Country</label>
+              <input id="country" name="country" class="input"
+                     data-i18n="form.countryPH" data-i18n-attr="placeholder"
+                     placeholder="Country (optional)">
+            </div>
+            <div class="field">
+              <label for="phone" data-i18n="form.phone">Phone (optional)</label>
+              <input id="phone" name="phone" class="input" inputmode="tel"
+                     pattern="^[0-9+() -]{6,}$"
+                     data-i18n="form.phonePH" data-i18n-attr="placeholder"
+                     placeholder="+212 537742213">
+              <span class="hint" data-i18n="form.phoneHint">Digits, spaces and +() - allowed</span>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:10px">
+            <label for="subject" data-i18n="form.subject">Subject</label>
+            <input id="subject" name="subject" class="input" maxlength="120" required
+                   data-i18n="form.subjectPH" data-i18n-attr="placeholder"
+                   placeholder="Question about a product…">
+          </div>
+
+          <div class="field" style="margin-top:10px">
+            <label for="message" data-i18n="form.message">Message / Comments</label>
+            <textarea id="message" name="message" class="textarea" maxlength="1200" required
+                      data-i18n="form.messagePH" data-i18n-attr="placeholder"
+                      placeholder="Write your help request or comment…"></textarea>
+            <div class="hint"><span id="msgCount">0</span>/1200</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="field">
+            <label style="display:flex;gap:8px;align-items:flex-start">
+              <input type="checkbox" id="consent" required>
+              <span data-i18n="form.consent">I consent to VetoCos using my details to respond to this enquiry.</span>
+            </label>
+            <span class="hint" data-i18n="form.privacyNote">Your message is sent via your email app; we don't store it on this site.</span>
+          </div>
+
+          <div class="actions-fw">
+            <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
+            <button class="contact-btn" type="submit" data-i18n="form.send">Send</button>
+          </div>
+        </form>
+
+        <!-- Company contact panel -->
+        <div class="card" style="height:fit-content">
+          <h3 data-i18n="contact.reach">Reach us</h3>
+          <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
+
+          <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
+          <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
+          <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
+          <p><strong data-i18n="contact.hours">Hours:</strong> <span data-i18n="contact.hoursVal">Mon–Fri, 9:00–17:00</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY & POLICY MODAL -->
+<div id="policyModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+    <div class="sheet-head">
+      <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
+      <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
+    </div>
+    <div class="sheet-body policy-body">
+      <h3 data-i18n="policy.overviewTitle">Overview</h3>
+      <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.</p>
+
+      <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
+      <ul>
+        <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
+        <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
+      </ul>
+
+      <h3 data-i18n="policy.useTitle">How we use data</h3>
+      <ul>
+        <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
+        <li data-i18n="policy.use2">We do not sell personal data.</li>
+      </ul>
+
+      <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
+      <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
+
+      <h3 data-i18n="policy.choiceTitle">Your choices</h3>
+      <ul>
+        <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
+        <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
+      </ul>
+
+      <h3 data-i18n="policy.contactTitle">Contact</h3>
+      <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
+
+      <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
+    </div>
+  </div>
+</div>
+
+<!-- i18n dictionary + helpers -->
+<script>
+  const I18N = {
+    en: {
+      "nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact",
+      "nav.account":"Account settings","nav.cart":"Cart","nav.checkout":"Checkout",
+      "footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact",
+      "auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification","orders.myOrders":"My orders",
+
+      "ui.loading":"Loading…","ui.sku":"SKU: ",
+      "checkout.title":"Checkout","checkout.cartTitle":"Your Cart","checkout.continue":"← Continue shopping",
+      "checkout.summary":"Summary","checkout.items":"Items","checkout.total":"Estimated total","checkout.place":"Place order",
+      "checkout.note":"Note: Some products may require vet verification or admin approval. If so, your order will be submitted for review.",
+      "cart.empty":"Your cart is empty.","status.ok":"OK","status.unavailable":"Unavailable","status.only":"Only __N__ in stock",
+      "issues.approval":"Some items require approval. You can request vet verification here: <a href=\"vet-verify.html\">vet-verify.html</a>.",
+      "issues.stock":"Some items are currently out of stock or unavailable. You can remove them or adjust quantities on the products page.",
+      "place.none":"Nothing eligible to order yet. See notes above.",
+      "place.okPartial":"Order placed for eligible items. Some items still need approval/stock—see notes above.",
+      "place.okAll":"Order placed. You'll receive updates after admin review.",
+
+      "contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.reachText":"We’re happy to help with product questions, availability, or feedback.",
+      "contact.email":"Email:","contact.phone":"Phone:","contact.whatsapp":"WhatsApp:","contact.hours":"Hours:","contact.hoursVal":"Mon–Fri, 9:00–17:00",
+      "form.topic":"Topic","form.topicProduct":"Product question","form.topicAvailability":"Availability / Where to buy","form.topicOrder":"Order / Delivery","form.topicFeedback":"Feedback","form.topicOther":"Other",
+      "form.name":"Name","form.email":"Email","form.country":"Country","form.phone":"Phone (optional)","form.subject":"Subject","form.message":"Message / Comments",
+      "form.namePH":"Full name","form.emailPH":"name@example.com","form.countryPH":"Country (optional)","form.phonePH":"+212 537742213","form.subjectPH":"Question about a product…","form.messagePH":"Write your help request or comment…",
+      "form.phoneHint":"Digits, spaces and +() - allowed","form.consent":"I consent to VetoCos using my details to respond to this enquiry.","form.privacyNote":"Your message is sent via your email app; we don't store it on this site.","form.cancel":"Cancel","form.send":"Send",
+
+      "policy.title":"Privacy & Policy","policy.close":"Close","policy.overviewTitle":"Overview","policy.overviewText":"VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.","policy.dataTitle":"Data we may receive","policy.data1":"Messages you send via the contact form (your name, email, and message content).","policy.data2":"Basic, anonymized analytics (page views, device type) to improve the site.","policy.useTitle":"How we use data","policy.use1":"To respond to your requests and improve our products and site experience.","policy.use2":"We do not sell personal data.","policy.cookiesTitle":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.","policy.choiceTitle":"Your choices","policy.choice1":"You can request that we delete your message and contact details at any time.","policy.choice2":"You can disable cookies in your browser settings.","policy.contactTitle":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Last updated:"
+    },
+    fr: {
+      "nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact",
+      "nav.account":"Paramètres du compte","nav.cart":"Panier","nav.checkout":"Paiement",
+      "footer.tag":"Complément alimentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
+      "auth.login":"Connexion","auth.signup":"Créer un compte","auth.logout":"Déconnexion","auth.vetVerify":"Vérification vétérinaire","orders.myOrders":"Mes commandes",
+
+      "ui.loading":"Chargement…","ui.sku":"Réf : ",
+      "checkout.title":"Paiement","checkout.cartTitle":"Votre panier","checkout.continue":"← Continuer vos achats",
+      "checkout.summary":"Récapitulatif","checkout.items":"Articles","checkout.total":"Total estimé","checkout.place":"Passer la commande",
+      "checkout.note":"Remarque : certains produits peuvent nécessiter une vérification vétérinaire ou une approbation. Dans ce cas, votre commande sera envoyée pour examen.",
+      "cart.empty":"Votre panier est vide.","status.ok":"OK","status.unavailable":"Indisponible","status.only":"Plus que __N__ en stock",
+      "issues.approval":"Certains articles nécessitent une approbation. Demandez-la ici : <a href=\"vet-verify.html\">vet-verify.html</a>.",
+      "issues.stock":"Certains articles sont en rupture ou indisponibles. Vous pouvez les retirer ou ajuster les quantités sur la page produits.",
+      "place.none":"Aucun article éligible pour le moment. Voir les remarques ci-dessus.",
+      "place.okPartial":"Commande passée pour les articles éligibles. Certains nécessitent encore une approbation/du stock — voir ci-dessus.",
+      "place.okAll":"Commande passée. Vous recevrez des mises à jour après examen de l’administrateur.",
+
+      "contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Nous sommes à votre écoute pour toute question, disponibilité ou avis.",
+      "contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00",
+      "form.topic":"Objet","form.topicProduct":"Question sur un produit","form.topicAvailability":"Disponibilité / Où acheter","form.topicOrder":"Commande / Livraison","form.topicFeedback":"Avis / Retour","form.topicOther":"Autre",
+      "form.name":"Nom","form.email":"E-mail","form.country":"Pays","form.phone":"Téléphone (optionnel)","form.subject":"Sujet","form.message":"Message / Commentaires",
+      "form.namePH":"Nom complet","form.emailPH":"nom@exemple.com","form.countryPH":"Pays (optionnel)","form.phonePH":"+212 537742213","form.subjectPH":"Question à propos d’un produit…","form.messagePH":"Écrivez votre demande d’aide ou commentaire…",
+      "form.phoneHint":"Chiffres, espaces et +() - autorisés","form.consent":"J’autorise VetoCos à utiliser mes coordonnées pour répondre à cette demande.","form.privacyNote":"Votre message est envoyé via votre application e-mail ; nous ne le stockons pas sur ce site.","form.cancel":"Annuler","form.send":"Envoyer",
+
+      "policy.title":"Confidentialité & Politique","policy.close":"Fermer","policy.overviewTitle":"Aperçu","policy.overviewText":"VetoCos fournit des compléments alimentaires…","policy.dataTitle":"Données susceptibles d’être reçues","policy.data1":"Messages envoyés via le formulaire…","policy.data2":"Analyses anonymisées…","policy.useTitle":"Utilisation des données","policy.use1":"Répondre à vos demandes…","policy.use2":"Nous ne vendons pas…","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies essentiels uniquement…","policy.choiceTitle":"Vos choix","policy.choice1":"Vous pouvez demander la suppression…","policy.choice2":"Vous pouvez désactiver les cookies…","policy.contactTitle":"Contact","policy.contactText":"Pour la confidentialité, utilisez le lien Contact…","policy.updated":"Dernière mise à jour :"
+    },
+    es: {
+      "nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"En el mundo","nav.news":"Noticias","nav.contact":"Contacto",
+      "nav.account":"Ajustes de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar",
+      "footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
+      "auth.login":"Iniciar sesión","auth.signup":"Crear cuenta","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria","orders.myOrders":"Mis pedidos",
+
+      "ui.loading":"Cargando…","ui.sku":"SKU: ",
+      "checkout.title":"Pagar","checkout.cartTitle":"Tu carrito","checkout.continue":"← Seguir comprando",
+      "checkout.summary":"Resumen","checkout.items":"Artículos","checkout.total":"Total estimado","checkout.place":"Realizar pedido",
+      "checkout.note":"Nota: algunos productos pueden requerir verificación veterinaria o aprobación del administrador.",
+      "cart.empty":"Tu carrito está vacío.","status.ok":"OK","status.unavailable":"No disponible","status.only":"Solo quedan __N__",
+      "issues.approval":"Algunos artículos requieren aprobación. Pídela aquí: <a href=\"vet-verify.html\">vet-verify.html</a>.",
+      "issues.stock":"Algunos artículos no tienen stock o no están disponibles.",
+      "place.none":"No hay artículos elegibles todavía. Consulta las notas arriba.",
+      "place.okPartial":"Pedido realizado para los artículos elegibles. Otros siguen pendientes — revisa las notas.",
+      "place.okAll":"Pedido realizado. Te avisaremos tras la revisión.",
+
+      "contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Escríbenos","contact.reachText":"Encantados de ayudar con dudas de producto, disponibilidad o comentarios.",
+      "contact.email":"Correo:","contact.phone":"Teléfono:","contact.whatsapp":"WhatsApp:","contact.hours":"Horario:","contact.hoursVal":"Lun–Vie, 9:00–17:00",
+      "form.topic":"Tema","form.topicProduct":"Consulta de producto","form.topicAvailability":"Disponibilidad / Dónde comprar","form.topicOrder":"Pedido / Entrega","form.topicFeedback":"Comentarios","form.topicOther":"Otro",
+      "form.name":"Nombre","form.email":"Correo electrónico","form.country":"País","form.phone":"Teléfono (opcional)","form.subject":"Asunto","form.message":"Mensaje / Comentarios",
+      "form.namePH":"Nombre completo","form.emailPH":"nombre@ejemplo.com","form.countryPH":"País (opcional)","form.phonePH":"+212 537742213","form.subjectPH":"Consulta sobre un producto…","form.messagePH":"Escribe tu solicitud de ayuda o comentario…",
+      "form.phoneHint":"Se permiten dígitos, espacios y +() -","form.consent":"Autorizo a VetoCos a usar mis datos para responder a esta consulta.","form.privacyNote":"Tu mensaje se envía con tu aplicación de correo; no lo almacenamos.","form.cancel":"Cancelar","form.send":"Enviar",
+
+      "policy.title":"Privacidad y Política","policy.close":"Cerrar","policy.overviewTitle":"Resumen","policy.overviewText":"VetoCos ofrece complementos alimentarios…","policy.dataTitle":"Datos que podemos recibir","policy.data1":"Mensajes enviados…","policy.data2":"Analítica básica anónima…","policy.useTitle":"Cómo usamos los datos","policy.use1":"Responder a tus solicitudes…","policy.use2":"No vendemos datos personales…","policy.cookiesTitle":"Cookies","policy.cookiesText":"Usamos solo cookies esenciales…","policy.choiceTitle":"Tus opciones","policy.choice1":"Puedes pedir que eliminemos tus datos…","policy.choice2":"Puedes desactivar las cookies…","policy.contactTitle":"Contacto","policy.contactText":"Para privacidad, usa el enlace de Contacto…","policy.updated":"Última actualización:"
+    },
+    ar: {
+      "nav.home":"الصفحة الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا",
+      "nav.account":"إعدادات الحساب","nav.cart":"السلة","nav.checkout":"الدفع",
+      "footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
+      "auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"التحقق البيطري","orders.myOrders":"طلباتي",
+
+      "ui.loading":"جارٍ التحميل…","ui.sku":"رقم الصنف: ",
+      "checkout.title":"الدفع","checkout.cartTitle":"سلة التسوق","checkout.continue":"← متابعة التسوق",
+      "checkout.summary":"الملخص","checkout.items":"العناصر","checkout.total":"الإجمالي التقديري","checkout.place":"إرسال الطلب",
+      "checkout.note":"ملاحظة: قد تتطلب بعض المنتجات تحققًا بيطريًا أو موافقة الإدارة.",
+      "cart.empty":"سلة التسوق فارغة.","status.ok":"حسنًا","status.unavailable":"غير متوفر","status.only":"متبقٍ __N__ فقط",
+      "issues.approval":"بعض العناصر تتطلب موافقة. يمكنك طلب التحقق هنا: <a href=\"vet-verify.html\">vet-verify.html</a>.",
+      "issues.stock":"بعض العناصر غير متوفرة حاليًا أو نفد مخزونها.",
+      "place.none":"لا توجد عناصر مؤهلة بعد. راجع الملاحظات أعلاه.",
+      "place.okPartial":"تم تقديم الطلب للعناصر المؤهلة. بعض العناصر ما زالت بحاجة لموافقة/مخزون — راجع الملاحظات.",
+      "place.okAll":"تم تقديم الطلب. ستتلقى تحديثات بعد المراجعة.",
+
+      "contact.title":"اتصل بنا","contact.close":"إغلاق","contact.reach":"تواصل معنا","contact.reachText":"يسعدنا مساعدتك في أسئلة المنتجات أو التوفر أو الملاحظات.",
+      "contact.email":"البريد:","contact.phone":"الهاتف:","contact.whatsapp":"واتساب:","contact.hours":"الساعات:","contact.hoursVal":"الاثنين–الجمعة، 9:00–17:00",
+      "form.topic":"الموضوع","form.topicProduct":"سؤال عن منتج","form.topicAvailability":"التوفر / أماكن الشراء","form.topicOrder":"طلب / توصيل","form.topicFeedback":"ملاحظات","form.topicOther":"أخرى",
+      "form.name":"الاسم","form.email":"البريد الإلكتروني","form.country":"الدولة","form.phone":"الهاتف (اختياري)","form.subject":"العنوان","form.message":"الرسالة / التعليقات",
+      "form.namePH":"الاسم الكامل","form.emailPH":"name@example.com","form.countryPH":"الدولة (اختياري)","form.phonePH":"+212 537742213","form.subjectPH":"سؤال حول منتج…","form.messagePH":"اكتب طلب المساعدة أو التعليق…",
+      "form.phoneHint":"مسموح بالأرقام والمسافات والرموز +() -","form.consent":"أوافق على استخدام VetoCos لبياناتي للرد على هذا الاستفسار.","form.privacyNote":"تُرسل رسالتك عبر تطبيق البريد؛ لا نخزنها.","form.cancel":"إلغاء","form.send":"إرسال",
+
+      "policy.title":"الخصوصية والسياسة","policy.close":"إغلاق","policy.overviewTitle":"نظرة عامة","policy.overviewText":"توفر VetoCos أغذية تكميلية…","policy.dataTitle":"البيانات التي قد نستلمها","policy.data1":"الرسائل المرسلة…","policy.data2":"تحليلات أساسية مجهولة…","policy.useTitle":"كيفية استخدام البيانات","policy.use1":"للرد على طلباتك وتحسين تجربتك…","policy.use2":"لا نبيع البيانات الشخصية…","policy.cookiesTitle":"ملفات تعريف الارتباط","policy.cookiesText":"نستخدم ملفات أساسية فقط…","policy.choiceTitle":"اختياراتك","policy.choice1":"يمكنك طلب حذف بياناتك…","policy.choice2":"يمكنك تعطيل ملفات الارتباط…","policy.contactTitle":"اتصال","policy.contactText":"لاستفسارات الخصوصية استخدم رابط الاتصال…","policy.updated":"آخر تحديث:"
+    }
+  };
+
+  function t(key){ const lang = localStorage.getItem("lang") || "en"; return (I18N[lang] && I18N[lang][key]) ?? (I18N.en[key] || key); }
+  function translateAttributes(dict){
+    document.querySelectorAll("[data-i18n-attr]").forEach(el=>{
+      const key = el.getAttribute("data-i18n");
+      const attrs = (el.getAttribute("data-i18n-attr")||"").split(",").map(s=>s.trim()).filter(Boolean);
+      const val = dict[key];
+      if (val == null) return;
+      attrs.forEach(attr => el.setAttribute(attr, val));
+    });
+  }
+  function applyLang(lang){
+    const dict = I18N[lang] || I18N.en;
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+      const k = el.getAttribute("data-i18n");
+      if (dict[k] != null) el.innerHTML = dict[k];
+    });
+    translateAttributes(dict);
+    const html=document.documentElement; html.lang=lang;
+    if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
+    else { html.dir="ltr"; document.body.classList.remove("rtl"); }
+    localStorage.setItem("lang", lang);
+    const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
+  }
+
+  // Modals
+  const contactModal=document.getElementById('contactModal');
+  const policyModal=document.getElementById('policyModal');
+  function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+  function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+  function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+  function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+  [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+
+  // Contact mailto
+  const toAddress='info@vetocos.com';
+  function sendMailto(e){
+    e.preventDefault();
+    const topic=document.getElementById('topic').value;
+    const name=document.getElementById('name').value.trim();
+    const email=document.getElementById('email').value.trim();
+    const country=document.getElementById('country').value.trim();
+    const phone=document.getElementById('phone').value.trim();
+    const subject=document.getElementById('subject').value.trim()||'Website enquiry';
+    const message=document.getElementById('message').value.trim();
+    if(!document.getElementById('consent').checked) return false;
+
+    const lines=[
+      `Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,
+      country?`Country: ${country}`:null, phone?`Phone: ${phone}`:null,'', message
+    ].filter(Boolean).join('%0A');
+    window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
+    return false;
+  }
+
+  // Year + policy date + init
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const y=document.getElementById('y'); if(y) y.textContent=new Date().getFullYear();
+    const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
+    const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+
+    const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
+    const sel=document.getElementById('lang-switch'); if(sel){ sel.value=initial; sel.addEventListener('change',e=>applyLang(e.target.value)); }
+
+    const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount');
+    if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+  });
+</script>
+
+<!-- Supabase -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
 /* ================== Supabase ================== */
 const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
-const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4QyI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
 });
+const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
 
-/* ================== UI refs ================== */
+/* ================== Header auth & nav ================== */
+const signInBtn  = document.getElementById('signInBtn');
+const signUpBtn  = document.getElementById('signUpBtn');
+const acctBlock  = document.getElementById('acctBlock');
+const accountBtn = document.getElementById('accountBtn');
+const accountMenu= document.getElementById('accountMenu');
+const accountHeader = document.getElementById('accountHeader');
+const helloName  = document.getElementById('helloName');
+const adminBtn   = document.getElementById('adminBtn');
+const logoutBtn  = document.getElementById('logoutBtn');
+const cartLink   = document.getElementById('cartLink');
+const cartCount  = document.getElementById('cartCount');
+
+if (signInBtn) signInBtn.addEventListener('click', ()=>{ location.href='login.html?redirect='+encodeURIComponent('checkout.html'); });
+if (signUpBtn) signUpBtn.addEventListener('click', ()=>{ location.href='signup.html?redirect='+encodeURIComponent('checkout.html'); });
+
+if (accountBtn) accountBtn.addEventListener('click', ()=>{
+  const open = accountMenu.classList.toggle('open');
+  accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
+  if (open){
+    const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
+    setTimeout(()=>document.addEventListener('click', onDoc),0);
+  }
+});
+if (logoutBtn) logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
+
+let IS_LOGGED_IN = false;
+
+async function refreshHeader(){
+  const { data:{ session } } = await supa.auth.getSession();
+  if (!session?.user){
+    IS_LOGGED_IN=false;
+    if (signInBtn) signInBtn.style.display='inline-block';
+    if (signUpBtn) signUpBtn.style.display='inline-block';
+    if (acctBlock) acctBlock.style.display='none';
+    if (adminBtn) adminBtn.style.display='none';
+    if (cartLink) cartLink.style.display='none';
+    return;
+  }
+  IS_LOGGED_IN=true;
+
+  let display=session.user.email||'';
+  let isAdmin=false;
+  try{
+    const { data: p } = await supa.from('profiles').select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
+    const full=[p?.first_name,p?.last_name].filter(Boolean).join(' ').trim();
+    if(full) display=full;
+    isAdmin=!!p?.is_admin;
+  }catch(_){}
+  if (helloName) helloName.textContent=display;
+  if (accountHeader) accountHeader.innerHTML = `<div><strong>${display}</strong><div class="muted">${session.user.email||''}</div></div>`;
+
+  if (signInBtn) signInBtn.style.display='none';
+  if (signUpBtn) signUpBtn.style.display='none';
+  if (acctBlock) acctBlock.style.display='inline-flex';
+  if (cartLink) cartLink.style.display='inline-flex';
+  if (adminBtn) adminBtn.style.display = (isAdmin || (session.user.email && SUPER_ADMINS.includes(session.user.email))) ? 'inline-block' : 'none';
+}
+
+/* ================== Checkout logic ================== */
 const cartBox   = document.getElementById('cartBox');
 const issuesBox = document.getElementById('issuesBox');
 const sumItems  = document.getElementById('sumItems');
@@ -86,34 +603,41 @@ const btnOrder  = document.getElementById('placeOrder');
 const msgEl     = document.getElementById('msg');
 const userInfo  = document.getElementById('userInfo');
 
-/* ================== Cart helpers ================== */
 function readCart(){ try { return JSON.parse(localStorage.getItem('cart') || '[]'); } catch { return []; } }
-function writeCart(items){ localStorage.setItem('cart', JSON.stringify(items)); }
+function writeCart(items){ localStorage.setItem('cart', JSON.stringify(items)); updateCartBadge(); }
 function removeManyFromCart(skus){
   const keep = readCart().filter(it => !skus.includes(it.sku));
   writeCart(keep);
 }
-function currency(n){ try{ return new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(n);}catch{return '$'+n.toFixed(2);} }
+function countCart(){ return readCart().reduce((n,x)=>n + Number(x.qty||0), 0); }
+function updateCartBadge(){
+  if (!cartCount) return;
+  const n = countCart();
+  if (n>0){ cartCount.style.display='inline-grid'; cartCount.textContent=n; }
+  else { cartCount.style.display='none'; }
+}
 
-/* ================== State ================== */
 let USER=null, PROFILE=null, CART=[];
 let PRODUCTS={}; // sku -> {sku,name,stock_qty,available}
 let APPROVALS={}; // sku -> approvedQty
 
-/* ================== Render cart ================== */
 function renderCart(){
-  if(!CART.length){ cartBox.innerHTML = '<div class="muted">Your cart is empty.</div>'; sumItems.textContent='0'; sumTotal.textContent='—'; btnOrder.disabled=true; return; }
+  if(!CART.length){
+    cartBox.innerHTML = `<div class="muted" data-i18n="cart.empty">${t("cart.empty")}</div>`;
+    sumItems.textContent='0'; sumTotal.textContent='—'; btnOrder.disabled=true; return;
+  }
   const rows = CART.map(it=>{
     const sku = it.sku;
     const qty = Number(it.qty||0);
     const prod = PRODUCTS[sku] || {};
     const flags = [];
-    if (prod.available === false) flags.push('<span class="badge bad">Unavailable</span>');
-    if (typeof prod.stock_qty === 'number' && prod.stock_qty < qty) flags.push(`<span class="badge warn">Only ${prod.stock_qty|0} in stock</span>`);
+    if (prod.available === false) flags.push(`<span class="badge bad">${t("status.unavailable")}</span>`);
+    if (typeof prod.stock_qty === 'number' && prod.stock_qty < qty) flags.push(`<span class="badge warn">${t("status.only").replace("__N__", String(prod.stock_qty|0))}</span>`);
+    const ok = (!flags.length) ? `<span class="badge ok">${t("status.ok")}</span>` : flags.join(' ');
     return `<tr>
       <td style="max-width:380px"><strong>${it.name||sku}</strong><div class="muted small">${sku}</div></td>
       <td>${qty}</td>
-      <td>${flags.join(' ')||'<span class="badge ok">OK</span>'}</td>
+      <td>${ok}</td>
     </tr>`;
   }).join('');
 
@@ -126,60 +650,38 @@ function renderCart(){
 
   const totalQty = CART.reduce((n,x)=>n+Number(x.qty||0),0);
   sumItems.textContent = totalQty;
-  // no prices in DB yet -> placeholder
-  sumTotal.textContent = '—';
+  sumTotal.textContent = '—'; // prices not implemented
 }
 
-/* ================== Eligibility & Issues ================== */
 function computeEligibility(){
   const canAll = !!PROFILE?.can_purchase;
-  const issues = []; // human messages
+  const issues = [];
   const eligibleSKUs = new Set();
-  const ineligible = []; // {sku, reason}
+  const ineligible = [];
 
   CART.forEach(it=>{
     const sku = it.sku;
     const qty = Number(it.qty||0);
     const prod = PRODUCTS[sku] || {};
 
-    // basic product constraints
-    if (prod.available === false){
-      ineligible.push({sku, reason:'Product is unavailable'});
-      return;
-    }
-    if (typeof prod.stock_qty === 'number' && prod.stock_qty < qty){
-      ineligible.push({sku, reason:`Insufficient stock (only ${prod.stock_qty|0} left)`});
-      return;
-    }
+    if (prod.available === false){ ineligible.push({sku, reason:t("status.unavailable")}); return; }
+    if (typeof prod.stock_qty === 'number' && prod.stock_qty < qty){ ineligible.push({sku, reason:t("status.only").replace("__N__", String(prod.stock_qty|0))}); return; }
 
-    if (canAll){
-      eligibleSKUs.add(sku);
-      return;
-    }
+    if (canAll){ eligibleSKUs.add(sku); return; }
 
-    // per-product approvals
     const approvedQty = Number(APPROVALS[sku]||0);
-    if (approvedQty >= qty){
-      eligibleSKUs.add(sku);
-    } else {
+    if (approvedQty >= qty){ eligibleSKUs.add(sku); }
+    else {
       const needed = qty - approvedQty;
-      ineligible.push({sku, reason: approvedQty>0
-        ? `Approval short by ${needed} unit(s)`
-        : 'Approval required'});
+      ineligible.push({sku, reason: approvedQty>0 ? `Approval short by ${needed}` : 'Approval required'});
     }
   });
 
   if (!canAll){
     const lacking = ineligible.filter(x=>/Approval/.test(x.reason));
-    if (lacking.length){
-      issues.push(`Some items require approval. You can request vet verification here: <a href="vet-verify.html">vet-verify.html</a>.`);
-    }
+    if (lacking.length){ issues.push(t("issues.approval")); }
   }
-
-  const stockIssues = ineligible.filter(x=>/stock|unavailable/i.test(x.reason));
-  if (stockIssues.length){
-    issues.push(`Some items are currently out of stock or unavailable. You can remove them or adjust quantities on the products page.`);
-  }
+  if (ineligible.some(x=>/stock|available|متوفر|Disponible|Disponible/i.test(x.reason))){ issues.push(t("issues.stock")); }
 
   return { eligibleSKUs, ineligible, issues };
 }
@@ -196,15 +698,14 @@ function renderIssues(ineligible, issues){
   issuesBox.style.display='block';
 }
 
-function showMsg(t, kind=""){ msgEl.textContent=t||""; msgEl.className="muted "+kind; }
+function showMsg(tk, kind=""){ msgEl.textContent = tk ? (I18N[localStorage.getItem("lang")||"en"][tk] || tk) : ""; msgEl.className="muted "+kind; }
 
-/* ================== Load everything ================== */
 async function ensureLogin(){
   const { data:{ user } } = await supa.auth.getUser();
   if (!user){
     const url = `login.html?redirect=${encodeURIComponent('checkout.html')}`;
     location.replace(url);
-    return Promise.reject('redirecting to login…');
+    throw new Error('redirect');
   }
   USER = user;
   return user;
@@ -213,20 +714,19 @@ async function loadProfile(){
   const { data, error } = await supa.from('profiles')
     .select('id,first_name,last_name,email,can_purchase')
     .eq('id', USER.id).maybeSingle();
-  if (error){ throw new Error(error.message); }
+  if (error) throw new Error(error.message);
   PROFILE = data || { id: USER.id, email: USER.email, can_purchase:false };
   userInfo.textContent = `${PROFILE.first_name||''} ${PROFILE.last_name||''} · ${PROFILE.email||USER.email||''}`.trim();
 }
 async function loadProductsForCart(){
   const skus = [...new Set(CART.map(x=>x.sku))];
-  if (!skus.length){ return; }
-  const { data, error } = await supa.from('products')
-    .select('sku,name,stock_qty,available').in('sku', skus);
-  if (error){ throw new Error(error.message); }
+  if (!skus.length) return;
+  const { data, error } = await supa.from('products').select('sku,name,stock_qty,available').in('sku', skus);
+  if (error) throw new Error(error.message);
   PRODUCTS={}; (data||[]).forEach(p=>PRODUCTS[p.sku]=p);
 }
 async function loadApprovalsForCart(){
-  if (PROFILE?.can_purchase){ APPROVALS={}; return; } // not needed
+  if (PROFILE?.can_purchase){ APPROVALS={}; return; }
   const skus = [...new Set(CART.map(x=>x.sku))];
   if (!skus.length){ APPROVALS={}; return; }
   const { data, error } = await supa.from('vet_product_approvals')
@@ -234,7 +734,7 @@ async function loadApprovalsForCart(){
     .eq('user_id', USER.id)
     .in('product_sku', skus)
     .eq('status','approved');
-  if (error){ throw new Error(error.message); }
+  if (error) throw new Error(error.message);
   APPROVALS = {};
   (data||[]).forEach(r=>{
     const cur = Number(APPROVALS[r.product_sku]||0);
@@ -242,12 +742,8 @@ async function loadApprovalsForCart(){
   });
 }
 
-/* ================== Place order ================== */
 async function placeOrder(){
-  showMsg("");
-  btnOrder.disabled = true;
-
-  // Refresh product/approvals to avoid stale decisions
+  // refresh eligibility
   await loadProductsForCart();
   await loadApprovalsForCart();
 
@@ -255,80 +751,50 @@ async function placeOrder(){
   const eligibleItems = CART.filter(it => eligibleSKUs.has(it.sku));
 
   if (!eligibleItems.length){
-    showMsg("Nothing eligible to order yet. See notes above.", ""); 
-    btnOrder.disabled = false;
+    msgEl.textContent = t("place.none");
     return;
   }
 
-  // Insert one order row per eligible item
   const payload = eligibleItems.map(it => ({
-    user_id: USER.id,
-    product_sku: it.sku,
-    quantity: Number(it.qty||0),
-    status: 'pending'
+    user_id: USER.id, product_sku: it.sku, quantity: Number(it.qty||0), status: 'pending'
   }));
 
   const { error } = await supa.from('orders').insert(payload);
-  if (error){
-    showMsg(error.message, "error");
-    btnOrder.disabled = false;
-    return;
-  }
+  if (error){ msgEl.textContent = error.message; return; }
 
-  // Remove only the successfully submitted SKUs from cart
   removeManyFromCart(eligibleItems.map(x=>x.sku));
-  CART = readCart(); // refresh local
-
-  // Rerender UI
+  CART = readCart();
   renderCart();
-  const issuesMsg = ineligible.length
-    ? "Order placed for eligible items. Some items still need approval/stock—see notes above."
-    : "Order placed. You'll receive updates after admin review.";
-  showMsg(issuesMsg, "success");
 
-  // Optional: suggest where to manage approvals
-  if (ineligible.some(x=>/Approval/.test(x.reason))){
-    issuesBox.style.display='block';
-  }
-
-  btnOrder.disabled = false;
+  msgEl.textContent = ineligible.length ? t("place.okPartial") : t("place.okAll");
+  if (ineligible.length) issuesBox.style.display='block';
 }
 
-/* ================== Init ================== */
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
-    // Adopt cart from URL once (coming from cart.html)
-    const qs = new URLSearchParams(location.search);
-    const raw = qs.get('cart');
+    // Init header
+    await refreshHeader();
+    updateCartBadge();
+
+    // Adopt cart from URL if provided
+    const qs=new URLSearchParams(location.search); const raw=qs.get('cart');
     if (raw){
-      try{
-        const incoming = JSON.parse(decodeURIComponent(raw));
-        if (Array.isArray(incoming)) localStorage.setItem('cart', JSON.stringify(incoming));
-      }catch(e){}
-      finally{
-        qs.delete('cart');
-        history.replaceState({}, '', location.pathname + (qs.toString()?('?'+qs.toString()):''));
-      }
+      try{ const incoming = JSON.parse(decodeURIComponent(raw)); if (Array.isArray(incoming)) writeCart(incoming); }catch(_){}
+      finally{ qs.delete('cart'); history.replaceState({}, '', location.pathname + (qs.toString()?('?'+qs.toString()):'')); }
     }
 
-    // Load cart
     CART = (readCart()||[]).filter(it=>it && it.sku && Number(it.qty)>0);
     renderCart();
 
-    // Ensure logged in
     await ensureLogin();
-
-    // Load profile, products, approvals
     await loadProfile();
     await loadProductsForCart();
     await loadApprovalsForCart();
 
-    // Compute + show issues
     const { ineligible, issues } = computeEligibility();
     renderIssues(ineligible, issues);
     renderCart();
 
-    // If approval needed and user isn't globally allowed, go straight to vet-verify
     const needsApproval = (!PROFILE?.can_purchase) && ineligible.some(x=>/Approval/.test(x.reason));
     if (needsApproval){
       const cartParam = encodeURIComponent(JSON.stringify(CART));
@@ -336,15 +802,12 @@ document.addEventListener('DOMContentLoaded', async ()=>{
       return;
     }
 
-    // If cart empty post-login
-    if (!CART.length){ btnOrder.disabled = true; }
+    if (!CART.length){ /* keep button disabled */ }
 
-  } catch(err){
-    console.warn(err);
-  }
+  }catch(e){ console.warn(e); }
 });
 
-btnOrder.addEventListener('click', placeOrder);
+document.getElementById('placeOrder').addEventListener('click', placeOrder);
 </script>
 </body>
 </html>
