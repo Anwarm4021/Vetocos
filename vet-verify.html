@@ -33,6 +33,7 @@ input[type="text"],input[type="file"],select,textarea{width:100%;padding:12px 14
 .link{color:#6dd5ff;text-decoration:none}
 .qtybtn{padding:6px 10px;border-radius:8px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer}
 .kicker{font-size:.9rem;color:var(--muted)}
+.search{padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text);min-width:240px}
 table{width:100%;border-collapse:collapse}
 th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
 #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
@@ -68,6 +69,8 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
       <div id="previewWrap" class="preview" style="display:none">
         <a id="previewLink" class="btn small" target="_blank" rel="noopener">Open uploaded file</a>
         <button id="replaceBtn" class="btn small" type="button">Replace file</button>
+        <!-- NEW: withdraw -->
+        <button id="withdrawBtn" class="btn small" type="button" style="display:none">Withdraw application</button>
       </div>
     </div>
 
@@ -109,6 +112,10 @@ th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left
     </div>
     <div id="prodList" class="muted">Loading…</div>
   </div>
+
+  <!-- NEW: My approval requests -->
+  <h2 class="section-title">My approval requests</h2>
+  <div class="card" id="myApprovalsBox">Loading…</div>
 
   <!-- Orders -->
   <h2 class="section-title">My Orders</h2>
@@ -159,6 +166,7 @@ const statusPill  = document.getElementById('statusPill');
 const previewWrap = document.getElementById('previewWrap');
 const previewLink = document.getElementById('previewLink');
 const replaceBtn  = document.getElementById('replaceBtn');
+const withdrawBtn = document.getElementById('withdrawBtn');
 const idInput     = document.getElementById('idnum');
 const fileInput   = document.getElementById('file');
 const btn         = document.getElementById('submit');
@@ -228,118 +236,6 @@ async function showApplicationAdminNote(){
   }catch{}
 }
 
-/* ===== Boot ===== */
-async function boot(){
-  setMsg('Checking sign-in…');
-  const { data:{ user }, error } = await supa.auth.getUser();
-  if (error) { setMsg(error.message,'error'); return; }
-  if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
-  currentUser = user;
-
-  // Load latest application
-  setMsg('Loading your application…');
-  const { data: rows, error: e2 } = await supa.from('vet_applications')
-    .select('id, identity_number, diploma_path, status, created_at')
-    .eq('user_id', user.id).order('created_at', { ascending:false }).limit(1);
-  if (e2) { setMsg(e2.message,'error'); return; }
-  currentApp = rows && rows[0] ? rows[0] : null;
-
-  if (currentApp){
-    statusBox.style.display = 'grid';
-    pill(currentApp.status);
-    if (currentApp.identity_number) idInput.value = currentApp.identity_number;
-    if (currentApp.diploma_path){
-      const { data, error: sErr } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
-      if (!sErr && data?.signedUrl){ previewWrap.style.display = 'flex'; previewLink.href = data.signedUrl; }
-    }
-    if (currentApp.status === 'approved'){
-      idInput.disabled = true; fileInput.disabled = true; btn.disabled = true; btn.textContent = 'Already approved';
-      setMsg('Your account is approved. You can proceed to checkout.','success');
-    } else if (currentApp.status === 'rejected'){
-      setMsg('Your previous submission was rejected. Update your ID and upload a new file for review.','error');
-    } else {
-      setMsg('Your application is pending. You can replace the file or update ID while under review.','');
-    }
-  } else {
-    setMsg('No submission yet. Please fill your details below.','');
-  }
-
-  await checkCanCheckout(user.id);
-  await loadGlobalNotice();
-  await showApplicationAdminNote();
-  await renderMiniCart();
-  await loadProducts();
-  await renderOrders();
-  await populateReviewSKUs();
-}
-document.addEventListener('DOMContentLoaded', boot);
-
-replaceBtn?.addEventListener('click', ()=>{
-  idInput.disabled = false; fileInput.disabled = false; btn.disabled = false; btn.textContent = 'Submit updated file';
-  setMsg('You can select a new file and save.','');
-});
-
-/* ===== Submit or update ===== */
-btn.onclick = async () => {
-  if (btn.disabled) return;
-  btn.disabled = true; setMsg('Preparing submission…');
-
-  const { data:{ user }, error: uErr } = await supa.auth.getUser();
-  if (uErr) { setMsg(uErr.message, 'error'); btn.disabled=false; return; }
-  if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
-
-  const idnum = (idInput.value||'').trim();
-  const f = fileInput.files[0];
-
-  if (!currentApp){
-    if(!idnum || !f){ setMsg('Please enter ID number and choose a file.','error'); btn.disabled=false; return; }
-  } else if (!idnum && !f){
-    setMsg('Nothing to update. Change ID and/or choose a new file.','error'); btn.disabled=false; return;
-  }
-
-  let newPath = currentApp?.diploma_path || null;
-
-  if (f){
-    if (f.size > 10 * 1024 * 1024) { setMsg('File too large (max 10 MB).','error'); btn.disabled=false; return; }
-    const okTypes = ['application/pdf','image/jpeg','image/png'];
-    if (f.type && !okTypes.includes(f.type)) { setMsg('Unsupported file type.','error'); btn.disabled=false; return; }
-
-    const cleanName = f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
-    const path = `${user.id}/${Date.now()}_${cleanName || 'diploma'}`;
-    setMsg('Uploading document…');
-    const up = await supa.storage.from(BUCKET).upload(path, f, { upsert:false, contentType: f.type || 'application/octet-stream', cacheControl: '3600' });
-    if(up.error) { setMsg(up.error.message,'error'); btn.disabled=false; return; }
-    newPath = up.data.path;
-  }
-
-  if (!currentApp){
-    setMsg('Saving application…');
-    const ins = await supa.from('vet_applications').insert({
-      user_id: user.id, identity_number: idnum, diploma_path: newPath, status: 'pending'
-    }).select().single();
-    if(ins.error){ setMsg(ins.error.message,'error'); btn.disabled=false; return; }
-    currentApp = ins.data;
-  } else {
-    setMsg('Updating application…');
-    const upd = await supa.from('vet_applications').update({
-      identity_number: idnum || currentApp.identity_number,
-      diploma_path: f ? newPath : currentApp.diploma_path,
-      status: 'pending'
-    }).eq('id', currentApp.id).select().single();
-    if(upd.error){ setMsg(upd.error.message,'error'); btn.disabled=false; return; }
-    currentApp = upd.data;
-  }
-
-  pill('pending'); statusBox.style.display = 'grid';
-  if (currentApp.diploma_path){
-    try{ const { data } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
-      if (data?.signedUrl){ previewWrap.style.display = 'flex'; previewLink.href = data.signedUrl; }
-    }catch{}
-  }
-  setMsg('Submitted. We will review and approve your account.','success');
-  btn.disabled = false; btn.textContent = 'Update submission';
-};
-
 /* ===== Mini Cart ===== */
 const CART_KEY='cart';
 function readCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); } catch { return []; } }
@@ -380,7 +276,16 @@ async function renderMiniCart(){
 const prodSearch = document.getElementById('prodSearch');
 const prodList   = document.getElementById('prodList');
 let PRODUCT_CACHE = [];
+let MY_APPROVALS = new Map(); // sku -> status
+
 prodSearch.addEventListener('input', renderProducts);
+
+async function primeMyApprovalsMap(){
+  const { data:{ user } } = await supa.auth.getUser(); if (!user) { MY_APPROVALS = new Map(); return; }
+  const { data, error } = await supa.from('vet_product_approvals').select('product_sku,status').eq('user_id', user.id);
+  if (error){ MY_APPROVALS = new Map(); return; }
+  MY_APPROVALS = new Map((data||[]).map(r=>[r.product_sku, r.status]));
+}
 
 async function loadProducts(){
   prodList.textContent = 'Loading…';
@@ -389,6 +294,7 @@ async function loadProducts(){
     .order('name', { ascending:true });
   if (error){ prodList.textContent = error.message; return; }
   PRODUCT_CACHE = (data||[]).filter(p=>p.available && Number(p.stock_qty||0) > 0);
+  await primeMyApprovalsMap();
   renderProducts();
 }
 
@@ -402,9 +308,10 @@ function renderProducts(){
     if(!q) return true;
     return (p.name||'').toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q);
   }).map(p=>{
-    const badge = p.requires_verification
-      ? `<span class="badge">Requires verification</span>`
-      : `<span class="badge ok">Open</span>`;
+    const existing = MY_APPROVALS.get(p.sku);
+    const badge = existing
+      ? `<span class="badge pend">Pending</span>`
+      : (p.requires_verification ? `<span class="badge">Requires verification</span>` : `<span class="badge ok">Open</span>`);
     const cart = getCart();
     const idx = findCartIndex(cart, p.sku);
     const cur = idx > -1 ? Number(cart[idx].qty||0) : 0;
@@ -425,7 +332,7 @@ function renderProducts(){
           <button class="qtybtn" data-q="1">+</button>
         </div>
         <button class="btn small" data-add>Save to cart</button>
-        <button class="btn small" data-req>Request approval</button>
+        <button class="btn small" data-req ${existing ? 'disabled' : ''}>${existing ? 'Requested' : 'Request approval'}</button>
       </div>
     </div>`;
   }).join('');
@@ -466,10 +373,15 @@ function renderProducts(){
       const { data:{ user } } = await supa.auth.getUser();
       if(!user){ toast('Please sign in first.', true); return; }
 
-      const ins = await supa.from('vet_product_approvals').insert({
-        user_id: user.id, product_sku: sku, quantity: qty, status: 'pending'
-      });
-      if (ins.error){ toast(ins.error.message, true); return; }
+      // UPSERT to avoid duplicate key violation
+      const up = await supa.from('vet_product_approvals')
+        .upsert({
+          user_id: user.id,
+          product_sku: sku,
+          quantity: qty,
+          status: 'pending'
+        }, { onConflict: 'user_id,product_sku' });
+      if (up.error){ toast(up.error.message, true); return; }
 
       // Optional notify admins
       try {
@@ -490,7 +402,64 @@ function renderProducts(){
       } catch(_) {}
 
       toast('Approval request submitted');
+      await primeMyApprovalsMap();
+      renderProducts();
+      await loadMyApprovals();
     });
+  });
+}
+
+/* ===== My approval requests ===== */
+const myApprovalsBox = document.getElementById('myApprovalsBox');
+
+async function loadMyApprovals(){
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user){ myApprovalsBox.textContent = 'Please sign in.'; return; }
+
+  const { data, error } = await supa
+    .from('vet_product_approvals')
+    .select('product_sku, quantity, status')
+    .eq('user_id', user.id)
+    .order('status', { ascending: true })
+    .order('product_sku', { ascending: true });
+
+  if (error){ myApprovalsBox.textContent = error.message; return; }
+  if (!data?.length){ myApprovalsBox.innerHTML = '<div class="muted">No approval requests.</div>'; return; }
+
+  myApprovalsBox.innerHTML = `
+    <table>
+      <thead><tr><th>SKU</th><th>Qty</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        ${data.map(r=>{
+          const pill = r.status==='approved' ? 'ok' : r.status==='rejected' ? 'bad' : 'pend';
+          return `
+            <tr data-sku="${r.product_sku}">
+              <td><a class="link" href="Products.html#${encodeURIComponent(r.product_sku)}" target="_blank" rel="noopener">${r.product_sku}</a></td>
+              <td>${Number(r.quantity||0)}</td>
+              <td><span class="badge ${pill}">${r.status}</span></td>
+              <td><button class="btn small" data-cancel>Cancel request</button></td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+
+  myApprovalsBox.querySelectorAll('button[data-cancel]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const tr = btn.closest('tr'); const sku = tr.dataset.sku;
+      if (!confirm(`Cancel approval request for ${sku}?`)) return;
+      const { data:{ user } } = await supa.auth.getUser();
+      const { error } = await supa
+        .from('vet_product_approvals')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('product_sku', sku);
+      if (error){ toast(error.message, true); return; }
+      toast('Request cancelled');
+      await primeMyApprovalsMap();
+      renderProducts();
+      await loadMyApprovals();
+    };
   });
 }
 
@@ -565,6 +534,137 @@ revSubmit.onclick = async ()=>{
   const { error } = await supa.from('reviews').insert({ user_id: user.id, product_sku: sku, rating, comment });
   if (error){ revMsg.textContent = error.message; return; }
   revMsg.textContent = 'Thanks for your review!'; revComment.value='';
+};
+
+/* ===== Boot ===== */
+function maybeShowWithdraw(){ if (currentApp) withdrawBtn.style.display = 'inline-block'; }
+
+replaceBtn?.addEventListener('click', ()=>{
+  idInput.disabled = false; fileInput.disabled = false; btn.disabled = false; btn.textContent = 'Submit updated file';
+  setMsg('You can select a new file and save.','');
+});
+
+withdrawBtn?.addEventListener('click', async ()=>{
+  if (!currentApp) return;
+  if (!confirm('Withdraw your verification application? You can re-submit later.')) return;
+  const { error } = await supa.from('vet_applications').update({ status: 'withdrawn' }).eq('id', currentApp.id);
+  if (error) { toast(error.message, true); return; }
+  // reset UI so user can submit again
+  currentApp = null;
+  idInput.disabled = false; idInput.value = '';
+  fileInput.disabled = false; fileInput.value = '';
+  btn.disabled = false; btn.textContent = 'Submit for review';
+  statusBox.style.display = 'none';
+  setMsg('Application withdrawn. You can submit a new one now.','success');
+});
+
+async function boot(){
+  setMsg('Checking sign-in…');
+  const { data:{ user }, error } = await supa.auth.getUser();
+  if (error) { setMsg(error.message,'error'); return; }
+  if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
+  currentUser = user;
+
+  // Load latest application
+  setMsg('Loading your application…');
+  const { data: rows, error: e2 } = await supa.from('vet_applications')
+    .select('id, identity_number, diploma_path, status, created_at')
+    .eq('user_id', user.id).order('created_at', { ascending:false }).limit(1);
+  if (e2) { setMsg(e2.message,'error'); return; }
+  currentApp = rows && rows[0] ? rows[0] : null;
+
+  if (currentApp){
+    statusBox.style.display = 'grid';
+    pill(currentApp.status);
+    if (currentApp.identity_number) idInput.value = currentApp.identity_number;
+    if (currentApp.diploma_path){
+      const { data, error: sErr } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
+      if (!sErr && data?.signedUrl){ previewWrap.style.display = 'flex'; previewLink.href = data.signedUrl; }
+    }
+    maybeShowWithdraw();
+    if (currentApp.status === 'approved'){
+      idInput.disabled = true; fileInput.disabled = true; btn.disabled = true; btn.textContent = 'Already approved';
+      setMsg('Your account is approved. You can proceed to checkout.','success');
+    } else if (currentApp.status === 'rejected'){
+      setMsg('Your previous submission was rejected. Update your ID and upload a new file for review.','error');
+    } else {
+      setMsg('Your application is pending. You can replace the file or update ID while under review.','');
+    }
+  } else {
+    setMsg('No submission yet. Please fill your details below.','');
+  }
+
+  await checkCanCheckout(user.id);
+  await loadGlobalNotice();
+  await showApplicationAdminNote();
+  await renderMiniCart();
+  await loadProducts();
+  await loadMyApprovals();
+  await renderOrders();
+  await populateReviewSKUs();
+}
+document.addEventListener('DOMContentLoaded', boot);
+
+/* ===== Submit or update ===== */
+btn.onclick = async () => {
+  if (btn.disabled) return;
+  btn.disabled = true; setMsg('Preparing submission…');
+
+  const { data:{ user }, error: uErr } = await supa.auth.getUser();
+  if (uErr) { setMsg(uErr.message, 'error'); btn.disabled=false; return; }
+  if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
+
+  const idnum = (idInput.value||'').trim();
+  const f = fileInput.files[0];
+
+  if (!currentApp){
+    if(!idnum || !f){ setMsg('Please enter ID number and choose a file.','error'); btn.disabled=false; return; }
+  } else if (!idnum && !f){
+    setMsg('Nothing to update. Change ID and/or choose a new file.','error'); btn.disabled=false; return;
+  }
+
+  let newPath = currentApp?.diploma_path || null;
+
+  if (f){
+    if (f.size > 10 * 1024 * 1024) { setMsg('File too large (max 10 MB).','error'); btn.disabled=false; return; }
+    const okTypes = ['application/pdf','image/jpeg','image/png'];
+    if (f.type && !okTypes.includes(f.type)) { setMsg('Unsupported file type.','error'); btn.disabled=false; return; }
+
+    const cleanName = f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
+    const path = `${user.id}/${Date.now()}_${cleanName || 'diploma'}`;
+    setMsg('Uploading document…');
+    const up = await supa.storage.from(BUCKET).upload(path, f, { upsert:false, contentType: f.type || 'application/octet-stream', cacheControl: '3600' });
+    if(up.error) { setMsg(up.error.message,'error'); btn.disabled=false; return; }
+    newPath = up.data.path;
+  }
+
+  if (!currentApp){
+    setMsg('Saving application…');
+    const ins = await supa.from('vet_applications').insert({
+      user_id: user.id, identity_number: idnum, diploma_path: newPath, status: 'pending'
+    }).select().single();
+    if(ins.error){ setMsg(ins.error.message,'error'); btn.disabled=false; return; }
+    currentApp = ins.data;
+  } else {
+    setMsg('Updating application…');
+    const upd = await supa.from('vet_applications').update({
+      identity_number: idnum || currentApp.identity_number,
+      diploma_path: f ? newPath : currentApp.diploma_path,
+      status: 'pending'
+    }).eq('id', currentApp.id).select().single();
+    if(upd.error){ setMsg(upd.error.message,'error'); btn.disabled=false; return; }
+    currentApp = upd.data;
+  }
+
+  pill('pending'); statusBox.style.display = 'grid';
+  if (currentApp.diploma_path){
+    try{ const { data } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
+      if (data?.signedUrl){ previewWrap.style.display = 'flex'; previewLink.href = data.signedUrl; }
+    }catch{}
+  }
+  maybeShowWithdraw();
+  setMsg('Submitted. We will review and approve your account.','success');
+  btn.disabled = false; btn.textContent = 'Update submission';
 };
 </script>
 </body>
