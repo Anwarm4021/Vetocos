@@ -4,14 +4,29 @@
   <meta charset="utf-8" />
   <title>VetoCos | Sign up</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="description" content="Create your VetoCos account." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--brand:#6dd5ff;--brand2:#83f0a5;--radius:16px}
+    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--brand:#6dd5ff;--brand2:#83f0a5;--radius:16px;--max:980px;--shadow:0 10px 30px rgba(0,0,0,.25)}
     *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,sans-serif}
+    html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
     a{color:var(--brand);text-decoration:none}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+
+    /* Header */
+    header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .brand-logo{width:60px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+    .links{display:flex;gap:10px;align-items:center}
+    .contact-btn,#lang-switch{
+      padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer
+    }
+    #lang-switch{background:rgba(255,255,255,.04);min-width:120px}
+
     main{max-width:780px;margin:7vh auto;padding:0 18px}
-    .box{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px}
+    .box{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
     h1{margin:.3rem 0 1rem}
     label{display:block;font-size:.95rem;color:var(--muted);margin-top:10px}
     input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.28);background:rgba(255,255,255,.03);color:var(--text);margin-top:6px}
@@ -21,45 +36,324 @@
     .muted{color:var(--muted)}
     .msg{margin-top:10px;font-size:.95rem}
     .success{color:#83f0a5}.error{color:#ffb4b4}
-    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
-    .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2))}
+
+    footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+
+    /* Modals (Contact / Policy) */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
+    .modal.open{display:flex}
+    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
+    .sheet-title{margin:0;font-size:1.1rem}
+    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+    .sheet-body{padding:16px}
+    .pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    @media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .input,.select,.textarea{
+      width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+      background:rgba(255,255,255,.03);color:var(--text);outline:none
+    }
+    .textarea{min-height:140px;resize:vertical}
+    .hint{font-size:12px;color:var(--muted)}
+    .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+    .divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
+
+    /* RTL */
+    body.rtl .wrap, body.rtl main, body.rtl .pro-grid{direction:rtl}
+    body.rtl label{text-align:right}
   </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<main>
+<header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a href="index.html" aria-label="VetoCos home">
+        <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
+      </a>
+      <span>VetoCos</span>
+    </div>
+    <nav class="links">
+      <a href="login.html" data-i18n="signup.haveAccount">Have an account? Sign in</a>
+      <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
+      <select id="lang-switch" aria-label="Language">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="es">Español</option>
+        <option value="ar">العربية</option>
+      </select>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
   <div class="box">
-    <header>
-      <div class="brand"><span class="logo"></span> VetoCos</div>
-      <div><a href="login.html">Have an account? Sign in</a></div>
-    </header>
-    <h1>Create your account</h1>
-    <p class="muted">Enter your details below. We’ll send a confirmation email — after you confirm, you can sign in with your password.</p>
+    <h1 data-i18n="signup.title">Create your account</h1>
+    <p class="muted" data-i18n="signup.lead">Enter your details below. We’ll send a confirmation email — after you confirm, you can sign in with your password.</p>
 
     <form id="form">
       <div class="row">
-        <div><label for="first">First name<input id="first" required autocomplete="given-name"></label></div>
-        <div><label for="last">Last name<input id="last" required autocomplete="family-name"></label></div>
+        <div><label for="first" data-i18n="signup.first">First name<input id="first" required autocomplete="given-name" class="input"></label></div>
+        <div><label for="last" data-i18n="signup.last">Last name<input id="last" required autocomplete="family-name" class="input"></label></div>
       </div>
       <div class="row">
-        <div><label for="dob">Date of birth<input id="dob" type="date" required></label></div>
-        <div><label for="email">Email<input id="email" type="email" required autocomplete="email"></label></div>
+        <div><label for="dob" data-i18n="signup.dob">Date of birth<input id="dob" type="date" required class="input"></label></div>
+        <div><label for="email" data-i18n="form.email">Email<input id="email" type="email" required autocomplete="email" class="input"></label></div>
       </div>
       <div class="row">
-        <div><label for="pw">Password<input id="pw" type="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters"></label></div>
-        <div><label for="pw2">Confirm password<input id="pw2" type="password" required minlength="8" autocomplete="new-password"></label></div>
+        <div><label for="pw" data-i18n="signup.pw">Password<input id="pw" type="password" required minlength="8" autocomplete="new-password" class="input" data-i18n="signup.pwPH" data-i18n-attr="placeholder" placeholder="At least 8 characters"></label></div>
+        <div><label for="pw2" data-i18n="signup.pw2">Confirm password<input id="pw2" type="password" required minlength="8" autocomplete="new-password" class="input"></label></div>
       </div>
 
-      <button class="btn" type="submit" id="submit">Create account</button>
+      <button class="btn" type="submit" id="submit" data-i18n="signup.create">Create account</button>
       <div id="msg" class="msg" aria-live="polite"></div>
     </form>
 
-    <p class="muted" style="margin-top:14px">By creating an account you agree to the site terms and privacy policy.</p>
+    <p class="muted" style="margin-top:14px" data-i18n="signup.terms">By creating an account you agree to the site terms and privacy policy.</p>
   </div>
 </main>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<footer>
+  <div class="wrap">
+    © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals</span>
+    <div class="footer-links">
+      <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
+      <a href="#" onclick="openContact();return false;" data-i18n="footer.contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<!-- CONTACT MODAL -->
+<div id="contactModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="sheet-head">
+      <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
+      <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
+    </div>
+    <div class="sheet-body">
+      <div class="pro-grid">
+        <form id="contactForm" onsubmit="return sendMailto(event)">
+          <div class="field">
+            <label for="topic" data-i18n="form.topic">Topic</label>
+            <select id="topic" name="topic" class="select">
+              <option value="product" data-i18n="form.topicProduct">Product question</option>
+              <option value="availability" data-i18n="form.topicAvailability">Availability / Where to buy</option>
+              <option value="order" data-i18n="form.topicOrder">Order / Delivery</option>
+              <option value="feedback" data-i18n="form.topicFeedback">Feedback</option>
+              <option value="other" data-i18n="form.topicOther">Other</option>
+            </select>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <div class="field">
+              <label for="name" data-i18n="form.name">Name</label>
+              <input id="name" name="name" class="input" autocomplete="name" required
+                     data-i18n="form.namePH" data-i18n-attr="placeholder" placeholder="Full name">
+            </div>
+            <div class="field">
+              <label for="email2" data-i18n="form.email">Email</label>
+              <input id="email2" name="email" type="email" class="input" autocomplete="email" required
+                     inputmode="email" data-i18n="form.emailPH" data-i18n-attr="placeholder" placeholder="name@example.com">
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:10px">
+            <label for="subject" data-i18n="form.subject">Subject</label>
+            <input id="subject" name="subject" class="input" maxlength="120" required
+                   data-i18n="form.subjectPH" data-i18n-attr="placeholder" placeholder="Question about a product…">
+          </div>
+
+          <div class="field" style="margin-top:10px">
+            <label for="message" data-i18n="form.message">Message / Comments</label>
+            <textarea id="message" name="message" class="textarea" maxlength="1200" required
+                      data-i18n="form.messagePH" data-i18n-attr="placeholder" placeholder="Write your help request or comment…"></textarea>
+            <div class="hint"><span id="msgCount">0</span>/1200</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="field">
+            <label style="display:flex;gap:8px;align-items:flex-start">
+              <input type="checkbox" id="consent" required>
+              <span data-i18n="form.consent">I consent to VetoCos using my details to respond to this enquiry.</span>
+            </label>
+            <span class="hint" data-i18n="form.privacyNote">Your message is sent via your email app; we don't store it on this site.</span>
+          </div>
+
+          <div class="actions-fw">
+            <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
+            <button class="contact-btn" type="submit" data-i18n="form.send">Send</button>
+          </div>
+        </form>
+
+        <div class="box" style="height:fit-content">
+          <h3 data-i18n="contact.reach">Reach us</h3>
+          <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
+          <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
+          <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
+          <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
+          <p><strong data-i18n="contact.hours">Hours:</strong> <span data-i18n="contact.hoursVal">Mon–Fri, 9:00–17:00</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY & POLICY MODAL -->
+<div id="policyModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+    <div class="sheet-head">
+      <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
+      <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
+    </div>
+    <div class="sheet-body policy-body">
+      <h3 data-i18n="policy.overviewTitle">Overview</h3>
+      <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.</p>
+
+      <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
+      <ul>
+        <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
+        <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
+      </ul>
+
+      <h3 data-i18n="policy.useTitle">How we use data</h3>
+      <ul>
+        <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
+        <li data-i18n="policy.use2">We do not sell personal data.</li>
+      </ul>
+
+      <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
+      <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
+
+      <h3 data-i18n="policy.choiceTitle">Your choices</h3>
+      <ul>
+        <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
+        <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
+      </ul>
+
+      <h3 data-i18n="policy.contactTitle">Contact</h3>
+      <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
+
+      <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
+    </div>
+  </div>
+</div>
+
 <script>
+  /* i18n */
+  const I18N = {
+    en: {
+      "nav.contact":"Contact","footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact",
+      "signup.haveAccount":"Have an account? Sign in",
+      "signup.title":"Create your account","signup.lead":"Enter your details below. We’ll send a confirmation email — after you confirm, you can sign in with your password.",
+      "signup.first":"First name","signup.last":"Last name","signup.dob":"Date of birth","signup.pw":"Password","signup.pw2":"Confirm password","signup.pwPH":"At least 8 characters","signup.create":"Create account","signup.terms":"By creating an account you agree to the site terms and privacy policy.",
+      "msg.mismatch":"Passwords do not match.","msg.enterNames":"Please enter your first and last name.","msg.enterDOB":"Please select your date of birth.","msg.creating":"Creating account…","msg.done":"Almost done! We sent a confirmation email. Open it and click the link, then sign in here with your password.",
+      "form.topic":"Topic","form.topicProduct":"Product question","form.topicAvailability":"Availability / Where to buy","form.topicOrder":"Order / Delivery","form.topicFeedback":"Feedback","form.topicOther":"Other",
+      "form.name":"Name","form.email":"Email","form.subject":"Subject","form.message":"Message / Comments",
+      "form.namePH":"Full name","form.emailPH":"name@example.com","form.subjectPH":"Question about a product…","form.messagePH":"Write your help request or comment…",
+      "form.consent":"I consent to VetoCos using my details to respond to this enquiry.","form.privacyNote":"Your message is sent via your email app; we don't store it on this site.","form.cancel":"Cancel","form.send":"Send",
+      "contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.reachText":"We’re happy to help with product questions, availability, or feedback.","contact.email":"Email:","contact.phone":"Phone:","contact.whatsapp":"WhatsApp:","contact.hours":"Hours:","contact.hoursVal":"Mon–Fri, 9:00–17:00",
+      "policy.title":"Privacy & Policy","policy.close":"Close","policy.overviewTitle":"Overview","policy.overviewText":"VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.","policy.dataTitle":"Data we may receive","policy.data1":"Messages you send via the contact form (your name, email, and message content).","policy.data2":"Basic, anonymized analytics (page views, device type) to improve the site.","policy.useTitle":"How we use data","policy.use1":"To respond to your requests and improve our products and site experience.","policy.use2":"We do not sell personal data.","policy.cookiesTitle":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.","policy.choiceTitle":"Your choices","policy.choice1":"You can request that we delete your message and contact details at any time.","policy.choice2":"You can disable cookies in your browser settings.","policy.contactTitle":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Last updated:"
+    },
+    fr: {
+      "nav.contact":"Contact","footer.tag":"Complément alimentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
+      "signup.haveAccount":"Vous avez un compte ? Connectez-vous","signup.title":"Créez votre compte","signup.lead":"Saisissez vos informations. Un e-mail de confirmation vous sera envoyé…","signup.first":"Prénom","signup.last":"Nom","signup.dob":"Date de naissance","signup.pw":"Mot de passe","signup.pw2":"Confirmez le mot de passe","signup.pwPH":"Au moins 8 caractères","signup.create":"Créer le compte","signup.terms":"En créant un compte, vous acceptez les conditions et la politique de confidentialité.",
+      "msg.mismatch":"Les mots de passe ne correspondent pas.","msg.enterNames":"Veuillez saisir votre prénom et votre nom.","msg.enterDOB":"Veuillez sélectionner votre date de naissance.","msg.creating":"Création du compte…","msg.done":"Presque terminé ! Nous avons envoyé un e-mail de confirmation. Ouvrez-le puis connectez-vous ici avec votre mot de passe.",
+      "form.topic":"Objet","form.topicProduct":"Question sur un produit","form.topicAvailability":"Disponibilité / Où acheter","form.topicOrder":"Commande / Livraison","form.topicFeedback":"Avis / Retour","form.topicOther":"Autre",
+      "form.name":"Nom","form.email":"E-mail","form.subject":"Sujet","form.message":"Message / Commentaires",
+      "form.namePH":"Nom complet","form.emailPH":"nom@exemple.com","form.subjectPH":"Question à propos d’un produit…","form.messagePH":"Écrivez votre demande d’aide ou commentaire…",
+      "form.consent":"J’autorise VetoCos à utiliser mes coordonnées pour répondre à cette demande.","form.privacyNote":"Votre message est envoyé via votre app e-mail ; nous ne le stockons pas.","form.cancel":"Annuler","form.send":"Envoyer",
+      "contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Nous sommes à votre écoute pour toute question, disponibilité ou avis.","contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00",
+      "policy.title":"Confidentialité & Politique","policy.close":"Fermer","policy.overviewTitle":"Aperçu","policy.overviewText":"VetoCos fournit des compléments alimentaires…","policy.dataTitle":"Données susceptibles d’être reçues","policy.data1":"Messages envoyés…","policy.data2":"Analyses anonymisées…","policy.useTitle":"Utilisation des données","policy.use1":"Répondre à vos demandes…","policy.use2":"Nous ne vendons pas…","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies essentiels uniquement…","policy.choiceTitle":"Vos choix","policy.choice1":"Vous pouvez demander la suppression…","policy.choice2":"Vous pouvez désactiver les cookies…","policy.contactTitle":"Contact","policy.contactText":"Pour la confidentialité, utilisez le lien Contact…","policy.updated":"Dernière mise à jour :"
+    },
+    es: {
+      "nav.contact":"Contacto","footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
+      "signup.haveAccount":"¿Ya tienes cuenta? Inicia sesión","signup.title":"Crea tu cuenta","signup.lead":"Introduce tus datos. Te enviaremos un correo de confirmación…","signup.first":"Nombre","signup.last":"Apellidos","signup.dob":"Fecha de nacimiento","signup.pw":"Contraseña","signup.pw2":"Confirmar contraseña","signup.pwPH":"Al menos 8 caracteres","signup.create":"Crear cuenta","signup.terms":"Al crear una cuenta aceptas los términos del sitio y la política de privacidad.",
+      "msg.mismatch":"Las contraseñas no coinciden.","msg.enterNames":"Introduce nombre y apellidos.","msg.enterDOB":"Selecciona tu fecha de nacimiento.","msg.creating":"Creando cuenta…","msg.done":"¡Listo! Te enviamos un correo de confirmación. Ábrelo y luego inicia sesión aquí.",
+      "form.topic":"Tema","form.topicProduct":"Consulta de producto","form.topicAvailability":"Disponibilidad / Dónde comprar","form.topicOrder":"Pedido / Entrega","form.topicFeedback":"Comentarios","form.topicOther":"Otro",
+      "form.name":"Nombre","form.email":"Correo","form.subject":"Asunto","form.message":"Mensaje / Comentarios",
+      "form.namePH":"Nombre completo","form.emailPH":"nombre@ejemplo.com","form.subjectPH":"Consulta sobre un producto…","form.messagePH":"Escribe tu solicitud de ayuda o comentario…",
+      "form.consent":"Autorizo a VetoCos a usar mis datos para responder a esta consulta.","form.privacyNote":"Tu mensaje se envía con tu app de correo; no lo almacenamos.","form.cancel":"Cancelar","form.send":"Enviar",
+      "contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Escríbenos","contact.reachText":"Encantados de ayudar con dudas de producto, disponibilidad o comentarios.","contact.email":"Correo:","contact.phone":"Teléfono:","contact.whatsapp":"WhatsApp:","contact.hours":"Horario:","contact.hoursVal":"Lun–Vie, 9:00–17:00",
+      "policy.title":"Privacidad y Política","policy.close":"Cerrar","policy.overviewTitle":"Resumen","policy.overviewText":"VetoCos ofrece complementos alimentarios…","policy.dataTitle":"Datos que podemos recibir","policy.data1":"Mensajes enviados…","policy.data2":"Analítica básica anónima…","policy.useTitle":"Cómo usamos los datos","policy.use1":"Responder a tus solicitudes…","policy.use2":"No vendemos datos…","policy.cookiesTitle":"Cookies","policy.cookiesText":"Usamos solo cookies esenciales…","policy.choiceTitle":"Tus opciones","policy.choice1":"Puedes pedir que eliminemos tus datos…","policy.choice2":"Puedes desactivar las cookies…","policy.contactTitle":"Contacto","policy.contactText":"Para privacidad, usa el enlace de Contacto…","policy.updated":"Última actualización:"
+    },
+    ar: {
+      "nav.contact":"اتصل بنا","footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
+      "signup.haveAccount":"لديك حساب؟ سجّل الدخول","signup.title":"أنشئ حسابك","signup.lead":"أدخل بياناتك. سنرسل رسالة تأكيد بالبريد…","signup.first":"الاسم الأول","signup.last":"اسم العائلة","signup.dob":"تاريخ الميلاد","signup.pw":"كلمة المرور","signup.pw2":"تأكيد كلمة المرور","signup.pwPH":"ثمانية أحرف على الأقل","signup.create":"إنشاء الحساب","signup.terms":"بإنشاء حساب، فإنك توافق على الشروط وسياسة الخصوصية.",
+      "msg.mismatch":"كلمتا المرور غير متطابقتين.","msg.enterNames":"يرجى إدخال الاسم الأول واسم العائلة.","msg.enterDOB":"يرجى اختيار تاريخ الميلاد.","msg.creating":"جارٍ إنشاء الحساب…","msg.done":"تم! أرسلنا رسالة تأكيد. افتحها ثم سجّل الدخول هنا.",
+      "form.topic":"الموضوع","form.topicProduct":"سؤال عن منتج","form.topicAvailability":"التوفر / أماكن الشراء","form.topicOrder":"طلب / توصيل","form.topicFeedback":"ملاحظات","form.topicOther":"أخرى",
+      "form.name":"الاسم","form.email":"البريد الإلكتروني","form.subject":"العنوان","form.message":"الرسالة / التعليقات",
+      "form.namePH":"الاسم الكامل","form.emailPH":"name@example.com","form.subjectPH":"سؤال حول منتج…","form.messagePH":"اكتب طلب المساعدة أو التعليق…",
+      "form.consent":"أوافق على استخدام VetoCos لبياناتي للرد على هذا الاستفسار.","form.privacyNote":"تُرسل رسالتك عبر تطبيق البريد؛ لا نخزنها.","form.cancel":"إلغاء","form.send":"إرسال",
+      "contact.title":"اتصل بنا","contact.close":"إغلاق","contact.reach":"تواصل معنا","contact.reachText":"يسعدنا مساعدتك في أسئلة المنتجات أو التوفر أو الملاحظات.","contact.email":"البريد:","contact.phone":"الهاتف:","contact.whatsapp":"واتساب:","contact.hours":"الساعات:","contact.hoursVal":"الاثنين–الجمعة، 9:00–17:00",
+      "policy.title":"الخصوصية والسياسة","policy.close":"إغلاق","policy.overviewTitle":"نظرة عامة","policy.overviewText":"توفر VetoCos أغذية تكميلية…","policy.dataTitle":"البيانات التي قد نستلمها","policy.data1":"الرسائل المرسلة…","policy.data2":"تحليلات أساسية مجهولة…","policy.useTitle":"كيفية استخدام البيانات","policy.use1":"للرد على طلباتك وتحسين تجربتك…","policy.use2":"لا نبيع البيانات الشخصية…","policy.cookiesTitle":"ملفات تعريف الارتباط","policy.cookiesText":"نستخدم ملفات أساسية فقط…","policy.choiceTitle":"اختياراتك","policy.choice1":"يمكنك طلب حذف بياناتك…","policy.choice2":"يمكنك تعطيل ملفات الارتباط…","policy.contactTitle":"اتصال","policy.contactText":"لاستفسارات الخصوصية استخدم رابط الاتصال…","policy.updated":"آخر تحديث:"
+    }
+  };
+
+  function translateAttributes(dict){
+    document.querySelectorAll("[data-i18n-attr]").forEach(el=>{
+      const key = el.getAttribute("data-i18n");
+      const attrs = (el.getAttribute("data-i18n-attr")||"").split(",").map(s=>s.trim()).filter(Boolean);
+      const val = dict[key];
+      if (val == null) return;
+      attrs.forEach(attr => el.setAttribute(attr, val));
+    });
+  }
+  function applyLang(lang){
+    const dict = I18N[lang] || I18N.en;
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+      const k = el.getAttribute("data-i18n");
+      if (dict[k] != null) el.innerHTML = dict[k];
+    });
+    translateAttributes(dict);
+    const html=document.documentElement; html.lang=lang;
+    if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
+    else { html.dir="ltr"; document.body.classList.remove("rtl"); }
+    localStorage.setItem("lang", lang);
+    const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
+  }
+
+  // Modals
+  const contactModal=document.getElementById('contactModal');
+  const policyModal=document.getElementById('policyModal');
+  function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+  function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+  function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+  function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+  [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+
+  // mailto
+  const toAddress='info@vetocos.com';
+  function sendMailto(e){
+    e.preventDefault();
+    const topic=document.getElementById('topic').value;
+    const name=document.getElementById('name').value.trim();
+    const email=document.getElementById('email2').value.trim();
+    const subject=document.getElementById('subject')?.value.trim()||'Website enquiry';
+    const message=document.getElementById('message').value.trim();
+    if(!document.getElementById('consent').checked) return false;
+    const lines=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,'',message].join('%0A');
+    window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
+    return false;
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const y=document.getElementById('y'); if(y) y.textContent=new Date().getFullYear();
+    const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
+    const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+
+    const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
+    const sel=document.getElementById('lang-switch'); if(sel){ sel.value=initial; sel.addEventListener('change',e=>applyLang(e.target.value)); }
+
+    const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount');
+    if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+  });
+</script>
+
+<script>
+  // Supabase
   const supa = supabase.createClient(
     "https://qdepgviimbcdlozjpbhm.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
@@ -76,40 +370,33 @@
   const msg    = document.getElementById('msg');
   const submit = document.getElementById('submit');
 
-  function show(t, kind=""){ msg.textContent=t||""; msg.className="msg "+kind; }
+  function t(key){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][key])||(I18N.en[key]||key); }
+  function show(tk, kind=""){ msg.textContent=tk.startsWith('msg.')?t(tk):tk; msg.className="msg "+kind; }
 
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     show("");
-    if (pw.value !== pw2.value){ return show("Passwords do not match.", "error"); }
-    if (!first.value.trim() || !last.value.trim()){ return show("Please enter your first and last name.", "error"); }
-    if (!dob.value){ return show("Please select your date of birth.", "error"); }
+    if (pw.value !== pw2.value){ return show("msg.mismatch","error"); }
+    if (!first.value.trim() || !last.value.trim()){ return show("msg.enterNames","error"); }
+    if (!dob.value){ return show("msg.enterDOB","error"); }
 
-    submit.disabled = true; show("Creating account…");
+    submit.disabled = true; show("msg.creating");
 
-    // Where to send the user after they click the confirmation link:
     const redirectTo = new URL("login.html", location.href).toString() + "?confirmed=1";
 
-    const { data, error } = await supa.auth.signUp({
+    const { error } = await supa.auth.signUp({
       email: email.value.trim().toLowerCase(),
       password: pw.value,
       options: {
         emailRedirectTo: redirectTo,
-        data: {
-          first_name: first.value.trim(),
-          last_name: last.value.trim(),
-          dob: dob.value
-        }
+        data: { first_name: first.value.trim(), last_name: last.value.trim(), dob: dob.value }
       }
     });
 
     submit.disabled = false;
 
-    if (error){
-      return show(error.message, "error");
-    }
+    if (error){ return show(error.message, "error"); }
 
-    // Save pending profile locally — we’ll write it to "profiles" on first login
     const pending = {
       email: email.value.trim().toLowerCase(),
       first_name: first.value.trim(),
@@ -118,7 +405,7 @@
     };
     try { localStorage.setItem("pending_profile_"+pending.email, JSON.stringify(pending)); } catch{}
 
-    show("Almost done! We sent a confirmation email. Open it and click the link, then sign in here with your password.", "success");
+    show("msg.done","success");
   });
 </script>
 </body>
