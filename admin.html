@@ -433,6 +433,14 @@ dwClose.onclick = ()=>{ drawer.classList.remove('open'); drawer.setAttribute('ar
 
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
+/* ---- Helper to flip can_purchase on vet decision ---- */
+async function setUserPurchase(userId, can){
+  try{
+    const { error } = await supa.from('profiles').update({ can_purchase: !!can }).eq('id', userId);
+    if (error) { toast(error.message, true); }
+  }catch(e){ toast(String(e), true); }
+}
+
 async function openDrawer(userId){
   DRAWER_USER_ID = userId;
   drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
@@ -480,16 +488,22 @@ async function openDrawer(userId){
       </div>
     `;
 
-    // Approve/reject
+    // Approve/reject (also update profiles.can_purchase)
     dwAppBox.querySelector('[data-appact="approve"]').onclick = async ()=>{
       const { error } = await supa.from('vet_applications').update({ status:'approved' }).eq('id', app.id);
       if (error) return toast(error.message,true);
-      toast('Application approved'); openDrawer(userId);
+      await setUserPurchase(userId, true);
+      toast('Application approved'); 
+      openDrawer(userId); // refresh drawer
+      loadApps(); loadUsers(); // refresh lists
     };
     dwAppBox.querySelector('[data-appact="reject"]').onclick = async ()=>{
       const { error } = await supa.from('vet_applications').update({ status:'rejected' }).eq('id', app.id);
       if (error) return toast(error.message,true);
-      toast('Application rejected'); openDrawer(userId);
+      await setUserPurchase(userId, false);
+      toast('Application rejected');
+      openDrawer(userId);
+      loadApps(); loadUsers();
     };
 
     // Save note
@@ -805,16 +819,21 @@ appsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const card = b.closest('[data-app]'); const appId = card.dataset.app;
   const action = b.dataset.action;
+  const userId = card.dataset.user;
 
   if(action==='approve'){
     const { error } = await supa.from('vet_applications').update({ status:'approved' }).eq('id', appId);
     if (error) return toast(error.message, true);
-    toast('Application approved'); await loadApps();
+    await setUserPurchase(userId, true);
+    toast('Application approved');
+    await loadApps(); await loadUsers();
   }
   if(action==='reject'){
     const { error } = await supa.from('vet_applications').update({ status:'rejected' }).eq('id', appId);
     if (error) return toast(error.message, true);
-    toast('Application rejected'); await loadApps();
+    await setUserPurchase(userId, false);
+    toast('Application rejected');
+    await loadApps(); await loadUsers();
   }
 });
 
