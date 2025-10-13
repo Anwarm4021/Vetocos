@@ -743,34 +743,55 @@ async function loadApprovalsForCart(){
 }
 
 /* ======== NEW placeOrder() ======== */
+
 async function placeOrder(){
   try{
-    // Refresh eligibility based on live stock/approvals
+    const lang = localStorage.getItem("lang") || "en";
+    const w = (txt)=>{ const t = (I18N[lang] && I18N[lang][txt]) || txt; msgEl.textContent = t; console.log("[placeOrder]", t); };
+
+    w("Checking cart…");
+    CART = (readCart()||[]).filter(it=>it && it.sku && Number(it.qty)>0);
+    if (!CART.length){ w("place.none"); return; }
+
+    w("Refreshing stock/approvals…");
     await loadProductsForCart();
     await loadApprovalsForCart();
 
     const { eligibleSKUs, ineligible } = computeEligibility();
     const eligibleItems = CART.filter(it => eligibleSKUs.has(it.sku));
-
     if (!eligibleItems.length){
-      showMsg('place.none','bad');
+      console.warn("Ineligible:", ineligible);
+      w("place.none");
+      issuesBox.style.display='block';
       return;
     }
 
-    // Create order header
-    const { data:{ user } } = await supa.auth.getUser();
-    const email = user?.email || PROFILE?.email || null;
+    w("Ensuring login…");
+    const { data:{ user }, error: userErr } = await supa.auth.getUser();
+    if (userErr) { console.error(userErr); msgEl.textContent = userErr.message; return; }
+    if (!user){ 
+      console.warn("No user, redirecting to login");
+      location.href='login.html?redirect='+encodeURIComponent('checkout.html');
+      return;
+    }
 
+    w("Creating order…");
+    const email = user?.email || PROFILE?.email || null;
     const { data: orderRow, error: orderErr } = await supa
       .from('orders')
       .insert([{ user_id: user.id, email, status:'pending' }])
       .select('id')
       .single();
-    if (orderErr){ msgEl.textContent = orderErr.message; return; }
 
+    if (orderErr){
+      console.error("orders insert error:", orderErr);
+      msgEl.textContent = orderErr.message || "Could not create order (orders).";
+      return;
+    }
     const order_id = orderRow.id;
+    console.log("Order id:", order_id);
 
-    // Insert order items
+    w("Adding items…");
     const itemsPayload = eligibleItems.map(it => ({
       order_id,
       product_sku: it.sku,
@@ -778,21 +799,25 @@ async function placeOrder(){
       quantity: Number(it.qty||0)
     }));
     const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
-    if (itemsErr){ msgEl.textContent = itemsErr.message; return; }
+    if (itemsErr){
+      console.error("order_items insert error:", itemsErr);
+      msgEl.textContent = itemsErr.message || "Could not add items (order_items).";
+      return;
+    }
 
-    // Remove eligible items from local cart
+    w("Cleaning cart…");
     removeManyFromCart(eligibleItems.map(x=>x.sku));
     CART = readCart();
     renderCart();
 
-    // Go to payment & delivery details (COD / Card on delivery)
-    const url = `order-pay.html?order=${encodeURIComponent(order_id)}`;
-    location.assign(url);
+    w("Redirecting to payment page…");
+    location.assign(`order-pay.html?order=${encodeURIComponent(order_id)}`);
   }catch(e){
-    console.warn(e);
-    msgEl.textContent = 'Something went wrong creating your order.';
+    console.error("placeOrder fatal:", e);
+    msgEl.textContent = (e && e.message) ? e.message : "Something went wrong creating your order.";
   }
 }
+
 
 /* ======== End placeOrder() ======== */
 
