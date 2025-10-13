@@ -441,27 +441,96 @@ loginBtn.onclick = () => {
 };
 logoutBtn.onclick = async () => { try{ await supa.auth.signOut(); }catch{} location.href='index.html'; };
 
+// Robust admin session check
 async function checkAdmin(){
-  try{
-    authMsg.textContent = STRINGS[(localStorage.getItem('lang')||'en')].checking_session;
-    const { data, error } = await supa.auth.getSession();
+  const lang = (localStorage.getItem('lang')||'en');
+  const t = (window.STRINGS||window.STR||{})[lang] || {};
+  const checkingTxt = t.checking_session || 'Checking session…';
+  const authMsgEl = document.getElementById('authMsg');
+  const loginBtn  = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  authMsgEl.textContent = checkingTxt;
+
+  try {
+    // 1) Try current session
+    let { data: { session }, error } = await supa.auth.getSession();
     if (error) throw error;
-    const session = data?.session;
-    if (!session?.user){
-      authMsg.textContent = (STRINGS[(localStorage.getItem('lang')||'en')].checking_session ? STRINGS[(localStorage.getItem('lang')||'en')].checking_session : 'Checking session…').replace('Checking','Not signed in.');
-      loginBtn.classList.remove('hidden'); return false;
+
+    // 2) If no session, wait briefly and try again (handles token refresh on page load)
+    if (!session?.user) {
+      await new Promise(r=>setTimeout(r, 500));
+      ({ data: { session }, error } = await supa.auth.getSession());
+      if (error) throw error;
     }
-    authMsg.textContent = `Signed in as ${session.user.email}`;
-    logoutBtn.classList.remove('hidden');
-    if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
-    const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
-    if (!prof?.is_admin){ location.replace('index.html'); return false; }
+
+    // 3) If still no session, show login UI and don't block the page with a spinner
+    if (!session?.user) {
+      authMsgEl.textContent = 'Not signed in.';
+      loginBtn?.classList.remove('hidden');
+      return false;
+    }
+
+    // 4) We have a user: show who, show logout
+    authMsgEl.textContent = `Signed in as ${session.user.email}`;
+    logoutBtn?.classList.remove('hidden');
+
+    // 5) Admin allowlist or DB flag
+    const emailOk = (ADMIN_EMAILS||[]).includes(String(session.user.email||'').toLowerCase());
+    if (emailOk) return true;
+
+    const { data: prof, error: profErr } = await supa
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', session.user.id)
+      .maybeSingle();
+
+    if (profErr) throw profErr;
+    if (!prof?.is_admin) {
+      authMsgEl.textContent = 'Access denied: not an admin.';
+      // keep page visible but block admin content
+      return false;
+    }
+
     return true;
-  }catch(err){
-    authMsg.textContent = "Couldn’t check session. Please sign in again.";
-    loginBtn.classList.remove('hidden'); return false;
+  } catch (e) {
+    // Surface errors clearly
+    console.error('Auth check failed:', e);
+    authMsgEl.textContent = `Auth error: ${e.message || e}`;
+    loginBtn?.classList.remove('hidden');
+    return false;
   }
 }
+
+// Also listen for auth changes so the UI updates after login/logout without reloads
+function watchAuth() {
+  try {
+    supa.auth.onAuthStateChange(async (_event, session) => {
+      const authMsgEl = document.getElementById('authMsg');
+      const loginBtn  = document.getElementById('loginBtn');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      if (session?.user) {
+        authMsgEl.textContent = `Signed in as ${session.user.email}`;
+        loginBtn?.classList.add('hidden');
+        logoutBtn?.classList.remove('hidden');
+
+        // If content was hidden because you weren't admin yet, try again:
+        const ok = await checkAdmin();
+        if (ok) {
+          // call your boot/unhide logic if needed
+        }
+      } else {
+        authMsgEl.textContent = 'Not signed in.';
+        loginBtn?.classList.remove('hidden');
+        logoutBtn?.classList.add('hidden');
+      }
+    });
+  } catch (e) {
+    console.warn('onAuthStateChange failed', e);
+  }
+}
+
 
 /* ======= The rest of your existing JS (Users, Drawer, Products, Apps, Approvals, News, Realtime, Boot) ======= */
 /* (Unchanged from your last working version, omitted here for brevity in comment, but fully present below) */
