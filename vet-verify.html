@@ -615,7 +615,7 @@ async function loadProducts(){
     .order('name', { ascending:true });
   if (error){ prodList.textContent = error.message; return; }
   PRODUCT_CACHE = (data||[]).filter(p=>p.available && Number(p.stock_qty||0) > 0);
-  REQ_BY_SKU = new Map(PRODUCT_CACHE.map(p=>[p.sku, !!p.requires_verification]));
+  REQ_BY_SKU = new Map(PRODUCT_CACHE.map(p=>[p.sku, true]));
   await primeMyApprovalsMap();
   renderProducts();
 }
