@@ -742,33 +742,59 @@ async function loadApprovalsForCart(){
   });
 }
 
+/* ======== NEW placeOrder() ======== */
 async function placeOrder(){
-  // refresh eligibility
-  await loadProductsForCart();
-  await loadApprovalsForCart();
+  try{
+    // Refresh eligibility based on live stock/approvals
+    await loadProductsForCart();
+    await loadApprovalsForCart();
 
-  const { eligibleSKUs, ineligible } = computeEligibility();
-  const eligibleItems = CART.filter(it => eligibleSKUs.has(it.sku));
+    const { eligibleSKUs, ineligible } = computeEligibility();
+    const eligibleItems = CART.filter(it => eligibleSKUs.has(it.sku));
 
-  if (!eligibleItems.length){
-    msgEl.textContent = t("place.none");
-    return;
+    if (!eligibleItems.length){
+      showMsg('place.none','bad');
+      return;
+    }
+
+    // Create order header
+    const { data:{ user } } = await supa.auth.getUser();
+    const email = user?.email || PROFILE?.email || null;
+
+    const { data: orderRow, error: orderErr } = await supa
+      .from('orders')
+      .insert([{ user_id: user.id, email, status:'pending' }])
+      .select('id')
+      .single();
+    if (orderErr){ msgEl.textContent = orderErr.message; return; }
+
+    const order_id = orderRow.id;
+
+    // Insert order items
+    const itemsPayload = eligibleItems.map(it => ({
+      order_id,
+      product_sku: it.sku,
+      product_name: it.name || it.sku,
+      quantity: Number(it.qty||0)
+    }));
+    const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
+    if (itemsErr){ msgEl.textContent = itemsErr.message; return; }
+
+    // Remove eligible items from local cart
+    removeManyFromCart(eligibleItems.map(x=>x.sku));
+    CART = readCart();
+    renderCart();
+
+    // Go to payment & delivery details (COD / Card on delivery)
+    const url = `order-pay.html?order=${encodeURIComponent(order_id)}`;
+    location.assign(url);
+  }catch(e){
+    console.warn(e);
+    msgEl.textContent = 'Something went wrong creating your order.';
   }
-
-  const payload = eligibleItems.map(it => ({
-    user_id: USER.id, product_sku: it.sku, quantity: Number(it.qty||0), status: 'pending'
-  }));
-
-  const { error } = await supa.from('orders').insert(payload);
-  if (error){ msgEl.textContent = error.message; return; }
-
-  removeManyFromCart(eligibleItems.map(x=>x.sku));
-  CART = readCart();
-  renderCart();
-
-  msgEl.textContent = ineligible.length ? t("place.okPartial") : t("place.okAll");
-  if (ineligible.length) issuesBox.style.display='block';
 }
+
+/* ======== End placeOrder() ======== */
 
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
@@ -795,6 +821,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     renderIssues(ineligible, issues);
     renderCart();
 
+    // If approvals are needed for some items, redirect to vet verification page first
     const needsApproval = (!PROFILE?.can_purchase) && ineligible.some(x=>/Approval/.test(x.reason));
     if (needsApproval){
       const cartParam = encodeURIComponent(JSON.stringify(CART));
