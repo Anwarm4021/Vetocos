@@ -377,7 +377,8 @@ const I18N = {
 
     "toasts.cartUpdated":"Cart updated","toasts.approvalSubmitted":"Approval request submitted","toasts.cancelled":"Request cancelled",
 
-    "errors.fileTooLarge":"File too large (max 10 MB).","errors.fileType":"Unsupported file type.","errors.nothingToUpdate":"Nothing to update. Change ID and/or choose a new file.","errors.enterIdAndFile":"Please enter ID number and choose a file.","errors.signinFirst":"Please sign in first.","errors.loadOrders":"Could not load orders."
+    "errors.fileTooLarge":"File too large (max 10 MB).","errors.fileType":"Unsupported file type.","errors.nothingToUpdate":"Nothing to update. Change ID and/or choose a new file.","errors.enterIdAndFile":"Please enter ID number and choose a file.","errors.signinFirst":"Please sign in first.","errors.loadOrders":"Could not load orders.",
+    "errors.noApproved":"Not approved yet.","errors.noQty":"Enter a quantity.","errors.badQty":"Quantity must be greater than zero.","errors.badFile":"Please upload a PDF or image."
   },
   fr: {
     "actions.products":"Produits","actions.cart":"Panier","actions.account":"Mon compte","actions.checkout":"Paiement","actions.gotoCheckout":"Aller au paiement",
@@ -415,7 +416,8 @@ const I18N = {
 
     "toasts.cartUpdated":"Panier mis à jour","toasts.approvalSubmitted":"Demande d’approbation envoyée","toasts.cancelled":"Demande annulée",
 
-    "errors.fileTooLarge":"Fichier trop volumineux (10 Mo max).","errors.fileType":"Type de fichier non pris en charge.","errors.nothingToUpdate":"Rien à mettre à jour.","errors.enterIdAndFile":"Veuillez saisir l’ID et choisir un fichier.","errors.signinFirst":"Veuillez vous connecter d’abord.","errors.loadOrders":"Impossible de charger les commandes."
+    "errors.fileTooLarge":"Fichier trop volumineux (10 Mo max).","errors.fileType":"Type de fichier non pris en charge.","errors.nothingToUpdate":"Rien à mettre à jour.","errors.enterIdAndFile":"Veuillez saisir l’ID et choisir un fichier.","errors.signinFirst":"Veuillez vous connecter d’abord.","errors.loadOrders":"Impossible de charger les commandes.",
+    "errors.noApproved":"Pas encore approuvé.","errors.noQty":"Entrez une quantité.","errors.badQty":"La quantité doit être > 0.","errors.badFile":"Téléversez un PDF ou une image."
   },
   es: {
     "actions.products":"Productos","actions.cart":"Carrito","actions.account":"Mi cuenta","actions.checkout":"Pagar","actions.gotoCheckout":"Ir a pagar",
@@ -424,7 +426,7 @@ const I18N = {
     "page.title":"Verificación veterinaria",
     "intro.kicker":"Proporcione sus credenciales para habilitar las compras. Una vez aprobado, aparecerá el botón de pago.",
     "status.currentLabel":"Estado actual",
-    "status.pending":"pendiente","status.approved":"aprobado","status.rejected":"rechazado","status.withdrawn":"retirado",
+    "status.pending":"pendiente","status.approved":"aprobado","status.rechazado":"rechazado","status.withdrawn":"retirado",
 
     "labels.id":"Número de identificación",
     "labels.file":"Diploma / tarjeta profesional (PDF/JPG/PNG, máx. 10 MB)",
@@ -453,7 +455,8 @@ const I18N = {
 
     "toasts.cartUpdated":"Carrito actualizado","toasts.approvalSubmitted":"Solicitud enviada","toasts.cancelled":"Solicitud cancelada",
 
-    "errors.fileTooLarge":"Archivo demasiado grande (máx. 10 MB).","errors.fileType":"Tipo de archivo no compatible.","errors.nothingToUpdate":"Nada que actualizar.","errors.enterIdAndFile":"Introduce el ID y el archivo.","errors.signinFirst":"Primero inicia sesión.","errors.loadOrders":"No se pudieron cargar los pedidos."
+    "errors.fileTooLarge":"Archivo demasiado grande (máx. 10 MB).","errors.fileType":"Tipo de archivo no compatible.","errors.nothingToUpdate":"Nada que actualizar.","errors.enterIdAndFile":"Introduce el ID y el archivo.","errors.signinFirst":"Primero inicia sesión.","errors.loadOrders":"No se pudieron cargar los pedidos.",
+    "errors.noApproved":"Aún no aprobado.","errors.noQty":"Ingrese una cantidad.","errors.badQty":"La cantidad debe ser > 0.","errors.badFile":"Sube un PDF o imagen."
   },
   ar: {
     "actions.products":"المنتجات","actions.cart":"السلة","actions.account":"حسابي","actions.checkout":"إتمام الشراء","actions.gotoCheckout":"اذهب للدفع",
@@ -480,7 +483,8 @@ const I18N = {
 
     "toasts.cartUpdated":"تم تحديث السلة","toasts.approvalSubmitted":"تم إرسال طلب الموافقة","toasts.cancelled":"تم إلغاء الطلب",
 
-    "errors.fileTooLarge":"الملف كبير جدًا (الحد 10 م.ب).","errors.fileType":"نوع الملف غير مدعوم.","errors.nothingToUpdate":"لا يوجد ما يتم تحديثه.","errors.enterIdAndFile":"أدخل رقم التعريف واختر ملفًا.","errors.signinFirst":"يرجى تسجيل الدخول أولًا.","errors.loadOrders":"تعذّر تحميل الطلبات."
+    "errors.fileTooLarge":"الملف كبير جدًا (الحد 10 م.ب).","errors.fileType":"نوع الملف غير مدعوم.","errors.nothingToUpdate":"لا يوجد ما يتم تحديثه.","errors.enterIdAndFile":"أدخل رقم التعريف واختر ملفًا.","errors.signinFirst":"يرجى تسجيل الدخول أولًا.","errors.loadOrders":"تعذّر تحميل الطلبات.",
+    "errors.noApproved":"غير مقبول بعد.","errors.noQty":"أدخل كمية.","errors.badQty":"الكمية يجب أن تكون > 0.","errors.badFile":"حمّل ملف PDF أو صورة."
   }
 };
 
@@ -578,7 +582,7 @@ function pill(status){
   statusPill.textContent = map[s] || t('status.pending');
   statusPill.className = 'badge ' + (s==='approved'?'ok':s==='rejected'?'bad':'pend');
 }
-function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+function escapeHtml(s=''){ return String(s).replace(/[&<>\"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;' }[m])); }
 
 /* ===== Auth + Approval state ===== */
 let currentUser = null;
@@ -630,55 +634,25 @@ async function showApplicationAdminNote(){
   }catch{}
 }
 
-/* ===== Mini Cart ===== */
+/* ===== Cart local helpers ===== */
 const CART_KEY='cart';
 function readCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); } catch { return []; } }
 function writeCart(items){ localStorage.setItem(CART_KEY, JSON.stringify((items||[]).filter(x=>x && x.sku && Number(x.qty)>0))); }
-function renderMiniCartRow(it, i){
-  return `<tr>
-    <td><a class="link" href="Products.html#${encodeURIComponent(it.sku)}" target="_blank" rel="noopener">${escapeHtml(it.name || it.sku)}</a> <span class="kicker">(${escapeHtml(it.sku)})</span></td>
-    <td>
-      <button class="qtybtn" data-cart="${i}" data-d="-1">−</button>
-      <span style="display:inline-block;width:34px;text-align:center">${Number(it.qty||0)}</span>
-      <button class="qtybtn" data-cart="${i}" data-d="1">+</button>
-    </td>
-    <td><button class="qtybtn" data-rem="${i}">${t('general.action')==='Action'?'Remove':'Remove'}</button></td>
-  </tr>`;
-}
-async function renderMiniCart(){
-  const cart = readCart();
-  const box = document.getElementById('cartBox');
-  if (!cart.length){ box.innerHTML = `<div class="muted">${t('messages.cartEmpty')}</div>`; return; }
-  box.innerHTML = `<table><thead><tr><th>Product</th><th>${t('general.qty')}</th><th>${t('general.action')}</th></tr></thead>
-    <tbody>${cart.map(renderMiniCartRow).join('')}</tbody></table>
-    <div class="small muted" style="margin-top:8px">${t('messages.cartItems')} ${cart.reduce((n,x)=>n+Number(x.qty||0),0)}</div>`;
-  box.querySelectorAll('button[data-cart]').forEach(b=>{
-    b.onclick = ()=>{
-      const idx = Number(b.dataset.cart); const d = Number(b.dataset.d);
-      const c = readCart(); if (!c[idx]) return;
-      c[idx].qty = Math.max(0, Number(c[idx].qty||0) + d);
-      if (c[idx].qty===0) c.splice(idx,1);
-      writeCart(c); renderMiniCart();
-    };
-  });
-  box.querySelectorAll('button[data-rem]').forEach(b=>{
-    b.onclick = ()=>{ const idx = Number(b.dataset.rem); const c = readCart(); c.splice(idx,1); writeCart(c); renderMiniCart(); };
-  });
-}
 
 /* ===== Product Browser ===== */
 const prodSearch = document.getElementById('prodSearch');
 const prodList   = document.getElementById('prodList');
 let PRODUCT_CACHE = [];
-let MY_APPROVALS = new Map(); // sku -> status
+let REQ_BY_SKU = new Map();              // sku -> boolean (requires_verification)
+let MY_APPROVALS = new Map();            // sku -> { status, quantity }
 
 prodSearch.addEventListener('input', renderProducts);
 
 async function primeMyApprovalsMap(){
   const { data:{ user } } = await supa.auth.getUser(); if (!user) { MY_APPROVALS = new Map(); return; }
-  const { data, error } = await supa.from('vet_product_approvals').select('product_sku,status').eq('user_id', user.id);
+  const { data, error } = await supa.from('vet_product_approvals').select('product_sku,status,quantity').eq('user_id', user.id);
   if (error){ MY_APPROVALS = new Map(); return; }
-  MY_APPROVALS = new Map((data||[]).map(r=>[r.product_sku, r.status]));
+  MY_APPROVALS = new Map((data||[]).map(r=>[r.product_sku, { status:r.status, quantity:Number(r.quantity||0) }]));
 }
 
 async function loadProducts(){
@@ -688,378 +662,482 @@ async function loadProducts(){
     .order('name', { ascending:true });
   if (error){ prodList.textContent = error.message; return; }
   PRODUCT_CACHE = (data||[]).filter(p=>p.available && Number(p.stock_qty||0) > 0);
+  REQ_BY_SKU = new Map(PRODUCT_CACHE.map(p=>[p.sku, !!p.requires_verification]));
   await primeMyApprovalsMap();
   renderProducts();
 }
 
-function getCart(){ try { return JSON.parse(localStorage.getItem('cart')||'[]'); } catch { return []; } }
-function setCart(items){ localStorage.setItem('cart', JSON.stringify(items)); }
-function findCartIndex(cart, sku){ return cart.findIndex(x => x && x.sku === sku); }
-
-function renderProducts(){
-  const q = (prodSearch.value||'').toLowerCase().trim();
-  const rows = PRODUCT_CACHE.filter(p=>{
-    if(!q) return true;
-    return (p.name||'').toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q);
-  }).map(p=>{
-    const existing = MY_APPROVALS.get(p.sku);
-    const badge = existing
-      ? `<span class="badge pend">${t('badges.pending')}</span>`
-      : (p.requires_verification ? `<span class="badge">${t('badges.requires')}</span>` : `<span class="badge ok">${t('badges.open')}</span>`);
-    const cart = getCart();
-    const idx = findCartIndex(cart, p.sku);
-    const cur = idx > -1 ? Number(cart[idx].qty||0) : 0;
-
-    return `<div class="row" style="border-top:1px solid rgba(141,158,199,.18);padding:10px 0" data-sku="${escapeHtml(p.sku)}">
-      <div style="flex:1 1 auto">
-        <div style="font-weight:600">
-          <a class="link" href="Products.html#${encodeURIComponent(p.sku)}" target="_blank" rel="noopener">${escapeHtml(p.name)}</a>
-          <span class="kicker">(${escapeHtml(p.sku)})</span>
-        </div>
-        <div class="kicker">${t('general.instock')} ${p.stock_qty|0}</div>
-      </div>
-      <div class="row" style="flex:0 0 auto">
-        ${badge}
-        <div class="row">
-          <button class="qtybtn" data-q="-1">−</button>
-          <input class="qty-input" type="number" min="0" step="1" value="${cur}" style="width:70px;text-align:center"/>
-          <button class="qtybtn" data-q="1">+</button>
-        </div>
-        <button class="btn small" data-add>${t('toasts.cartUpdated')==='Cart updated'?'Save to cart':'Save to cart'}</button>
-        <button class="btn small" data-req ${existing ? 'disabled' : ''}>${existing ? t('badges.pending') : 'Request approval'}</button>
-      </div>
-    </div>`;
-  }).join('');
-  prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
-
-  prodList.querySelectorAll('[data-sku]').forEach(row=>{
-    const sku = row.dataset.sku;
-    const input = row.querySelector('.qty-input');
-
-    row.querySelectorAll('button[data-q]').forEach(b=>{
-      b.onclick = ()=>{
-        const delta = Number(b.dataset.q||0);
-        const next = Math.max(0, Number(input.value||0) + delta);
-        input.value = next;
-      };
-    });
-
-    row.querySelector('[data-add]')?.addEventListener('click', ()=>{
-      const qty = Math.max(0, Number(input.value||0));
-      const cart = getCart();
-      const idx = findCartIndex(cart, sku);
-      const prod = PRODUCT_CACHE.find(x => x.sku === sku);
-      const capped = Math.min(qty, Number(prod?.stock_qty||0));
-
-      if (idx > -1){
-        if (capped === 0) cart.splice(idx,1);
-        else cart[idx].qty = capped;
-      } else if (capped > 0){
-        cart.push({ sku, name: prod?.name || sku, qty: capped });
-      }
-      setCart(cart);
-      renderMiniCart();
-      toast(t('toasts.cartUpdated'));
-    });
-
-    row.querySelector('[data-req]')?.addEventListener('click', async ()=>{
-      const qty = Math.max(1, Number(input.value||1));
-      const { data:{ user } } = await supa.auth.getUser();
-      if(!user){ toast(t('errors.signinFirst'), true); return; }
-
-      // UPSERT to avoid duplicate key violation
-      const up = await supa.from('vet_product_approvals')
-        .upsert({
-          user_id: user.id,
-          product_sku: sku,
-          quantity: qty,
-          status: 'pending'
-        }, { onConflict: 'user_id,product_sku' });
-      if (up.error){ toast(up.error.message, true); return; }
-
-      // Optional notify admins
-      try {
-        const { data: prof } = await supa.from('profiles').select('email,first_name,last_name').eq('id', user.id).maybeSingle();
-        const who = [prof?.first_name, prof?.last_name].filter(Boolean).join(' ') || (prof?.email || user.email || 'User');
-        const subject = `VetoCos – New product approval request (${sku})`;
-        const html = `
-          <p>${who} requested approval:</p>
-          <ul>
-            <li>SKU: <strong>${sku}</strong></li>
-            <li>Quantity requested: <strong>${qty}</strong></li>
-            <li>User: ${prof?.email || user.email || ''}</li>
-          </ul>
-          <p>Open Admin → Per-product Approvals or the user’s Full Control panel.</p>
-        `;
-        const ADMINS = ["anwar.moumenjamai19@gmail.com"];
-        await supa.from('mail_queue').insert(ADMINS.map(e => ({ to_email: e, subject, html })));
-      } catch(_) {}
-
-      toast(t('toasts.approvalSubmitted'));
-      await primeMyApprovalsMap();
-      renderProducts();
-      await loadMyApprovals();
-    });
-  });
-}
-
-/* ===== My approval requests ===== */
-const myApprovalsBox = document.getElementById('myApprovalsBox');
-
-async function loadMyApprovals(){
+/* ===== DB cart sync helpers (DB <-> local) ===== */
+async function loadCartFromDBToLocal(){
   const { data:{ user } } = await supa.auth.getUser();
-  if (!user){ myApprovalsBox.textContent = t('general.signin'); return; }
+  if (!user) return;
 
   const { data, error } = await supa
-    .from('vet_product_approvals')
-    .select('product_sku, quantity, status')
-    .eq('user_id', user.id)
-    .order('status', { ascending: true })
-    .order('product_sku', { ascending: true });
+    .from('cart_items')
+    .select('product_sku, quantity')
+    .eq('user_id', user.id);
 
-  if (error){ myApprovalsBox.textContent = error.message; return; }
-  if (!data?.length){ myApprovalsBox.innerHTML = '<div class="muted">No approval requests.</div>'; return; }
+  if (error) { console.warn('loadCartFromDBToLocal error', error); return; }
 
-  myApprovalsBox.innerHTML = `
-    <table>
-      <thead><tr><th>SKU</th><th>${t('general.qty')}</th><th>Status</th><th>${t('general.action')}</th></tr></thead>
-      <tbody>
-        ${data.map(r=>{
-          const pillCls = r.status==='approved' ? 'ok' : r.status==='rejected' ? 'bad' : 'pend';
-          const pillTxt = r.status==='approved'?t('status.approved'):r.status==='rejected'?t('status.rejected'):t('status.pending');
-          return `
-            <tr data-sku="${r.product_sku}">
-              <td><a class="link" href="Products.html#${encodeURIComponent(r.product_sku)}" target="_blank" rel="noopener">${r.product_sku}</a></td>
-              <td>${Number(r.quantity||0)}</td>
-              <td><span class="badge ${pillCls}">${pillTxt}</span></td>
-              <td><button class="btn small" data-cancel>Cancel request</button></td>
-            </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
+  const dbMap = new Map((data||[]).filter(r=>Number(r.quantity)>0).map(r=>[r.product_sku, Number(r.quantity)]));
+  const local = readCart();
+  local.forEach(it=>{
+    if (!dbMap.has(it.sku) && Number(it.qty)>0) dbMap.set(it.sku, Number(it.qty));
+  });
+  const merged = [...dbMap.entries()].map(([sku,qty])=>({
+    sku, name: (local.find(x=>x.sku===sku)?.name) || sku, qty
+  }));
+  writeCart(merged);
+}
 
-  myApprovalsBox.querySelectorAll('button[data-cancel]').forEach(btn=>{
-    btn.onclick = async ()=>{
-      const tr = btn.closest('tr'); const sku = tr.dataset.sku;
-      if (!confirm(`Cancel approval request for ${sku}?`)) return;
-      const { data:{ user } } = await supa.auth.getUser();
-      const { error } = await supa
-        .from('vet_product_approvals')
+async function saveLocalCartToDB(){
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user) return;
+
+  let cart = readCart();
+
+  // Enforce approval rules before saving
+  const effective = [];
+  for (const it of cart){
+    const sku = it.sku;
+    const requires = REQ_BY_SKU.get(sku) === true;
+    if (requires){
+      const ap = MY_APPROVALS.get(sku);
+      if (ap && ap.status === 'approved' && Number(ap.quantity)>0){
+        effective.push({ sku, name: it.name || sku, qty: Number(ap.quantity) });
+      } // else: drop (cannot be in cart)
+    } else {
+      if (Number(it.qty)>0) effective.push({ sku, name: it.name || sku, qty: Number(it.qty) });
+    }
+  }
+
+  // Write back to local (keeps UI consistent)
+  writeCart(effective);
+
+  // Upsert to DB
+  const upserts = effective.map(it=>({ user_id:user.id, product_sku:it.sku, quantity:it.qty }));
+  if (upserts.length){
+    const { error: upErr } = await supa
+      .from('cart_items')
+      .upsert(upserts, { onConflict: 'user_id,product_sku' });
+    if (upErr) console.error('cart upsert error', upErr);
+  }
+
+  // Delete rows that are no longer in local
+  const { data: dbRows, error: rdErr } = await supa
+    .from('cart_items')
+    .select('product_sku')
+    .eq('user_id', user.id);
+
+  if (!rdErr){
+    const localSkus = new Set(effective.map(it=>it.sku));
+    const toDelete = (dbRows||[]).filter(r => !localSkus.has(r.product_sku));
+    for (const r of toDelete){
+      const { error: delErr } = await supa
+        .from('cart_items')
         .delete()
         .eq('user_id', user.id)
-        .eq('product_sku', sku);
-      if (error){ toast(error.message, true); return; }
-      toast(t('toasts.cancelled'));
+        .eq('product_sku', r.product_sku);
+      if (delErr) console.error('cart delete error', delErr);
+    }
+  }
+}
+
+/* ===== Mini Cart (renders from LOCAL, but respects approval rules) ===== */
+function renderMiniCartRow(it, i, opts){
+  const controls = opts.disableQty
+    ? `<span style="display:inline-block;width:34px;text-align:center">${Number(it.qty||0)}</span>`
+    : `<button class="qtybtn" data-cart="${i}" data-d="-1">−</button>
+       <span style="display:inline-block;width:34px;text-align:center">${Number(it.qty||0)}</span>
+       <button class="qtybtn" data-cart="${i}" data-d="1">+</button>`;
+  const note = opts.note ? `<div class="small muted">${opts.note}</div>` : '';
+  return `<tr data-sku="${it.sku}">
+    <td>
+      <a class="link" href="Products.html#${encodeURIComponent(it.sku)}" target="_blank" rel="noopener">${escapeHtml(it.name || it.sku)}</a>
+      <span class="kicker">(${escapeHtml(it.sku)})</span>
+      ${note}
+    </td>
+    <td>${controls}</td>
+    <td><button class="qtybtn" data-rem="${i}">Remove</button></td>
+  </tr>`;
+}
+
+async function renderMiniCart(){
+  // Ensure PRODUCTS + APPROVALS are known for rule enforcement
+  if (!PRODUCT_CACHE.length) await loadProducts();
+
+  // Normalize local cart based on rules, then render
+  let cart = readCart();
+  const normalized = [];
+  for (const it of cart){
+    const sku = it.sku;
+    const requires = REQ_BY_SKU.get(sku) === true;
+    if (requires){
+      const ap = MY_APPROVALS.get(sku);
+      if (ap && ap.status === 'approved' && Number(ap.quantity)>0){
+        normalized.push({ sku, name: it.name || sku, qty: Number(ap.quantity), _approved:true, _approvedQty:Number(ap.quantity) });
+      }
+      // drop non-approved
+    } else {
+      if (Number(it.qty)>0) normalized.push({ ...it, _approved:false });
+    }
+  }
+  writeCart(normalized);
+
+  const box = document.getElementById('cartBox');
+  if (!normalized.length){ box.innerHTML = `<div class="muted">${t('messages.cartEmpty')}</div>`; await saveLocalCartToDB(); return; }
+
+  // Build row with disabled qty controls for approved items
+  const rowsHtml = normalized.map((it,i)=>{
+    const opts = it._approved
+      ? { disableQty:true, note:`Approved quantity: ${Number(it._approvedQty)}` }
+      : { disableQty:false, note:'' };
+    return renderMiniCartRow(it, i, opts);
+  }).join('');
+
+  box.innerHTML = `<table>
+    <thead><tr><th>Product</th><th>${t('general.qty')}</th><th>${t('general.action')}</th></tr></thead>
+    <tbody>${rowsHtml}</tbody>
+  </table>
+  <div class="small muted" style="margin-top:8px">${t('messages.cartItems')} ${normalized.reduce((n,x)=>n+Number(x.qty||0),0)}</div>`;
+
+  // Enable +/- only for items that are NOT approval-locked
+  box.querySelectorAll('button[data-cart]').forEach(b=>{
+    b.onclick = ()=>{
+      const idx = Number(b.dataset.cart);
+      const d = Number(b.dataset.d);
+      const c = readCart();
+      if (!c[idx] || c[idx]._approved) return; // cannot change approved
+      c[idx].qty = Math.max(0, Number(c[idx].qty||0) + d);
+      if (c[idx].qty===0) c.splice(idx,1);
+      writeCart(c); renderMiniCart(); saveLocalCartToDB(); toast(t('toasts.cartUpdated'));
+    };
+  });
+
+  // Remove handlers
+  box.querySelectorAll('button[data-rem]').forEach(b=>{
+    b.onclick = ()=>{
+      const idx = Number(b.dataset.rem);
+      const c = readCart();
+      if (!c[idx]) return;
+      c.splice(idx,1);
+      writeCart(c); renderMiniCart(); saveLocalCartToDB(); toast(t('toasts.cartUpdated'));
+    };
+  });
+
+  // Persist any normalization to DB
+  await saveLocalCartToDB();
+}
+
+/* ===== Product List (with per-SKU approval logic) ===== */
+function productRow(p){
+  const requires = REQ_BY_SKU.get(p.sku) === true;
+  const ap = MY_APPROVALS.get(p.sku);
+  const approved = ap && ap.status === 'approved' && Number(ap.quantity)>0;
+  const pending  = ap && ap.status === 'pending';
+  const badge = requires
+    ? `<span class="badge">${t('badges.requires')}</span>`
+    : `<span class="badge ok">${t('badges.open')}</span>`;
+
+  const right = requires
+    ? (approved
+        ? `<div class="small success">Approved quantity: ${Number(ap.quantity)}</div>
+           <button class="qtybtn" data-add-approved="${p.sku}">Add to cart</button>`
+        : pending
+          ? `<span class="badge pend">${t('badges.pending')}</span>
+             <button class="qtybtn" data-cancel-approval="${p.sku}">${t('buttons.withdraw')}</button>`
+          : `<div class="row">
+               <input type="number" min="1" value="1" style="width:80px" data-ap-qty-for="${p.sku}">
+               <button class="qtybtn" data-req-approval="${p.sku}">${t('buttons.submit')}</button>
+             </div>`
+      )
+    : `<div class="row">
+         <button class="qtybtn" data-add="${p.sku}" data-d="-1">−</button>
+         <input type="number" min="0" value="0" style="width:64px;text-align:center" data-qty-for="${p.sku}">
+         <button class="qtybtn" data-add="${p.sku}" data-d="1">+</button>
+         <button class="qtybtn" data-add-to-cart="${p.sku}">${t('actions.cart')}</button>
+       </div>`;
+
+  return `<div class="row" style="justify-content:space-between;align-items:center;border-bottom:1px solid rgba(141,158,199,.12);padding:8px 0">
+    <div>
+      <div><a class="link" href="Products.html#${encodeURIComponent(p.sku)}" target="_blank" rel="noopener">${escapeHtml(p.name)}</a> <span class="kicker">(${escapeHtml(p.sku)})</span></div>
+      <div class="small muted">${t('general.instock')} ${Number(p.stock_qty||0)} · ${badge}</div>
+    </div>
+    <div>${right}</div>
+  </div>`;
+}
+
+function renderProducts(){
+  const q = String(prodSearch.value||'').toLowerCase().trim();
+  const list = PRODUCT_CACHE.filter(p=>{
+    if (!q) return true;
+    return (String(p.name).toLowerCase().includes(q) || String(p.sku).toLowerCase().includes(q));
+  });
+  if (!list.length){ prodList.innerHTML = `<div class="muted">No matching products.</div>`; return; }
+  prodList.innerHTML = list.map(productRow).join('');
+
+  // Wire non-approval products controls
+  prodList.querySelectorAll('[data-add]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const sku = btn.getAttribute('data-add');
+      const d   = Number(btn.getAttribute('data-d'))||0;
+      const inp = prodList.querySelector(`[data-qty-for="${CSS.escape(sku)}"]`);
+      if (!inp) return;
+      const cur = Math.max(0, Number(inp.value||0) + d);
+      inp.value = String(cur);
+    };
+  });
+  prodList.querySelectorAll('[data-add-to-cart]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const sku = btn.getAttribute('data-add-to-cart');
+      const inp = prodList.querySelector(`[data-qty-for="${CSS.escape(sku)}"]`);
+      const qty = Math.max(0, Number(inp?.value||0));
+      if (qty<=0) { toast(t('errors.badQty'), true); return; }
+      const p = PRODUCT_CACHE.find(x=>x.sku===sku);
+      const cart = readCart();
+      const at = cart.find(x=>x.sku===sku);
+      if (at) at.qty = Number(at.qty||0) + qty; else cart.push({ sku, name:p?.name||sku, qty });
+      writeCart(cart);
+      renderMiniCart();
+      toast(t('toasts.cartUpdated'));
+    };
+  });
+
+  // Wire approval product controls
+  prodList.querySelectorAll('[data-req-approval]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const sku = btn.getAttribute('data-req-approval');
+      const inp = prodList.querySelector(`[data-ap-qty-for="${CSS.escape(sku)}"]`);
+      const qty = Math.max(0, Number(inp?.value||0));
+      if (qty<=0) { toast(t('errors.badQty'), true); return; }
+      const { data:{ user } } = await supa.auth.getUser();
+      if (!user){ setMsg('errors.signinFirst','error'); return; }
+      const { error } = await supa.from('vet_product_approvals').insert({ user_id:user.id, product_sku:sku, quantity:qty, status:'pending' });
+      if (error){ toast(error.message||'Error', true); return; }
       await primeMyApprovalsMap();
       renderProducts();
-      await loadMyApprovals();
+      renderMyApprovals();
+      toast(t('toasts.approvalSubmitted'));
+    };
+  });
+  prodList.querySelectorAll('[data-cancel-approval]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const sku = btn.getAttribute('data-cancel-approval');
+      const { data:{ user } } = await supa.auth.getUser(); if (!user){ setMsg('errors.signinFirst','error'); return; }
+      const { error } = await supa.from('vet_product_approvals').update({ status:'withdrawn' }).eq('user_id', user.id).eq('product_sku', sku).eq('status','pending');
+      if (error){ toast(error.message||'Error', true); return; }
+      await primeMyApprovalsMap();
+      renderProducts();
+      renderMyApprovals();
+      toast(t('toasts.cancelled'));
+    };
+  });
+  prodList.querySelectorAll('[data-add-approved]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const sku = btn.getAttribute('data-add-approved');
+      const ap = MY_APPROVALS.get(sku);
+      if (!ap || ap.status!=='approved' || Number(ap.quantity)<=0){ toast(t('errors.noApproved'), true); return; }
+      const p = PRODUCT_CACHE.find(x=>x.sku===sku);
+      const cart = readCart();
+      const at = cart.find(x=>x.sku===sku);
+      const qty = Number(ap.quantity);
+      if (at) at.qty = qty; else cart.push({ sku, name:p?.name||sku, qty });
+      writeCart(cart);
+      renderMiniCart();
+      toast(t('toasts.cartUpdated'));
     };
   });
 }
 
+/* ===== My approvals section ===== */
+async function renderMyApprovals(){
+  const box = document.getElementById('myApprovalsBox');
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user){ box.innerHTML = `<div class="muted">${t('general.signin')}</div>`; return; }
+  const { data, error } = await supa.from('vet_product_approvals').select('product_sku,status,quantity,updated_at').eq('user_id', user.id).order('updated_at', { ascending:false });
+  if (error){ box.textContent = error.message; return; }
+  if (!data || !data.length){ box.innerHTML = `<div class="muted">No approval requests yet.</div>`; return; }
+  const rows = data.map(r=>{
+    const st = String(r.status||'pending').toLowerCase();
+    const pillClass = st==='approved'?'ok':st==='rejected'?'bad':'pend';
+    const when = r.updated_at ? new Date(r.updated_at).toLocaleString() : '';
+    return `<tr>
+      <td><a class="link" href="Products.html#${encodeURIComponent(r.product_sku)}" target="_blank" rel="noopener">${escapeHtml(r.product_sku)}</a></td>
+      <td>${Number(r.quantity||0)}</td>
+      <td><span class="badge ${pillClass}">${escapeHtml(st)}</span></td>
+      <td class="small muted">${escapeHtml(when)}</td>
+    </tr>`;
+  }).join('');
+  box.innerHTML = `<table>
+    <thead><tr><th>SKU</th><th>${t('general.qty')}</th><th>Status</th><th>Updated</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
 /* ===== Orders ===== */
-async function renderOrders(){
+async function loadOrders(){
   const box = document.getElementById('ordersBox');
   const { data:{ user } } = await supa.auth.getUser();
-  if (!user){ box.textContent=t('general.signin'); return; }
-  const { data: rows, error } = await supa.from('orders')
-    .select('id, created_at, status, total_qty, total_amount, receipt_url')
-    .eq('user_id', user.id).order('created_at', { ascending:false }).limit(20);
-  if (error){ box.innerHTML = `<div class="muted">${t('errors.loadOrders')}: ${escapeHtml(error.message)}</div>`; return; }
-  if (!rows || !rows.length){ box.innerHTML = `<div class="muted">No purchases yet.</div>`; return; }
-  box.innerHTML = rows.map(o=>{
-    const d = new Date(o.created_at);
-    const badge = (o.status||'').toLowerCase()==='paid' ? 'ok' : 'pend';
-    const rec = o.receipt_url ? `<a class="btn small" href="${o.receipt_url}" target="_blank" rel="noopener">${t('general.receipt')}</a>` : '';
-    return `<div class="row" style="border-top:1px solid rgba(141,158,199,.18);padding:10px 0">
-      <div style="flex:1 1 auto"><strong>Order #${o.id}</strong> · <span class="muted">${d.toLocaleString()}</span><div class="muted small">${t('general.qty')}: ${o.total_qty||0} · Amount: ${o.total_amount!=null?Number(o.total_amount).toFixed(2):'-'}</div></div>
-      <div style="flex:0 0 auto" class="row"><span class="badge ${badge}">${o.status||t('status.pending')}</span>${rec}</div>
-    </div>`;
-  }).join('');
+  if (!user){ box.innerHTML = `<div class="muted">${t('general.signin')}</div>`; return; }
+  try{
+    const { data: orders } = await supa.from('orders').select('id, created_at, status, total').eq('user_id', user.id).order('created_at', { ascending:false });
+    if (!orders || !orders.length){ box.innerHTML = `<div class="muted">No orders yet.</div>`; return; }
+    const rows = await Promise.all((orders||[]).map(async o=>{
+      const { data: lines } = await supa.from('order_items').select('product_sku, quantity').eq('order_id', o.id);
+      const items = (lines||[]).map(l=>`${escapeHtml(l.product_sku)} × ${Number(l.quantity)}`).join(', ');
+      const when = new Date(o.created_at).toLocaleString();
+      return `<tr>
+        <td>#${escapeHtml(String(o.id))}</td>
+        <td>${escapeHtml(when)}</td>
+        <td><span class="badge">${escapeHtml(o.status||'')}</span></td>
+        <td>${items||'-'}</td>
+        <td>${(o.total!=null?Number(o.total).toFixed(2):'-')}</td>
+      </tr>`;
+    }));
+    box.innerHTML = `<table>
+      <thead><tr><th>Order</th><th>Date</th><th>Status</th><th>Items</th><th>Total</th></tr></thead>
+      <tbody>${rows.join('')}</tbody>
+    </table>`;
+  }catch(e){ box.innerHTML = `<div class="error">${t('errors.loadOrders')}</div>`; }
 }
 
 /* ===== Reviews ===== */
-const revSku = document.getElementById('revSku');
-const revRating = document.getElementById('revRating');
-const revComment = document.getElementById('revComment');
-const revSubmit = document.getElementById('revSubmit');
-const revMsg = document.getElementById('revMsg');
-const revViewProduct = document.getElementById('revViewProduct');
-
-revSku.addEventListener('change', ()=>{
-  const sku = revSku.value;
-  revViewProduct.href = sku ? `Products.html#${encodeURIComponent(sku)}` : 'Products.html';
-});
-
-async function populateReviewSKUs(){
-  const { data:{ user } } = await supa.auth.getUser(); if (!user) return;
-
+async function loadReviewSkus(){
+  const sel = document.getElementById('revSku');
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user){ sel.innerHTML = `<option value="">${t('reviews.select')}</option>`; return; }
+  // Prefer RPC if you have it
   let skus = [];
   try{
-    const { data: items } = await supa.from('order_items').select('product_sku').eq('user_id', user.id);
-    if (Array.isArray(items)) skus = items.map(i=>i.product_sku);
+    const { data: rpcSkus } = await supa.rpc('distinct_skus_for_user', { uid: user.id });
+    if (Array.isArray(rpcSkus)) skus = rpcSkus;
   }catch{}
   if (!skus.length){
-    const { data: orders } = await supa.from('orders').select('items').eq('user_id', user.id).limit(50);
-    if (Array.isArray(orders)){
-      orders.forEach(o=>{ if(Array.isArray(o.items)){ o.items.forEach(it=>{ if(it?.sku) skus.push(it.sku); }); } });
+    const { data: ordIds } = await supa.from('orders').select('id').eq('user_id', user.id);
+    const ids = (ordIds||[]).map(x=>x.id);
+    if (ids.length){
+      const { data: items } = await supa.from('order_items').select('product_sku').in('order_id', ids);
+      skus = [...new Set((items||[]).map(x=>x.product_sku))];
     }
   }
-  skus = [...new Set(skus)];
-
-  let options = `<option value="">${t('reviews.select')}</option>`;
-  if (skus.length){
-    const { data: prods } = await supa.from('products').select('sku,name').in('sku', skus);
-    const nameBySku = Object.fromEntries((prods||[]).map(p=>[p.sku, p.name]));
-    skus.forEach(s=>{
-      const name = nameBySku[s] || s;
-      options += `<option value="${escapeHtml(s)}">${escapeHtml(name)} (${escapeHtml(s)})</option>`;
-    });
-  }
-  revSku.innerHTML = options;
+  sel.innerHTML = `<option value="">${t('reviews.select')}</option>` + skus.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
 }
 
-revSubmit.onclick = async ()=>{
-  revMsg.textContent = t('general.loading');
-  const sku = revSku.value.trim(); const rating = Math.max(1, Math.min(5, Number(revRating.value||5)|0)); const comment = (revComment.value||'').trim();
-  if (!sku){ revMsg.textContent = t('reviews.choose'); return; }
-  const { data:{ user } } = await supa.auth.getUser(); if (!user){ revMsg.textContent = t('general.signin'); return; }
+async function submitReview(){
+  const sku = document.getElementById('revSku').value;
+  const rating = Number(document.getElementById('revRating').value||5);
+  const comment = document.getElementById('revComment').value.trim();
+  const msg = document.getElementById('revMsg');
+  const { data:{ user } } = await supa.auth.getUser(); if (!user){ msg.textContent = t('general.signin'); return; }
+  if (!sku){ msg.textContent = t('reviews.choose'); return; }
+  const { error } = await supa.from('reviews').insert({ user_id:user.id, product_sku:sku, rating, comment });
+  if (error){ msg.textContent = error.message; return; }
+  msg.textContent = t('reviews.thanks');
+  document.getElementById('revComment').value='';
+}
 
-  const { error } = await supa.from('reviews').insert({ user_id: user.id, product_sku: sku, rating, comment });
-  if (error){ revMsg.textContent = error.message; return; }
-  revMsg.textContent = t('reviews.thanks'); revComment.value='';
-};
+/* ===== Verification application ===== */
+let currentFileObj = null; // track chosen file for replace flow
+
+function isGoodFile(file){
+  if (!file) return false;
+  const okTypes = ['application/pdf','image/png','image/jpeg'];
+  const ext = (file.name||'').toLowerCase();
+  const typeOk = okTypes.includes(file.type) || /\.(pdf|png|jpe?g)$/.test(ext);
+  if (!typeOk) { setMsg('errors.badFile','error'); return false; }
+  if (file.size > 10*1024*1024){ setMsg('errors.fileTooLarge','error'); return false; }
+  return true;
+}
+
+async function loadCurrentApplication(){
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user){ setMsg('general.signin'); statusBox.style.display='none'; return; }
+  const { data: rows } = await supa.from('vet_applications')
+    .select('id,status,doc_url,id_number,updated_at')
+    .eq('user_id', user.id).order('created_at', { ascending:false }).limit(1);
+  currentApp = rows && rows[0] || null;
+  if (currentApp){
+    statusBox.style.display='grid';
+    pill(currentApp.status);
+    if (currentApp.doc_url){ previewWrap.style.display='flex'; previewLink.href = currentApp.doc_url; } else { previewWrap.style.display='none'; }
+    withdrawBtn.style.display = currentApp.status==='pending' ? 'inline-block' : 'none';
+    idInput.value = currentApp.id_number || '';
+  } else {
+    statusBox.style.display='none';
+  }
+  await checkCanCheckout(user?.id);
+}
+
+async function handleSubmit(){
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user){ setMsg('errors.signinFirst','error'); return; }
+
+  const idVal = idInput.value.trim();
+  const file = fileInput.files?.[0] || currentFileObj || null;
+
+  if (!file && !idVal){ setMsg('errors.enterIdAndFile','error'); return; }
+  if (file && !isGoodFile(file)) return;
+
+  setMsg('Uploading…'); btn.disabled = true;
+
+  let publicUrl = currentApp?.doc_url || '';
+  try{
+    if (file){
+      const path = `${user.id}/${Date.now()}_${(file.name||'doc').replace(/[^\w.\-]+/g,'_')}`;
+      const { error: upErr } = await supa.storage.from(BUCKET).upload(path, file, { upsert:false });
+      if (upErr) throw upErr;
+      const { data:pub } = supa.storage.from(BUCKET).getPublicUrl(path);
+      publicUrl = pub?.publicUrl || '';
+    }
+
+    const payload = { user_id:user.id, id_number:idVal || currentApp?.id_number || null, doc_url: publicUrl || null, status:'pending' };
+    if (currentApp){
+      await supa.from('vet_applications').update(payload).eq('id', currentApp.id);
+    } else {
+      await supa.from('vet_applications').insert(payload);
+    }
+
+    setMsg(t('toasts.approvalSubmitted'),'success');
+    await loadCurrentApplication();
+    await showApplicationAdminNote();
+  }catch(e){ setMsg(e.message||'Upload error','error'); }
+  finally{ btn.disabled=false; currentFileObj=null; fileInput.value=''; }
+}
+
+async function handleWithdraw(){
+  const { data:{ user } } = await supa.auth.getUser(); if (!user || !currentApp) return;
+  try{
+    await supa.from('vet_applications').update({ status:'withdrawn' }).eq('id', currentApp.id).eq('user_id', user.id).neq('status','approved');
+    await loadCurrentApplication();
+    toast(t('toasts.cancelled'));
+  }catch(e){ toast(e.message||'Error', true); }
+}
 
 /* ===== Boot ===== */
-function maybeShowWithdraw(){ if (currentApp) withdrawBtn.style.display = 'inline-block'; }
+async function initApp(){
+  const { data:{ user } } = await supa.auth.getUser();
+  currentUser = user || null;
 
-replaceBtn?.addEventListener('click', ()=>{
-  idInput.disabled = false; fileInput.disabled = false; btn.disabled = false; btn.textContent = t('buttons.submit');
-  setMsg('messages.emailOnChange','');
-});
+  // wire UI
+  btn.onclick = handleSubmit;
+  replaceBtn.onclick = ()=> fileInput.click();
+  withdrawBtn.onclick = handleWithdraw;
+  document.getElementById('revSubmit').onclick = submitReview;
+  fileInput.addEventListener('change', (e)=>{ const f=e.target.files?.[0]; if (f && isGoodFile(f)) currentFileObj=f; });
 
-withdrawBtn?.addEventListener('click', async ()=>{
-  if (!currentApp) return;
-  if (!confirm('Withdraw your verification application? You can re-submit later.')) return;
-  const { error } = await supa.from('vet_applications').update({ status: 'withdrawn' }).eq('id', currentApp.id);
-  if (error) { toast(error.message, true); return; }
-  currentApp = null;
-  idInput.disabled = false; idInput.value = '';
-  fileInput.disabled = false; fileInput.value = '';
-  btn.disabled = false; btn.textContent = t('buttons.submit');
-  statusBox.style.display = 'none';
-  setMsg('Application withdrawn. You can submit a new one now.','success');
-});
-
-async function boot(){
-  setMsg(t('general.loading'));
-  const { data:{ user }, error } = await supa.auth.getUser();
-  if (error) { setMsg(error.message,'error'); return; }
-  if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
-  currentUser = user;
-
-  // Load latest application
-  setMsg(t('general.loading'));
-  const { data: rows, error: e2 } = await supa.from('vet_applications')
-    .select('id, identity_number, diploma_path, status, created_at')
-    .eq('user_id', user.id).order('created_at', { ascending:false }).limit(1);
-  if (e2) { setMsg(e2.message,'error'); return; }
-  currentApp = rows && rows[0] ? rows[0] : null;
-
-  if (currentApp){
-    statusBox.style.display = 'grid';
-    pill(currentApp.status);
-    if (currentApp.identity_number) idInput.value = currentApp.identity_number;
-    if (currentApp.diploma_path){
-      const { data, error: sErr } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
-      if (!sErr && data?.signedUrl){ previewWrap.style.display = 'flex'; previewLink.href = data.signedUrl; }
-    }
-    maybeShowWithdraw();
-    if (currentApp.status === 'approved'){
-      idInput.disabled = true; fileInput.disabled = true; btn.disabled = true; btn.textContent = t('status.approved');
-      setMsg('Your account is approved. You can proceed to checkout.','success');
-    } else if (currentApp.status === 'rejected'){
-      setMsg('Your previous submission was rejected. Update your ID and upload a new file for review.','error');
-    } else {
-      setMsg('Your application is pending. You can replace the file or update ID while under review.','');
-    }
-  } else {
-    setMsg('No submission yet. Please fill your details below.','');
-  }
-
-  await checkCanCheckout(user.id);
+  // load data
   await loadGlobalNotice();
-  await showApplicationAdminNote();
-  await renderMiniCart();
   await loadProducts();
-  await loadMyApprovals();
-  await renderOrders();
-  await populateReviewSKUs();
+  await loadCartFromDBToLocal();
+  await renderMiniCart();
+  await renderMyApprovals();
+  await loadOrders();
+  await loadCurrentApplication();
+  await showApplicationAdminNote();
+  await loadReviewSkus();
 }
-document.addEventListener('DOMContentLoaded', boot);
 
-/* ===== Submit or update ===== */
-btn.onclick = async () => {
-  if (btn.disabled) return;
-  btn.disabled = true; setMsg('Preparing submission…');
-
-  const { data:{ user }, error: uErr } = await supa.auth.getUser();
-  if (uErr) { setMsg(uErr.message, 'error'); btn.disabled=false; return; }
-  if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
-
-  const idnum = (idInput.value||'').trim();
-  const f = fileInput.files[0];
-
-  if (!currentApp){
-    if(!idnum || !f){ setMsg('errors.enterIdAndFile','error'); btn.disabled=false; return; }
-  } else if (!idnum && !f){
-    setMsg('errors.nothingToUpdate','error'); btn.disabled=false; return;
-  }
-
-  let newPath = currentApp?.diploma_path || null;
-
-  if (f){
-    if (f.size > 10 * 1024 * 1024) { setMsg('errors.fileTooLarge','error'); btn.disabled=false; return; }
-    const okTypes = ['application/pdf','image/jpeg','image/png'];
-    if (f.type && !okTypes.includes(f.type)) { setMsg('errors.fileType','error'); btn.disabled=false; return; }
-
-    const cleanName = f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
-    const path = `${user.id}/${Date.now()}_${cleanName || 'diploma'}`;
-    setMsg('Uploading document…');
-    const up = await supa.storage.from(BUCKET).upload(path, f, { upsert:false, contentType: f.type || 'application/octet-stream', cacheControl: '3600' });
-    if(up.error) { setMsg(up.error.message,'error'); btn.disabled=false; return; }
-    newPath = up.data.path;
-  }
-
-  if (!currentApp){
-    setMsg('Saving application…');
-    const ins = await supa.from('vet_applications').insert({
-      user_id: user.id, identity_number: idnum, diploma_path: newPath, status: 'pending'
-    }).select().single();
-    if(ins.error){ setMsg(ins.error.message,'error'); btn.disabled=false; return; }
-    currentApp = ins.data;
-  } else {
-    setMsg('Updating application…');
-    const upd = await supa.from('vet_applications').update({
-      identity_number: idnum || currentApp.identity_number,
-      diploma_path: f ? newPath : currentApp.diploma_path,
-      status: 'pending'
-    }).eq('id', currentApp.id).select().single();
-    if(upd.error){ setMsg(upd.error.message,'error'); btn.disabled=false; return; }
-    currentApp = upd.data;
-  }
-
-  pill('pending'); statusBox.style.display = 'grid';
-  if (currentApp.diploma_path){
-    try{ const { data } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
-      if (data?.signedUrl){ previewWrap.style.display = 'flex'; previewLink.href = data.signedUrl; }
-    }catch{}
-  }
-  maybeShowWithdraw();
-  setMsg('Submitted. We will review and approve your account.','success');
-  btn.disabled = false; btn.textContent = t('buttons.submit');
-};
+initApp();
 </script>
 </body>
 </html>
