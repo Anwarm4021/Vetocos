@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>VetoCos | Orders History</title>
+  <title>VetoCos | History</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="robots" content="noindex, nofollow"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -10,331 +10,316 @@
     :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px;--accent:#6dd5ff}
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
-    main{max-width:1200px;margin:34px auto;padding:0 18px}
+    main{max-width:1100px;margin:34px auto;padding:0 18px}
     h1,h2{margin:0 0 14px}
     .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px}
     .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
-         background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));
-         color:var(--text);font-weight:600;cursor:pointer}
+         background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer}
     .btn.small{padding:6px 10px;font-size:.9rem}
-    .btn[disabled]{opacity:.55;cursor:not-allowed}
     .muted{color:var(--muted)}
-    .mini{font-size:.88rem}
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap}
-    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
             background:rgba(255,255,255,.05);color:var(--text)}
-    select,input[type="date"]{padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
-            background:rgba(255,255,255,.05);color:var(--text)}
+    label{display:block;font-size:.9rem;color:var(--muted)}
+    select,input[type="text"],input[type="date"]{padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:var(--text)}
     table{width:100%;border-collapse:collapse}
     th,td{padding:8px 10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:top}
     .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25)}
-    .ok{background:rgba(131,240,165,.12)}
-    .pend{background:rgba(109,213,255,.12)}
-    .bad{background:rgba(255,180,180,.12)}
-    #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
-           border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
-    .addr{white-space:pre-wrap}
+    .ok{background:rgba(131,240,165,.12)} .pend{background:rgba(109,213,255,.12)} .bad{background:rgba(255,180,180,.12)}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .lang{display:flex;align-items:center;gap:8px}
+    .lang select{min-width:140px}
+    .address{white-space:pre-wrap}
+    .mini{font-size:.88rem}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <main>
-  <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-    <h1 style="margin:0">Orders History</h1>
-    <div class="row">
-      <a class="btn small" href="admin.html">Back to Admin</a>
-      <button class="btn small" id="exportBtn" title="Export current view to CSV">Export CSV</button>
+  <div class="card toolbar">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h1 data-i18n="title">Purchase History</h1>
+      <a class="btn small" href="admin.html" data-i18n="back_admin">Back to Admin</a>
+    </div>
+    <div class="lang">
+      <label class="mini muted" for="langSel" data-i18n="language">Language</label>
+      <select id="langSel">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="ar">العربية</option>
+      </select>
     </div>
   </div>
 
   <!-- Auth -->
   <div class="card" id="authGate">
-    <div id="authMsg" class="muted">Checking session…</div>
+    <div id="authMsg" class="muted" data-i18n="checking_session">Checking session…</div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button id="loginBtn" class="btn hidden" data-i18n="login_admin">Login as Admin</button>
+      <button id="logoutBtn" class="btn hidden" data-i18n="logout">Logout</button>
+    </div>
   </div>
 
   <!-- Filters -->
   <div class="card hidden" id="filtersWrap">
-    <div class="toolbar">
-      <h2>Filters</h2>
-      <div class="row">
-        <input id="q" class="search" placeholder="Search name / email / phone / address / order #">
+    <div class="row">
+      <input id="q" class="search" placeholder="Search name / email / order #" data-i18n-ph="search_placeholder">
+      <label><span data-i18n="method">Method</span>
         <select id="method">
-          <option value="">All methods</option>
-          <option value="pickup">Pickup</option>
-          <option value="delivery">Delivery</option>
+          <option value="" data-i18n="all">All</option>
+          <option value="collect" data-i18n="collect">Collect</option>
+          <option value="delivery" data-i18n="delivery">Delivery</option>
         </select>
+      </label>
+      <label><span data-i18n="status">Status</span>
         <select id="status">
-          <option value="">All statuses</option>
-          <option value="paid">Paid</option>
-          <option value="pending">Pending</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="shipped">Shipped</option>
-          <option value="fulfilled">Fulfilled</option>
+          <option value="" data-i18n="all">All</option>
+          <option value="pending" data-i18n="pending">pending</option>
+          <option value="paid" data-i18n="paid">paid</option>
+          <option value="shipped" data-i18n="shipped">shipped</option>
+          <option value="completed" data-i18n="completed">completed</option>
+          <option value="cancelled" data-i18n="cancelled">cancelled</option>
         </select>
-        <input id="from" type="date" />
-        <input id="to" type="date" />
-        <button id="refresh" class="btn small">Refresh</button>
-      </div>
+      </label>
+      <label><span data-i18n="from">From</span> <input id="from" type="date"></label>
+      <label><span data-i18n="to">To</span> <input id="to" type="date"></label>
+      <button id="refresh" class="btn small" data-i18n="refresh">Refresh</button>
     </div>
-    <div class="mini muted">Tip: the page shows the last 120 days by default. Use the date filters to widen.</div>
   </div>
 
-  <!-- Results -->
+  <!-- List -->
   <div class="card hidden" id="listWrap">
-    <div class="toolbar" style="margin-bottom:6px">
-      <h2>Results</h2>
-      <div class="mini muted" id="countMsg"></div>
-    </div>
-    <div id="rows">Loading…</div>
+    <div id="msg" class="muted" data-i18n="loading">Loading…</div>
+    <div id="list"></div>
   </div>
 </main>
 
-<div id="toast"></div>
-
 <script>
-/* ================= Supabase ================= */
+/* ---------- Supabase ---------- */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
+const ADMIN_EMAILS = ["anwar.moumenjamai19@gmail.com"];
 
-/* ================= UI helpers ================= */
-const toastEl=document.getElementById('toast');
-function toast(m,err=false){ toastEl.textContent=m; toastEl.style.display='block'; toastEl.style.borderColor=err?'rgba(255,120,120,.4)':'rgba(141,158,199,.25)'; clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.style.display='none',2200); }
-function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+/* ---------- i18n ---------- */
+const STR = {
+  en:{title:"Purchase History",back_admin:"Back to Admin",language:"Language",checking_session:"Checking session…",
+      login_admin:"Login as Admin",logout:"Logout",search_placeholder:"Search name / email / order #",method:"Method",
+      all:"All",collect:"Collect",delivery:"Delivery",status:"Status",pending:"pending",paid:"paid",shipped:"shipped",
+      completed:"completed",cancelled:"cancelled",from:"From",to:"To",refresh:"Refresh",loading:"Loading…",
+      order:"#",customer:"Customer",email:"Email",created:"Created",total:"Total",items:"Items",delivery_addr:"Delivery address",pickup_note:"Pickup at store",view_items:"View items",hide_items:"Hide items"},
+  fr:{title:"Historique des achats",back_admin:"Retour à l’Admin",language:"Langue",checking_session:"Vérification de session…",
+      login_admin:"Se connecter (Admin)",logout:"Se déconnecter",search_placeholder:"Rech. nom / email / n° commande",method:"Méthode",
+      all:"Toutes",collect:"Retrait",delivery:"Livraison",status:"Statut",pending:"en attente",paid:"payée",shipped:"expédiée",
+      completed:"terminée",cancelled:"annulée",from:"Du",to:"Au",refresh:"Rafraîchir",loading:"Chargement…",
+      order:"N°",customer:"Client",email:"Email",created:"Créée",total:"Total",items:"Articles",delivery_addr:"Adresse de livraison",pickup_note:"Retrait en magasin",view_items:"Voir articles",hide_items:"Masquer"},
+  ar:{title:"سجل المشتريات",back_admin:"العودة للوحة التحكم",language:"اللغة",checking_session:"جارٍ فحص الجلسة…",
+      login_admin:"تسجيل دخول كمدير",logout:"تسجيل خروج",search_placeholder:"بحث اسم / بريد / رقم الطلب",method:"الطريقة",
+      all:"الكل",collect:"استلام",delivery:"تسليم",status:"الحالة",pending:"قيد الانتظار",paid:"مدفوع",shipped:"تم الشحن",
+      completed:"مكتمل",cancelled:"ملغي",from:"من",to:"إلى",refresh:"تحديث",loading:"جارٍ التحميل…",
+      order:"الطلب",customer:"العميل",email:"البريد",created:"أُنشئ",total:"الإجمالي",items:"العناصر",delivery_addr:"عنوان التسليم",pickup_note:"استلام من المتجر",view_items:"عرض العناصر",hide_items:"إخفاء العناصر"}
+};
+function applyLang(lang){
+  document.documentElement.setAttribute('data-lang', lang);
+  document.documentElement.dir = (lang==='ar')?'rtl':'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k = el.getAttribute('data-i18n'); if(STR[lang]?.[k]) el.innerText = STR[lang][k];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k = el.getAttribute('data-i18n-ph'); if(STR[lang]?.[k]) el.setAttribute('placeholder', STR[lang][k]);
+  });
+}
+function initLang(){
+  const sel = document.getElementById('langSel');
+  const saved = localStorage.getItem('lang') || 'en';
+  sel.value = saved; applyLang(saved);
+  sel.addEventListener('change', ()=>{ const v=sel.value; localStorage.setItem('lang', v); applyLang(v); render(); });
+}
 
-/* ================= Auth ================= */
-const authMsg=document.getElementById('authMsg');
-const filtersWrap=document.getElementById('filtersWrap');
-const listWrap=document.getElementById('listWrap');
-
-const ADMIN_EMAILS=["anwar.moumenjamai19@gmail.com"];
+/* ---------- Auth ---------- */
+const authMsg  = document.getElementById("authMsg");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn= document.getElementById("logoutBtn");
+loginBtn.onclick = () => {
+  const u = new URL("login.html", location.href);
+  u.searchParams.set("admin", "1");
+  u.searchParams.set("redirect", "history.html");
+  location.href = u.toString();
+};
+logoutBtn.onclick = async () => { try{ await supa.auth.signOut(); }catch{} location.href='index.html'; };
 
 async function checkAdmin(){
-  authMsg.textContent = "Checking session…";
+  const lang = localStorage.getItem('lang')||'en';
+  authMsg.textContent = STR[lang].checking_session;
   const { data:{ session } } = await supa.auth.getSession();
-  if (!session?.user){ authMsg.textContent="Not signed in."; return false; }
+  if (!session?.user){ authMsg.textContent = STR[lang].checking_session.replace('Checking','Not signed in.'); loginBtn.classList.remove('hidden'); return false; }
   authMsg.textContent = `Signed in as ${session.user.email}`;
-
+  logoutBtn.classList.remove('hidden');
   if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){ location.replace('index.html'); return false; }
   return true;
 }
 
-/* ================= Filters ================= */
-const qEl=document.getElementById('q');
-const methodEl=document.getElementById('method');
-const statusEl=document.getElementById('status');
-const fromEl=document.getElementById('from');
-const toEl=document.getElementById('to');
-const refreshBtn=document.getElementById('refresh');
-const rowsEl=document.getElementById('rows');
-const countMsg=document.getElementById('countMsg');
-const exportBtn=document.getElementById('exportBtn');
+/* ---------- Filters & Data ---------- */
+const qEl = document.getElementById('q');
+const methodEl = document.getElementById('method');
+const statusEl = document.getElementById('status');
+const fromEl = document.getElementById('from');
+const toEl = document.getElementById('to');
+document.getElementById('refresh').onclick = load;
 
-let ORDERS_CACHE=[];
-
-function defaultDates(){
-  const now=new Date();
-  const start=new Date(now); start.setDate(start.getDate()-120);
-  fromEl.value = start.toISOString().slice(0,10);
-  toEl.value   = now.toISOString().slice(0,10);
+let ORDERS = [];
+async function load(){
+  const msg = document.getElementById('msg');
+  msg.textContent = (STR[localStorage.getItem('lang')||'en'].loading);
+  const { data, error } = await supa
+    .from('orders')
+    .select(`
+      id, order_number, user_id, status, delivery_method, created_at, total_amount, currency,
+      delivery_address,            -- text or json
+      profiles:profiles!inner(email, first_name, last_name)
+    `)
+    .order('created_at', { ascending:false })
+    .limit(1000);
+  if (error){ msg.textContent = error.message; return; }
+  ORDERS = data || [];
+  msg.textContent='';
+  render();
 }
 
-function normalizeMethod(row){
-  // We support multiple possible column names
-  const m = (row.fulfillment_method || row.delivery_method || row.method || '').toLowerCase();
-  if (m==='pickup' || m==='collect' || m==='collection') return 'pickup';
-  if (m==='delivery' || m==='home' || m==='ship' || m==='shipping') return 'delivery';
-  return m || ''; // unknown/blank
-}
-function normalizeAddress(row){
-  // Support a JSON object or flat text fields
-  const j = row.shipping_address || row.address || null;
-  if (j && typeof j === 'object'){
-    const name = [j.name || j.full_name || ''].filter(Boolean).join(' ');
-    const phone = j.phone || j.phone_number || row.phone || '';
-    const lines = [
-      name ? name : '',
-      j.line1 || j.address1 || '',
-      j.line2 || j.address2 || '',
-      [j.city, j.region || j.state, j.postal_code || j.zip].filter(Boolean).join(' '),
-      j.country || ''
-    ].filter(Boolean);
-    const label = lines.join('\n');
-    return { name, phone, label };
-  }
-  // maybe we have text columns
-  const label = row.address_text || row.address || '';
-  const phone = row.phone || '';
-  return { name:'', phone, label: String(label||'') };
-}
-function pillStatus(s){
-  const st=(s||'').toLowerCase();
-  const cls = st==='paid' || st==='fulfilled' || st==='shipped' ? 'ok' : st==='cancelled' ? 'bad' : 'pend';
-  return `<span class="pill ${cls}">${escapeHtml(s||'pending')}</span>`;
+async function fetchItems(orderId){
+  const { data, error } = await supa
+    .from('order_items')
+    .select('product_sku, product_name, quantity, unit_price')
+    .eq('order_id', orderId)
+    .order('product_sku', { ascending:true });
+  if (error) return [];
+  return data || [];
 }
 
-function render(){
-  const q=(qEl.value||'').toLowerCase().trim();
-  const m=(methodEl.value||'').toLowerCase();
-  const st=(statusEl.value||'').toLowerCase();
+async function render(){
+  const list = document.getElementById('list');
+  const lang = localStorage.getItem('lang')||'en';
+  const t = STR[lang];
 
-  const rows = ORDERS_CACHE.filter(r=>{
-    if (m && r._method !== m) return false;
-    if (st && String(r.status||'').toLowerCase() !== st) return false;
-    if (q){
-      const blob = [
-        r._name || '',
-        r._email || '',
-        r._phone || '',
-        r._addr || '',
-        String(r.id||'')
-      ].join(' ').toLowerCase();
-      if (!blob.includes(q)) return false;
-    }
+  // filters
+  const q = (qEl.value||'').toLowerCase().trim();
+  const meth = methodEl.value;
+  const st = statusEl.value;
+  const from = fromEl.value ? new Date(fromEl.value) : null;
+  const to = toEl.value ? new Date(toEl.value) : null;
+
+  const rows = ORDERS.filter(o=>{
+    if (meth && o.delivery_method!==meth) return false;
+    if (st && o.status!==st) return false;
+    const tstr = `${o.order_number||''} ${(o.profiles?.email||'').toLowerCase()} ${String(o.profiles?.first_name||'')} ${String(o.profiles?.last_name||'')}`.toLowerCase();
+    if (q && !tstr.includes(q)) return false;
+    const d = new Date(o.created_at);
+    if (from && d < from) return false;
+    if (to){ let td = new Date(to); td.setHours(23,59,59,999); if (d>td) return false; }
     return true;
   });
 
-  countMsg.textContent = `${rows.length} order${rows.length===1?'':'s'}`;
-  if (!rows.length){ rowsEl.innerHTML = '<div class="muted">No results.</div>'; return; }
+  if (!rows.length){
+    list.innerHTML = `<div class="muted">${t.loading}</div>`;
+    return;
+  }
 
-  rowsEl.innerHTML = `
+  list.innerHTML = `
     <table>
       <thead>
         <tr>
-          <th>Order #</th>
-          <th>Date</th>
-          <th>Customer</th>
-          <th>Method</th>
-          <th>Status</th>
-          <th>Qty / Amount</th>
-          <th>Address / Notes</th>
+          <th>${t.order}</th>
+          <th>${t.customer}</th>
+          <th>${t.email}</th>
+          <th>${t.created}</th>
+          <th>${t.status}</th>
+          <th>${t.items}</th>
+          <th>${t.total}</th>
+          <th>${t.delivery_addr}</th>
         </tr>
       </thead>
       <tbody>
-        ${rows.map(r=>{
-          return `<tr>
-            <td><strong>${r.id}</strong></td>
-            <td class="mini">${new Date(r.created_at).toLocaleString()}</td>
+        ${rows.map(o=>{
+          const pill = o.status==='completed'?'ok':o.status==='pending'?'pend':o.status==='cancelled'?'bad':'';
+          const name = [o.profiles?.first_name, o.profiles?.last_name].filter(Boolean).join(' ') || '(no name)';
+          const method = o.delivery_method==='collect' ? t.collect : t.delivery;
+          const addr = (o.delivery_method==='collect') ? `<div class="mini">${t.pickup_note}</div>` : `<div class="address mini">${escapeHtml(String(o.delivery_address||''))}</div>`;
+          return `<tr data-order="${o.id}">
+            <td><strong>${o.order_number || o.id}</strong><div class="mini muted">${method}</div></td>
+            <td>${escapeHtml(name)}</td>
+            <td>${escapeHtml(o.profiles?.email||'')}</td>
+            <td class="mini">${new Date(o.created_at).toLocaleString()}</td>
+            <td><span class="pill ${pill}">${o.status}</span></td>
             <td>
-              <div style="font-weight:600">${escapeHtml(r._name || '(no name)')}</div>
-              <div class="mini muted">${escapeHtml(r._email || '')}</div>
-              ${r._phone?`<div class="mini muted">☎ ${escapeHtml(r._phone)}</div>`:''}
+              <button class="btn small" data-items="toggle">${t.view_items}</button>
+              <div class="mini" data-items-box style="display:none; margin-top:6px">…</div>
             </td>
-            <td>${r._method==='delivery'?'<span class="pill">Delivery</span>':'<span class="pill">Pickup</span>'}</td>
-            <td>${pillStatus(r.status)}</td>
-            <td class="mini">${Number(r.total_qty||0)} items<br>${r.total_amount!=null?Number(r.total_amount).toFixed(2):'-'}</td>
-            <td class="addr mini">
-              ${r._addr ? escapeHtml(r._addr) : '<span class="muted">(no address)</span>'}
-              ${r.notes ? `<div style="margin-top:6px"><strong>Notes:</strong> ${escapeHtml(r.notes)}</div>`:''}
-              ${r.receipt_url ? `<div style="margin-top:6px"><a class="btn small" href="${r.receipt_url}" target="_blank" rel="noopener">Receipt</a></div>`:''}
-            </td>
+            <td>${Number(o.total_amount||0).toFixed(2)} ${o.currency||''}</td>
+            <td>${addr}</td>
           </tr>`;
         }).join('')}
       </tbody>
     </table>
   `;
-}
 
-/* CSV export of current view */
-function toCSV(rows){
-  const head = ["order_id","created_at","customer_name","customer_email","phone","method","status","total_qty","total_amount","address","notes"];
-  const esc = v => {
-    const s = String(v==null?'':v);
-    if (/[",\n]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
-    return s;
-  };
-  const body = rows.map(r=>[
-    r.id, r.created_at, r._name, r._email, r._phone, r._method, r.status, r.total_qty, r.total_amount, r._addr, r.notes||''
-  ].map(esc).join(',')).join('\n');
-  return head.join(',') + '\n' + body;
-}
-function download(filename, text){
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([text], {type:'text/csv'}));
-  a.download = filename;
-  a.click();
-  setTimeout(()=> URL.revokeObjectURL(a.href), 500);
-}
-exportBtn.onclick = ()=>{
-  // apply same filter as render()
-  const q=(qEl.value||'').toLowerCase().trim();
-  const m=(methodEl.value||'').toLowerCase();
-  const st=(statusEl.value||'').toLowerCase();
-  const rows = ORDERS_CACHE.filter(r=>{
-    if (m && r._method !== m) return false;
-    if (st && String(r.status||'').toLowerCase() !== st) return false;
-    if (q){
-      const blob = [r._name||'', r._email||'', r._phone||'', r._addr||'', String(r.id||'')].join(' ').toLowerCase();
-      if (!blob.includes(q)) return false;
-    }
-    return true;
-  });
-  download(`orders_history_${new Date().toISOString().slice(0,10)}.csv`, toCSV(rows));
-};
-
-/* ================= Data load ================= */
-async function loadOrders(){
-  rowsEl.textContent = 'Loading…';
-
-  // Build date window (inclusive)
-  const from = fromEl.value ? new Date(fromEl.value+'T00:00:00') : null;
-  const to   = toEl.value ? new Date(toEl.value+'T23:59:59') : null;
-
-  let q = supa.from('orders').select(`
-    id, user_id, created_at, status, total_qty, total_amount, receipt_url, notes,
-    fulfillment_method, delivery_method, method, shipping_address, address, address_text, phone,
-    profiles:profiles!inner(email,first_name,last_name)
-  `).order('created_at', { ascending:false }).limit(2000);
-
-  if (from) q = q.gte('created_at', from.toISOString());
-  if (to)   q = q.lte('created_at', to.toISOString());
-
-  const { data, error } = await q;
-  if (error){ rowsEl.textContent = error.message; return; }
-
-  ORDERS_CACHE = (data||[]).map(r=>{
-    const m = normalizeMethod(r) || 'pickup';
-    const addr = normalizeAddress(r);
-    const name = [r.profiles?.first_name, r.profiles?.last_name].filter(Boolean).join(' ') || '(no name)';
-    return {
-      ...r,
-      _method: m,
-      _name: name,
-      _email: r.profiles?.email || '',
-      _phone: addr.phone || r.phone || '',
-      _addr: addr.label
+  // bind item toggles
+  list.querySelectorAll('button[data-items="toggle"]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const tr = btn.closest('tr');
+      const box = tr.querySelector('[data-items-box]');
+      if (box.getAttribute('data-loaded')==='1'){
+        const open = box.style.display!=='none';
+        box.style.display = open ? 'none' : 'block';
+        btn.innerText = open ? t.view_items : t.hide_items;
+        return;
+      }
+      box.textContent = t.loading;
+      const orderId = tr.getAttribute('data-order');
+      const items = await fetchItems(orderId);
+      if (!items.length){ box.textContent = '-'; box.setAttribute('data-loaded','1'); box.style.display='block'; btn.innerText = t.hide_items; return; }
+      box.innerHTML = `
+        <table class="mini" style="width:100%">
+          <thead><tr><th>SKU</th><th>${t.items}</th><th>${t.qty_short||'Qty'}</th><th>${t.total}</th></tr></thead>
+          <tbody>
+            ${items.map(it=>`<tr>
+              <td>${escapeHtml(it.product_sku||'')}</td>
+              <td>${escapeHtml(it.product_name||'')}</td>
+              <td>${Number(it.quantity||0)}</td>
+              <td>${(Number(it.unit_price||0)*Number(it.quantity||0)).toFixed(2)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      `;
+      box.setAttribute('data-loaded','1');
+      box.style.display='block';
+      btn.innerText = t.hide_items;
     };
   });
-
-  render();
 }
 
-/* ================= Boot ================= */
+/* ---------- Utils ---------- */
+function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+/* ---------- Boot ---------- */
 document.addEventListener('DOMContentLoaded', async ()=>{
+  initLang();
   const ok = await checkAdmin();
   if (!ok) return;
+  document.getElementById('filtersWrap').classList.remove('hidden');
+  document.getElementById('listWrap').classList.remove('hidden');
 
-  filtersWrap.classList.remove('hidden');
-  listWrap.classList.remove('hidden');
-  defaultDates();
-  await loadOrders();
+  // search live
+  qEl.addEventListener('input', render);
+  methodEl.addEventListener('change', render);
+  statusEl.addEventListener('change', render);
+  fromEl.addEventListener('change', render);
+  toEl.addEventListener('change', render);
 
-  [qEl, methodEl, statusEl, fromEl, toEl].forEach(el=> el.addEventListener('change', ()=> render()));
-  document.getElementById('refresh').addEventListener('click', loadOrders);
-
-  // Realtime new orders
-  try{
-    supa.channel('rt_orders')
-      .on('postgres_changes', { event:'*', schema:'public', table:'orders' }, async ()=>{
-        toast('Orders updated'); await loadOrders();
-      })
-      .subscribe();
-  }catch{}
+  await load();
 });
 </script>
 </body>
