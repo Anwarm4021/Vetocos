@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VetoCos | Order details</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:18px; }
+    html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui;line-height:1.6}
+    .wrap{max-width:1000px;margin:0 auto;padding:18px}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:18px;padding:16px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:820px){.grid{grid-template-columns:1fr}}
+    .row{display:flex;justify-content:space-between;gap:8px}
+    .muted{color:var(--muted)}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.06);color:var(--text);text-decoration:none;display:inline-block}
+    .warn{background:rgba(255,200,120,.12)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p><a class="btn" href="my-order.html">← Back to orders</a></p>
+    <h1>Order details</h1>
+    <div id="meta" class="muted">Loading…</div>
+
+    <div class="grid" style="margin-top:10px">
+      <section class="card">
+        <h3>Contact & Delivery</h3>
+        <div id="contact"></div>
+      </section>
+      <section class="card">
+        <h3>Items</h3>
+        <div id="items"></div>
+      </section>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <div id="msg" class="muted"></div>
+      <div>
+        <button id="btnCancel" class="btn warn" type="button">Cancel order</button>
+        <a id="btnPay" class="btn" href="#">Edit / payment</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const supa = supabase.createClient(
+      "https://qdepgviimbcdlozjpbhm.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
+    );
+    const qs = new URLSearchParams(location.search);
+    const ORDER_ID = qs.get('order');
+
+    const meta = document.getElementById('meta');
+    const contact = document.getElementById('contact');
+    const items = document.getElementById('items');
+    const msg = document.getElementById('msg');
+    const btnCancel = document.getElementById('btnCancel');
+    const btnPay = document.getElementById('btnPay');
+
+    function fmt(dt){ try{ return new Date(dt).toLocaleString(); }catch{ return dt; } }
+
+    async function load(){
+      if(!ORDER_ID){ location.replace('my-order.html'); return; }
+      const { data:{ user } } = await supa.auth.getUser();
+      if(!user){ location.href='login.html?redirect='+encodeURIComponent('order-view.html?order='+ORDER_ID); return; }
+
+      const { data: o, error } = await supa.from('orders').select('*').eq('id', ORDER_ID).maybeSingle();
+      if(error || !o){ meta.textContent = error?.message || 'Order not found'; return; }
+
+      meta.textContent = `#${String(o.id).slice(0,8)} • ${o.status} • created ${fmt(o.created_at)}`;
+
+      contact.innerHTML = `
+        <div><strong>${o.full_name||'-'}</strong></div>
+        <div class="muted">${o.email||'-'} · ${o.phone_number||'-'}</div>
+        <div style="margin-top:8px">${o.delivery_method==='pickup'
+          ? '<em>Pickup (collect)</em>'
+          : [o.address_line1,o.address_line2,o.city,o.postal_code,o.country].filter(Boolean).join(', ') || '-'}</div>
+        <div class="muted" style="margin-top:6px">Payment: ${o.payment_method||'-'}</div>
+      `;
+
+      const { data: its } = await supa.from('order_items').select('*').eq('order_id', ORDER_ID);
+      items.innerHTML = (its||[]).map(it=>`<div class="row"><div>${it.product_name||it.product_sku}</div><div>x${it.quantity}</div></div>`).join('') || '<div class="muted">No items</div>';
+
+      btnPay.href = `order-pay.html?order=${encodeURIComponent(ORDER_ID)}`;
+
+      btnCancel.onclick = async ()=>{
+        const { data: cur } = await supa.from('orders').select('status').eq('id', ORDER_ID).single();
+        if(cur?.status === 'delivered'){ msg.textContent = 'Cannot cancel a delivered order.'; return; }
+        const { error: err } = await supa.from('orders').update({ status:'cancelled' }).eq('id', ORDER_ID);
+        if(err){ msg.textContent = err.message; return; }
+        msg.textContent = 'Order cancelled.';
+        setTimeout(()=>location.reload(), 600);
+      };
+    }
+    load();
+  </script>
+</body>
+</html>
