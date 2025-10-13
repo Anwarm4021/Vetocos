@@ -169,7 +169,7 @@ body.rtl th, body.rtl td{text-align:inherit}
   <div class="card">
     <div class="rowbar" style="margin-bottom:10px">
       <input id="prodSearch" class="search" data-i18n="add.searchPH" data-i18n-attr="placeholder" placeholder="Search products by name or SKU">
-      <span class="kicker" data-i18n="messages.stockNote">Only available items are shown. Stock limits apply. Items may require approval.</span>
+      <span class="kicker" data-i18n="messages.stockNote">Only available items are shown. Stock limits apply. Items require approval.</span>
     </div>
     <div id="prodList" class="muted" data-i18n="general.loading">Loading…</div>
   </div>
@@ -353,7 +353,7 @@ const I18N = {
     "ph.id":"e.g., License / Registration / ID",
     "buttons.submit":"Submit for review","buttons.replace":"Replace file","buttons.withdraw":"Withdraw application","buttons.openFile":"Open uploaded file","buttons.viewProduct":"View product",
     "messages.emailOnChange":"We’ll email you when your application status changes. If you update the file or ID, the status returns to <em>pending</em> for re-review.",
-    "messages.stockNote":"Only available items are shown. Stock limits apply. Items may require approval.",
+    "messages.stockNote":"Only available items are shown. Stock limits apply. Items require approval.",
     "messages.cartEmpty":"Cart is empty. You can add from the products list below.",
     "messages.cartItems":"Total items:",
     "notices.adminTitle":"Message from admin","notices.appTitle":"Note about your verification",
@@ -370,53 +370,45 @@ const I18N = {
   },
   fr: {
     "actions.products":"Produits","actions.cart":"Panier","actions.account":"Mon compte","actions.checkout":"Paiement","actions.gotoCheckout":"Aller au paiement",
-    "nav.contact":"Contact","footer.tag":"Complément alimentaire pour animaux de compagnie. Non destiné à diagnostiquer, traiter, guérir ou prévenir une maladie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
+    "nav.contact":"Contact","footer.tag":"Complément alimentaire pour animaux de compagnie. Non destiné à diagnostiquer, traiter، guérir ou prévenir une maladie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
     "page.title":"Vérification vétérinaire",
-    "intro.kicker":"Fournissez vos justificatifs pour débloquer l’achat. Une fois approuvé, le bouton de paiement s’affichera.",
+    "intro.kicker":"Fournissez vos justificatifs pour débloquer l’achat. Une fois approuvé، le bouton de paiement s’affichera.",
     "status.currentLabel":"Statut actuel",
-    "status.pending":"en attente","status.approved":"approuvé","status.rejeté":"refusé","status.withdrawn":"retiré",
+    "status.pending":"en attente","status.approved":"approuvé","status.rejected":"refusé","status.withdrawn":"retiré",
     "labels.id":"Numéro d’identification",
     "labels.file":"Diplôme / carte professionnelle (PDF/JPG/PNG, 10 Mo max)","ph.id":"ex. : Licence / Enregistrement / ID",
     "buttons.submit":"Soumettre à la revue","buttons.replace":"Remplacer le fichier","buttons.withdraw":"Retirer la demande","buttons.openFile":"Ouvrir le fichier","buttons.viewProduct":"Voir le produit",
     "messages.emailOnChange":"Nous vous informerons par e-mail des changements d’état. Toute mise à jour renvoie le statut à <em>en attente</em>.",
-    "messages.stockNote":"Seuls les articles disponibles sont affichés. Limites de stock. Certains articles peuvent nécessiter une approbation.",
+    "messages.stockNote":"Seuls les articles disponibles sont affichés. Limites de stock. Les articles nécessitent une approbation.",
     "messages.cartEmpty":"Votre panier est vide. Ajoutez des produits ci-dessous.","messages.cartItems":"Articles au total :",
     "notices.adminTitle":"Message de l’administrateur","notices.appTitle":"Note concernant votre vérification",
-    "cart.title":"Mon panier (édition rapide)",
-    "add.title":"Ajouter des produits","add.searchPH":"Rechercher par nom ou SKU",
-    "approvals.title":"Mes demandes d’approbation",
-    "orders.title":"Mes commandes",
-    "reviews.title":"Rédiger un avis","reviews.product":"Produit acheté","reviews.select":"Sélectionnez un produit…","reviews.rating":"Note","reviews.comment":"Commentaire","reviews.commentPH":"Partagez votre expérience… (facultatif)","reviews.submit":"Envoyer l’avis","reviews.thanks":"Merci pour votre avis !","reviews.choose":"Choisissez un produit.",
+    "cart.title":"Mon panier (édition rapide)","add.title":"Ajouter des produits","add.searchPH":"Rechercher par nom ou SKU",
+    "approvals.title":"Mes demandes d’approbation","orders.title":"Mes commandes","reviews.title":"Rédiger un avis","reviews.product":"Produit acheté","reviews.select":"Sélectionnez un produit…","reviews.rating":"Note","reviews.comment":"Commentaire","reviews.commentPH":"Partagez votre expérience… (facultatif)","reviews.submit":"Envoyer l’avis","reviews.thanks":"Merci pour votre avis !","reviews.choose":"Choisissez un produit.",
     "general.loading":"Chargement…","general.signin":"Veuillez vous connecter.","general.receipt":"Reçu","general.instock":"En stock :","general.qty":"Qté","general.action":"Action",
-    "badges.requires":"Vérification requise","badges.open":"Ouvert","badges.pending":"En attente",
+    "badges.requires":"Vérification requise","badges.pending":"En attente",
     "toasts.cartUpdated":"Panier mis à jour","toasts.approvalSubmitted":"Demande d’approbation envoyée","toasts.cancelled":"Demande annulée",
-    "errors.fileTooLarge":"Fichier trop volumineux (10 Mo max).","errors.fileType":"Type de fichier non pris en charge.","errors.nothingToUpdate":"Rien à mettre à jour.","errors.enterIdAndFile":"Veuillez saisir l’ID et choisir un fichier.","errors.signinFirst":"Veuillez vous connecter d’abord.","errors.loadOrders":"Impossible de charger les commandes.",
-    "errors.noApproved":"Pas encore approuvé.","errors.badQty":"La quantité doit être supérieure à zéro.","errors.badFile":"Veuillez téléverser un PDF ou une image."
+    "errors.fileTooLarge":"Fichier trop volumineux (10 Mo max).","errors.fileType":"Type de fichier non pris en charge.","errors.nothingToUpdate":"Rien à mettre à jour.","errors.enterIdAndFile":"Veuillez saisir l’ID et choisir un fichier.","errors.signinFirst":"Veuillez vous connecter d’abord.","errors.loadOrders":"Impossible de charger les commandes.","errors.noApproved":"Pas encore approuvé.","errors.badQty":"La quantité doit être supérieure à zéro.","errors.badFile":"Veuillez téléverser un PDF ou une image."
   },
   es: {
     "actions.products":"Productos","actions.cart":"Carrito","actions.account":"Mi cuenta","actions.checkout":"Pagar","actions.gotoCheckout":"Ir a pagar",
-    "nav.contact":"Contacto","footer.tag":"Alimento complementario para animales de compañía. No destinado a diagnosticar, tratar, curar ni prevenir enfermedades.","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
+    "nav.contact":"Contacto","footer.tag":"Alimento complementario para animales de compañía. No destinado a diagnosticar، tratar، curar ni prevenir enfermedades.","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
     "page.title":"Verificación veterinaria",
-    "intro.kicker":"Proporcione sus credenciales para habilitar las compras. Una vez aprobado, aparecerá el botón de pago.",
+    "intro.kicker":"Proporcione sus credenciales para habilitar las compras. Una vez aprobado، aparecerá el botón de pago.",
     "status.currentLabel":"Estado actual",
     "status.pending":"pendiente","status.approved":"aprobado","status.rejected":"rechazado","status.withdrawn":"retirado",
     "labels.id":"Número de identificación",
-    "labels.file":"Diploma / tarjeta profesional (PDF/JPG/PNG, máx. 10 MB)","ph.id":"p. ej., Licencia / Registro / ID",
+    "labels.file":"Diploma / tarjeta profesional (PDF/JPG/PNG، máx. 10 MB)","ph.id":"p. ej., Licencia / Registro / ID",
     "buttons.submit":"Enviar para revisión","buttons.replace":"Reemplazar archivo","buttons.withdraw":"Retirar solicitud","buttons.openFile":"Abrir archivo","buttons.viewProduct":"Ver producto",
-    "messages.emailOnChange":"Le avisaremos por correo cuando cambie el estado. Si actualiza el archivo o el ID, vuelve a <em>pendiente</em> para revisión.",
-    "messages.stockNote":"Solo se muestran artículos disponibles. Se aplican límites de stock. Algunos artículos pueden requerir aprobación.",
+    "messages.emailOnChange":"Le avisaremos por correo cuando cambie el estado. Si actualiza el archivo o el ID، vuelve a <em>pendiente</em> para revisión.",
+    "messages.stockNote":"Solo se muestran artículos disponibles. Se aplican límites de stock. Los artículos requieren aprobación.",
     "messages.cartEmpty":"El carrito está vacío. Agregue productos abajo.","messages.cartItems":"Artículos totales:",
     "notices.adminTitle":"Mensaje de administración","notices.appTitle":"Nota sobre su verificación",
-    "cart.title":"Mi carrito (edición rápida)",
-    "add.title":"Añadir más productos","add.searchPH":"Buscar por nombre o SKU",
-    "approvals.title":"Mis solicitudes de aprobación",
-    "orders.title":"Mis pedidos",
-    "reviews.title":"Escribir una reseña","reviews.product":"Producto comprado","reviews.select":"Selecciona un producto…","reviews.rating":"Valoración","reviews.comment":"Comentario","reviews.commentPH":"Comparte tu experiencia… (opcional)","reviews.submit":"Enviar reseña","reviews.thanks":"¡Gracias por tu reseña!","reviews.choose":"Elige un producto.",
+    "cart.title":"Mi carrito (edición rápida)","add.title":"Añadir más productos","add.searchPH":"Buscar por nombre o SKU",
+    "approvals.title":"Mis solicitudes de aprobación","orders.title":"Mis pedidos","reviews.title":"Escribir una reseña","reviews.product":"Producto comprado","reviews.select":"Selecciona un producto…","reviews.rating":"Valoración","reviews.comment":"Comentario","reviews.commentPH":"Comparte tu experiencia… (opcional)","reviews.submit":"Enviar reseña","reviews.thanks":"¡Gracias por tu reseña!","reviews.choose":"Elige un producto.",
     "general.loading":"Cargando…","general.signin":"Inicia sesión.","general.receipt":"Recibo","general.instock":"En stock:","general.qty":"Cant.","general.action":"Acción",
-    "badges.requires":"Requiere verificación","badges.open":"Disponible","badges.pending":"Pendiente",
+    "badges.requires":"Requiere verificación","badges.pending":"Pendiente",
     "toasts.cartUpdated":"Carrito actualizado","toasts.approvalSubmitted":"Solicitud enviada","toasts.cancelled":"Solicitud cancelada",
-    "errors.fileTooLarge":"Archivo demasiado grande (máx. 10 MB).","errors.fileType":"Tipo de archivo no compatible.","errors.nothingToUpdate":"Nada que actualizar.","errors.enterIdAndFile":"Introduce el ID y el archivo.","errors.signinFirst":"Primero inicia sesión.","errors.loadOrders":"No se pudieron cargar los pedidos.",
-    "errors.noApproved":"Aún no aprobado.","errors.badQty":"La cantidad debe ser mayor que cero.","errors.badFile":"Sube un PDF o una imagen."
+    "errors.fileTooLarge":"Archivo demasiado grande (máx. 10 MB).","errors.fileType":"Tipo de archivo no compatible.","errors.nothingToUpdate":"Nada que actualizar.","errors.enterIdAndFile":"Introduce el ID y el archivo.","errors.signinFirst":"Primero inicia sesión.","errors.loadOrders":"No se pudieron cargar los pedidos.","errors.noApproved":"Aún no aprobado.","errors.badQty":"La cantidad debe ser mayor que cero.","errors.badFile":"Sube un PDF o una imagen."
   },
   ar: {
     "actions.products":"المنتجات","actions.cart":"السلة","actions.account":"حسابي","actions.checkout":"إتمام الشراء","actions.gotoCheckout":"اذهب للدفع",
@@ -427,16 +419,15 @@ const I18N = {
     "status.pending":"قيد المراجعة","status.approved":"مقبول","status.rejected":"مرفوض","status.withdrawn":"مسحوب",
     "labels.id":"رقم التعريف","labels.file":"شهادة/بطاقة مهنية (PDF/JPG/PNG، 10 م.ب كحد أقصى)","ph.id":"مثال: رخصة / تسجيل / رقم هوية",
     "buttons.submit":"إرسال للمراجعة","buttons.replace":"استبدال الملف","buttons.withdraw":"سحب الطلب","buttons.openFile":"فتح الملف المرفوع","buttons.viewProduct":"عرض المنتج",
-    "messages.emailOnChange":"سنراسلك عند تغيير الحالة. أي تحديث للملف/الرقم يعيد الحالة إلى <em>قيد المراجعة</em>.","messages.stockNote":"يُعرض المتاح فقط. توجد حدود للمخزون. قد تتطلب بعض المنتجات موافقة.",
+    "messages.emailOnChange":"سنراسلك عند تغيير الحالة. أي تحديث للملف/الرقم يعيد الحالة إلى <em>قيد المراجعة</em>.","messages.stockNote":"يُعرض المتاح فقط. توجد حدود للمخزون. جميع المنتجات تحتاج موافقة.",
     "messages.cartEmpty":"سلة التسوق فارغة. يمكنك الإضافة من القائمة أدناه.","messages.cartItems":"إجمالي العناصر:",
     "notices.adminTitle":"رسالة من الإدارة","notices.appTitle":"ملاحظة حول التحقق الخاص بك",
     "cart.title":"سلتي (تعديل سريع)","add.title":"أضف المزيد من المنتجات","add.searchPH":"ابحث بالاسم أو برمز SKU","approvals.title":"طلبات الموافقة الخاصة بي","orders.title":"طلباتي",
     "reviews.title":"اكتب مراجعة","reviews.product":"المنتج الذي تم شراؤه","reviews.select":"اختر منتجًا…","reviews.rating":"التقييم","reviews.comment":"تعليق","reviews.commentPH":"شارك تجربتك… (اختياري)","reviews.submit":"إرسال المراجعة","reviews.thanks":"شكرًا على مراجعتك!","reviews.choose":"اختر منتجًا.",
     "general.loading":"جارٍ التحميل…","general.signin":"يرجى تسجيل الدخول.","general.receipt":"الإيصال","general.instock":"المتوفر:","general.qty":"الكمية","general.action":"إجراء",
-    "badges.requires":"يتطلّب تحقق","badges.open":"متاح","badges.pending":"قيد المراجعة",
+    "badges.requires":"يتطلّب تحقق","badges.pending":"قيد المراجعة",
     "toasts.cartUpdated":"تم تحديث السلة","toasts.approvalSubmitted":"تم إرسال طلب الموافقة","toasts.cancelled":"تم إلغاء الطلب",
-    "errors.fileTooLarge":"الملف كبير جدًا (الحد 10 م.ب).","errors.fileType":"نوع الملف غير مدعوم.","errors.nothingToUpdate":"لا يوجد ما يتم تحديثه.","errors.enterIdAndFile":"أدخل رقم التعريف واختر ملفًا.","errors.signinFirst":"يرجى تسجيل الدخول أولًا.","errors.loadOrders":"تعذّر تحميل الطلبات.",
-    "errors.noApproved":"غير مقبول بعد.","errors.badQty":"الكمية يجب أن تكون أكبر من 0.","errors.badFile":"رجاءً ارفع PDF أو صورة."
+    "errors.fileTooLarge":"الملف كبير جدًا (الحد 10 م.ب).","errors.fileType":"نوع الملف غير مدعوم.","errors.nothingToUpdate":"لا يوجد ما يتم تحديثه.","errors.enterIdAndFile":"أدخل رقم التعريف واختر ملفًا.","errors.signinFirst":"يرجى تسجيل الدخول أولًا.","errors.loadOrders":"تعذّر تحميل الطلبات.","errors.noApproved":"غير مقبول بعد.","errors.badQty":"الكمية يجب أن تكون أكبر من 0.","errors.badFile":"رجاءً ارفع PDF أو صورة."
   }
 };
 
@@ -593,8 +584,8 @@ function writeCart(items){ localStorage.setItem(CART_KEY, JSON.stringify((items|
 
 /* Product/approval caches */
 let PRODUCT_CACHE = [];
-let REQ_BY_SKU = new Map();              // sku -> boolean (requires_verification)
-let MY_APPROVALS = new Map();            // sku -> { status, quantity }
+let REQ_BY_SKU = new Map();   // sku -> boolean (requires_verification) — we’ll force true for all
+let MY_APPROVALS = new Map(); // sku -> { status, quantity }
 
 /* ===== Product Browser ===== */
 const prodSearch = document.getElementById('prodSearch');
@@ -615,8 +606,8 @@ async function loadProducts(){
     .order('name', { ascending:true });
   if (error){ prodList.textContent = error.message; return; }
   PRODUCT_CACHE = (data||[]).filter(p=>p.available && Number(p.stock_qty||0) > 0);
-  // Map which SKUs require verification
-  REQ_BY_SKU = new Map(PRODUCT_CACHE.map(p=>[p.sku, !!p.requires_verification]));
+  // Force verification for ALL SKUs
+  REQ_BY_SKU = new Map(PRODUCT_CACHE.map(p=>[p.sku, true]));
   await primeMyApprovalsMap();
   renderProducts();
 }
@@ -648,30 +639,21 @@ async function saveLocalCartToDB(){
   const { data:{ user } } = await supa.auth.getUser();
   if (!user) return;
 
-  // Persist only up to approved for verified SKUs (DB remains safe)
   const cart = readCart();
   const effective = [];
   for (const it of cart){
-    const sku = it.sku;
-    const requires = requiresSku(sku);
-    if (requires){
-      const apQ = approvedQtyForSku(sku);
-      if (apQ > 0){
-        effective.push({ sku, name: it.name || sku, qty: Math.min(apQ, Number(it.qty||0)) });
-      }
-    } else {
-      if (Number(it.qty)>0) effective.push({ sku, name: it.name || sku, qty: Number(it.qty) });
+    const apQ = approvedQtyForSku(it.sku);
+    if (apQ > 0){
+      effective.push({ sku: it.sku, name: it.name || it.sku, qty: Math.min(apQ, Number(it.qty||0)) });
     }
   }
-  // write local back so UI & DB stay consistent if quantities dropped to 0
-  writeCart(cart);
-
+  // keep local cart as-is (so user sees requests), DB stays clamped/safe
   if (effective.length){
     const upserts = effective.map(it=>({ user_id:user.id, product_sku:it.sku, quantity:it.qty }));
     await supa.from('cart_items').upsert(upserts, { onConflict: 'user_id,product_sku' });
   }
 
-  // Delete rows removed locally
+  // prune DB rows for non-effective items
   const { data: dbRows } = await supa.from('cart_items').select('product_sku').eq('user_id', user.id);
   const localSkus = new Set(effective.map(it=>it.sku));
   for (const r of (dbRows||[])){
@@ -682,9 +664,7 @@ async function saveLocalCartToDB(){
 }
 
 // --- approval helpers ---
-function requiresSku(sku){
-  return REQ_BY_SKU.get(sku) === true;
-}
+function requiresSku(_sku){ return true; } // ALL products require verification
 function approvedQtyForSku(sku){
   const ap = MY_APPROVALS.get(sku);
   return (ap && ap.status === 'approved') ? Number(ap.quantity || 0) : 0;
@@ -699,7 +679,7 @@ function isCartFullyApproved(){
   const cart = readCart();
   if (!cart.length) return false;
   for (const it of cart){
-    if (requiresSku(it.sku) && approvedQtyForSku(it.sku) < Number(it.qty||0)) return false;
+    if (approvedQtyForSku(it.sku) < Number(it.qty||0)) return false;
   }
   return true;
 }
@@ -717,25 +697,12 @@ function addToCart(sku, qty, name){
 async function requestMoreApproval(sku, delta){
   const { data:{ user } } = await supa.auth.getUser();
   if(!user){ toast(t('errors.signinFirst'), true); return; }
-  const ap = MY_APPROVALS.get(sku);
-  if (!ap || ap.status==='withdrawn' || ap.status==='rejected'){
-    const { error } = await supa.from('vet_product_approvals').upsert(
-      { user_id:user.id, product_sku:sku, quantity: Math.max(1, Number(delta)||1), status:'pending' },
-      { onConflict:'user_id,product_sku' }
-    );
-    if (error){ toast(error.message, true); return; }
-  } else if (ap.status==='pending'){
-    const { error } = await supa.from('vet_product_approvals')
-      .update({ quantity: Math.max(1, Number(delta)||1) })
-      .eq('user_id', user.id).eq('product_sku', sku).eq('status','pending');
-    if (error){ toast(error.message, true); return; }
-  } else if (ap.status==='approved'){
-    const { error } = await supa.from('vet_product_approvals').upsert(
-      { user_id:user.id, product_sku:sku, quantity: Number(ap.quantity||0) + Math.max(1, Number(delta)||1), status:'pending' },
-      { onConflict:'user_id,product_sku' }
-    );
-    if (error){ toast(error.message, true); return; }
-  }
+  const current = MY_APPROVALS.get(sku);
+  const baseQty = Number(current?.quantity||0);
+  const nextQty = baseQty + Math.max(1, Number(delta)||1);
+  const payload = { user_id:user.id, product_sku:sku, quantity: nextQty, status:'pending' };
+  const { error } = await supa.from('vet_product_approvals').upsert(payload, { onConflict:'user_id,product_sku' });
+  if (error){ toast(error.message, true); return; }
   await primeMyApprovalsMap();
   renderProducts();
   renderMyApprovals();
@@ -746,22 +713,19 @@ async function requestMoreApproval(sku, delta){
 function renderMiniCartRow(it, i){
   const sku = it.sku;
   const need = Number(it.qty||0);
-  const req  = requiresSku(sku);
   const apQ  = approvedQtyForSku(sku);
 
   let statusNote = '';
   let extra = '';
 
-  if (req){
-    if (apQ >= need && apQ > 0){
-      statusNote = `<div class="small success">Approved up to: ${apQ}</div>`;
-    } else if (apQ > 0){
-      statusNote = `<div class="small" style="color:#ffd08a">Approved ${apQ}, need ${need}</div>`;
-      extra = `<button class="qtybtn" data-verify="${i}" title="Request more">Verify</button>`;
-    } else {
-      statusNote = `<div class="small" style="color:#ffd08a">Not approved yet</div>`;
-      extra = `<button class="qtybtn" data-verify="${i}" title="Request approval">Verify</button>`;
-    }
+  if (apQ >= need && apQ > 0){
+    statusNote = `<div class="small success">Approved up to: ${apQ}</div>`;
+  } else if (apQ > 0){
+    statusNote = `<div class="small" style="color:#ffd08a">Approved ${apQ}, need ${need}</div>`;
+    extra = `<button class="qtybtn" data-verify="${i}" title="Request more">Verify</button>`;
+  } else {
+    statusNote = `<div class="small" style="color:#ffd08a">Not approved yet</div>`;
+    extra = `<button class="qtybtn" data-verify="${i}" title="Request approval">Verify</button>`;
   }
 
   return `<tr data-sku="${sku}">
@@ -783,11 +747,11 @@ function renderMiniCartRow(it, i){
 }
 
 async function renderMiniCart(){
-  // Ensure product cache & approvals exist
+  // Ensure caches exist
   if (!PRODUCT_CACHE.length) await loadProducts();
   await primeMyApprovalsMap();
 
-  // Normalize: keep user-entered qty (no clamping) so they can see what still needs approval
+  // Keep user-entered qty (no clamping) so they can see what still needs approval
   const raw = readCart().filter(it => Number(it.qty||0) > 0);
   writeCart(raw);
 
@@ -819,7 +783,7 @@ async function renderMiniCart(){
       const sku = c[idx].sku;
       const cur = Number(c[idx].qty||0);
 
-      if (d > 0 && requiresSku(sku)) {
+      if (d > 0){
         const apQ = approvedQtyForSku(sku);
         if (cur >= apQ){
           toast('Need admin approval to add more. Click “Verify” for this product.', true);
@@ -868,71 +832,52 @@ async function renderMiniCart(){
     };
   });
 
-  // Final gate: Checkout visible only if the whole cart is fully approved
+  // Checkout visible only if the whole cart is fully approved
   toggleCheckout(isCartFullyApproved());
 
   await saveLocalCartToDB();
 }
 
-/* ===== Product rows (approval gating always visible) ===== */
+/* ===== Product rows (ALL require approval) ===== */
 function productRow(p){
-  const requires = REQ_BY_SKU.get(p.sku) === true;
   const ap = MY_APPROVALS.get(p.sku); // {status, quantity} | undefined
   const st = (ap?.status || '').toLowerCase();
   const approved = st === 'approved' && Number(ap?.quantity) > 0;
   const pending  = st === 'pending';
-  const withdrawn = st === 'withdrawn';
-  const rejected  = st === 'rejected';
+  const rejected = st === 'rejected';
 
-  const badge = requires
-    ? `<span class="badge">${t('badges.requires')}</span>`
-    : `<span class="badge ok">${t('badges.open')}</span>`;
+  const badge = `<span class="badge">${t('badges.requires')}</span>`;
 
   let right = '';
-
-  if (!requires) {
-    // OPEN product (no verification)
+  if (approved) {
     right = `
-      <div class="row">
-        <button class="qtybtn" data-q="-1">−</button>
-        <input class="qty-input" type="number" min="0" step="1" value="0" style="width:70px;text-align:center"/>
-        <button class="qtybtn" data-q="1">+</button>
-        <button class="btn small" data-add-open>Add to cart</button>
+      <div class="row" style="gap:8px;align-items:center">
+        <span class="small success">Approved up to: ${Number(ap.quantity)}</span>
+        <input class="ap-add" type="number" min="1" value="1" style="width:80px;text-align:center"/>
+        <button class="btn small" data-add-approved>Add</button>
+        <button class="btn small" data-req-more>Request more</button>
+      </div>`;
+  } else if (pending) {
+    right = `
+      <div class="row" style="gap:8px;align-items:center">
+        <span class="badge pend">${t('badges.pending')}</span>
+        <input class="ap-qty" type="number" min="1" value="${Number(ap?.quantity||1)}" style="width:80px;text-align:center"/>
+        <button class="btn small" data-update-approval>Update request</button>
+        <button class="btn small" data-cancel-approval>Cancel request</button>
+      </div>`;
+  } else if (rejected) {
+    right = `
+      <div class="row" style="gap:8px;align-items:center">
+        <span class="badge bad">${t('status.rejected')}</span>
+        <input class="ap-qty" type="number" min="1" value="1" style="width:80px;text-align:center"/>
+        <button class="btn small" data-req-approval>Request approval</button>
       </div>`;
   } else {
-    // REQUIRES VERIFICATION
-    if (approved) {
-      // Approved quota present: allow adding within remaining + request more
-      right = `
-        <div class="row" style="gap:8px;align-items:center">
-          <span class="small success">Approved up to: ${Number(ap.quantity)}</span>
-          <input class="ap-add" type="number" min="1" value="1" style="width:80px;text-align:center"/>
-          <button class="btn small" data-add-approved>Add</button>
-          <button class="btn small" data-req-more>Request more</button>
-        </div>`;
-    } else if (pending) {
-      right = `
-        <div class="row" style="gap:8px;align-items:center">
-          <span class="badge pend">${t('badges.pending')}</span>
-          <input class="ap-qty" type="number" min="1" value="${Number(ap?.quantity||1)}" style="width:80px;text-align:center"/>
-          <button class="btn small" data-update-approval>Update request</button>
-          <button class="btn small" data-cancel-approval>Cancel request</button>
-        </div>`;
-    } else if (rejected) {
-      right = `
-        <div class="row" style="gap:8px;align-items:center">
-          <span class="badge bad">${t('status.rejected')}</span>
-          <input class="ap-qty" type="number" min="1" value="1" style="width:80px;text-align:center"/>
-          <button class="btn small" data-req-approval>Request approval</button>
-        </div>`;
-    } else {
-      // no request yet OR withdrawn
-      right = `
-        <div class="row" style="gap:8px;align-items:center">
-          <input class="ap-qty" type="number" min="1" value="1" style="width:80px;text-align:center"/>
-          <button class="btn small" data-req-approval>Request approval</button>
-        </div>`;
-    }
+    right = `
+      <div class="row" style="gap:8px;align-items:center">
+        <input class="ap-qty" type="number" min="1" value="1" style="width:80px;text-align:center"/>
+        <button class="btn small" data-req-approval>Request approval</button>
+      </div>`;
   }
 
   return `<div class="row" style="justify-content:space-between;align-items:center;border-bottom:1px solid rgba(141,158,199,.12);padding:8px 0" data-sku="${escapeHtml(p.sku)}">
@@ -952,30 +897,11 @@ function renderProducts(){
   }).map(productRow).join('');
   prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
 
-  // Wire row actions
+  // Wire row actions (ALL require verification)
   prodList.querySelectorAll('[data-sku]').forEach(row=>{
     const sku = row.dataset.sku;
     const prod = PRODUCT_CACHE.find(x=>x.sku===sku);
-    const requires = requiresSku(sku);
 
-    // Open products qty +/- and add
-    row.querySelectorAll('button[data-q]').forEach(b=>{
-      b.onclick = ()=>{
-        const input = row.querySelector('.qty-input'); if (!input) return;
-        const delta = Number(b.dataset.q||0);
-        input.value = String(Math.max(0, Number(input.value||0) + delta));
-      };
-    });
-    row.querySelector('[data-add-open]')?.addEventListener('click', ()=>{
-      const input = row.querySelector('.qty-input');
-      const qty = Math.max(0, Number(input?.value||0));
-      if (qty<=0) { toast(t('errors.badQty'), true); return; }
-      addToCart(sku, qty, prod?.name || sku);
-    });
-
-    if (!requires) return;
-
-    // Requires verification: request/update/cancel/add-approved/more
     row.querySelector('[data-req-approval]')?.addEventListener('click', async ()=>{
       const qty = Math.max(1, Number(row.querySelector('.ap-qty')?.value||1));
       const { data:{ user } } = await supa.auth.getUser(); if(!user){ toast(t('errors.signinFirst'), true); return; }
@@ -1011,7 +937,7 @@ function renderProducts(){
     row.querySelector('[data-add-approved]')?.addEventListener('click', async ()=>{
       const input = row.querySelector('.ap-add');
       const want  = Math.max(1, Number(input?.value||1));
-      const rem   = remainingApprovedForSku(sku); // how many more they can add now
+      const rem   = remainingApprovedForSku(sku);
       if (rem <= 0){
         toast('You have used your approved quantity. Request more to add.', true);
         return;
@@ -1030,7 +956,7 @@ function renderProducts(){
       const input = row.querySelector('.ap-add');
       const want  = Math.max(1, Number(input?.value||1));
       const rem   = remainingApprovedForSku(sku);
-      const delta = Math.max(1, want - Math.max(0, rem));
+      const delta = Math.max(1, want - Math.max(0, rem)); // at least 1
       await requestMoreApproval(sku, delta);
       row.scrollIntoView({ behavior:'smooth', block:'center' });
     });
