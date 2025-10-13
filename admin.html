@@ -284,6 +284,7 @@
       </div>
     </section>
 
+    <!-- NEW: CART MANAGEMENT -->
     <section class="card">
       <div class="toolbar" style="margin:0 0 6px">
         <h3 style="margin:0">Cart Management</h3>
@@ -331,7 +332,7 @@ function filePublicUrl(bucket, path){
 }
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
-/* ================= Auth Gate (robust) ================= */
+/* ================= Auth Gate ================= */
 const authMsg  = document.getElementById("authMsg");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
@@ -341,63 +342,34 @@ loginBtn.onclick = () => {
   u.searchParams.set("redirect", "admin.html");
   location.href = u.toString();
 };
-logoutBtn.onclick = async () => { try{ await supa.auth.signOut(); }catch{} location.href='index.html'; };
+logoutBtn.onclick = async () => { await supa.auth.signOut(); location.href='index.html'; };
 
 async function checkAdmin(){
-  try{
-    authMsg.textContent = "Checking session…";
-    const { data, error } = await supa.auth.getSession();
-    if (error) throw error;
+  authMsg.textContent = "Checking session…";
+  const { data:{ session } } = await supa.auth.getSession();
+  if (!session?.user){ authMsg.textContent="Not signed in."; loginBtn.classList.remove('hidden'); return false; }
+  authMsg.textContent = `Signed in as ${session.user.email}`;
+  logoutBtn.classList.remove('hidden');
 
-    const session = data?.session;
-    if (!session?.user){
-      authMsg.textContent = "Not signed in.";
-      loginBtn.classList.remove('hidden');
-      return false;
-    }
-
-    authMsg.textContent = `Signed in as ${session.user.email}`;
-    logoutBtn.classList.remove('hidden');
-
-    // Whitelist or profile flag
-    if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
-
-    const { data: prof, error: e2 } = await supa
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", session.user.id)
-      .maybeSingle();
-
-    if (e2) throw e2;
-    if (!prof?.is_admin){
-      authMsg.textContent = "You are signed in but not an admin.";
-      loginBtn.classList.add('hidden');
-      return false;
-    }
-    return true;
-  }catch(err){
-    console.error("Auth error:", err);
-    authMsg.textContent = "Couldn’t check session. Please sign in again.";
-    loginBtn.classList.remove('hidden');
-    return false;
-  }
+  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
+  const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
+  if (!prof?.is_admin){ location.replace('index.html'); return false; }
+  return true;
 }
 
-// React to auth changes too (e.g., after returning from login.html)
-supa.auth.onAuthStateChange((_event, _session) => {
-  boot();
-});
-
-/* ================= USERS ================= */
+/* =======================================================================
+   USERS (Full control)
+======================================================================= */
 const usersWrap   = document.getElementById('usersWrap');
 const usersSearch = document.getElementById('usersSearch');
 const usersRefresh= document.getElementById('usersRefresh');
 const usersMsg    = document.getElementById('usersMsg');
 const usersList   = document.getElementById('usersList');
+
 usersSearch.addEventListener('input', renderUsers);
 usersRefresh.addEventListener('click', loadUsers);
-let USERS_CACHE = [];
 
+let USERS_CACHE = [];
 async function loadUsers(){
   usersMsg.textContent = 'Loading…';
   const { data: profs, error } = await supa
@@ -509,6 +481,7 @@ async function openDrawer(userId){
   dwName.textContent = [p?.first_name, p?.last_name].filter(Boolean).join(' ') || '(no name)';
   dwEmail.textContent= p?.email || '';
 
+  // Vet application (latest)
   await loadDrawerApplication(userId);
   await loadDrawerApprovals();
   await loadDrawerCart();
@@ -553,6 +526,7 @@ async function loadDrawerApplication(userId){
       </div>
     `;
 
+    // Approve/reject
     dwAppBox.querySelector('[data-appact="approve"]').onclick = async ()=>{
       const { error } = await supa.from('vet_applications').update({ status:'approved' }).eq('id', app.id);
       if (error) return toast(error.message,true);
@@ -564,6 +538,7 @@ async function loadDrawerApplication(userId){
       toast('Application rejected'); await loadDrawerApplication(userId);
     };
 
+    // Save note
     const saveBtn = document.getElementById('dwSaveNote');
     const noteMsg = document.getElementById('dwNoteMsg');
     const noteEl  = document.getElementById('dwAdminNote');
@@ -662,7 +637,9 @@ document.getElementById('dwSaveVpa').onclick = async ()=>{
   toast('Saved'); dwSku.value=''; dwQty.value='1'; dwStatus.value='pending'; await loadDrawerApprovals();
 };
 
-/* ================= CART MANAGEMENT (drawer) ================= */
+/* =======================================================================
+   CART MANAGEMENT (drawer)
+======================================================================= */
 dwReloadCart.onclick = ()=> loadDrawerCart();
 dwCartAdd.onclick = async ()=>{
   if (!DRAWER_USER_ID) return;
@@ -679,6 +656,7 @@ dwCartAdd.onclick = async ()=>{
   dwCartSku.value=''; dwCartQty.value='1';
   await loadDrawerCart();
 };
+
 async function loadDrawerCart(){
   dwCartBox.textContent = 'Loading…';
   const { data, error } = await supa
@@ -739,7 +717,9 @@ async function loadDrawerCart(){
   });
 }
 
-/* ================= PRODUCTS ================= */
+/* =======================================================================
+   PRODUCTS
+======================================================================= */
 const prodWrap    = document.getElementById('prodWrap');
 const prodSearch  = document.getElementById('prodSearch');
 const prodRefresh = document.getElementById('prodRefresh');
@@ -894,7 +874,9 @@ prodList.addEventListener('change', async (e)=>{
   }
 });
 
-/* ================= VET APPLICATIONS ================= */
+/* =======================================================================
+   VET APPLICATIONS
+======================================================================= */
 const appsWrap   = document.getElementById('appsWrap');
 const appsSearch = document.getElementById('appsSearch');
 const appsRefresh= document.getElementById('appsRefresh');
@@ -958,6 +940,7 @@ function renderApps(){
     b.onclick = ()=> openDrawer(b.dataset.full);
   });
 }
+
 appsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const card = b.closest('[data-app]'); const appId = card.dataset.app;
@@ -975,7 +958,9 @@ appsList.addEventListener('click', async (e)=>{
   }
 });
 
-/* ================= PER-PRODUCT APPROVALS ================= */
+/* =======================================================================
+   PER-PRODUCT APPROVALS
+======================================================================= */
 const vpaWrap   = document.getElementById('vpaWrap');
 const vpaSearch = document.getElementById('vpaSearch');
 const vpaRefresh= document.getElementById('vpaRefresh');
@@ -989,6 +974,7 @@ const vpaStatus = document.getElementById('vpaStatus');
 const vpaUpsert = document.getElementById('vpaUpsert');
 
 let VPA_CACHE = [];
+
 vpaSearch.addEventListener('input', renderVPA);
 vpaRefresh.addEventListener('click', loadVPA);
 
@@ -1009,6 +995,7 @@ vpaUpsert.onclick = async ()=>{
   vpaMsg.textContent = 'Saved';
   await loadVPA();
 };
+
 async function loadVPA(){
   vpaMsg2.textContent='Loading…';
   const { data, error } = await supa
@@ -1087,7 +1074,9 @@ vpaList.addEventListener('click', async (e)=>{
   }
 });
 
-/* ================= NEWS + REGIONS + VET NOTICE ================= */
+/* =======================================================================
+   NEWS + REGIONS + VET NOTICE
+======================================================================= */
 const newsWrap   = document.getElementById('newsWrap');
 const newsMsg    = document.getElementById('newsMsg');
 const newsList   = document.getElementById('newsList');
@@ -1258,7 +1247,7 @@ document.getElementById('nUpdate').onclick = async ()=>{
   if(f){
     if(f.type!=='application/pdf'){ nMsg.textContent='Attachment must be PDF'; nUpdate.disabled=false; return; }
     const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
-    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
+    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType: f.type });
     if (up.error){ nMsg.textContent = up.error.message; nUpdate.disabled=false; return; }
     file_path = up.data.path;
   }
@@ -1276,7 +1265,9 @@ document.getElementById('nUpdate').onclick = async ()=>{
   nMsg.textContent = "Updated."; toast('News updated'); nUpdate.disabled=false; await loadNews();
 };
 
-/* ================= Realtime ================= */
+/* =======================================================================
+   Realtime notifications
+======================================================================= */
 function subscribeRealtime(){
   try{
     supa.channel('rt_vet_apps')
@@ -1294,14 +1285,13 @@ function subscribeRealtime(){
         toast('Cart changed'); if (DRAWER_USER_ID) loadDrawerCart(); loadUsers();
       })
       .subscribe();
-  }catch(e){ console.warn('Realtime subscribe failed', e); }
+  }catch{}
 }
 
 /* ================= Boot ================= */
-async function boot(){
+document.addEventListener('DOMContentLoaded', async ()=>{
   const ok = await checkAdmin();
   if (!ok) return;
-
   ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
 
   await Promise.all([ loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice() ]);
@@ -1310,8 +1300,7 @@ async function boot(){
   document.getElementById('prodRefresh').onclick = ()=> loadProducts();
 
   subscribeRealtime();
-}
-document.addEventListener('DOMContentLoaded', boot);
+});
 </script>
 </body>
 </html>
