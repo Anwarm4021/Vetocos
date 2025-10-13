@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>VetoCos | Thank you</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>body{font-family:Inter,system-ui;margin:0;padding:32px;background:#0b1020;color:#f6f7fb}</style>
+</head>
+<body>
+<h1>Thank you from VetoCos 🐾</h1>
+<p id="msg">Processing…</p>
+<p><a href="my-order.html">View my orders</a></p>
+
+<script>
+const qs = new URLSearchParams(location.search);
+const order = qs.get('order');
+const method = qs.get('m');
+const p = document.getElementById('msg');
+p.textContent = `Order ${order?.slice(0,8)} received. Pay ${method==='cod'?'cash':'by card'} on delivery. We\'ve emailed your summary.`;
+</script>
+</body>
+</html>
