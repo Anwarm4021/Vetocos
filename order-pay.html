@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>VetoCos | Payment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{ --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:18px; }
+html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui;line-height:1.6}
+.wrap{max-width:1100px;margin:0 auto;padding:18px}
+.card{background:#0f162f;border:1px solid rgba(141,158,199,.18);border-radius:18px;padding:16px}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.input,.select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text)}
+.btn{padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.muted{color:var(--muted)}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Payment & Delivery</h1>
+<div id="orderMeta" class="muted"></div>
+
+<div class="grid" style="margin-top:10px">
+<section class="card">
+<h2>Contact & Delivery</h2>
+<form id="infoForm">
+<div class="field"><label>Full name</label><input id="full_name" class="input" required></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+<div class="field"><label>Email</label><input id="email" type="email" class="input" required></div>
+<div class="field"><label>Phone</label><input id="phone" class="input" inputmode="tel" pattern="^[0-9+() -]{6,}$" required></div>
+</div>
+<div class="field" style="margin-top:10px"><label>Country</label><input id="country" class="input" required></div>
+<div class="field" style="margin-top:10px"><label>Address line 1</label><input id="address1" class="input" required></div>
+<div class="field" style="margin-top:10px"><label>Address line 2 (optional)</label><input id="address2" class="input"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+<div class="field"><label>City</label><input id="city" class="input" required></div>
+<div class="field"><label>Postal code</label><input id="postal" class="input" required></div>
+</div>
+</form>
+
+<h2 style="margin-top:16px">Payment method</h2>
+<div class="field">
+<select id="payMethod" class="select">
+<option value="cod">Cash on delivery</option>
+<option value="card_on_delivery">Card on delivery</option>
+</select>
+</div>
+
+<div class="row" style="margin-top:16px">
+<button class="btn" id="btnCancel" type="button">Cancel order</button>
+<div>
+<button class="btn" id="btnBack" type="button">Back to cart</button>
+<button class="btn" id="btnContinue" type="button">Continue</button>
+</div>
+</div>
+<div id="msg" class="muted" style="margin-top:6px"></div>
+</section>
+
+<aside class="card">
+<h3>Items</h3>
+<div id="items"></div>
+</aside>
+</div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+</html>
