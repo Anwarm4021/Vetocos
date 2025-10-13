@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-lang="en">
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
   <title>VetoCos | Admin</title>
@@ -52,88 +52,76 @@
     .drawer main{padding:14px;overflow:auto;flex:1}
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
            border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
-    .lang{display:flex;align-items:center;gap:8px}
-    .lang select{min-width:140px}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <main>
   <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <h1 style="margin:0" data-i18n="title_admin">Admin</h1>
-      <div class="lang">
-        <label class="mini muted" for="langSel" data-i18n="language">Language</label>
-        <select id="langSel">
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="ar">العربية</option>
-        </select>
-      </div>
-    </div>
+    <h1 style="margin:0">Admin</h1>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <a class="btn small" href="Products.html" target="_blank" rel="noopener" data-i18n="open_products">Open Products</a>
-      <a class="btn small" href="news.html" target="_blank" rel="noopener" data-i18n="open_news">Open News</a>
-      <a class="btn small" href="history.html" target="_blank" rel="noopener" data-i18n="open_history">Open History</a>
-      <a class="btn small" href="index.html" data-i18n="home">Home</a>
+      <a class="btn small" href="Products.html" target="_blank" rel="noopener">Open Products</a>
+      <a class="btn small" href="news.html" target="_blank" rel="noopener">Open News</a>
+      <a class="btn small" href="history.html" target="_blank" rel="noopener">Open History</a>
+      <a class="btn small" href="index.html">Home</a>
     </div>
   </div>
 
   <!-- Auth gate -->
   <div class="card" id="authGate">
-    <div id="authMsg" class="muted" data-i18n="checking_session">Checking session…</div>
+    <div id="authMsg" class="muted">Checking session…</div>
     <div style="margin-top:10px;display:flex;gap:8px">
-      <button id="loginBtn" class="btn hidden" data-i18n="login_admin">Login as Admin</button>
-      <button id="logoutBtn" class="btn hidden" data-i18n="logout">Logout</button>
+      <button id="loginBtn" class="btn hidden">Login as Admin</button>
+      <button id="logoutBtn" class="btn hidden">Logout</button>
     </div>
   </div>
 
   <!-- USERS -->
   <div class="card hidden" id="usersWrap">
     <div class="toolbar">
-      <h2 data-i18n="users">Users</h2>
+      <h2>Users</h2>
       <div class="row">
-        <input id="usersSearch" class="search" placeholder="Search by name / email" data-i18n-ph="search_user">
-        <button class="btn small" id="usersRefresh" data-i18n="refresh">Refresh</button>
+        <input id="usersSearch" class="search" placeholder="Search by name / email">
+        <button class="btn small" id="usersRefresh">Refresh</button>
       </div>
     </div>
     <div id="usersMsg" class="muted"></div>
-    <div id="usersList" class="muted" data-i18n="loading">Loading…</div>
+    <div id="usersList" class="muted">Loading…</div>
   </div>
 
   <!-- PRODUCTS -->
   <div class="card hidden" id="prodWrap">
     <div class="toolbar">
-      <h2 data-i18n="products">Products</h2>
+      <h2>Products</h2>
       <div class="row">
-        <input id="prodSearch" class="search" placeholder="Search by name / SKU" data-i18n-ph="search_product">
-        <button class="btn small" id="prodRefresh" data-i18n="refresh">Refresh</button>
+        <input id="prodSearch" class="search" placeholder="Search by name / SKU">
+        <button class="btn small" id="prodRefresh">Refresh</button>
       </div>
     </div>
 
     <!-- Add -->
     <div class="card" style="margin:-4px 0 12px">
-      <h3 style="margin:0 0 10px" data-i18n="add_new_product">Add new product</h3>
+      <h3 style="margin:0 0 10px">Add new product</h3>
       <div class="grid2">
-        <div><label data-i18n="product_name">Product name <input id="apName" type="text" placeholder="e.g., Urocline Chien"></label></div>
-        <div><label data-i18n="sku">SKU <input id="apSku" type="text" placeholder="e.g., URO-CHIEN"></label></div>
+        <div><label>Product name <input id="apName" type="text" placeholder="e.g., Urocline Chien"></label></div>
+        <div><label>SKU <input id="apSku" type="text" placeholder="e.g., URO-CHIEN"></label></div>
       </div>
-      <label style="margin-top:10px" data-i18n="description">Description <textarea id="apDesc" placeholder="Short description"></textarea></label>
+      <label style="margin-top:10px">Description <textarea id="apDesc" placeholder="Short description"></textarea></label>
       <div class="grid3" style="margin-top:10px">
-        <div><label data-i18n="qty_available">Quantity available <input id="apQty" type="number" min="0" value="0"></label></div>
-        <div><label data-i18n="product_image">Product image (JPG/PNG) <input id="apImg" type="file" accept=".jpg,.jpeg,.png"></label></div>
-        <div><label data-i18n="product_pdf">Product PDF <input id="apPdf" type="file" accept=".pdf"></label></div>
+        <div><label>Quantity available <input id="apQty" type="number" min="0" value="0"></label></div>
+        <div><label>Product image (JPG/PNG) <input id="apImg" type="file" accept=".jpg,.jpeg,.png"></label></div>
+        <div><label>Product PDF <input id="apPdf" type="file" accept=".pdf"></label></div>
       </div>
       <div class="grid2" style="margin-top:10px">
-        <div><label data-i18n="available">Available
-          <select id="apAvail"><option value="true" data-i18n="yes">Yes</option><option value="false" data-i18n="no">No</option></select>
+        <div><label>Available
+          <select id="apAvail"><option value="true">Yes</option><option value="false">No</option></select>
         </label></div>
-        <div><label data-i18n="requires_verif">Requires verification
-          <select id="apReq"><option value="false" data-i18n="no">No</option><option value="true" data-i18n="yes">Yes</option></select>
+        <div><label>Requires verification
+          <select id="apReq"><option value="false">No</option><option value="true">Yes</option></select>
         </label></div>
       </div>
       <div class="row" style="margin-top:12px">
-        <button class="btn" id="apCreate" data-i18n="create_product">Create product</button>
+        <button class="btn" id="apCreate">Create product</button>
         <div id="apMsg" class="muted"></div>
       </div>
     </div>
@@ -146,10 +134,10 @@
   <!-- VET APPLICATIONS -->
   <div class="card hidden" id="appsWrap">
     <div class="toolbar">
-      <h2 data-i18n="vet_apps">Vet Applications</h2>
+      <h2>Vet Applications</h2>
       <div class="row">
-        <input id="appsSearch" class="search" placeholder="Search by name / email / ID#" data-i18n-ph="search_vet">
-        <button class="btn small" id="appsRefresh" data-i18n="refresh">Refresh</button>
+        <input id="appsSearch" class="search" placeholder="Search by name / email / ID#">
+        <button class="btn small" id="appsRefresh">Refresh</button>
       </div>
     </div>
     <div id="appsMsg" class="muted"></div>
@@ -159,30 +147,30 @@
   <!-- PER-PRODUCT APPROVALS -->
   <div class="card hidden" id="vpaWrap">
     <div class="toolbar">
-      <h2 data-i18n="pp_approvals">Per-product Approvals</h2>
+      <h2>Per-product Approvals</h2>
       <div class="row">
-        <input id="vpaSearch" class="search" placeholder="Search by email / SKU" data-i18n-ph="search_vpa">
-        <button class="btn small" id="vpaRefresh" data-i18n="refresh">Refresh</button>
+        <input id="vpaSearch" class="search" placeholder="Search by email / SKU">
+        <button class="btn small" id="vpaRefresh">Refresh</button>
       </div>
     </div>
 
     <div class="card" style="margin:-4px 0 12px">
-      <h3 style="margin:0 0 10px" data-i18n="grant_update">Grant / Update approval</h3>
+      <h3 style="margin:0 0 10px">Grant / Update approval</h3>
       <div class="grid3">
-        <label data-i18n="user_email">User email<input id="vpaEmail" type="text" placeholder="user@example.com"></label>
-        <label data-i18n="product_sku">Product SKU<input id="vpaSku" type="text" placeholder="SKU123"></label>
-        <label data-i18n="approved_qty">Approved quantity<input id="vpaQty" type="number" min="0" value="1"></label>
+        <label>User email<input id="vpaEmail" type="text" placeholder="user@example.com"></label>
+        <label>Product SKU<input id="vpaSku" type="text" placeholder="SKU123"></label>
+        <label>Approved quantity<input id="vpaQty" type="number" min="0" value="1"></label>
       </div>
       <div class="grid2" style="margin-top:10px">
-        <label data-i18n="status">Status
+        <label>Status
           <select id="vpaStatus">
-            <option value="pending" data-i18n="pending">pending</option>
-            <option value="approved" data-i18n="approved">approved</option>
-            <option value="revoked" data-i18n="revoked">revoked</option>
+            <option value="pending">pending</option>
+            <option value="approved">approved</option>
+            <option value="revoked">revoked</option>
           </select>
         </label>
         <div class="row" style="align-items:flex-end">
-          <button class="btn" id="vpaUpsert" data-i18n="save">Save</button>
+          <button class="btn" id="vpaUpsert">Save</button>
           <div id="vpaMsg" class="muted"></div>
         </div>
       </div>
@@ -195,38 +183,38 @@
   <!-- NEWS & VET NOTICE -->
   <div class="card hidden" id="newsWrap">
     <div class="toolbar">
-      <h2 data-i18n="news_regions">News & Regions</h2>
+      <h2>News & Regions</h2>
       <div class="row">
-        <button class="btn small" id="newsRefresh" data-i18n="refresh">Refresh</button>
-        <a class="btn small" href="news.html" target="_blank" rel="noopener" data-i18n="open_public_news">Open public news</a>
+        <button class="btn small" id="newsRefresh">Refresh</button>
+        <a class="btn small" href="news.html" target="_blank" rel="noopener">Open public news</a>
       </div>
     </div>
 
     <!-- Global Vet Notice -->
     <div class="card" style="margin:-4px 0 12px">
-      <h3 style="margin:0 0 8px" data-i18n="vet_global_notice">Vet page global notice</h3>
+      <h3 style="margin:0 0 8px">Vet page global notice</h3>
       <textarea id="vetNotice" placeholder="Short message shown on the Vet verification page for all users"></textarea>
       <div class="row" style="margin-top:8px">
-        <button class="btn small" id="saveVetNotice" data-i18n="save_notice">Save notice</button>
+        <button class="btn small" id="saveVetNotice">Save notice</button>
         <div id="vetNoticeMsg" class="muted"></div>
       </div>
     </div>
 
     <!-- Regions -->
     <div class="card" style="margin:-4px 0 12px">
-      <h3 style="margin:0 0 8px" data-i18n="active_regions">Active Regions</h3>
-      <p class="muted mini" style="margin:0 0 8px" data-i18n="regions_hint">Enable which regions are visible to users.</p>
+      <h3 style="margin:0 0 8px">Active Regions</h3>
+      <p class="muted mini" style="margin:0 0 8px">Enable which regions are visible to users.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap" id="regionToggles"></div>
-      <div style="margin-top:8px"><button id="saveRegions" class="btn small" data-i18n="save_regions">Save regions</button> <span id="regMsg" class="muted"></span></div>
+      <div style="margin-top:8px"><button id="saveRegions" class="btn small">Save regions</button> <span id="regMsg" class="muted"></span></div>
     </div>
 
     <!-- Create/Update -->
     <div class="card" style="margin:-4px 0 12px">
-      <h3 style="margin:0 0 8px" data-i18n="create_update_news">Create / Update News</h3>
+      <h3 style="margin:0 0 8px">Create / Update News</h3>
       <div class="grid2">
-        <div><label data-i18n="title_lbl">Title<input id="nTitle" type="text" /></label></div>
+        <div><label>Title<input id="nTitle" type="text" /></label></div>
         <div>
-          <label data-i18n="region_lbl">Region
+          <label>Region
             <select id="nRegion">
               <option value="Global">Global</option><option>Africa</option><option>Europe</option>
               <option>Middle East</option><option>Americas</option><option>Asia</option>
@@ -234,19 +222,19 @@
           </label>
         </div>
       </div>
-      <label data-i18n="body_lbl">Body<textarea id="nBody" placeholder="Write your announcement…"></textarea></label>
+      <label>Body<textarea id="nBody" placeholder="Write your announcement…"></textarea></label>
       <div class="grid2" style="margin-top:10px">
-        <div><label data-i18n="image_lbl">Image (JPG/PNG)<input id="nImg" type="file" accept=".jpg,.jpeg,.png"></label></div>
-        <div><label data-i18n="attach_lbl">Attachment (PDF)<input id="nFile" type="file" accept=".pdf"></label></div>
+        <div><label>Image (JPG/PNG)<input id="nImg" type="file" accept=".jpg,.jpeg,.png"></label></div>
+        <div><label>Attachment (PDF)<input id="nFile" type="file" accept=".pdf"></label></div>
       </div>
       <div class="grid2" style="margin-top:10px">
-        <label data-i18n="published_lbl">Published
-          <select id="nPub"><option value="true" data-i18n="yes">Yes</option><option value="false" data-i18n="no">No</option></select>
+        <label>Published
+          <select id="nPub"><option value="true">Yes</option><option value="false">No</option></select>
         </label>
         <div class="row" style="align-items:flex-end">
-          <button class="btn" id="nCreate" data-i18n="create">Create</button>
-          <button class="btn" id="nUpdate" disabled data-i18n="update">Update</button>
-          <button class="btn danger" id="nClear" data-i18n="clear">Clear</button>
+          <button class="btn" id="nCreate">Create</button>
+          <button class="btn" id="nUpdate" disabled>Update</button>
+          <button class="btn danger" id="nClear">Clear</button>
           <div id="nMsg" class="muted"></div>
         </div>
       </div>
@@ -259,7 +247,7 @@
   </div>
 </main>
 
-<!-- RIGHT DRAWER: Full Control (unchanged, text hooked into i18n where relevant) -->
+<!-- RIGHT DRAWER: Full Control -->
 <aside id="drawer" class="drawer" aria-hidden="true">
   <header>
     <div>
@@ -267,47 +255,48 @@
       <div id="dwEmail" class="muted mini"></div>
     </div>
     <div class="row">
-      <button id="dwDeleteUser" class="btn danger small" title="Delete user" data-i18n="delete_user">Delete user</button>
-      <button id="dwClose" class="btn small" data-i18n="close">Close</button>
+      <button id="dwDeleteUser" class="btn danger small" title="Delete user">Delete user</button>
+      <button id="dwClose" class="btn small">Close</button>
     </div>
   </header>
   <main>
     <section class="card">
-      <h3 style="margin:0 0 8px" data-i18n="vet_application">Vet Application</h3>
-      <div id="dwAppBox" class="muted" data-i18n="loading">Loading…</div>
+      <h3 style="margin:0 0 8px">Vet Application</h3>
+      <div id="dwAppBox" class="muted">Loading…</div>
     </section>
 
     <section class="card">
       <div class="toolbar" style="margin:0 0 6px">
-        <h3 style="margin:0" data-i18n="product_approvals">Product Approvals</h3>
-        <button id="dwReloadApprovals" class="btn small" data-i18n="refresh">Refresh</button>
+        <h3 style="margin:0">Product Approvals</h3>
+        <button id="dwReloadApprovals" class="btn small">Refresh</button>
       </div>
-      <div id="dwVPABox" class="muted" data-i18n="loading">Loading…</div>
+      <div id="dwVPABox" class="muted">Loading…</div>
       <div style="margin-top:10px" class="grid3">
-        <label data-i18n="sku_short">SKU <input id="dwSku" type="text" placeholder="SKU123"></label>
-        <label data-i18n="qty_short">Qty <input id="dwQty" type="number" min="0" value="1"></label>
+        <label>SKU <input id="dwSku" type="text" placeholder="SKU123"></label>
+        <label>Qty <input id="dwQty" type="number" min="0" value="1"></label>
         <div style="display:flex;align-items:flex-end;gap:8px">
           <select id="dwStatus">
-            <option value="pending" data-i18n="pending">pending</option>
-            <option value="approved" data-i18n="approved">approved</option>
-            <option value="revoked" data-i18n="revoked">revoked</option>
+            <option value="pending">pending</option>
+            <option value="approved">approved</option>
+            <option value="revoked">revoked</option>
           </select>
-          <button id="dwSaveVpa" class="btn small" data-i18n="save_upsert">Save / Upsert</button>
+          <button id="dwSaveVpa" class="btn small">Save / Upsert</button>
         </div>
       </div>
     </section>
 
+    <!-- CART MANAGEMENT -->
     <section class="card">
       <div class="toolbar" style="margin:0 0 6px">
-        <h3 style="margin:0" data-i18n="cart_management">Cart Management</h3>
-        <button id="dwReloadCart" class="btn small" data-i18n="refresh">Refresh</button>
+        <h3 style="margin:0">Cart Management</h3>
+        <button id="dwReloadCart" class="btn small">Refresh</button>
       </div>
-      <div id="dwCartBox" class="muted" data-i18n="loading">Loading…</div>
+      <div id="dwCartBox" class="muted">Loading…</div>
       <div style="margin-top:10px" class="grid3">
-        <label data-i18n="sku_short">SKU <input id="dwCartSku" type="text" placeholder="SKU123"></label>
-        <label data-i18n="qty_short">Qty <input id="dwCartQty" type="number" min="1" value="1"></label>
+        <label>SKU <input id="dwCartSku" type="text" placeholder="SKU123"></label>
+        <label>Qty <input id="dwCartQty" type="number" min="1" value="1"></label>
         <div style="display:flex;align-items:flex-end;gap:8px">
-          <button id="dwCartAdd" class="btn small" data-i18n="add_upsert">Add / Upsert</button>
+          <button id="dwCartAdd" class="btn small">Add / Upsert</button>
         </div>
       </div>
       <div id="dwCartMsg" class="muted" style="margin-top:6px"></div>
@@ -331,91 +320,6 @@ const NEWS_BUCKET    = "NewsFiles";
 const DOCS_BUCKET    = "Documents";
 const ADMIN_EMAILS   = ["anwar.moumenjamai19@gmail.com"];
 
-/* ================= i18n ================= */
-const STRINGS = {
-  en: {
-    title_admin:"Admin", language:"Language", open_products:"Open Products", open_news:"Open News", open_history:"Open History", home:"Home",
-    checking_session:"Checking session…", login_admin:"Login as Admin", logout:"Logout",
-    users:"Users", search_user:"Search by name / email", refresh:"Refresh", loading:"Loading…",
-    products:"Products", search_product:"Search by name / SKU", add_new_product:"Add new product",
-    product_name:"Product name", sku:"SKU", description:"Description", qty_available:"Quantity available",
-    product_image:"Product image (JPG/PNG)", product_pdf:"Product PDF", available:"Available",
-    requires_verif:"Requires verification", yes:"Yes", no:"No", create_product:"Create product",
-    vet_apps:"Vet Applications", search_vet:"Search by name / email / ID#",
-    pp_approvals:"Per-product Approvals", search_vpa:"Search by email / SKU", grant_update:"Grant / Update approval",
-    user_email:"User email", product_sku:"Product SKU", approved_qty:"Approved quantity", status:"Status",
-    pending:"pending", approved:"approved", revoked:"revoked", save:"Save",
-    news_regions:"News & Regions", open_public_news:"Open public news",
-    vet_global_notice:"Vet page global notice", save_notice:"Save notice",
-    active_regions:"Active Regions", regions_hint:"Enable which regions are visible to users.", save_regions:"Save regions",
-    create_update_news:"Create / Update News", title_lbl:"Title", region_lbl:"Region", body_lbl:"Body",
-    image_lbl:"Image (JPG/PNG)", attach_lbl:"Attachment (PDF)", published_lbl:"Published", create:"Create", update:"Update", clear:"Clear",
-    delete_user:"Delete user", close:"Close", vet_application:"Vet Application", product_approvals:"Product Approvals",
-    sku_short:"SKU", qty_short:"Qty", save_upsert:"Save / Upsert", cart_management:"Cart Management", add_upsert:"Add / Upsert"
-  },
-  fr: {
-    title_admin:"Admin", language:"Langue", open_products:"Ouvrir Produits", open_news:"Ouvrir Actus", open_history:"Ouvrir Historique", home:"Accueil",
-    checking_session:"Vérification de session…", login_admin:"Se connecter (Admin)", logout:"Se déconnecter",
-    users:"Utilisateurs", search_user:"Rechercher par nom / email", refresh:"Rafraîchir", loading:"Chargement…",
-    products:"Produits", search_product:"Rechercher par nom / SKU", add_new_product:"Ajouter un produit",
-    product_name:"Nom du produit", sku:"SKU", description:"Description", qty_available:"Quantité disponible",
-    product_image:"Image du produit (JPG/PNG)", product_pdf:"PDF du produit", available:"Disponible",
-    requires_verif:"Nécessite vérification", yes:"Oui", no:"Non", create_product:"Créer le produit",
-    vet_apps:"Demandes Vétérinaire", search_vet:"Rechercher par nom / email / ID",
-    pp_approvals:"Approbations par produit", search_vpa:"Rechercher par email / SKU", grant_update:"Donner / Mettre à jour",
-    user_email:"Email utilisateur", product_sku:"SKU du produit", approved_qty:"Quantité approuvée", status:"Statut",
-    pending:"en attente", approved:"approuvé", revoked:"révoqué", save:"Enregistrer",
-    news_regions:"Actus & Régions", open_public_news:"Ouvrir la page actus",
-    vet_global_notice:"Message global (page vétérinaire)", save_notice:"Enregistrer le message",
-    active_regions:"Régions actives", regions_hint:"Activer les régions visibles pour les utilisateurs.", save_regions:"Enregistrer les régions",
-    create_update_news:"Créer / Mettre à jour une actu", title_lbl:"Titre", region_lbl:"Région", body_lbl:"Contenu",
-    image_lbl:"Image (JPG/PNG)", attach_lbl:"Pièce jointe (PDF)", published_lbl:"Publié", create:"Créer", update:"Mettre à jour", clear:"Effacer",
-    delete_user:"Supprimer l’utilisateur", close:"Fermer", vet_application:"Dossier Vétérinaire", product_approvals:"Approbations Produit",
-    sku_short:"SKU", qty_short:"Qté", save_upsert:"Enregistrer / Upsert", cart_management:"Panier (gestion)", add_upsert:"Ajouter / Upsert"
-  },
-  ar: {
-    title_admin:"لوحة التحكم", language:"اللغة", open_products:"فتح المنتجات", open_news:"فتح الأخبار", open_history:"فتح السجل", home:"الرئيسية",
-    checking_session:"جارٍ فحص الجلسة…", login_admin:"تسجيل دخول كمدير", logout:"تسجيل خروج",
-    users:"المستخدمون", search_user:"بحث بالاسم / البريد", refresh:"تحديث", loading:"جارٍ التحميل…",
-    products:"المنتجات", search_product:"بحث بالاسم / SKU", add_new_product:"إضافة منتج جديد",
-    product_name:"اسم المنتج", sku:"SKU", description:"الوصف", qty_available:"الكمية المتاحة",
-    product_image:"صورة المنتج (JPG/PNG)", product_pdf:"ملف المنتج PDF", available:"متاح",
-    requires_verif:"يتطلب تحقق", yes:"نعم", no:"لا", create_product:"إنشاء المنتج",
-    vet_apps:"طلبات الطبيب البيطري", search_vet:"بحث بالاسم / البريد / رقم الهوية",
-    pp_approvals:"موافقات لكل منتج", search_vpa:"بحث بالبريد / SKU", grant_update:"منح / تحديث الموافقة",
-    user_email:"بريد المستخدم", product_sku:"SKU المنتج", approved_qty:"الكمية المعتمدة", status:"الحالة",
-    pending:"قيد الانتظار", approved:"مقبول", revoked:"ملغي", save:"حفظ",
-    news_regions:"الأخبار والمناطق", open_public_news:"فتح صفحة الأخبار",
-    vet_global_notice:"ملاحظة عامة لصفحة التحقق البيطري", save_notice:"حفظ الملاحظة",
-    active_regions:"المناطق النشطة", regions_hint:"فعِّل المناطق الظاهرة للمستخدمين.", save_regions:"حفظ المناطق",
-    create_update_news:"إنشاء / تعديل خبر", title_lbl:"العنوان", region_lbl:"المنطقة", body_lbl:"المحتوى",
-    image_lbl:"صورة (JPG/PNG)", attach_lbl:"مرفق (PDF)", published_lbl:"منشور", create:"إنشاء", update:"تحديث", clear:"مسح",
-    delete_user:"حذف المستخدم", close:"إغلاق", vet_application:"طلب التحقق", product_approvals:"موافقات المنتجات",
-    sku_short:"SKU", qty_short:"الكمية", save_upsert:"حفظ / Upsert", cart_management:"إدارة السلة", add_upsert:"إضافة / Upsert"
-  }
-};
-function applyLang(lang){
-  document.documentElement.setAttribute('data-lang', lang);
-  document.documentElement.dir = (lang==='ar') ? 'rtl' : 'ltr';
-  // Replace innerText for data-i18n
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const k = el.getAttribute('data-i18n'); if(STRINGS[lang]?.[k]) el.innerText = STRINGS[lang][k];
-  });
-  // Replace placeholders
-  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
-    const k = el.getAttribute('data-i18n-ph'); if(STRINGS[lang]?.[k]) el.setAttribute('placeholder', STRINGS[lang][k]);
-  });
-  // Flip simple inputs inside labels that include text before input (no structural changes)
-}
-function initLang(){
-  const sel = document.getElementById('langSel');
-  const saved = localStorage.getItem('lang') || 'en';
-  sel.value = saved; applyLang(saved);
-  sel.addEventListener('change', ()=>{
-    const v = sel.value; localStorage.setItem('lang', v); applyLang(v);
-  });
-}
-
 /* ================= Helpers/UI ================= */
 const toastEl  = document.getElementById("toast");
 function toast(msg, isErr=false){
@@ -429,7 +333,7 @@ function filePublicUrl(bucket, path){
 }
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
-/* ================= Auth Gate (same logic) ================= */
+/* ================= Auth Gate ================= */
 const authMsg  = document.getElementById("authMsg");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
@@ -439,103 +343,24 @@ loginBtn.onclick = () => {
   u.searchParams.set("redirect", "admin.html");
   location.href = u.toString();
 };
-logoutBtn.onclick = async () => { try{ await supa.auth.signOut(); }catch{} location.href='index.html'; };
+logoutBtn.onclick = async () => { await supa.auth.signOut(); location.href='index.html'; };
 
-// Robust admin session check
 async function checkAdmin(){
-  const lang = (localStorage.getItem('lang')||'en');
-  const t = (window.STRINGS||window.STR||{})[lang] || {};
-  const checkingTxt = t.checking_session || 'Checking session…';
-  const authMsgEl = document.getElementById('authMsg');
-  const loginBtn  = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
+  authMsg.textContent = "Checking session…";
+  const { data:{ session } } = await supa.auth.getSession();
+  if (!session?.user){ authMsg.textContent="Not signed in."; loginBtn.classList.remove('hidden'); return false; }
+  authMsg.textContent = `Signed in as ${session.user.email}`;
+  logoutBtn.classList.remove('hidden');
 
-  authMsgEl.textContent = checkingTxt;
-
-  try {
-    // 1) Try current session
-    let { data: { session }, error } = await supa.auth.getSession();
-    if (error) throw error;
-
-    // 2) If no session, wait briefly and try again (handles token refresh on page load)
-    if (!session?.user) {
-      await new Promise(r=>setTimeout(r, 500));
-      ({ data: { session }, error } = await supa.auth.getSession());
-      if (error) throw error;
-    }
-
-    // 3) If still no session, show login UI and don't block the page with a spinner
-    if (!session?.user) {
-      authMsgEl.textContent = 'Not signed in.';
-      loginBtn?.classList.remove('hidden');
-      return false;
-    }
-
-    // 4) We have a user: show who, show logout
-    authMsgEl.textContent = `Signed in as ${session.user.email}`;
-    logoutBtn?.classList.remove('hidden');
-
-    // 5) Admin allowlist or DB flag
-    const emailOk = (ADMIN_EMAILS||[]).includes(String(session.user.email||'').toLowerCase());
-    if (emailOk) return true;
-
-    const { data: prof, error: profErr } = await supa
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', session.user.id)
-      .maybeSingle();
-
-    if (profErr) throw profErr;
-    if (!prof?.is_admin) {
-      authMsgEl.textContent = 'Access denied: not an admin.';
-      // keep page visible but block admin content
-      return false;
-    }
-
-    return true;
-  } catch (e) {
-    // Surface errors clearly
-    console.error('Auth check failed:', e);
-    authMsgEl.textContent = `Auth error: ${e.message || e}`;
-    loginBtn?.classList.remove('hidden');
-    return false;
-  }
+  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
+  const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
+  if (!prof?.is_admin){ location.replace('index.html'); return false; }
+  return true;
 }
 
-// Also listen for auth changes so the UI updates after login/logout without reloads
-function watchAuth() {
-  try {
-    supa.auth.onAuthStateChange(async (_event, session) => {
-      const authMsgEl = document.getElementById('authMsg');
-      const loginBtn  = document.getElementById('loginBtn');
-      const logoutBtn = document.getElementById('logoutBtn');
-
-      if (session?.user) {
-        authMsgEl.textContent = `Signed in as ${session.user.email}`;
-        loginBtn?.classList.add('hidden');
-        logoutBtn?.classList.remove('hidden');
-
-        // If content was hidden because you weren't admin yet, try again:
-        const ok = await checkAdmin();
-        if (ok) {
-          // call your boot/unhide logic if needed
-        }
-      } else {
-        authMsgEl.textContent = 'Not signed in.';
-        loginBtn?.classList.remove('hidden');
-        logoutBtn?.classList.add('hidden');
-      }
-    });
-  } catch (e) {
-    console.warn('onAuthStateChange failed', e);
-  }
-}
-
-
-/* ======= The rest of your existing JS (Users, Drawer, Products, Apps, Approvals, News, Realtime, Boot) ======= */
-/* (Unchanged from your last working version, omitted here for brevity in comment, but fully present below) */
-
-/* ---------------- USERS (Full control) ---------------- */
+/* =======================================================================
+   USERS (Full control)
+======================================================================= */
 const usersWrap   = document.getElementById('usersWrap');
 const usersSearch = document.getElementById('usersSearch');
 const usersRefresh= document.getElementById('usersRefresh');
@@ -624,7 +449,7 @@ function renderUsers(){
   });
 }
 
-/* ---------------- Drawer (approvals, cart, vet app) ---------------- */
+/* Drawer */
 const drawer  = document.getElementById('drawer');
 const dwClose = document.getElementById('dwClose');
 const dwDeleteUser = document.getElementById('dwDeleteUser');
@@ -632,12 +457,13 @@ const dwName  = document.getElementById('dwName');
 const dwEmail = document.getElementById('dwEmail');
 const dwAppBox= document.getElementById('dwAppBox');
 const dwVPABox= document.getElementById('dwVPABox');
+const dwReloadApprovals = document.getElementById('dwReloadApprovals');
 const dwSku   = document.getElementById('dwSku');
 const dwQty   = document.getElementById('dwQty');
 const dwStatus= document.getElementById('dwStatus');
 const dwSaveVpa = document.getElementById('dwSaveVpa');
-const dwReloadApprovals = document.getElementById('dwReloadApprovals');
 
+/* CART drawer refs */
 const dwCartBox = document.getElementById('dwCartBox');
 const dwReloadCart = document.getElementById('dwReloadCart');
 const dwCartSku = document.getElementById('dwCartSku');
@@ -651,13 +477,17 @@ dwClose.onclick = ()=>{ drawer.classList.remove('open'); drawer.setAttribute('ar
 async function openDrawer(userId){
   DRAWER_USER_ID = userId;
   drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
+
   const { data: p } = await supa.from('profiles').select('email,first_name,last_name').eq('id', userId).maybeSingle();
   dwName.textContent = [p?.first_name, p?.last_name].filter(Boolean).join(' ') || '(no name)';
   dwEmail.textContent= p?.email || '';
+
+  // Vet application (latest)
   await loadDrawerApplication(userId);
   await loadDrawerApprovals();
   await loadDrawerCart();
 }
+
 async function loadDrawerApplication(userId){
   dwAppBox.textContent = 'Loading…';
   const { data: appRows } = await supa
@@ -697,6 +527,7 @@ async function loadDrawerApplication(userId){
       </div>
     `;
 
+    // Approve/reject
     dwAppBox.querySelector('[data-appact="approve"]').onclick = async ()=>{
       const { error } = await supa.from('vet_applications').update({ status:'approved' }).eq('id', app.id);
       if (error) return toast(error.message,true);
@@ -708,6 +539,7 @@ async function loadDrawerApplication(userId){
       toast('Application rejected'); await loadDrawerApplication(userId);
     };
 
+    // Save note
     const saveBtn = document.getElementById('dwSaveNote');
     const noteMsg = document.getElementById('dwNoteMsg');
     const noteEl  = document.getElementById('dwAdminNote');
@@ -720,6 +552,8 @@ async function loadDrawerApplication(userId){
     };
   }
 }
+
+/* Delete user (Edge Function) */
 dwDeleteUser.onclick = async ()=>{
   if (!DRAWER_USER_ID) return;
   if (!confirm('Delete this user and related data?')) return;
@@ -733,19 +567,21 @@ dwDeleteUser.onclick = async ()=>{
     toast(e?.message || String(e) || 'Delete failed', true);
   }
 };
+
+/* Approvals in drawer */
 document.getElementById('dwReloadApprovals').onclick = ()=> loadDrawerApprovals();
 async function loadDrawerApprovals(){
-  const box = document.getElementById('dwVPABox');
-  box.textContent = 'Loading…';
+  dwVPABox.textContent = 'Loading…';
   const { data: rows, error } = await supa
     .from('vet_product_approvals')
     .select('product_sku,quantity,status')
     .eq('user_id', DRAWER_USER_ID)
     .order('status',{ ascending:true })
     .order('product_sku',{ ascending:true });
-  if (error){ box.textContent = error.message; return; }
-  if (!rows?.length){ box.innerHTML = '<div class="muted">No approvals yet.</div>'; return; }
-  box.innerHTML = `
+  if (error){ dwVPABox.textContent = error.message; return; }
+  if (!rows?.length){ dwVPABox.innerHTML = '<div class="muted">No approvals yet.</div>'; return; }
+
+  dwVPABox.innerHTML = `
     <table>
       <thead><tr><th>SKU</th><th>Qty</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>
@@ -767,18 +603,22 @@ async function loadDrawerApprovals(){
           </tr>
         `).join('')}
       </tbody>
-    </table>`;
-  box.querySelectorAll('button[data-vpa="save"]').forEach(b=>{
+    </table>
+  `;
+
+  dwVPABox.querySelectorAll('button[data-vpa="save"]').forEach(b=>{
     b.onclick = async ()=>{
       const tr = b.closest('tr'); const sku = tr.dataset.sku;
       const qty = Math.max(0, Number(tr.querySelector('input').value||0)|0);
       const status = tr.querySelector('select').value;
-      const { error } = await supa.from('vet_product_approvals').upsert({ user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty, status }, { onConflict:'user_id,product_sku' });
+      const { error } = await supa.from('vet_product_approvals').upsert({
+        user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty, status
+      }, { onConflict:'user_id,product_sku' });
       if (error) return toast(error.message,true);
       toast('Saved'); await loadDrawerApprovals();
     };
   });
-  box.querySelectorAll('button[data-vpa="delete"]').forEach(b=>{
+  dwVPABox.querySelectorAll('button[data-vpa="delete"]').forEach(b=>{
     b.onclick = async ()=>{
       const tr = b.closest('tr'); const sku = tr.dataset.sku;
       if(!confirm('Delete this approval?')) return;
@@ -791,12 +631,16 @@ async function loadDrawerApprovals(){
 document.getElementById('dwSaveVpa').onclick = async ()=>{
   const sku = (dwSku.value||'').trim(); const qty = Math.max(0, Number(dwQty.value||0)|0); const status = dwStatus.value;
   if(!sku){ toast('Enter SKU', true); return; }
-  const { error } = await supa.from('vet_product_approvals').upsert({ user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty, status }, { onConflict:'user_id,product_sku' });
+  const { error } = await supa.from('vet_product_approvals').upsert({
+    user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty, status
+  }, { onConflict:'user_id,product_sku' });
   if (error){ toast(error.message,true); return; }
   toast('Saved'); dwSku.value=''; dwQty.value='1'; dwStatus.value='pending'; await loadDrawerApprovals();
 };
 
-/* ---------------- CART (drawer) ---------------- */
+/* =======================================================================
+   CART MANAGEMENT (drawer)
+======================================================================= */
 dwReloadCart.onclick = ()=> loadDrawerCart();
 dwCartAdd.onclick = async ()=>{
   if (!DRAWER_USER_ID) return;
@@ -804,24 +648,32 @@ dwCartAdd.onclick = async ()=>{
   const qty = Math.max(1, Number(dwCartQty.value||1)|0);
   if (!sku){ dwCartMsg.textContent='Enter SKU'; return; }
   dwCartMsg.textContent='Saving…';
-  const { error } = await supa.from('cart_items').upsert({ user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty }, { onConflict: 'user_id,product_sku' });
+  const { error } = await supa.from('cart_items').upsert(
+    { user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty },
+    { onConflict: 'user_id,product_sku' }
+  );
   if (error){ dwCartMsg.textContent = error.message; return; }
   dwCartMsg.textContent='Saved';
   dwCartSku.value=''; dwCartQty.value='1';
   await loadDrawerCart();
 };
+
 async function loadDrawerCart(){
-  const box = document.getElementById('dwCartBox');
-  box.textContent = 'Loading…';
+  dwCartBox.textContent = 'Loading…';
   const { data, error } = await supa
     .from('cart_items')
-    .select(`user_id, product_sku, quantity, products:products!inner(name, stock_qty)`)
+    .select(`
+      user_id, product_sku, quantity,
+      products:products!inner(name, stock_qty)
+    `)
     .eq('user_id', DRAWER_USER_ID)
     .order('product_sku', { ascending:true });
-  if (error){ box.textContent = error.message; return; }
+
+  if (error){ dwCartBox.textContent = error.message; return; }
   const rows = data || [];
-  if (!rows.length){ box.innerHTML = '<div class="muted">Cart is empty.</div>'; return; }
-  box.innerHTML = `
+  if (!rows.length){ dwCartBox.innerHTML = '<div class="muted">Cart is empty.</div>'; return; }
+
+  dwCartBox.innerHTML = `
     <table>
       <thead><tr><th>SKU</th><th>Name</th><th>Qty</th><th>Stock</th><th>Actions</th></tr></thead>
       <tbody>
@@ -838,8 +690,10 @@ async function loadDrawerCart(){
           </tr>
         `).join('')}
       </tbody>
-    </table>`;
-  box.querySelectorAll('button[data-cart="save"]').forEach(b=>{
+    </table>
+  `;
+
+  dwCartBox.querySelectorAll('button[data-cart="save"]').forEach(b=>{
     b.onclick = async ()=>{
       const tr = b.closest('tr'); const sku = tr.dataset.sku;
       const qty = Math.max(0, Number(tr.querySelector('input').value||0)|0);
@@ -854,7 +708,7 @@ async function loadDrawerCart(){
       toast('Saved'); await loadDrawerCart(); await loadUsers();
     };
   });
-  box.querySelectorAll('button[data-cart="delete"]').forEach(b=>{
+  dwCartBox.querySelectorAll('button[data-cart="delete"]').forEach(b=>{
     b.onclick = async ()=>{
       const tr = b.closest('tr'); const sku = tr.dataset.sku;
       const { error } = await supa.from('cart_items').delete().eq('user_id', DRAWER_USER_ID).eq('product_sku', sku);
@@ -864,7 +718,9 @@ async function loadDrawerCart(){
   });
 }
 
-/* ---------------- PRODUCTS (unchanged) ---------------- */
+/* =======================================================================
+   PRODUCTS
+======================================================================= */
 const prodWrap    = document.getElementById('prodWrap');
 const prodSearch  = document.getElementById('prodSearch');
 const prodRefresh = document.getElementById('prodRefresh');
@@ -883,6 +739,7 @@ const apCreate=document.getElementById('apCreate');
 const apMsg  = document.getElementById('apMsg');
 
 let PROD_CACHE = [];
+
 async function loadProducts(){
   prodMsg.textContent = "Loading products…";
   const { data, error } = await supa.from('products')
@@ -1018,7 +875,9 @@ prodList.addEventListener('change', async (e)=>{
   }
 });
 
-/* ---------------- VET APPLICATIONS ---------------- */
+/* =======================================================================
+   VET APPLICATIONS
+======================================================================= */
 const appsWrap   = document.getElementById('appsWrap');
 const appsSearch = document.getElementById('appsSearch');
 const appsRefresh= document.getElementById('appsRefresh');
@@ -1033,7 +892,10 @@ async function loadApps(){
   appsMsg.textContent = 'Loading…';
   const { data, error } = await supa
     .from('vet_applications')
-    .select(`id,user_id,identity_number,diploma_path,status,created_at,admin_note, profiles:profiles!vet_applications_user_id_fkey(email,first_name,last_name)`)
+    .select(`
+      id,user_id,identity_number,diploma_path,status,created_at,admin_note,
+      profiles:profiles!vet_applications_user_id_fkey(email,first_name,last_name)
+    `)
     .order('created_at', { ascending:false });
   if (error){ appsMsg.textContent = error.message; return; }
   APP_CACHE = data || [];
@@ -1074,12 +936,17 @@ function renderApps(){
       </div>
     </div>`;
   }).join('')) || '<div class="muted">No applications.</div>';
-  appsList.querySelectorAll('button[data-full]').forEach(b=>{ b.onclick = ()=> openDrawer(b.dataset.full); });
+
+  appsList.querySelectorAll('button[data-full]').forEach(b=>{
+    b.onclick = ()=> openDrawer(b.dataset.full);
+  });
 }
+
 appsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const card = b.closest('[data-app]'); const appId = card.dataset.app;
   const action = b.dataset.action;
+
   if(action==='approve'){
     const { error } = await supa.from('vet_applications').update({ status:'approved' }).eq('id', appId);
     if (error) return toast(error.message, true);
@@ -1092,7 +959,9 @@ appsList.addEventListener('click', async (e)=>{
   }
 });
 
-/* ---------------- PER-PRODUCT APPROVALS ---------------- */
+/* =======================================================================
+   PER-PRODUCT APPROVALS
+======================================================================= */
 const vpaWrap   = document.getElementById('vpaWrap');
 const vpaSearch = document.getElementById('vpaSearch');
 const vpaRefresh= document.getElementById('vpaRefresh');
@@ -1106,8 +975,10 @@ const vpaStatus = document.getElementById('vpaStatus');
 const vpaUpsert = document.getElementById('vpaUpsert');
 
 let VPA_CACHE = [];
+
 vpaSearch.addEventListener('input', renderVPA);
 vpaRefresh.addEventListener('click', loadVPA);
+
 vpaUpsert.onclick = async ()=>{
   vpaMsg.textContent = 'Saving…';
   const email = (vpaEmail.value||'').trim().toLowerCase();
@@ -1115,19 +986,25 @@ vpaUpsert.onclick = async ()=>{
   const qty   = Math.max(0, Number(vpaQty.value||0)|0);
   const status= vpaStatus.value;
   if(!email || !sku){ vpaMsg.textContent='Enter email and SKU'; return; }
+
   const { data: user } = await supa.from('profiles').select('id').eq('email', email).maybeSingle();
   if (!user?.id){ vpaMsg.textContent='User not found'; return; }
+
   const payload = { user_id: user.id, product_sku: sku, quantity: qty, status };
   const { error } = await supa.from('vet_product_approvals').upsert(payload, { onConflict: 'user_id,product_sku' });
   if (error){ vpaMsg.textContent = error.message; return; }
   vpaMsg.textContent = 'Saved';
   await loadVPA();
 };
+
 async function loadVPA(){
   vpaMsg2.textContent='Loading…';
   const { data, error } = await supa
     .from('vet_product_approvals')
-    .select(`user_id,product_sku,quantity,status, profiles:profiles!inner(email,first_name,last_name)`)
+    .select(`
+      user_id,product_sku,quantity,status,
+      profiles:profiles!inner(email,first_name,last_name)
+    `)
     .order('status', { ascending: true })
     .order('product_sku', { ascending: true });
   if (error){ vpaMsg2.textContent = error.message; return; }
@@ -1138,6 +1015,7 @@ async function loadVPA(){
 function renderVPA(){
   const q = (vpaSearch.value||'').toLowerCase().trim();
   const orderScore = s => s==='pending'?0 : s==='approved'?1 : 2;
+
   const rows = (VPA_CACHE||[])
     .filter(r=>{
       const email = (r.profiles?.email||'').toLowerCase();
@@ -1171,13 +1049,17 @@ function renderVPA(){
         </div>
       </div>`;
     }).join('');
+
   vpaList.innerHTML = rows || '<div class="muted">No approvals.</div>';
-  vpaList.querySelectorAll('button[data-full]').forEach(b=>{ b.onclick = ()=> openDrawer(b.dataset.full); });
+  vpaList.querySelectorAll('button[data-full]').forEach(b=>{
+    b.onclick = ()=> openDrawer(b.dataset.full);
+  });
 }
 vpaList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const card = b.closest('[data-user][data-sku]');
   const user_id = card.dataset.user, product_sku = card.dataset.sku;
+
   if (b.dataset.action==='save'){
     const qty = Math.max(0, Number(card.querySelector('input[type="number"]').value||0)|0);
     const status = card.querySelector('select').value;
@@ -1193,7 +1075,9 @@ vpaList.addEventListener('click', async (e)=>{
   }
 });
 
-/* ---------------- NEWS + REGIONS + NOTICE ---------------- */
+/* =======================================================================
+   NEWS + REGIONS + VET NOTICE
+======================================================================= */
 const newsWrap   = document.getElementById('newsWrap');
 const newsMsg    = document.getElementById('newsMsg');
 const newsList   = document.getElementById('newsList');
@@ -1231,6 +1115,7 @@ document.getElementById('saveVetNotice').onclick = async ()=>{
   if (error){ vetNoticeMsg.textContent = error.message; return; }
   vetNoticeMsg.textContent='Saved.'; toast('Vet notice saved');
 };
+
 async function ensureSettings(){
   try{
     const { data } = await supa.from('site_settings').select('key').eq('key','active_regions').maybeSingle();
@@ -1253,6 +1138,7 @@ saveRegions.onclick = async ()=>{
   if (error){ regMsg.textContent = error.message; return; }
   regMsg.textContent = "Saved."; setTimeout(()=> regMsg.textContent = "", 1500);
 };
+
 async function loadNews(){
   newsMsg.textContent = "Loading…";
   const { data, error } = await supa.from('news')
@@ -1283,6 +1169,7 @@ async function loadNews(){
   }).join('');
   newsMsg.textContent = rows.length ? "" : "No news yet.";
 }
+
 newsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const { action, id } = b.dataset;
@@ -1305,12 +1192,14 @@ newsList.addEventListener('click', async (e)=>{
     toast('Deleted'); await loadNews(); clearNewsForm();
   }
 });
+
 function clearNewsForm(){
   nId.value=""; nTitle.value=""; nBody.value=""; nRegion.value="Global"; nPub.value='true';
   nImg.value=""; nFile.value="";
   nCreate.disabled=false; nUpdate.disabled=true; nMsg.textContent="";
 }
 document.getElementById('nClear').onclick = clearNewsForm;
+
 document.getElementById('nCreate').onclick = async ()=>{
   nMsg.textContent = "Creating…"; nCreate.disabled=true;
   let image_path=null, file_path=null;
@@ -1329,12 +1218,21 @@ document.getElementById('nCreate').onclick = async ()=>{
     if (up.error){ nMsg.textContent = up.error.message; nCreate.disabled=false; return; }
     file_path = up.data.path;
   }
-  const row = { title: (nTitle.value||'').trim(), body:  (nBody.value||'').trim(), region: nRegion.value||'Global', published: nPub.value==='true', archived: false, image_path, file_path };
+  const row = {
+    title: (nTitle.value||'').trim(),
+    body:  (nBody.value||'').trim(),
+    region: nRegion.value||'Global',
+    published: nPub.value==='true',
+    archived: false,
+    image_path, file_path
+  };
   if(!row.title){ nMsg.textContent='Enter a title'; nCreate.disabled=false; return; }
+
   const { error } = await supa.from('news').insert(row);
   if (error){ nMsg.textContent = error.message; nCreate.disabled=false; return; }
   nMsg.textContent = "Created."; toast('News created'); clearNewsForm(); await loadNews();
 };
+
 document.getElementById('nUpdate').onclick = async ()=>{
   const id = nId.value; if(!id) return;
   nMsg.textContent = "Updating…"; nUpdate.disabled=true;
@@ -1350,37 +1248,61 @@ document.getElementById('nUpdate').onclick = async ()=>{
   if(f){
     if(f.type!=='application/pdf'){ nMsg.textContent='Attachment must be PDF'; nUpdate.disabled=false; return; }
     const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
-    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType: f.type });
+    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
     if (up.error){ nMsg.textContent = up.error.message; nUpdate.disabled=false; return; }
     file_path = up.data.path;
   }
-  const patch = { title: (nTitle.value||'').trim(), body:  (nBody.value||'').trim(), region: nRegion.value||'Global', published: nPub.value==='true' };
+  const patch = {
+    title: (nTitle.value||'').trim(),
+    body:  (nBody.value||'').trim(),
+    region: nRegion.value||'Global',
+    published: nPub.value==='true'
+  };
   if (image_path) patch.image_path = image_path;
   if (file_path)  patch.file_path  = file_path;
+
   const { error } = await supa.from('news').update(patch).eq('id', id);
   if (error){ nMsg.textContent = error.message; nUpdate.disabled=false; return; }
   nMsg.textContent = "Updated."; toast('News updated'); nUpdate.disabled=false; await loadNews();
 };
 
-/* ---------------- Realtime + Boot ---------------- */
+/* =======================================================================
+   Realtime notifications
+======================================================================= */
 function subscribeRealtime(){
   try{
-    supa.channel('rt_vet_apps').on('postgres_changes', { event: '*', schema:'public', table:'vet_applications' }, ()=>{ toast('Vet application updated'); loadApps(); loadUsers(); }).subscribe();
-    supa.channel('rt_vpa').on('postgres_changes', { event: '*', schema:'public', table:'vet_product_approvals' }, ()=>{ toast('Product approval updated'); loadVPA(); loadUsers(); if (DRAWER_USER_ID) loadDrawerApprovals();}).subscribe();
-    supa.channel('rt_cart_items').on('postgres_changes', { event: '*', schema:'public', table:'cart_items' }, ()=>{ toast('Cart changed'); if (DRAWER_USER_ID) loadDrawerCart(); loadUsers(); }).subscribe();
-  }catch(e){ console.warn('Realtime subscribe failed', e); }
+    supa.channel('rt_vet_apps')
+      .on('postgres_changes', { event: '*', schema:'public', table:'vet_applications' }, ()=>{ toast('Vet application updated'); loadApps(); loadUsers(); })
+      .subscribe();
+
+    supa.channel('rt_vpa')
+      .on('postgres_changes', { event: '*', schema:'public', table:'vet_product_approvals' }, ()=>{
+        toast('Product approval updated'); loadVPA(); loadUsers(); if (DRAWER_USER_ID) loadDrawerApprovals();
+      })
+      .subscribe();
+
+    supa.channel('rt_cart_items')
+      .on('postgres_changes', { event: '*', schema:'public', table:'cart_items' }, ()=>{
+        toast('Cart changed'); if (DRAWER_USER_ID) loadDrawerCart(); loadUsers();
+      })
+      .subscribe();
+  }catch{}
 }
-async function boot(){
-  initLang();
+
+/* ================= Boot ================= */
+document.addEventListener('DOMContentLoaded', async ()=>{
   const ok = await checkAdmin();
   if (!ok) return;
   ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
+
   await Promise.all([ loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice() ]);
+
   document.getElementById('newsRefresh').onclick = ()=> loadNews();
   document.getElementById('prodRefresh').onclick = ()=> loadProducts();
+
   subscribeRealtime();
-}
-document.addEventListener('DOMContentLoaded', boot);
+});
 </script>
 </body>
 </html>
+
