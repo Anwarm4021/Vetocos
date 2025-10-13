@@ -679,51 +679,116 @@ async function saveLocalCartToDB(){
   }
 }
 
+// --- approval helpers ---
+function requiresSku(sku){
+  // true if this SKU needs verification
+  return REQ_BY_SKU.get(sku) === true;
+}
+function approvedQtyForSku(sku){
+  const ap = MY_APPROVALS.get(sku);
+  return (ap && ap.status === 'approved') ? Number(ap.quantity || 0) : 0;
+}
+function isCartFullyApproved(){
+  // cart is valid only if every req-verified item has approved qty >= cart qty
+  const cart = readCart();
+  if (!cart.length) return false;
+  for (const it of cart){
+    if (requiresSku(it.sku)){
+      if (approvedQtyForSku(it.sku) < Number(it.qty||0)) return false;
+    }
+  }
+  return true;
+}
+
 /* ===== Mini Cart (locked for approved items) ===== */
 function renderMiniCartRow(it, i){
-  const ap = MY_APPROVALS.get(it.sku);
-  const isLocked = ap && ap.status==='approved';
-  const controls = isLocked
-    ? `<span style="display:inline-block;width:34px;text-align:center">${Number(ap.quantity||it.qty||0)}</span>`
-    : `<button class="qtybtn" data-cart="${i}" data-d="-1">−</button>
-       <span style="display:inline-block;width:34px;text-align:center">${Number(it.qty||0)}</span>
-       <button class="qtybtn" data-cart="${i}" data-d="1">+</button>`;
-  const note = isLocked ? `<div class="small muted">Approved quantity: ${Number(ap.quantity||0)}</div>` : '';
-  return `<tr data-sku="${it.sku}">
+  const sku = it.sku;
+  const need = Number(it.qty||0);
+  const req  = requiresSku(sku);
+  const apQ  = approvedQtyForSku(sku);
+  const hasEnoughApproval = req ? (apQ > 0 && apQ >= need) : true;
+
+  let statusNote = '';
+  let controls   = '';
+
+  if (req){
+    if (hasEnoughApproval){
+      // Lock the line to the approved qty and disable editing/removal here
+      statusNote = `<div class="small success">Approved: ${apQ}</div>`;
+      controls = `
+        <span style="display:inline-block;width:34px;text-align:center">${need}</span>
+        <span class="small muted" title="Quantity locked by admin approval">🔒</span>
+      `;
+    } else {
+      // Not enough approval yet → show Verify action, no +/- allowed
+      const short = apQ > 0 ? `approved ${apQ}, need ${need}` : `not approved`;
+      statusNote = `<div class="small" style="color:#ffd08a">Verification: ${short}</div>`;
+      controls = `
+        <button class="qtybtn" data-verify="${i}" title="Verify this product">Verify</button>
+      `;
+    }
+  } else {
+    // Open item → normal qty controls
+    controls = `
+      <button class="qtybtn" data-cart="${i}" data-d="-1" aria-label="decrease">−</button>
+      <span style="display:inline-block;width:34px;text-align:center">${need}</span>
+      <button class="qtybtn" data-cart="${i}" data-d="1" aria-label="increase">+</button>
+    `;
+  }
+
+  // Remove button only for non-locked rows
+  const removeBtn = (!req || !hasEnoughApproval)
+    ? `<button class="qtybtn" data-rem="${i}">Remove</button>`
+    : `<span class="small muted">Remove disabled</span>`;
+
+  return `<tr data-sku="${sku}">
     <td>
-      <a class="link" href="Products.html#${encodeURIComponent(it.sku)}" target="_blank" rel="noopener">${escapeHtml(it.name || it.sku)}</a>
-      <span class="kicker">(${escapeHtml(it.sku)})</span>
-      ${note}
+      <a class="link" href="Products.html#${encodeURIComponent(sku)}" target="_blank" rel="noopener">${escapeHtml(it.name || sku)}</a>
+      <span class="kicker">(${escapeHtml(sku)})</span>
+      ${statusNote}
     </td>
     <td>${controls}</td>
-    <td><button class="qtybtn" data-rem="${i}">Remove</button></td>
+    <td>${removeBtn}</td>
   </tr>`;
 }
 
 async function renderMiniCart(){
-  // Ensure PRODUCTS + APPROVALS are known
+  // Ensure product cache & approvals exist
   if (!PRODUCT_CACHE.length) await loadProducts();
+  await primeMyApprovalsMap();
 
-  // Normalize local cart based on rules, then render
-  let cart = readCart();
+  // Normalize local cart: drop or clamp unapproved req items
+  const raw = readCart();
   const normalized = [];
-  for (const it of cart){
+  for (const it of raw){
     const sku = it.sku;
-    const requires = REQ_BY_SKU.get(sku) === true;
-    if (requires){
-      const ap = MY_APPROVALS.get(sku);
-      if (ap && ap.status === 'approved' && Number(ap.quantity)>0){
-        normalized.push({ sku, name: it.name || sku, qty: Number(ap.quantity), _locked:true });
+    const qty = Number(it.qty||0);
+    if (qty <= 0) continue;
+
+    if (requiresSku(sku)){
+      const apQ = approvedQtyForSku(sku);
+      if (apQ >= qty && apQ > 0){
+        normalized.push({ ...it, qty });           // ok as-is
+      } else if (apQ > 0){
+        // keep the line but clamp to the approved qty (optional)
+        normalized.push({ ...it, qty: apQ });
+      } else {
+        // keep as a placeholder with requested qty so user sees what to verify
+        normalized.push({ ...it, qty });
       }
-      // drop non-approved
     } else {
-      if (Number(it.qty)>0) normalized.push({ ...it, _locked:false });
+      normalized.push({ ...it, qty });
     }
   }
   writeCart(normalized);
 
   const box = document.getElementById('cartBox');
-  if (!normalized.length){ box.innerHTML = `<div class="muted">${t('messages.cartEmpty')}</div>`; await saveLocalCartToDB(); return; }
+  if (!normalized.length){
+    box.innerHTML = `<div class="muted">${t('messages.cartEmpty')}</div>`;
+    toggleCheckout(false);
+    await saveLocalCartToDB();
+    return;
+  }
 
   const rowsHtml = normalized.map((it,i)=>renderMiniCartRow(it,i)).join('');
   box.innerHTML = `<table>
@@ -732,35 +797,69 @@ async function renderMiniCart(){
   </table>
   <div class="small muted" style="margin-top:8px">${t('messages.cartItems')} ${normalized.reduce((n,x)=>n+Number(x.qty||0),0)}</div>`;
 
-  // +/- only for items that are NOT locked
+  // Wire +/- for open items
   box.querySelectorAll('button[data-cart]').forEach(b=>{
     b.onclick = ()=>{
       const idx = Number(b.dataset.cart);
       const d = Number(b.dataset.d);
       const c = readCart();
       if (!c[idx]) return;
-      const ap = MY_APPROVALS.get(c[idx].sku);
-      if (ap && ap.status==='approved'){ toast('Approved items are locked by admin.', true); return; }
+      if (requiresSku(c[idx].sku) && approvedQtyForSku(c[idx].sku) >= Number(c[idx].qty||0)) {
+        toast('Approved items are locked by admin.', true);
+        return;
+      }
       c[idx].qty = Math.max(0, Number(c[idx].qty||0) + d);
-      if (c[idx].qty===0) c.splice(idx,1);
-      writeCart(c); renderMiniCart(); saveLocalCartToDB(); toast(t('toasts.cartUpdated'));
+      if (c[idx].qty === 0) c.splice(idx, 1);
+      writeCart(c);
+      renderMiniCart();
+      saveLocalCartToDB();
+      toast(t('toasts.cartUpdated'));
     };
   });
 
-  // Remove disabled for approved items
+  // Wire Remove (disabled for fully-approved locked rows)
   box.querySelectorAll('button[data-rem]').forEach(b=>{
     b.onclick = ()=>{
       const idx = Number(b.dataset.rem);
-      const c = readCart(); if (!c[idx]) return;
-      const ap = MY_APPROVALS.get(c[idx].sku);
-      if (ap && ap.status==='approved'){ toast('Approved items cannot be removed here.', true); return; }
+      const c = readCart();
+      if (!c[idx]) return;
+      const sku = c[idx].sku;
+      if (requiresSku(sku) && approvedQtyForSku(sku) >= Number(c[idx].qty||0)){
+        toast('Approved items cannot be removed here.', true);
+        return;
+      }
       c.splice(idx,1);
-      writeCart(c); renderMiniCart(); saveLocalCartToDB(); toast(t('toasts.cartUpdated'));
+      writeCart(c);
+      renderMiniCart();
+      saveLocalCartToDB();
+      toast(t('toasts.cartUpdated'));
     };
   });
 
+  // Wire Verify → scroll to product row controls
+  box.querySelectorAll('button[data-verify]').forEach(b=>{
+    b.onclick = ()=>{
+      const idx = Number(b.dataset.verify);
+      const c = readCart(); if (!c[idx]) return;
+      const sku = c[idx].sku;
+      // find the product row in the "Add more products" list
+      const row = document.querySelector(`#prodList [data-sku="${CSS.escape(sku)}"]`);
+      if (row){
+        row.scrollIntoView({ behavior:'smooth', block:'center' });
+        // highlight briefly
+        row.style.outline = '2px solid #ffd08a';
+        setTimeout(()=> row.style.outline = '', 1200);
+      }
+    };
+  });
+
+  // Final gate: show/hide Checkout depending on full approval coverage
+  const ok = isCartFullyApproved();
+  toggleCheckout(ok);
+
   await saveLocalCartToDB();
 }
+
 
 /* ===== Product rows (approval gating always visible) ===== */
 function productRow(p){
