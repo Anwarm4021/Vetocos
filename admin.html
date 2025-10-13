@@ -62,6 +62,7 @@
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a class="btn small" href="Products.html" target="_blank" rel="noopener">Open Products</a>
       <a class="btn small" href="news.html" target="_blank" rel="noopener">Open News</a>
+      <a class="btn small" href="history.html" target="_blank" rel="noopener">Open History</a>
       <a class="btn small" href="index.html">Home</a>
     </div>
   </div>
@@ -284,7 +285,7 @@
       </div>
     </section>
 
-    <!-- NEW: CART MANAGEMENT -->
+    <!-- CART MANAGEMENT -->
     <section class="card">
       <div class="toolbar" style="margin:0 0 6px">
         <h3 style="margin:0">Cart Management</h3>
@@ -1247,7 +1248,7 @@ document.getElementById('nUpdate').onclick = async ()=>{
   if(f){
     if(f.type!=='application/pdf'){ nMsg.textContent='Attachment must be PDF'; nUpdate.disabled=false; return; }
     const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
-    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType: f.type });
+    const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
     if (up.error){ nMsg.textContent = up.error.message; nUpdate.disabled=false; return; }
     file_path = up.data.path;
   }
