@@ -374,7 +374,7 @@ const I18N = {
     "page.title":"Vérification vétérinaire",
     "intro.kicker":"Fournissez vos justificatifs pour débloquer l’achat. Une fois approuvé, le bouton de paiement s’affichera.",
     "status.currentLabel":"Statut actuel",
-    "status.pending":"en attente","status.approved":"approuvé","status.rejected":"refusé","status.withdrawn":"retiré",
+    "status.pending":"en attente","status.approved":"approuvé","status.rejeté":"refusé","status.withdrawn":"retiré",
     "labels.id":"Numéro d’identification",
     "labels.file":"Diplôme / carte professionnelle (PDF/JPG/PNG, 10 Mo max)","ph.id":"ex. : Licence / Enregistrement / ID",
     "buttons.submit":"Soumettre à la revue","buttons.replace":"Remplacer le fichier","buttons.withdraw":"Retirer la demande","buttons.openFile":"Ouvrir le fichier","buttons.viewProduct":"Voir le produit",
@@ -615,7 +615,8 @@ async function loadProducts(){
     .order('name', { ascending:true });
   if (error){ prodList.textContent = error.message; return; }
   PRODUCT_CACHE = (data||[]).filter(p=>p.available && Number(p.stock_qty||0) > 0);
-  REQ_BY_SKU = new Map(PRODUCT_CACHE.map(p=>[p.sku, true]));
+  // Map which SKUs require verification
+  REQ_BY_SKU = new Map(PRODUCT_CACHE.map(p=>[p.sku, !!p.requires_verification]));
   await primeMyApprovalsMap();
   renderProducts();
 }
@@ -647,22 +648,23 @@ async function saveLocalCartToDB(){
   const { data:{ user } } = await supa.auth.getUser();
   if (!user) return;
 
-  // Enforce approval rules before saving
+  // Persist only up to approved for verified SKUs (DB remains safe)
   const cart = readCart();
   const effective = [];
   for (const it of cart){
     const sku = it.sku;
-    const requires = REQ_BY_SKU.get(sku) === true;
+    const requires = requiresSku(sku);
     if (requires){
-      const ap = MY_APPROVALS.get(sku);
-      if (ap && ap.status === 'approved' && Number(ap.quantity)>0){
-        effective.push({ sku, name: it.name || sku, qty: Number(ap.quantity) });
-      } // else drop
+      const apQ = approvedQtyForSku(sku);
+      if (apQ > 0){
+        effective.push({ sku, name: it.name || sku, qty: Math.min(apQ, Number(it.qty||0)) });
+      }
     } else {
       if (Number(it.qty)>0) effective.push({ sku, name: it.name || sku, qty: Number(it.qty) });
     }
   }
-  writeCart(effective);
+  // write local back so UI & DB stay consistent if quantities dropped to 0
+  writeCart(cart);
 
   if (effective.length){
     const upserts = effective.map(it=>({ user_id:user.id, product_sku:it.sku, quantity:it.qty }));
@@ -681,54 +683,85 @@ async function saveLocalCartToDB(){
 
 // --- approval helpers ---
 function requiresSku(sku){
-  // true if this SKU needs verification
   return REQ_BY_SKU.get(sku) === true;
 }
 function approvedQtyForSku(sku){
   const ap = MY_APPROVALS.get(sku);
   return (ap && ap.status === 'approved') ? Number(ap.quantity || 0) : 0;
 }
+function cartQtyForSku(sku){
+  try{ return readCart().filter(x=>x.sku===sku).reduce((n,x)=>n+Number(x.qty||0),0); }catch{ return 0; }
+}
+function remainingApprovedForSku(sku){
+  return Math.max(0, approvedQtyForSku(sku) - cartQtyForSku(sku));
+}
 function isCartFullyApproved(){
-  // cart is valid only if every req-verified item has approved qty >= cart qty
   const cart = readCart();
   if (!cart.length) return false;
   for (const it of cart){
-    if (requiresSku(it.sku)){
-      if (approvedQtyForSku(it.sku) < Number(it.qty||0)) return false;
-    }
+    if (requiresSku(it.sku) && approvedQtyForSku(it.sku) < Number(it.qty||0)) return false;
   }
   return true;
 }
+function addToCart(sku, qty, name){
+  if (!qty || qty <= 0) return;
+  const cart = readCart();
+  const idx = cart.findIndex(x=>x.sku===sku);
+  if (idx>-1) cart[idx].qty = Number(cart[idx].qty||0) + qty;
+  else cart.push({ sku, name: name || sku, qty });
+  writeCart(cart);
+  renderMiniCart();
+  saveLocalCartToDB();
+  toast(t('toasts.cartUpdated'));
+}
+async function requestMoreApproval(sku, delta){
+  const { data:{ user } } = await supa.auth.getUser();
+  if(!user){ toast(t('errors.signinFirst'), true); return; }
+  const ap = MY_APPROVALS.get(sku);
+  if (!ap || ap.status==='withdrawn' || ap.status==='rejected'){
+    const { error } = await supa.from('vet_product_approvals').upsert(
+      { user_id:user.id, product_sku:sku, quantity: Math.max(1, Number(delta)||1), status:'pending' },
+      { onConflict:'user_id,product_sku' }
+    );
+    if (error){ toast(error.message, true); return; }
+  } else if (ap.status==='pending'){
+    const { error } = await supa.from('vet_product_approvals')
+      .update({ quantity: Math.max(1, Number(delta)||1) })
+      .eq('user_id', user.id).eq('product_sku', sku).eq('status','pending');
+    if (error){ toast(error.message, true); return; }
+  } else if (ap.status==='approved'){
+    const { error } = await supa.from('vet_product_approvals').upsert(
+      { user_id:user.id, product_sku:sku, quantity: Number(ap.quantity||0) + Math.max(1, Number(delta)||1), status:'pending' },
+      { onConflict:'user_id,product_sku' }
+    );
+    if (error){ toast(error.message, true); return; }
+  }
+  await primeMyApprovalsMap();
+  renderProducts();
+  renderMyApprovals();
+  toast(t('toasts.approvalSubmitted'));
+}
 
-/* ===== Mini Cart (locked for approved items) ===== */
+/* ===== Mini Cart (approval-aware, remove always allowed) ===== */
 function renderMiniCartRow(it, i){
   const sku = it.sku;
   const need = Number(it.qty||0);
   const req  = requiresSku(sku);
   const apQ  = approvedQtyForSku(sku);
-  const hasEnoughApproval = req ? (apQ > 0 && apQ >= need) : true;
 
   let statusNote = '';
-  let controls   = '';
+  let extra = '';
 
   if (req){
-    if (hasEnoughApproval){
-      statusNote = `<div class="small success">Approved: ${apQ}</div>`;
-      controls = `
-        <span style="display:inline-block;width:34px;text-align:center">${need}</span>
-        <span class="small muted" title="Quantity locked by admin approval">🔒</span>
-      `;
+    if (apQ >= need && apQ > 0){
+      statusNote = `<div class="small success">Approved up to: ${apQ}</div>`;
+    } else if (apQ > 0){
+      statusNote = `<div class="small" style="color:#ffd08a">Approved ${apQ}, need ${need}</div>`;
+      extra = `<button class="qtybtn" data-verify="${i}" title="Request more">Verify</button>`;
     } else {
-      const short = apQ > 0 ? `approved ${apQ}, need ${need}` : `not approved`;
-      statusNote = `<div class="small" style="color:#ffd08a">Verification: ${short}</div>`;
-      controls = `<button class="qtybtn" data-verify="${i}" title="Verify this product">Verify</button>`;
+      statusNote = `<div class="small" style="color:#ffd08a">Not approved yet</div>`;
+      extra = `<button class="qtybtn" data-verify="${i}" title="Request approval">Verify</button>`;
     }
-  } else {
-    controls = `
-      <button class="qtybtn" data-cart="${i}" data-d="-1" aria-label="decrease">−</button>
-      <span style="display:inline-block;width:34px;text-align:center">${need}</span>
-      <button class="qtybtn" data-cart="${i}" data-d="1" aria-label="increase">+</button>
-    `;
   }
 
   return `<tr data-sku="${sku}">
@@ -737,8 +770,15 @@ function renderMiniCartRow(it, i){
       <span class="kicker">(${escapeHtml(sku)})</span>
       ${statusNote}
     </td>
-    <td>${controls}</td>
-    <td><button class="qtybtn" data-rem="${i}">Remove</button></td>
+    <td>
+      <button class="qtybtn" data-cart="${i}" data-d="-1" aria-label="decrease">−</button>
+      <span style="display:inline-block;width:34px;text-align:center">${need}</span>
+      <button class="qtybtn" data-cart="${i}" data-d="1" aria-label="increase">+</button>
+    </td>
+    <td>
+      ${extra}
+      <button class="qtybtn" data-rem="${i}">Remove</button>
+    </td>
   </tr>`;
 }
 
@@ -747,47 +787,28 @@ async function renderMiniCart(){
   if (!PRODUCT_CACHE.length) await loadProducts();
   await primeMyApprovalsMap();
 
-  // Normalize local cart: clamp verified items to approved qty; keep placeholders for unapproved
-  const raw = readCart();
-  const normalized = [];
-  for (const it of raw){
-    const sku = it.sku;
-    const qty = Number(it.qty || 0);
-    if (qty <= 0) continue;
-
-    if (requiresSku(sku)){
-      const apQ = approvedQtyForSku(sku);
-      if (apQ >= qty && apQ > 0){
-        normalized.push({ ...it, qty });                 // fully approved as-is
-      } else if (apQ > 0){
-        normalized.push({ ...it, qty: apQ });            // clamp to approved qty
-      } else {
-        normalized.push({ ...it, qty });                 // show requested qty (needs verify)
-      }
-    } else {
-      normalized.push({ ...it, qty });                   // open item
-    }
-  }
-  writeCart(normalized);
+  // Normalize: keep user-entered qty (no clamping) so they can see what still needs approval
+  const raw = readCart().filter(it => Number(it.qty||0) > 0);
+  writeCart(raw);
 
   const box = document.getElementById('cartBox');
-  if (!normalized.length){
+  if (!raw.length){
     box.innerHTML = `<div class="muted">${t('messages.cartEmpty')}</div>`;
     toggleCheckout(false);
     await saveLocalCartToDB();
     return;
   }
 
-  const rowsHtml = normalized.map((it,i)=>renderMiniCartRow(it,i)).join('');
+  const rowsHtml = raw.map((it,i)=>renderMiniCartRow(it,i)).join('');
   box.innerHTML = `<table>
     <thead><tr><th>Product</th><th>${t('general.qty')}</th><th>${t('general.action')}</th></tr></thead>
     <tbody>${rowsHtml}</tbody>
   </table>
   <div class="small muted" style="margin-top:8px">
-    ${t('messages.cartItems')} ${normalized.reduce((n,x)=>n+Number(x.qty||0),0)}
+    ${t('messages.cartItems')} ${raw.reduce((n,x)=>n+Number(x.qty||0),0)}
   </div>`;
 
-  // +/- edits only for open items (not locked by approval)
+  // +/- with approval cap
   box.querySelectorAll('button[data-cart]').forEach(b=>{
     b.onclick = ()=>{
       const idx = Number(b.dataset.cart);
@@ -795,13 +816,22 @@ async function renderMiniCart(){
       const c   = readCart();
       if (!c[idx]) return;
 
-      if (requiresSku(c[idx].sku) && approvedQtyForSku(c[idx].sku) >= Number(c[idx].qty||0)) {
-        toast('Approved items are locked by admin.', true);
-        return;
+      const sku = c[idx].sku;
+      const cur = Number(c[idx].qty||0);
+
+      if (d > 0 && requiresSku(sku)) {
+        const apQ = approvedQtyForSku(sku);
+        if (cur >= apQ){
+          toast('Need admin approval to add more. Click “Verify” for this product.', true);
+          const row = document.querySelector(`#prodList [data-sku="${CSS.escape(sku)}"]`);
+          if (row){ row.scrollIntoView({ behavior:'smooth', block:'center' }); row.style.outline='2px solid #ffd08a'; setTimeout(()=>row.style.outline='',1200); }
+          return;
+        }
       }
 
-      c[idx].qty = Math.max(0, Number(c[idx].qty||0) + d);
-      if (c[idx].qty === 0) c.splice(idx, 1);
+      c[idx].qty = Math.max(0, cur + d);
+      if (c[idx].qty === 0) c.splice(idx,1);
+
       writeCart(c);
       renderMiniCart();
       saveLocalCartToDB();
@@ -809,7 +839,7 @@ async function renderMiniCart(){
     };
   });
 
-  // Remove is ALWAYS allowed (even for approved/locked items)
+  // Remove ALWAYS allowed
   box.querySelectorAll('button[data-rem]').forEach(b=>{
     b.onclick = ()=>{
       const idx = Number(b.dataset.rem);
@@ -823,13 +853,12 @@ async function renderMiniCart(){
     };
   });
 
-  // "Verify" button → scroll to product row controls in the browser section
+  // "Verify" button → scroll to product row controls
   box.querySelectorAll('button[data-verify]').forEach(b=>{
     b.onclick = ()=>{
       const idx = Number(b.dataset.verify);
       const c = readCart(); if (!c[idx]) return;
       const sku = c[idx].sku;
-
       const row = document.querySelector(`#prodList [data-sku="${CSS.escape(sku)}"]`);
       if (row){
         row.scrollIntoView({ behavior:'smooth', block:'center' });
@@ -844,8 +873,6 @@ async function renderMiniCart(){
 
   await saveLocalCartToDB();
 }
-
-
 
 /* ===== Product rows (approval gating always visible) ===== */
 function productRow(p){
@@ -864,7 +891,7 @@ function productRow(p){
   let right = '';
 
   if (!requires) {
-    // OPEN product (no verification) -> normal qty + Add to cart
+    // OPEN product (no verification)
     right = `
       <div class="row">
         <button class="qtybtn" data-q="-1">−</button>
@@ -873,12 +900,15 @@ function productRow(p){
         <button class="btn small" data-add-open>Add to cart</button>
       </div>`;
   } else {
-    // REQUIRES VERIFICATION: approval controls always shown
+    // REQUIRES VERIFICATION
     if (approved) {
+      // Approved quota present: allow adding within remaining + request more
       right = `
         <div class="row" style="gap:8px;align-items:center">
-          <span class="small success">Approved: ${Number(ap.quantity)}</span>
-          <button class="btn small" data-add-approved>Add to cart</button>
+          <span class="small success">Approved up to: ${Number(ap.quantity)}</span>
+          <input class="ap-add" type="number" min="1" value="1" style="width:80px;text-align:center"/>
+          <button class="btn small" data-add-approved>Add</button>
+          <button class="btn small" data-req-more>Request more</button>
         </div>`;
     } else if (pending) {
       right = `
@@ -926,7 +956,7 @@ function renderProducts(){
   prodList.querySelectorAll('[data-sku]').forEach(row=>{
     const sku = row.dataset.sku;
     const prod = PRODUCT_CACHE.find(x=>x.sku===sku);
-    const requires = REQ_BY_SKU.get(sku)===true;
+    const requires = requiresSku(sku);
 
     // Open products qty +/- and add
     row.querySelectorAll('button[data-q]').forEach(b=>{
@@ -940,16 +970,12 @@ function renderProducts(){
       const input = row.querySelector('.qty-input');
       const qty = Math.max(0, Number(input?.value||0));
       if (qty<=0) { toast(t('errors.badQty'), true); return; }
-      const cart = readCart();
-      const idx = cart.findIndex(x=>x.sku===sku);
-      if (idx>-1) cart[idx].qty = Number(cart[idx].qty||0) + qty;
-      else cart.push({ sku, name: prod?.name || sku, qty });
-      writeCart(cart); renderMiniCart(); saveLocalCartToDB(); toast(t('toasts.cartUpdated'));
+      addToCart(sku, qty, prod?.name || sku);
     });
 
     if (!requires) return;
 
-    // Requires verification: request/update/cancel/add-approved
+    // Requires verification: request/update/cancel/add-approved/more
     row.querySelector('[data-req-approval]')?.addEventListener('click', async ()=>{
       const qty = Math.max(1, Number(row.querySelector('.ap-qty')?.value||1));
       const { data:{ user } } = await supa.auth.getUser(); if(!user){ toast(t('errors.signinFirst'), true); return; }
@@ -981,14 +1007,32 @@ function renderProducts(){
       toast(t('toasts.cancelled')); await primeMyApprovalsMap(); renderProducts(); renderMyApprovals();
     });
 
-    row.querySelector('[data-add-approved]')?.addEventListener('click', ()=>{
-      const ap = MY_APPROVALS.get(sku);
-      if (!ap || ap.status!=='approved' || Number(ap.quantity)<=0){ toast(t('errors.noApproved'), true); return; }
-      const cart = readCart();
-      const idx = cart.findIndex(x=>x.sku===sku);
-      const lockedQty = Number(ap.quantity);
-      if (idx>-1) cart[idx].qty = lockedQty; else cart.push({ sku, name: prod?.name||sku, qty: lockedQty });
-      writeCart(cart); renderMiniCart(); saveLocalCartToDB(); toast(t('toasts.cartUpdated'));
+    // APPROVED branch: add within quota OR request more
+    row.querySelector('[data-add-approved]')?.addEventListener('click', async ()=>{
+      const input = row.querySelector('.ap-add');
+      const want  = Math.max(1, Number(input?.value||1));
+      const rem   = remainingApprovedForSku(sku); // how many more they can add now
+      if (rem <= 0){
+        toast('You have used your approved quantity. Request more to add.', true);
+        return;
+      }
+      const toAdd = Math.min(want, rem);
+      addToCart(sku, toAdd, prod?.name);
+
+      if (want > toAdd){
+        const delta = want - toAdd;
+        await requestMoreApproval(sku, delta);
+        row.scrollIntoView({ behavior:'smooth', block:'center' });
+      }
+    });
+
+    row.querySelector('[data-req-more]')?.addEventListener('click', async ()=>{
+      const input = row.querySelector('.ap-add');
+      const want  = Math.max(1, Number(input?.value||1));
+      const rem   = remainingApprovedForSku(sku);
+      const delta = Math.max(1, want - Math.max(0, rem));
+      await requestMoreApproval(sku, delta);
+      row.scrollIntoView({ behavior:'smooth', block:'center' });
     });
   });
 }
@@ -1206,7 +1250,7 @@ async function boot(){
   await renderOrders();
   await populateReviewSKUs();
 
-  // Realtime: reflect admin changes immediately (status/quantity)
+  // Realtime updates
   supa.channel('appr-'+user.id)
     .on('postgres_changes',
       { event:'*', schema:'public', table:'vet_product_approvals', filter:`user_id=eq.${user.id}` },
@@ -1214,8 +1258,8 @@ async function boot(){
         await primeMyApprovalsMap();
         await renderProducts();
         await renderMyApprovals();
-        await renderMiniCart();      // locks qty or removes if revoked
-        await saveLocalCartToDB();   // persist effect to DB
+        await renderMiniCart();
+        await saveLocalCartToDB();
       }
     )
     .on('postgres_changes',
