@@ -1,73 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>VetoCos | Payment</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{ --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:18px; }
-html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui;line-height:1.6}
-.wrap{max-width:1100px;margin:0 auto;padding:18px}
-.card{background:#0f162f;border:1px solid rgba(141,158,199,.18);border-radius:18px;padding:16px}
-.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-@media(max-width:860px){.grid{grid-template-columns:1fr}}
-.field{display:flex;flex-direction:column;gap:6px}
-.input,.select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text)}
-.btn{padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
-.row{display:flex;gap:10px;align-items:center;justify-content:space-between}
-.muted{color:var(--muted)}
-.badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem}
-</style>
+  <meta charset="utf-8" />
+  <title>VetoCos | Payment & Delivery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:18px; }
+    html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui;line-height:1.6}
+    .wrap{max-width:1100px;margin:0 auto;padding:18px}
+    .card{background:#0f162f;border:1px solid rgba(141,158,199,.18);border-radius:18px;padding:16px}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+    @media(max-width:860px){.grid{grid-template-columns:1fr}}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .input,.select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text)}
+    .btn{padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+    .muted{color:var(--muted)}
+    .badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem}
+    .hidden{display:none}
+  </style>
 </head>
 <body>
-<div class="wrap">
-<h1>Payment & Delivery</h1>
-<div id="orderMeta" class="muted"></div>
+  <div class="wrap">
+    <h1>Payment & Delivery</h1>
+    <div id="orderMeta" class="muted"></div>
 
-<div class="grid" style="margin-top:10px">
-<section class="card">
-<h2>Contact & Delivery</h2>
-<form id="infoForm">
-<div class="field"><label>Full name</label><input id="full_name" class="input" required></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-<div class="field"><label>Email</label><input id="email" type="email" class="input" required></div>
-<div class="field"><label>Phone</label><input id="phone" class="input" inputmode="tel" pattern="^[0-9+() -]{6,}$" required></div>
-</div>
-<div class="field" style="margin-top:10px"><label>Country</label><input id="country" class="input" required></div>
-<div class="field" style="margin-top:10px"><label>Address line 1</label><input id="address1" class="input" required></div>
-<div class="field" style="margin-top:10px"><label>Address line 2 (optional)</label><input id="address2" class="input"></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-<div class="field"><label>City</label><input id="city" class="input" required></div>
-<div class="field"><label>Postal code</label><input id="postal" class="input" required></div>
-</div>
-</form>
+    <div class="grid" style="margin-top:10px">
+      <section class="card">
+        <h2>Contact</h2>
+        <div class="field"><label>Full name</label><input id="full_name" class="input" required></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+          <div class="field"><label>Email</label><input id="email" type="email" class="input" required></div>
+          <div class="field"><label>Phone</label><input id="phone" class="input" inputmode="tel" pattern="^[0-9+() -]{6,}$" required></div>
+        </div>
 
-<h2 style="margin-top:16px">Payment method</h2>
-<div class="field">
-<select id="payMethod" class="select">
-<option value="cod">Cash on delivery</option>
-<option value="card_on_delivery">Card on delivery</option>
-</select>
-</div>
+        <h2 style="margin-top:16px">Receive or Collect</h2>
+        <div class="field">
+          <select id="deliveryMethod" class="select">
+            <option value="delivery">Deliver to my address</option>
+            <option value="pickup">I will collect (pickup)</option>
+          </select>
+        </div>
 
-<div class="row" style="margin-top:16px">
-<button class="btn" id="btnCancel" type="button">Cancel order</button>
-<div>
-<button class="btn" id="btnBack" type="button">Back to cart</button>
-<button class="btn" id="btnContinue" type="button">Continue</button>
-</div>
-</div>
-<div id="msg" class="muted" style="margin-top:6px"></div>
-</section>
+        <div id="addressBlock" style="margin-top:10px">
+          <h3>Delivery address</h3>
+          <div class="field"><label>Country</label><input id="country" class="input"></div>
+          <div class="field" style="margin-top:10px"><label>Address line 1</label><input id="address1" class="input"></div>
+          <div class="field" style="margin-top:10px"><label>Address line 2 (optional)</label><input id="address2" class="input"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <div class="field"><label>City</label><input id="city" class="input"></div>
+            <div class="field"><label>Postal code</label><input id="postal" class="input"></div>
+          </div>
+          <p class="muted" style="margin-top:6px">We’ll deliver to this address. If you switch to pickup, this section can be left blank.</p>
+        </div>
 
-<aside class="card">
-<h3>Items</h3>
-<div id="items"></div>
-</aside>
-</div>
-</div>
+        <h2 style="margin-top:16px">Payment method</h2>
+        <div class="field">
+          <select id="payMethod" class="select">
+            <option value="cod">Cash on delivery</option>
+            <option value="card_on_delivery">Card on delivery</option>
+          </select>
+        </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
+        <div class="row" style="margin-top:16px">
+          <button class="btn" id="btnCancel" type="button">Cancel order</button>
+          <div>
+            <button class="btn" id="btnBack" type="button">Back to cart</button>
+            <button class="btn" id="btnContinue" type="button">Continue</button>
+          </div>
+        </div>
+        <div id="msg" class="muted" style="margin-top:6px"></div>
+      </section>
+
+      <aside class="card">
+        <h3>Items</h3>
+        <div id="items"></div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
+    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    const qs = new URLSearchParams(location.search);
+    const ORDER_ID = qs.get('order');
+    if(!ORDER_ID){ location.replace('checkout.html'); }
+
+    const els = {
+      items: document.getElementById('items'),
+      meta: document.getElementById('orderMeta'),
+      msg: document.getElementById('msg'),
+      full: document.getElementById('full_name'),
+      email: document.getElementById('email'),
+      phone: document.getElementById('phone'),
+      method: document.getElementById('payMethod'),
+      delivery: document.getElementById('deliveryMethod'),
+      addressBlock: document.getElementById('addressBlock'),
+      country: document.getElementById('country'),
+      address1: document.getElementById('address1'),
+      address2: document.getElementById('address2'),
+      city: document.getElementById('city'),
+      postal: document.getElementById('postal'),
+      btnCancel: document.getElementById('btnCancel'),
+      btnContinue: document.getElementById('btnContinue'),
+      btnBack: document.getElementById('btnBack')
+    };
+
+    els.btnBack.addEventListener('click', ()=> location.assign('cart.html'));
+
+    // Toggle address fields when pickup is chosen
+    function toggleAddress(){
+      const isPickup = els.delivery.value === 'pickup';
+      els.addressBlock.style.display = isPickup ? 'none' : 'block';
+    }
+    els.delivery.addEventListener('change', toggleAddress);
+
+    async function load(){
+      const { data: o } = await supa.from('orders').select('*').eq('id', ORDER_ID).maybeSingle();
+      if(!o){ location.replace('checkout.html'); return; }
+      els.meta.textContent = `Order ${ORDER_ID.slice(0,8)} • Status: ${o.status}`;
+
+      const { data: items } = await supa.from('order_items').select('*').eq('order_id', ORDER_ID);
+      els.items.innerHTML = (items||[]).map(it=>`<div class="row" style="justify-content:space-between"><div>${it.product_name||it.product_sku}</div><div class="badge">x${it.quantity}</div></div>`).join('');
+
+      // Prefill from order or session
+      const { data: ses } = await supa.auth.getUser();
+      els.email.value = o.email || ses?.user?.email || '';
+      els.full.value = o.full_name || '';
+      els.phone.value = o.phone_number || '';
+      els.delivery.value = o.delivery_method || 'delivery';
+      els.method.value = o.payment_method || 'cod';
+
+      els.country.value = o.country || '';
+      els.address1.value = o.address_line1 || '';
+      els.address2.value = o.address_line2 || '';
+      els.city.value = o.city || '';
+      els.postal.value = o.postal_code || '';
+
+      toggleAddress();
+    }
+
+    async function saveDetails(){
+      const isPickup = els.delivery.value === 'pickup';
+
+      const patch = {
+        full_name: els.full.value.trim(),
+        email: els.email.value.trim(),
+        phone_number: els.phone.value.trim(),
+        delivery_method: els.delivery.value,
+        payment_method: els.method.value,
+        country: isPickup ? null : (els.country.value.trim() || null),
+        address_line1: isPickup ? null : (els.address1.value.trim() || null),
+        address_line2: isPickup ? null : (els.address2.value.trim() || null),
+        city: isPickup ? null : (els.city.value.trim() || null),
+        postal_code: isPickup ? null : (els.postal.value.trim() || null)
+      };
+
+      // Basic validation
+      if (!patch.full_name) { els.msg.textContent = 'Full name required'; return false; }
+      if (!patch.email) { els.msg.textContent = 'Email required'; return false; }
+      if (!patch.phone_number) { els.msg.textContent = 'Phone required'; return false; }
+      if (patch.delivery_method === 'delivery') {
+        if (!patch.country || !patch.address_line1 || !patch.city || !patch.postal_code){
+          els.msg.textContent = 'Please complete the delivery address.'; return false;
+        }
+      }
+
+      const { error } = await supa.from('orders').update(patch).eq('id', ORDER_ID);
+      if(error){ els.msg.textContent = error.message; return false; }
+      return true;
+    }
+
+    els.btnCancel.addEventListener('click', async ()=>{
+      const { data: o } = await supa.from('orders').select('status').eq('id', ORDER_ID).single();
+      if(o?.status === 'delivered'){ els.msg.textContent = 'Cannot cancel a delivered order.'; return; }
+      const { error } = await supa.from('orders').update({ status: 'cancelled' }).eq('id', ORDER_ID);
+      if(error){ els.msg.textContent = error.message; return; }
+      els.msg.textContent = 'Order cancelled.';
+      setTimeout(()=>location.assign('index.html'), 700);
+    });
+
+    els.btnContinue.addEventListener('click', async ()=>{
+      const ok = await saveDetails();
+      if(!ok) return;
+
+      // For COD / Card-on-delivery we keep status 'pending'
+      await supa.from('orders').update({ status: 'pending' }).eq('id', ORDER_ID);
+
+      // OPTIONAL: send admin + buyer emails if you deployed the function:
+      // await fetch(`${SUPABASE_URL}/functions/v1/send-order-emails`,{
+      //   method:'POST',
+      //   headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${SUPABASE_ANON}` },
+      //   body: JSON.stringify({ order_id: ORDER_ID })
+      // });
+
+      const method = els.method.value;
+      const way = els.delivery.value;
+      location.assign(`thank-you.html?order=${encodeURIComponent(ORDER_ID)}&m=${method}&way=${way}`);
+    });
+
+    load();
+  </script>
+</body>
 </html>
+
