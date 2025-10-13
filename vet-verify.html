@@ -713,33 +713,23 @@ function renderMiniCartRow(it, i){
 
   if (req){
     if (hasEnoughApproval){
-      // Lock the line to the approved qty and disable editing/removal here
       statusNote = `<div class="small success">Approved: ${apQ}</div>`;
       controls = `
         <span style="display:inline-block;width:34px;text-align:center">${need}</span>
         <span class="small muted" title="Quantity locked by admin approval">🔒</span>
       `;
     } else {
-      // Not enough approval yet → show Verify action, no +/- allowed
       const short = apQ > 0 ? `approved ${apQ}, need ${need}` : `not approved`;
       statusNote = `<div class="small" style="color:#ffd08a">Verification: ${short}</div>`;
-      controls = `
-        <button class="qtybtn" data-verify="${i}" title="Verify this product">Verify</button>
-      `;
+      controls = `<button class="qtybtn" data-verify="${i}" title="Verify this product">Verify</button>`;
     }
   } else {
-    // Open item → normal qty controls
     controls = `
       <button class="qtybtn" data-cart="${i}" data-d="-1" aria-label="decrease">−</button>
       <span style="display:inline-block;width:34px;text-align:center">${need}</span>
       <button class="qtybtn" data-cart="${i}" data-d="1" aria-label="increase">+</button>
     `;
   }
-
-  // Remove button only for non-locked rows
-  const removeBtn = (!req || !hasEnoughApproval)
-    ? `<button class="qtybtn" data-rem="${i}">Remove</button>`
-    : `<span class="small muted">Remove disabled</span>`;
 
   return `<tr data-sku="${sku}">
     <td>
@@ -748,7 +738,7 @@ function renderMiniCartRow(it, i){
       ${statusNote}
     </td>
     <td>${controls}</td>
-    <td>${removeBtn}</td>
+    <td><button class="qtybtn" data-rem="${i}">Remove</button></td>
   </tr>`;
 }
 
@@ -757,27 +747,25 @@ async function renderMiniCart(){
   if (!PRODUCT_CACHE.length) await loadProducts();
   await primeMyApprovalsMap();
 
-  // Normalize local cart: drop or clamp unapproved req items
+  // Normalize local cart: clamp verified items to approved qty; keep placeholders for unapproved
   const raw = readCart();
   const normalized = [];
   for (const it of raw){
     const sku = it.sku;
-    const qty = Number(it.qty||0);
+    const qty = Number(it.qty || 0);
     if (qty <= 0) continue;
 
     if (requiresSku(sku)){
       const apQ = approvedQtyForSku(sku);
       if (apQ >= qty && apQ > 0){
-        normalized.push({ ...it, qty });           // ok as-is
+        normalized.push({ ...it, qty });                 // fully approved as-is
       } else if (apQ > 0){
-        // keep the line but clamp to the approved qty (optional)
-        normalized.push({ ...it, qty: apQ });
+        normalized.push({ ...it, qty: apQ });            // clamp to approved qty
       } else {
-        // keep as a placeholder with requested qty so user sees what to verify
-        normalized.push({ ...it, qty });
+        normalized.push({ ...it, qty });                 // show requested qty (needs verify)
       }
     } else {
-      normalized.push({ ...it, qty });
+      normalized.push({ ...it, qty });                   // open item
     }
   }
   writeCart(normalized);
@@ -795,19 +783,23 @@ async function renderMiniCart(){
     <thead><tr><th>Product</th><th>${t('general.qty')}</th><th>${t('general.action')}</th></tr></thead>
     <tbody>${rowsHtml}</tbody>
   </table>
-  <div class="small muted" style="margin-top:8px">${t('messages.cartItems')} ${normalized.reduce((n,x)=>n+Number(x.qty||0),0)}</div>`;
+  <div class="small muted" style="margin-top:8px">
+    ${t('messages.cartItems')} ${normalized.reduce((n,x)=>n+Number(x.qty||0),0)}
+  </div>`;
 
-  // Wire +/- for open items
+  // +/- edits only for open items (not locked by approval)
   box.querySelectorAll('button[data-cart]').forEach(b=>{
     b.onclick = ()=>{
       const idx = Number(b.dataset.cart);
-      const d = Number(b.dataset.d);
-      const c = readCart();
+      const d   = Number(b.dataset.d);
+      const c   = readCart();
       if (!c[idx]) return;
+
       if (requiresSku(c[idx].sku) && approvedQtyForSku(c[idx].sku) >= Number(c[idx].qty||0)) {
         toast('Approved items are locked by admin.', true);
         return;
       }
+
       c[idx].qty = Math.max(0, Number(c[idx].qty||0) + d);
       if (c[idx].qty === 0) c.splice(idx, 1);
       writeCart(c);
@@ -817,17 +809,12 @@ async function renderMiniCart(){
     };
   });
 
-  // Wire Remove (disabled for fully-approved locked rows)
+  // Remove is ALWAYS allowed (even for approved/locked items)
   box.querySelectorAll('button[data-rem]').forEach(b=>{
     b.onclick = ()=>{
       const idx = Number(b.dataset.rem);
       const c = readCart();
       if (!c[idx]) return;
-      const sku = c[idx].sku;
-      if (requiresSku(sku) && approvedQtyForSku(sku) >= Number(c[idx].qty||0)){
-        toast('Approved items cannot be removed here.', true);
-        return;
-      }
       c.splice(idx,1);
       writeCart(c);
       renderMiniCart();
@@ -836,29 +823,28 @@ async function renderMiniCart(){
     };
   });
 
-  // Wire Verify → scroll to product row controls
+  // "Verify" button → scroll to product row controls in the browser section
   box.querySelectorAll('button[data-verify]').forEach(b=>{
     b.onclick = ()=>{
       const idx = Number(b.dataset.verify);
       const c = readCart(); if (!c[idx]) return;
       const sku = c[idx].sku;
-      // find the product row in the "Add more products" list
+
       const row = document.querySelector(`#prodList [data-sku="${CSS.escape(sku)}"]`);
       if (row){
         row.scrollIntoView({ behavior:'smooth', block:'center' });
-        // highlight briefly
         row.style.outline = '2px solid #ffd08a';
         setTimeout(()=> row.style.outline = '', 1200);
       }
     };
   });
 
-  // Final gate: show/hide Checkout depending on full approval coverage
-  const ok = isCartFullyApproved();
-  toggleCheckout(ok);
+  // Final gate: Checkout visible only if the whole cart is fully approved
+  toggleCheckout(isCartFullyApproved());
 
   await saveLocalCartToDB();
 }
+
 
 
 /* ===== Product rows (approval gating always visible) ===== */
