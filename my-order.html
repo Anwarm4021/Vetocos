@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>VetoCos | Order details</title>
+  <title>VetoCos | My orders</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
@@ -10,39 +10,21 @@
     html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui;line-height:1.6}
     .wrap{max-width:1000px;margin:0 auto;padding:18px}
     .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:18px;padding:16px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    @media(max-width:820px){.grid{grid-template-columns:1fr}}
-    .row{display:flex;justify-content:space-between;gap:8px}
+    .row{display:grid;grid-template-columns:1.3fr .8fr .7fr .9fr .7fr;gap:12px;align-items:center}
+    .head{font-weight:600;color:#cfe0ff}
     .muted{color:var(--muted)}
-    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.06);color:var(--text);text-decoration:none;display:inline-block;cursor:pointer}
-    .warn{background:rgba(255,200,120,.12)}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.06);color:var(--text);text-decoration:none;display:inline-block}
+    a{color:inherit}
+    .empty{padding:18px;border:1px dashed rgba(141,158,199,.3);border-radius:14px;text-align:center}
     .err{color:#ffd2d2}
+    @media(max-width:840px){ .row{grid-template-columns:1fr 1fr;gap:8px} .head{display:none} }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <p><button id="btnBack" class="btn" type="button">← Back</button></p>
-    <h1>Order details</h1>
-    <div id="meta" class="muted">Loading…</div>
-
-    <div class="grid" style="margin-top:10px">
-      <section class="card">
-        <h3>Contact & Delivery</h3>
-        <div id="contact"></div>
-      </section>
-      <section class="card">
-        <h3>Items</h3>
-        <div id="items"></div>
-      </section>
-    </div>
-
-    <div class="row" style="margin-top:12px">
-      <div id="msg" class="muted"></div>
-      <div>
-        <button id="btnCancel" class="btn warn" type="button">Cancel order</button>
-        <a id="btnEdit" class="btn" href="#">Edit / payment</a>
-      </div>
-    </div>
+    <h1>My orders</h1>
+    <div id="box" class="card">Loading…</div>
+    <p style="margin-top:14px"><a class="btn" href="Products.html">← Continue shopping</a></p>
   </div>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -51,73 +33,63 @@
       "https://qdepgviimbcdlozjpbhm.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0"
     );
-    const qs = new URLSearchParams(location.search);
-    const ORDER_ID = qs.get('order');
-
-    const meta = document.getElementById('meta');
-    const contact = document.getElementById('contact');
-    const items = document.getElementById('items');
-    const msg = document.getElementById('msg');
-    const btnCancel = document.getElementById('btnCancel');
-    const btnEdit = document.getElementById('btnEdit');
-    const btnBack = document.getElementById('btnBack');
+    const box = document.getElementById('box');
     const fmt = (dt)=>{ try{ return new Date(dt).toLocaleString(); }catch{ return dt||'-'; } };
-
-    btnBack.addEventListener('click', ()=>{
-      if (history.length > 1) history.back();
-      else location.href = 'my-order.html';
-    });
 
     async function load(){
       try{
-        if(!ORDER_ID){ meta.innerHTML = '<span class="err">Missing order id.</span>'; return; }
-
         const { data:{ user }, error:authErr } = await supa.auth.getUser();
-        if (authErr) { meta.innerHTML = `<span class="err">${authErr.message}</span>`; return; }
+        if (authErr) { box.innerHTML = `<div class="err">${authErr.message}</div>`; return; }
         if (!user) {
-          const backTo = 'order-view.html?order=' + encodeURIComponent(ORDER_ID);
+          const backTo = location.pathname + location.search;
           location.href = 'login.html?redirect=' + encodeURIComponent(backTo);
           return;
         }
 
-        // Get the order (RLS should enforce ownership; we also filter by id)
-        const { data:o, error:oErr } = await supa.from('orders').select('*').eq('id', ORDER_ID).maybeSingle();
-        if (oErr) { meta.innerHTML = `<span class="err">${oErr.message}</span>`; return; }
-        if (!o) { meta.innerHTML = '<span class="err">Order not found.</span>'; return; }
+        // Explicitly filter by user_id to avoid any RLS surprises
+        const { data: orders, error } = await supa
+          .from('orders')
+          .select('id,status,created_at,updated_at,delivery_method,payment_method')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending:false });
 
-        meta.textContent = `#${String(o.id).slice(0,8)} • ${o.status} • created ${fmt(o.created_at)}`;
-
-        contact.innerHTML = `
-          <div><strong>${o.full_name||'-'}</strong></div>
-          <div class="muted">${o.email||'-'} · ${o.phone_number||'-'}</div>
-          <div style="margin-top:8px">${o.delivery_method==='pickup'
-            ? '<em>Pickup (collect)</em>'
-            : [o.address_line1,o.address_line2,o.city,o.postal_code,o.country].filter(Boolean).join(', ') || '-'}</div>
-          <div class="muted" style="margin-top:6px">Payment: ${o.payment_method||'-'}</div>
-        `;
-
-        const { data:its, error:itErr } = await supa.from('order_items').select('*').eq('order_id', ORDER_ID);
-        if (itErr) { items.innerHTML = `<div class="err">${itErr.message}</div>`; }
-        else {
-          items.innerHTML = (its||[]).map(it=>`<div class="row"><div>${it.product_name||it.product_sku}</div><div>x${it.quantity}</div></div>`).join('') || '<div class="muted">No items</div>';
+        if (error) { box.innerHTML = `<div class="err">${error.message}</div>`; return; }
+        if (!orders || orders.length === 0) {
+          box.innerHTML = `<div class="empty">You have no orders yet.</div>`;
+          return;
         }
 
-        btnEdit.href = `order-pay.html?order=${encodeURIComponent(ORDER_ID)}`;
+        // Count items per order
+        const ids = orders.map(o=>o.id);
+        const { data: items, error:itemsErr } = await supa
+          .from('order_items')
+          .select('order_id,quantity')
+          .in('order_id', ids);
+        if (itemsErr) { box.innerHTML = `<div class="err">${itemsErr.message}</div>`; return; }
 
-        btnCancel.onclick = async ()=>{
-          try{
-            const { data: cur } = await supa.from('orders').select('status').eq('id', ORDER_ID).single();
-            if(cur?.status === 'delivered'){ msg.textContent = 'Cannot cancel a delivered order.'; return; }
-            const { error } = await supa.from('orders').update({ status:'cancelled' }).eq('id', ORDER_ID);
-            if(error){ msg.textContent = error.message; return; }
-            msg.textContent = 'Order cancelled.';
-            // Reload just this page to reflect status
-            setTimeout(()=>location.reload(), 700);
-          }catch(e){ msg.textContent = e.message || 'Could not cancel.'; }
-        };
+        const countMap = {};
+        (items||[]).forEach(it=>{
+          countMap[it.order_id] = (countMap[it.order_id]||0) + Number(it.quantity||0);
+        });
+
+        const rows = [
+          `<div class="row head"><div>Order</div><div>Status</div><div>Items</div><div>Updated</div><div>Action</div></div>`,
+          ...orders.map(o=>{
+            const n = countMap[o.id] || 0;
+            const idShort = String(o.id).slice(0,8);
+            return `<div class="row">
+              <div><strong>#${idShort}</strong><div class="muted">${fmt(o.created_at)}</div></div>
+              <div>${o.status}</div>
+              <div>${n}</div>
+              <div>${fmt(o.updated_at)}</div>
+              <div><a class="btn" href="order-view.html?order=${encodeURIComponent(o.id)}">Open</a></div>
+            </div>`;
+          })
+        ].join('');
+        box.innerHTML = rows;
       }catch(e){
         console.error(e);
-        meta.innerHTML = `<span class="err">${e.message||'Unexpected error.'}</span>`;
+        box.innerHTML = `<div class="err">${e.message||'Unexpected error.'}</div>`;
       }
     }
     load();
