@@ -44,7 +44,7 @@
     th,td{padding:8px 10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
     .link{color:var(--accent);text-decoration:none}
     /* Drawer */
-    .drawer{position:fixed;top:0;right:-520px;width:520px;max-width:96vw;height:100vh;background:#0f162f;
+    .drawer{position:fixed;top:0;right:-560px;width:560px;max-width:96vw;height:100vh;background:#0f162f;
             border-left:1px solid rgba(141,158,199,.18);box-shadow:-8px 0 24px rgba(0,0,0,.25);transition:right .28s ease;
             z-index:9998;display:flex;flex-direction:column}
     .drawer.open{right:0}
@@ -254,7 +254,7 @@
       <div id="dwEmail" class="muted mini"></div>
     </div>
     <div class="row">
-      <button id="dwDeleteUser" class="btn danger small">Delete user</button>
+      <button id="dwDeleteUser" class="btn danger small" title="Delete user">Delete user</button>
       <button id="dwClose" class="btn small">Close</button>
     </div>
   </header>
@@ -282,6 +282,23 @@
           <button id="dwSaveVpa" class="btn small">Save / Upsert</button>
         </div>
       </div>
+    </section>
+
+    <!-- NEW: CART MANAGEMENT -->
+    <section class="card">
+      <div class="toolbar" style="margin:0 0 6px">
+        <h3 style="margin:0">Cart Management</h3>
+        <button id="dwReloadCart" class="btn small">Refresh</button>
+      </div>
+      <div id="dwCartBox" class="muted">Loading…</div>
+      <div style="margin-top:10px" class="grid3">
+        <label>SKU <input id="dwCartSku" type="text" placeholder="SKU123"></label>
+        <label>Qty <input id="dwCartQty" type="number" min="1" value="1"></label>
+        <div style="display:flex;align-items:flex-end;gap:8px">
+          <button id="dwCartAdd" class="btn small">Add / Upsert</button>
+        </div>
+      </div>
+      <div id="dwCartMsg" class="muted" style="margin-top:6px"></div>
     </section>
   </main>
 </aside>
@@ -313,6 +330,7 @@ function toast(msg, isErr=false){
 function filePublicUrl(bucket, path){
   return `https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/${bucket}/${encodeURI(String(path||'').replace(new RegExp('^'+bucket+'/'),''))}`;
 }
+function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
 /* ================= Auth Gate ================= */
 const authMsg  = document.getElementById("authMsg");
@@ -320,7 +338,7 @@ const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
 loginBtn.onclick = () => {
   const u = new URL("login.html", location.href);
-  u.searchParams.set("admin", "1");            // tell login page this is an admin login
+  u.searchParams.set("admin", "1");
   u.searchParams.set("redirect", "admin.html");
   location.href = u.toString();
 };
@@ -370,6 +388,10 @@ async function loadUsers(){
     .from('vet_product_approvals')
     .select('user_id,status,product_sku,quantity');
 
+  const { data: cartCounts } = await supa
+    .from('cart_items')
+    .select('user_id, quantity');
+
   const latestAppByUser = {};
   (apps||[]).forEach(a=>{ if(!latestAppByUser[a.user_id]) latestAppByUser[a.user_id]=a; });
 
@@ -380,10 +402,16 @@ async function loadUsers(){
     if(r.status==='pending') pendingCounts[r.user_id].pending++;
   });
 
+  const cartCountByUser = {};
+  (cartCounts||[]).forEach(c=>{
+    cartCountByUser[c.user_id] = (cartCountByUser[c.user_id]||0) + Number(c.quantity||0);
+  });
+
   USERS_CACHE = (profs||[]).map(p=>{
     const app = latestAppByUser[p.id]||null;
     const pc  = pendingCounts[p.id]||{pending:0,total:0};
-    return { ...p, latest_app: app, approvals_stats: pc };
+    const cc  = cartCountByUser[p.id]||0;
+    return { ...p, latest_app: app, approvals_stats: pc, cart_qty: cc };
   });
   usersMsg.textContent = '';
   renderUsers();
@@ -399,14 +427,16 @@ function renderUsers(){
     const appStatus = u.latest_app?.status || '—';
     const pill = appStatus==='approved' ? 'ok' : appStatus==='rejected' ? 'bad' : 'pend';
     const pend = u.approvals_stats?.pending||0, tot = u.approvals_stats?.total||0;
+    const cartQty = Number(u.cart_qty||0);
     return `<div class="card" data-user="${u.id}">
-      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;align-items:center">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;align-items:center">
         <div>
           <div style="font-weight:600">${name}</div>
           <div class="muted mini">${u.email||''}</div>
         </div>
         <div>Vet status: <span class="pill ${pill}">${appStatus}</span></div>
         <div>Approvals: <span class="muted mini">${pend} pending / ${tot} total</span></div>
+        <div>Cart qty: <span class="muted mini">${cartQty}</span></div>
         <div style="text-align:right"><button class="btn small" data-full="${u.id}">Full control</button></div>
       </div>
     </div>`;
@@ -421,6 +451,7 @@ function renderUsers(){
 /* Drawer */
 const drawer  = document.getElementById('drawer');
 const dwClose = document.getElementById('dwClose');
+const dwDeleteUser = document.getElementById('dwDeleteUser');
 const dwName  = document.getElementById('dwName');
 const dwEmail = document.getElementById('dwEmail');
 const dwAppBox= document.getElementById('dwAppBox');
@@ -430,12 +461,17 @@ const dwSku   = document.getElementById('dwSku');
 const dwQty   = document.getElementById('dwQty');
 const dwStatus= document.getElementById('dwStatus');
 const dwSaveVpa = document.getElementById('dwSaveVpa');
-const dwDeleteUser = document.getElementById('dwDeleteUser');
+
+/* CART drawer refs */
+const dwCartBox = document.getElementById('dwCartBox');
+const dwReloadCart = document.getElementById('dwReloadCart');
+const dwCartSku = document.getElementById('dwCartSku');
+const dwCartQty = document.getElementById('dwCartQty');
+const dwCartAdd = document.getElementById('dwCartAdd');
+const dwCartMsg = document.getElementById('dwCartMsg');
 
 let DRAWER_USER_ID = null;
 dwClose.onclick = ()=>{ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); };
-
-function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
 async function openDrawer(userId){
   DRAWER_USER_ID = userId;
@@ -446,6 +482,12 @@ async function openDrawer(userId){
   dwEmail.textContent= p?.email || '';
 
   // Vet application (latest)
+  await loadDrawerApplication(userId);
+  await loadDrawerApprovals();
+  await loadDrawerCart();
+}
+
+async function loadDrawerApplication(userId){
   dwAppBox.textContent = 'Loading…';
   const { data: appRows } = await supa
     .from('vet_applications')
@@ -488,12 +530,12 @@ async function openDrawer(userId){
     dwAppBox.querySelector('[data-appact="approve"]').onclick = async ()=>{
       const { error } = await supa.from('vet_applications').update({ status:'approved' }).eq('id', app.id);
       if (error) return toast(error.message,true);
-      toast('Application approved'); openDrawer(userId);
+      toast('Application approved'); await loadDrawerApplication(userId);
     };
     dwAppBox.querySelector('[data-appact="reject"]').onclick = async ()=>{
       const { error } = await supa.from('vet_applications').update({ status:'rejected' }).eq('id', app.id);
       if (error) return toast(error.message,true);
-      toast('Application rejected'); openDrawer(userId);
+      toast('Application rejected'); await loadDrawerApplication(userId);
     };
 
     // Save note
@@ -508,11 +550,25 @@ async function openDrawer(userId){
       toast('Note saved');
     };
   }
-
-  await loadDrawerApprovals();
 }
-document.getElementById('dwReloadApprovals').onclick = ()=> loadDrawerApprovals();
 
+/* Delete user (Edge Function) */
+dwDeleteUser.onclick = async ()=>{
+  if (!DRAWER_USER_ID) return;
+  if (!confirm('Delete this user and related data?')) return;
+  try{
+    const { data, error } = await supa.functions.invoke('admin-delete-user', { body: { user_id: DRAWER_USER_ID }});
+    if (error) throw error;
+    toast('User deleted');
+    drawer.classList.remove('open');
+    await loadUsers();
+  }catch(e){
+    toast(e?.message || String(e) || 'Delete failed', true);
+  }
+};
+
+/* Approvals in drawer */
+document.getElementById('dwReloadApprovals').onclick = ()=> loadDrawerApprovals();
 async function loadDrawerApprovals(){
   dwVPABox.textContent = 'Loading…';
   const { data: rows, error } = await supa
@@ -581,31 +637,85 @@ document.getElementById('dwSaveVpa').onclick = async ()=>{
   toast('Saved'); dwSku.value=''; dwQty.value='1'; dwStatus.value='pending'; await loadDrawerApprovals();
 };
 
-/* Delete user (Edge Function call) */
-dwDeleteUser.onclick = async ()=>{
+/* =======================================================================
+   CART MANAGEMENT (drawer)
+======================================================================= */
+dwReloadCart.onclick = ()=> loadDrawerCart();
+dwCartAdd.onclick = async ()=>{
   if (!DRAWER_USER_ID) return;
-  if (!confirm('Delete this user and all their data? This cannot be undone.')) return;
-
-  const { data:{ session } } = await supa.auth.getSession();
-  if(!session?.access_token){ toast('Not signed in', true); return; }
-
-  try{
-    const resp = await fetch('/functions/v1/admin-delete-user', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${session.access_token}` },
-      body: JSON.stringify({ user_id: DRAWER_USER_ID })
-    });
-    if (!resp.ok){
-      const txt = await resp.text();
-      throw new Error(txt || 'Delete failed');
-    }
-    toast('User deleted');
-    drawer.classList.remove('open');
-    await Promise.all([loadUsers(), loadApps(), loadVPA()]);
-  }catch(err){
-    toast(err.message||'Delete failed', true);
-  }
+  const sku = (dwCartSku.value||'').trim();
+  const qty = Math.max(1, Number(dwCartQty.value||1)|0);
+  if (!sku){ dwCartMsg.textContent='Enter SKU'; return; }
+  dwCartMsg.textContent='Saving…';
+  const { error } = await supa.from('cart_items').upsert(
+    { user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty },
+    { onConflict: 'user_id,product_sku' }
+  );
+  if (error){ dwCartMsg.textContent = error.message; return; }
+  dwCartMsg.textContent='Saved';
+  dwCartSku.value=''; dwCartQty.value='1';
+  await loadDrawerCart();
 };
+
+async function loadDrawerCart(){
+  dwCartBox.textContent = 'Loading…';
+  const { data, error } = await supa
+    .from('cart_items')
+    .select(`
+      user_id, product_sku, quantity,
+      products:products!inner(name, stock_qty)
+    `)
+    .eq('user_id', DRAWER_USER_ID)
+    .order('product_sku', { ascending:true });
+
+  if (error){ dwCartBox.textContent = error.message; return; }
+  const rows = data || [];
+  if (!rows.length){ dwCartBox.innerHTML = '<div class="muted">Cart is empty.</div>'; return; }
+
+  dwCartBox.innerHTML = `
+    <table>
+      <thead><tr><th>SKU</th><th>Name</th><th>Qty</th><th>Stock</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${rows.map(r=>`
+          <tr data-sku="${r.product_sku}">
+            <td><a class="link" href="Products.html#${encodeURIComponent(r.product_sku)}" target="_blank" rel="noopener">${r.product_sku}</a></td>
+            <td>${escapeHtml(r.products?.name || '')}</td>
+            <td><input class="qty-edit" type="number" min="0" value="${Number(r.quantity||0)}"></td>
+            <td class="muted mini">${Number(r.products?.stock_qty||0)}</td>
+            <td class="row">
+              <button class="btn small" data-cart="save">Save</button>
+              <button class="btn danger small" data-cart="delete">Remove</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  dwCartBox.querySelectorAll('button[data-cart="save"]').forEach(b=>{
+    b.onclick = async ()=>{
+      const tr = b.closest('tr'); const sku = tr.dataset.sku;
+      const qty = Math.max(0, Number(tr.querySelector('input').value||0)|0);
+      if (qty===0){
+        const { error } = await supa.from('cart_items').delete().eq('user_id', DRAWER_USER_ID).eq('product_sku', sku);
+        if (error) return toast(error.message,true);
+        toast('Item removed'); await loadDrawerCart(); await loadUsers();
+        return;
+      }
+      const { error } = await supa.from('cart_items').upsert({ user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty }, { onConflict:'user_id,product_sku' });
+      if (error) return toast(error.message,true);
+      toast('Saved'); await loadDrawerCart(); await loadUsers();
+    };
+  });
+  dwCartBox.querySelectorAll('button[data-cart="delete"]').forEach(b=>{
+    b.onclick = async ()=>{
+      const tr = b.closest('tr'); const sku = tr.dataset.sku;
+      const { error } = await supa.from('cart_items').delete().eq('user_id', DRAWER_USER_ID).eq('product_sku', sku);
+      if (error) return toast(error.message,true);
+      toast('Removed'); await loadDrawerCart(); await loadUsers();
+    };
+  });
+}
 
 /* =======================================================================
    PRODUCTS
@@ -773,7 +883,7 @@ const appsRefresh= document.getElementById('appsRefresh');
 const appsMsg    = document.getElementById('appsMsg');
 const appsList   = document.getElementById('appsList');
 
-appsSearch.addEventListener('input', ()=>renderApps());
+appsSearch.addEventListener('input', renderApps);
 appsRefresh.addEventListener('click', loadApps);
 
 let APP_CACHE = [];
@@ -789,32 +899,20 @@ async function loadApps(){
   if (error){ appsMsg.textContent = error.message; return; }
   APP_CACHE = data || [];
   appsMsg.textContent = '';
-  await renderApps();
+  renderApps();
 }
-
-/* ✅ CORRECTED: renderApps creates signed URLs for private Documents bucket */
-async function renderApps(){
+function renderApps(){
   const q = (appsSearch.value||'').toLowerCase().trim();
-  const filtered = (APP_CACHE||[]).filter(a=>{
+  appsList.innerHTML = (APP_CACHE.filter(a=>{
     const name = [(a.profiles?.first_name||''),(a.profiles?.last_name||'')].join(' ').toLowerCase();
     const email= (a.profiles?.email||'').toLowerCase();
     const idn  = (a.identity_number||'').toLowerCase();
     const blob = [name,email,idn].join(' ');
     return !q || blob.includes(q);
-  });
-
-  const rows = await Promise.all(filtered.map(async a=>{
+  }).map(a=>{
     const full = [a.profiles?.first_name, a.profiles?.last_name].filter(Boolean).join(' ') || '(no name)';
     const statusPill = a.status==='approved' ? 'ok' : a.status==='rejected' ? 'bad' : 'pend';
-    let diplomaLink = '';
-    if (a.diploma_path){
-      try{
-        const { data } = await supa.storage.from(DOCS_BUCKET).createSignedUrl(a.diploma_path, 600);
-        if (data?.signedUrl){
-          diplomaLink = `<a class="btn small" href="${data.signedUrl}" target="_blank" rel="noopener">Open file</a>`;
-        }
-      }catch{}
-    }
+    const diplomaLink = a.diploma_path ? `<a class="btn small" href="${filePublicUrl(DOCS_BUCKET, a.diploma_path)}" target="_blank" rel="noopener">Open file</a>` : '';
     const note = a.admin_note ? `<div class="mini muted">Note: ${escapeHtml(a.admin_note)}</div>` : '';
     return `<div class="card" data-app="${a.id}" data-user="${a.user_id}">
       <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;align-items:center">
@@ -836,9 +934,7 @@ async function renderApps(){
         </div>
       </div>
     </div>`;
-  }));
-
-  appsList.innerHTML = rows.length ? rows.join('') : '<div class="muted">No applications.</div>';
+  }).join('')) || '<div class="muted">No applications.</div>';
 
   appsList.querySelectorAll('button[data-full]').forEach(b=>{
     b.onclick = ()=> openDrawer(b.dataset.full);
@@ -853,12 +949,12 @@ appsList.addEventListener('click', async (e)=>{
   if(action==='approve'){
     const { error } = await supa.from('vet_applications').update({ status:'approved' }).eq('id', appId);
     if (error) return toast(error.message, true);
-    toast('Application approved'); await loadApps(); await loadUsers();
+    toast('Application approved'); await loadApps();
   }
   if(action==='reject'){
     const { error } = await supa.from('vet_applications').update({ status:'rejected' }).eq('id', appId);
     if (error) return toast(error.message, true);
-    toast('Application rejected'); await loadApps(); await loadUsers();
+    toast('Application rejected'); await loadApps();
   }
 });
 
@@ -869,7 +965,7 @@ const vpaWrap   = document.getElementById('vpaWrap');
 const vpaSearch = document.getElementById('vpaSearch');
 const vpaRefresh= document.getElementById('vpaRefresh');
 const vpaMsg    = document.getElementById('vpaMsg');
-const vpaMsg2   = document.getElementById('vpaMsg');
+const vpaMsg2   = document.getElementById('vpaMsg2');
 const vpaList   = document.getElementById('vpaList');
 const vpaEmail  = document.getElementById('vpaEmail');
 const vpaSku    = document.getElementById('vpaSku');
@@ -901,6 +997,7 @@ vpaUpsert.onclick = async ()=>{
 };
 
 async function loadVPA(){
+  vpaMsg2.textContent='Loading…';
   const { data, error } = await supa
     .from('vet_product_approvals')
     .select(`
@@ -909,8 +1006,9 @@ async function loadVPA(){
     `)
     .order('status', { ascending: true })
     .order('product_sku', { ascending: true });
-  if (error){ vpaMsg.textContent = error.message; return; }
+  if (error){ vpaMsg2.textContent = error.message; return; }
   VPA_CACHE = data || [];
+  vpaMsg2.textContent='';
   renderVPA();
 }
 function renderVPA(){
@@ -1179,6 +1277,12 @@ function subscribeRealtime(){
     supa.channel('rt_vpa')
       .on('postgres_changes', { event: '*', schema:'public', table:'vet_product_approvals' }, ()=>{
         toast('Product approval updated'); loadVPA(); loadUsers(); if (DRAWER_USER_ID) loadDrawerApprovals();
+      })
+      .subscribe();
+
+    supa.channel('rt_cart_items')
+      .on('postgres_changes', { event: '*', schema:'public', table:'cart_items' }, ()=>{
+        toast('Cart changed'); if (DRAWER_USER_ID) loadDrawerCart(); loadUsers();
       })
       .subscribe();
   }catch{}
