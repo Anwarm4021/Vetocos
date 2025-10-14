@@ -30,7 +30,6 @@
     .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .lang{display:flex;align-items:center;gap:8px}
     .lang select{min-width:140px}
-    .address{white-space:pre-wrap}
     .mini{font-size:.88rem}
     .hidden{display:none}
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
@@ -115,23 +114,23 @@ const STR = {
       login_admin:"Login as Admin",logout:"Logout",search_placeholder:"Search name / email / order #",method:"Method",
       all:"All",collect:"Collect",delivery:"Delivery",status:"Status",pending:"pending",paid:"paid",shipped:"shipped",
       completed:"completed",cancelled:"cancelled",from:"From",to:"To",refresh:"Refresh",loading:"Loading…",
-      order:"#",customer:"Customer",email:"Email",created:"Created",total:"Total",items:"Items",delivery_addr:"Delivery address",
-      pickup_note:"Pickup at store",view_items:"View items",hide_items:"Hide items",delete:"Delete",deleting:"Deleting…",
-      deleted:"Deleted",confirm_delete:"Delete this order and its items? This cannot be undone."},
+      order:"#",customer:"Customer",email:"Email",created:"Created",total:"Total",items:"Items",method_col:"Method",
+      view_items:"View items",hide_items:"Hide items",delete:"Delete",deleting:"Deleting…",deleted:"Deleted",
+      confirm_delete:"Delete this order and its items? This cannot be undone."},
   fr:{title:"Historique des achats",back_admin:"Retour à l’Admin",language:"Langue",checking_session:"Vérification de session…",
       login_admin:"Se connecter (Admin)",logout:"Se déconnecter",search_placeholder:"Rech. nom / email / n° commande",method:"Méthode",
       all:"Toutes",collect:"Retrait",delivery:"Livraison",status:"Statut",pending:"en attente",paid:"payée",shipped:"expédiée",
       completed:"terminée",cancelled:"annulée",from:"Du",to:"Au",refresh:"Rafraîchir",loading:"Chargement…",
-      order:"N°",customer:"Client",email:"Email",created:"Créée",total:"Total",items:"Articles",delivery_addr:"Adresse de livraison",
-      pickup_note:"Retrait en magasin",view_items:"Voir articles",hide_items:"Masquer",delete:"Supprimer",deleting:"Suppression…",
-      deleted:"Supprimée",confirm_delete:"Supprimer cette commande et ses articles ? Action irréversible."},
+      order:"N°",customer:"Client",email:"Email",created:"Créée",total:"Total",items:"Articles",method_col:"Méthode",
+      view_items:"Voir articles",hide_items:"Masquer",delete:"Supprimer",deleting:"Suppression…",deleted:"Supprimée",
+      confirm_delete:"Supprimer cette commande et ses articles ? Action irréversible."},
   ar:{title:"سجل المشتريات",back_admin:"العودة للوحة التحكم",language:"اللغة",checking_session:"جارٍ فحص الجلسة…",
       login_admin:"تسجيل دخول كمدير",logout:"تسجيل خروج",search_placeholder:"بحث اسم / بريد / رقم الطلب",method:"الطريقة",
       all:"الكل",collect:"استلام",delivery:"تسليم",status:"الحالة",pending:"قيد الانتظار",paid:"مدفوع",shipped:"تم الشحن",
       completed:"مكتمل",cancelled:"ملغي",from:"من",to:"إلى",refresh:"تحديث",loading:"جارٍ التحميل…",
-      order:"الطلب",customer:"العميل",email:"البريد",created:"أُنشئ",total:"الإجمالي",items:"العناصر",delivery_addr:"عنوان التسليم",
-      pickup_note:"استلام من المتجر",view_items:"عرض العناصر",hide_items:"إخفاء العناصر",delete:"حذف",deleting:"جارٍ الحذف…",
-      deleted:"تم الحذف",confirm_delete:"حذف هذا الطلب وعناصره؟ لا يمكن التراجع."}
+      order:"الطلب",customer:"العميل",email:"البريد",created:"أُنشئ",total:"الإجمالي",items:"العناصر",method_col:"الطريقة",
+      view_items:"عرض العناصر",hide_items:"إخفاء العناصر",delete:"حذف",deleting:"جارٍ الحذف…",deleted:"تم الحذف",
+      confirm_delete:"حذف هذا الطلب وعناصره؟ لا يمكن التراجع."}
 };
 function applyLang(lang){
   document.documentElement.setAttribute('data-lang', lang);
@@ -189,16 +188,22 @@ document.getElementById('refresh').onclick = load;
 
 let ORDERS = [];
 
-/* Two-step fetch: orders → related profiles (no join required) */
+/* helper: display-friendly code */
+function displayOrderNumber(o){
+  // Use stored order_number if you later add it; fallback to short ID
+  return o.order_number || ('ORD-' + String(o.id || '').toUpperCase().slice(0,8));
+}
+
+/* Two-step fetch: orders → related profiles (no join and no delivery_address) */
 async function load(){
   const msg = document.getElementById('msg');
   const L = localStorage.getItem('lang')||'en';
   msg.textContent = STR[L].loading;
 
-  // 1) Orders
+  // 1) Orders (only columns we know exist for you)
   const { data: orders, error: err1 } = await supa
     .from('orders')
-    .select('id,order_number,user_id,status,delivery_method,created_at,total_amount,currency,delivery_address')
+    .select('id,user_id,status,delivery_method,created_at')
     .order('created_at', { ascending:false })
     .limit(1000);
 
@@ -216,7 +221,7 @@ async function load(){
     (profs||[]).forEach(p=>{ profilesById[p.id]=p; });
   }
 
-  // 3) stitch
+  // stitch
   ORDERS = (orders||[]).map(o=>({ ...o, profiles: profilesById[o.user_id] || null }));
   msg.textContent = '';
   render();
@@ -242,22 +247,19 @@ async function deleteOrder(orderId){
   if (delBtn) { delBtn.disabled = true; delBtn.innerText = STR[L].deleting; }
 
   try{
-    // delete children first
     const delItems = await supa.from('order_items').delete().eq('order_id', orderId);
     if (delItems.error) throw delItems.error;
 
-    // delete order
     const delOrder = await supa.from('orders').delete().eq('id', orderId);
     if (delOrder.error) throw delOrder.error;
 
     toast(STR[L].deleted);
-    // remove locally & re-render
     ORDERS = ORDERS.filter(o=>o.id !== orderId);
     render();
   }catch(e){
     alert(e?.message || String(e));
   }finally{
-    if (delBtn){ delBtn.disabled = false; delBtn.innerText = STR[L].delete || 'Delete'; }
+    if (delBtn){ delBtn.disabled = false; delBtn.innerText = oldText || STR[L].delete; }
   }
 }
 
@@ -276,7 +278,7 @@ async function render(){
   const rows = ORDERS.filter(o=>{
     if (meth && o.delivery_method!==meth) return false;
     if (st && o.status!==st) return false;
-    const tstr = `${o.order_number||''} ${(o.profiles?.email||'').toLowerCase()} ${String(o.profiles?.first_name||'')} ${String(o.profiles?.last_name||'')}`.toLowerCase();
+    const tstr = `${displayOrderNumber(o)} ${(o.profiles?.email||'').toLowerCase()} ${String(o.profiles?.first_name||'')} ${String(o.profiles?.last_name||'')}`.toLowerCase();
     if (q && !tstr.includes(q)) return false;
     const d = new Date(o.created_at);
     if (from && d < from) return false;
@@ -300,7 +302,7 @@ async function render(){
           <th>${t.status}</th>
           <th>${t.items}</th>
           <th>${t.total}</th>
-          <th>${t.delivery_addr}</th>
+          <th>${t.method_col}</th>
           <th></th>
         </tr>
       </thead>
@@ -309,11 +311,8 @@ async function render(){
           const pill = o.status==='completed'?'ok':o.status==='pending'?'pend':o.status==='cancelled'?'bad':'';
           const name = [o.profiles?.first_name, o.profiles?.last_name].filter(Boolean).join(' ') || '(no name)';
           const method = o.delivery_method==='collect' ? t.collect : t.delivery;
-          const addrVal = o.delivery_method==='collect'
-            ? `<div class="mini">${t.pickup_note}</div>`
-            : `<div class="address mini">${escapeHtml(typeof o.delivery_address==='object' ? JSON.stringify(o.delivery_address,null,2) : String(o.delivery_address||''))}</div>`;
           return `<tr data-order="${o.id}">
-            <td><strong>${o.order_number || o.id}</strong><div class="mini muted">${method}</div></td>
+            <td><strong>${displayOrderNumber(o)}</strong></td>
             <td>${escapeHtml(name)}</td>
             <td>${escapeHtml(o.profiles?.email||'')}</td>
             <td class="mini">${new Date(o.created_at).toLocaleString()}</td>
@@ -322,8 +321,8 @@ async function render(){
               <button class="btn small" data-items="toggle">${t.view_items}</button>
               <div class="mini" data-items-box style="display:none; margin-top:6px">…</div>
             </td>
-            <td>${Number(o.total_amount||0).toFixed(2)} ${o.currency||''}</td>
-            <td>${addrVal}</td>
+            <td class="mini" data-total="${o.id}">—</td>
+            <td class="mini">${method}</td>
             <td style="text-align:right">
               <button class="btn danger small" data-del="${o.id}">${t.delete}</button>
             </td>
@@ -333,24 +332,31 @@ async function render(){
     </table>
   `;
 
-  // bind item toggles
+  // bind item toggles (and compute total on first open)
   list.querySelectorAll('button[data-items="toggle"]').forEach(btn=>{
     btn.onclick = async ()=>{
       const tr = btn.closest('tr');
       const box = tr.querySelector('[data-items-box]');
+      const totCell = tr.querySelector('[data-total]');
+      const tNow = STR[localStorage.getItem('lang')||'en'];
+
       if (box.getAttribute('data-loaded')==='1'){
         const open = box.style.display!=='none';
         box.style.display = open ? 'none' : 'block';
-        btn.innerText = open ? t.view_items : t.hide_items;
+        btn.innerText = open ? tNow.view_items : tNow.hide_items;
         return;
       }
-      box.textContent = t.loading;
+      box.textContent = tNow.loading;
       const orderId = tr.getAttribute('data-order');
       const items = await fetchItems(orderId);
-      if (!items.length){ box.textContent = '-'; box.setAttribute('data-loaded','1'); box.style.display='block'; btn.innerText = t.hide_items; return; }
+      if (!items.length){ box.textContent = '-'; box.setAttribute('data-loaded','1'); box.style.display='block'; btn.innerText = tNow.hide_items; totCell.textContent = '0.00'; return; }
+
+      const total = items.reduce((s,it)=> s + Number(it.quantity||0)*Number(it.unit_price||0), 0);
+      totCell.textContent = total.toFixed(2);
+
       box.innerHTML = `
         <table class="mini" style="width:100%">
-          <thead><tr><th>SKU</th><th>${t.items}</th><th>${t.qty_short||'Qty'}</th><th>${t.total}</th></tr></thead>
+          <thead><tr><th>SKU</th><th>${tNow.items}</th><th>${tNow.qty_short||'Qty'}</th><th>${tNow.total}</th></tr></thead>
           <tbody>
             ${items.map(it=>`<tr>
               <td>${escapeHtml(it.product_sku||'')}</td>
@@ -363,7 +369,7 @@ async function render(){
       `;
       box.setAttribute('data-loaded','1');
       box.style.display='block';
-      btn.innerText = t.hide_items;
+      btn.innerText = tNow.hide_items;
     };
   });
 
@@ -392,7 +398,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
   await load();
 
-  // Realtime (optional): refresh when orders/items change
+  // optional realtime
   try{
     supa.channel('rt_orders')
       .on('postgres_changes', { event: '*', schema:'public', table:'orders' }, ()=> load())
