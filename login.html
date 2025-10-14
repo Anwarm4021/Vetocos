@@ -37,6 +37,7 @@
     .sep{height:1px;background:rgba(141,158,199,.18);margin:12px 0}
     .alert{padding:10px;border:1px solid rgba(255,120,120,.35);border-radius:10px;background:rgba(255,120,120,.12);color:#ffbdbd;margin-top:10px}
     .ok{padding:10px;border:1px solid rgba(131,240,165,.35);border-radius:10px;background:rgba(131,240,165,.12);color:#a6f3c4;margin-top:10px}
+    .hint{font-size:12px;color:var(--muted)}
 
     footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
     .footer-links{display:flex;gap:14px;flex-wrap:wrap}
@@ -59,7 +60,6 @@
       background:rgba(255,255,255,.03);color:var(--text);outline:none
     }
     .textarea{min-height:140px;resize:vertical}
-    .hint{font-size:12px;color:var(--muted)}
     .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
     .divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
 
@@ -100,7 +100,8 @@
 
     <div id="pwWrap">
       <label><span data-i18n="login.password">Password</span> <span class="muted" data-i18n="login.passwordHint">(leave empty to receive a magic link)</span></label>
-      <input id="password" type="password" class="input" data-i18n="login.passwordPH" data-i18n-attr="placeholder" placeholder="Optional"/>
+      <input id="password" type="password" class="input" data-i18n="login.passwordPH" data-i18n-attr="placeholder" placeholder="Optional" autocomplete="current-password"/>
+      <div class="hint">If you don’t have a password, leave it empty and we’ll email you a sign-in link.</div>
     </div>
 
     <button id="continue" class="btn" data-i18n="login.continue">Continue</button>
@@ -388,7 +389,7 @@
     return false;
   }
 
-  // Init
+  // Init UI
   document.addEventListener('DOMContentLoaded', ()=>{
     const y=document.getElementById('y'); if(y) y.textContent=new Date().getFullYear();
     const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
@@ -457,13 +458,33 @@ async function redirectAfterLogin(){
       <div style="margin-top:6px">You signed in as <code>${em || '(no email)'}</code> but this user isn’t allowed to access the admin dashboard.</div>
       <div style="margin-top:8px">You can <a href="#" id="swap">switch to your admin account</a>.</div>
     `;
-    document.getElementById('swap').onclick = async (e)=>{ e.preventDefault(); await supa.auth.signOut(); location.reload(); };
+    const swap = document.getElementById('swap');
+    if (swap) swap.onclick = async (e)=>{ e.preventDefault(); await supa.auth.signOut(); location.reload(); };
     logoutBtn.style.display = 'inline-block';
     return;
   }
 
   location.replace(fallbackRedirect);
 }
+
+/* ===== Magic-link return handler (PKCE) ===== */
+(async () => {
+  try {
+    const cameFromEmail =
+      location.search.includes('code=') ||
+      location.hash.includes('access_token'); // some clients append tokens in hash
+    if (cameFromEmail) {
+      await supa.auth.exchangeCodeForSession(location.href);
+      // Clean URL
+      const clean = new URL(location.href);
+      ['code','type','access_token','refresh_token','expires_in','token_type'].forEach(k=>{ clean.searchParams.delete(k); });
+      history.replaceState({}, '', clean.toString());
+    }
+  } catch (e) {
+    console.error('exchangeCodeForSession failed:', e);
+    if (msgEl){ msgEl.textContent = (e?.message || 'Sign-in link error'); msgEl.className = 'alert'; }
+  }
+})();
 
 /* ===== UI text for admin mode (i18n) ===== */
 (function syncAdminText(){
@@ -489,31 +510,50 @@ async function redirectAfterLogin(){
 
 /* ===== Button actions ===== */
 continueBtn.onclick = async ()=>{
+  continueBtn.disabled = true;
+  continueBtn.textContent = I18N[localStorage.getItem("lang")||"en"]["login.signing"] || 'Signing…';
   setMsgKey('login.signing');
   notAdminBox.style.display = 'none';
 
-  const em = lc(email.value?.trim());
+  const em = (email.value || '').trim().toLowerCase();
   const pw = password.value;
 
-  if (!em){ setMsgKey('login.enterEmail','alert'); return; }
+  if (!em){
+    setMsgKey('login.enterEmail','alert');
+    continueBtn.disabled = false; continueBtn.textContent = I18N[localStorage.getItem("lang")||"en"]["login.continue"] || 'Continue';
+    return;
+  }
 
   try{
     if (pw){
       const { error } = await supa.auth.signInWithPassword({ email: em, password: pw });
       if (error) throw error;
+      await redirectAfterLogin();
     } else {
-      // Magic link
       const { error } = await supa.auth.signInWithOtp({
         email: em,
-        options: { emailRedirectTo: location.origin + '/login.html?admin='+(wantAdmin?'1':'0')+'&redirect='+encodeURIComponent(fallbackRedirect) }
+        options: {
+          emailRedirectTo: `${location.origin}/login.html${location.search || ''}`
+        }
       });
       if (error) throw error;
       setMsgKey('login.checkEmail','ok');
-      return;
     }
-    await redirectAfterLogin();
   }catch(err){
-    setMsg(err.message || String(err), 'alert');
+    console.error('Login failed:', err);
+    const msg = (err?.message || '').toLowerCase();
+    if (msg.includes('invalid login credentials')) {
+      setMsg('Incorrect email or password.', 'alert');
+    } else if (msg.includes('email not confirmed')) {
+      setMsg('Please confirm your email first (check inbox/spam).', 'alert');
+    } else if (msg.includes('signups not allowed')) {
+      setMsg('Passwords are disabled for this project. Use the magic link instead.', 'alert');
+    } else {
+      setMsg(err.message || String(err), 'alert');
+    }
+  }finally{
+    continueBtn.disabled = false;
+    continueBtn.textContent = I18N[localStorage.getItem("lang")||"en"]["login.continue"] || 'Continue';
   }
 };
 
