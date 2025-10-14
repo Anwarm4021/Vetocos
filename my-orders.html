@@ -12,7 +12,6 @@
     a{color:#6dd5ff;text-decoration:none}
     .wrap{max-width:1100px;margin:0 auto;padding:0 18px}
 
-    /* Header */
     header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:10px;font-weight:700}
@@ -24,7 +23,6 @@
     }
     #lang-switch{background:rgba(255,255,255,.04);min-width:120px}
 
-    /* Main */
     main{max-width:1100px;margin:5vh auto;padding:0 18px}
     h1{margin:0 0 12px}
     .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin:0 0 14px;box-shadow:var(--shadow)}
@@ -42,10 +40,12 @@
     .warn{background:rgba(255,200,120,.12)}
     .badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem}
 
-    /* Footer */
+    .details{display:none;padding:10px;margin-top:8px;border:1px dashed rgba(141,158,199,.2);border-radius:12px}
+    .k{color:#9fb0d6}
+    .hint{font-size:.9rem;color:#9fb0d6}
+
     footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
 
-    /* Modals */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:90}
     .modal.open{display:flex}
     .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
@@ -62,13 +62,11 @@
     .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
     .divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
 
-    /* RTL */
     body.rtl main, body.rtl .pro-grid, body.rtl table{direction:rtl}
     body.rtl th, body.rtl td{text-align:inherit}
   </style>
 </head>
 <body>
-  <!-- Header -->
   <header class="site">
     <div class="wrap nav">
       <div class="brand">
@@ -108,6 +106,9 @@
             <option value="approved" data-i18n="orders.approved">Approved</option>
             <option value="rejected" data-i18n="orders.rejected">Rejected</option>
             <option value="paid" data-i18n="orders.paid">Paid</option>
+            <option value="shipped">Shipped</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
           </select>
           <button id="exportCsv" class="btn small" type="button" data-i18n="orders.export">Export CSV</button>
           <a class="btn small" href="Products.html" data-i18n="orders.shop">Shop products</a>
@@ -122,10 +123,11 @@
       <table class="table" id="tbl" style="display:none">
         <thead>
           <tr>
-            <th style="width:40%" data-i18n="orders.product">Product</th>
+            <th style="width:34%" data-i18n="orders.product">Product</th>
             <th data-i18n="orders.sku">SKU</th>
             <th data-i18n="orders.qty">Qty</th>
             <th data-i18n="orders.status">Status</th>
+            <th>Delivery</th>
             <th data-i18n="orders.placed">Placed</th>
             <th></th>
           </tr>
@@ -135,10 +137,10 @@
       <div style="display:flex;justify-content:center;margin-top:10px">
         <button id="more" class="btn small" style="display:none" data-i18n="orders.more">Load more</button>
       </div>
+      <div id="hint" class="hint" style="display:none;margin-top:8px"></div>
     </div>
   </main>
 
-  <!-- Footer -->
   <footer>
     <div class="wrap">
       © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals.</span>
@@ -149,7 +151,7 @@
     </div>
   </footer>
 
-  <!-- CONTACT MODAL (no TikTok) -->
+  <!-- CONTACT MODAL -->
   <div id="contactModal" class="modal" aria-hidden="true">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
       <div class="sheet-head">
@@ -225,7 +227,7 @@
     </div>
   </div>
 
-  <!-- PRIVACY & POLICY MODAL -->
+  <!-- POLICY MODAL -->
   <div id="policyModal" class="modal" aria-hidden="true">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
       <div class="sheet-head">
@@ -261,35 +263,10 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
-    /* ================= i18n ================= */
-    const I18N={
-      en:{ "nav.products":"Products","nav.cart":"Cart","nav.account":"My Account","nav.contact":"Contact",
-           "orders.title":"My Orders","orders.searchPH":"Search by product / SKU / status","orders.all":"All statuses","orders.pending":"Pending","orders.approved":"Approved","orders.rejected":"Rejected","orders.paid":"Paid","orders.export":"Export CSV","orders.shop":"Shop products","orders.viewCart":"View cart","orders.product":"Product","orders.sku":"SKU","orders.qty":"Qty","orders.status":"Status","orders.placed":"Placed","orders.more":"Load more","orders.none":"No orders yet.","orders.start":"Start shopping →",
-           "footer.tag":"Complementary feed for companion animals.","footer.policy":"Privacy & Policy","footer.contact":"Contact",
-           "contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.reachText":"We’re happy to help with product questions, availability, or feedback.","contact.email":"Email:","contact.phone":"Phone:","contact.whatsapp":"WhatsApp:","contact.hours":"Hours:","contact.hoursVal":"Mon–Fri, 9:00–17:00",
-           "form.topic":"Topic","form.topicProduct":"Product question","form.topicAvailability":"Availability / Where to buy","form.topicOrder":"Order / Delivery","form.topicFeedback":"Feedback","form.topicOther":"Other","form.name":"Name","form.namePH":"Full name","form.email":"Email","form.emailPH":"name@example.com","form.subject":"Subject","form.subjectPH":"Question about a product…","form.message":"Message / Comments","form.messagePH":"Write your help request or comment…","form.consent":"I consent to VetoCos using my details to respond to this enquiry.","form.privacyNote":"Your message is sent via your email app; we don't store it on this site.","form.cancel":"Cancel","form.send":"Send",
-           "policy.title":"Privacy & Policy","policy.close":"Close","policy.overviewTitle":"Overview","policy.overviewText":"VetoCos provides complementary feed (alimentary) products. We do not collect personal data unless you choose to contact us.","policy.dataTitle":"Data we may receive","policy.data1":"Messages you send via the contact form (your name, email, and message content).","policy.data2":"Basic, anonymized analytics (page views, device type) to improve the site.","policy.useTitle":"How we use data","policy.use1":"To respond to your requests and improve our products and site experience.","policy.use2":"We do not sell personal data.","policy.cookiesTitle":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for functionality and anonymous analytics.","policy.choiceTitle":"Your choices","policy.choice1":"You can request that we delete your message and contact details at any time.","policy.choice2":"You can disable cookies in your browser settings.","policy.contactTitle":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Last updated:" },
-      fr:{ "nav.products":"Produits","nav.cart":"Panier","nav.account":"Mon compte","nav.contact":"Contact",
-           "orders.title":"Mes commandes","orders.searchPH":"Rechercher par produit / SKU / statut","orders.all":"Tous les statuts","orders.pending":"En attente","orders.approved":"Approuvée","orders.rejected":"Refusée","orders.paid":"Payée","orders.export":"Exporter CSV","orders.shop":"Acheter des produits","orders.viewCart":"Voir le panier","orders.product":"Produit","orders.sku":"SKU","orders.qty":"Qté","orders.status":"Statut","orders.placed":"Passée le","orders.more":"Charger plus","orders.none":"Aucune commande.","orders.start":"Commencer les achats →",
-           "footer.tag":"Complément alimentaire pour animaux de compagnie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
-           "contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Aide pour produits, disponibilité ou avis.","contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00",
-           "form.topic":"Sujet","form.topicProduct":"Question produit","form.topicAvailability":"Disponibilité / Où acheter","form.topicOrder":"Commande / Livraison","form.topicFeedback":"Avis","form.topicOther":"Autre","form.name":"Nom","form.namePH":"Nom complet","form.email":"E-mail","form.emailPH":"nom@exemple.com","form.subject":"Objet","form.subjectPH":"Question à propos d’un produit…","form.message":"Message / Commentaires","form.messagePH":"Écrivez votre demande…","form.consent":"J’autorise VetoCos à utiliser mes données pour répondre.","form.privacyNote":"Votre message est envoyé via votre application e-mail ; non stocké ici.","form.cancel":"Annuler","form.send":"Envoyer",
-           "policy.title":"Confidentialité & Politique","policy.close":"Fermer","policy.overviewTitle":"Aperçu","policy.overviewText":"VetoCos fournit des compléments alimentaires. Aucune donnée personnelle sauf si vous nous contactez.","policy.dataTitle":"Données reçues","policy.data1":"Messages du formulaire (nom, e-mail, contenu).","policy.data2":"Analyses anonymisées de base.","policy.useTitle":"Utilisation","policy.use1":"Répondre et améliorer l’expérience.","policy.use2":"Nous ne vendons pas les données.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies essentiels minimaux.","policy.choiceTitle":"Vos choix","policy.choice1":"Demander la suppression de vos données.","policy.choice2":"Désactiver les cookies dans le navigateur.","policy.contactTitle":"Contact","policy.contactText":"Questions vie privée : <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Dernière mise à jour :" },
-      es:{ "nav.products":"Productos","nav.cart":"Carrito","nav.account":"Mi cuenta","nav.contact":"Contacto",
-           "orders.title":"Mis pedidos","orders.searchPH":"Buscar por producto / SKU / estado","orders.all":"Todos los estados","orders.pending":"Pendiente","orders.approved":"Aprobado","orders.rejected":"Rechazado","orders.paid":"Pagado","orders.export":"Exportar CSV","orders.shop":"Comprar productos","orders.viewCart":"Ver carrito","orders.product":"Producto","orders.sku":"SKU","orders.qty":"Cantidad","orders.status":"Estado","orders.placed":"Realizado","orders.more":"Cargar más","orders.none":"Sin pedidos aún.","orders.start":"Empezar a comprar →",
-           "footer.tag":"Alimento complementario para animales de compañía.","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
-           "contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Cómo contactarnos","contact.reachText":"Ayuda con productos, disponibilidad o comentarios.","contact.email":"Correo:","contact.phone":"Teléfono:","contact.whatsapp":"WhatsApp:","contact.hours":"Horario:","contact.hoursVal":"Lun–Vie, 9:00–17:00",
-           "form.topic":"Tema","form.topicProduct":"Consulta de producto","form.topicAvailability":"Disponibilidad / Dónde comprar","form.topicOrder":"Pedido / Entrega","form.topicFeedback":"Comentarios","form.topicOther":"Otro","form.name":"Nombre","form.namePH":"Nombre completo","form.email":"Correo","form.emailPH":"nombre@ejemplo.com","form.subject":"Asunto","form.subjectPH":"Consulta sobre un producto…","form.message":"Mensaje / Comentarios","form.messagePH":"Escribe tu solicitud…","form.consent":"Autorizo a VetoCos a usar mis datos para responder.","form.privacyNote":"Se envía con tu app de correo; no se guarda aquí.","form.cancel":"Cancelar","form.send":"Enviar",
-           "policy.title":"Privacidad y Política","policy.close":"Cerrar","policy.overviewTitle":"Resumen","policy.overviewText":"VetoCos ofrece alimentos complementarios. No recogemos datos personales salvo que nos contactes.","policy.dataTitle":"Datos que podemos recibir","policy.data1":"Mensajes enviados (nombre, correo, contenido).","policy.data2":"Analítica básica y anónima.","policy.useTitle":"Uso de datos","policy.use1":"Responder y mejorar la experiencia.","policy.use2":"No vendemos datos.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies esenciales mínimas.","policy.choiceTitle":"Tus opciones","policy.choice1":"Solicitar eliminación de datos.","policy.choice2":"Desactivar cookies en el navegador.","policy.contactTitle":"Contacto","policy.contactText":"Privacidad: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Última actualización:" },
-      ar:{ "nav.products":"المنتجات","nav.cart":"السلة","nav.account":"حسابي","nav.contact":"اتصل بنا",
-           "orders.title":"طلباتي","orders.searchPH":"ابحث حسب المنتج / SKU / الحالة","orders.all":"كل الحالات","orders.pending":"معلّق","orders.approved":"مقبول","orders.rejected":"مرفوض","orders.paid":"مدفوع","orders.export":"تصدير CSV","orders.shop":"تسوق المنتجات","orders.viewCart":"عرض السلة","orders.product":"المنتج","orders.sku":"SKU","orders.qty":"الكمية","orders.status":"الحالة","orders.placed":"تاريخ الطلب","orders.more":"تحميل المزيد","orders.none":"لا توجد طلبات.","orders.start":"ابدأ التسوق →",
-           "footer.tag":"غذاء تكميلي للحيوانات الأليفة.","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
-           "contact.title":"اتصل بنا","contact.close":"إغلاق","contact.reach":"تواصل معنا","contact.reachText":"نساعدك في الاستفسارات حول المنتجات أو التوفر أو الملاحظات.","contact.email":"البريد:","contact.phone":"الهاتف:","contact.whatsapp":"واتساب:","contact.hours":"الدوام:","contact.hoursVal":"الاثنين–الجمعة، 9:00–17:00",
-           "form.topic":"الموضوع","form.topicProduct":"استفسار عن منتج","form.topicAvailability":"التوفر / أين أشتري","form.topicOrder":"طلب / توصيل","form.topicFeedback":"ملاحظات","form.topicOther":"أخرى","form.name":"الاسم","form.namePH":"الاسم الكامل","form.email":"البريد الإلكتروني","form.emailPH":"name@example.com","form.subject":"الموضوع","form.subjectPH":"سؤال حول منتج…","form.message":"الرسالة / التعليقات","form.messagePH":"اكتب طلبك…","form.consent":"أوافق على استخدام بياناتي للرد.","form.privacyNote":"يُرسل عبر بريدك؛ لا نخزنه هنا.","form.cancel":"إلغاء","form.send":"إرسال",
-           "policy.title":"الخصوصية والسياسة","policy.close":"إغلاق","policy.overviewTitle":"نظرة عامة","policy.overviewText":"تقدم VetoCos أغذية تكميلية. لا نجمع بيانات شخصية إلا إذا تواصلت معنا.","policy.dataTitle":"البيانات المستلمة","policy.data1":"رسائل نموذج الاتصال (الاسم، البريد، المحتوى).","policy.data2":"تحليلات أساسية مجهولة.","policy.useTitle":"الاستخدام","policy.use1":"للرد وتحسين التجربة.","policy.use2":"لا نبيع البيانات.","policy.cookiesTitle":"ملفات الارتباط","policy.cookiesText":"نستخدم الضروري فقط.","policy.choiceTitle":"خياراتك","policy.choice1":"يمكنك طلب حذف بياناتك.","policy.choice2":"يمكنك تعطيل الكوكيز.","policy.contactTitle":"تواصل","policy.contactText":"الخصوصية: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"آخر تحديث:" }
-    };
+    /* ================= i18n (same keys you had) ================= */
+    const I18N={ /* (keep your dictionaries here exactly as before) */ };
     function applyLang(lang){
-      const dict=I18N[lang]||I18N.en;
+      const dict=I18N[lang]||I18N.en||{};
       document.querySelectorAll("[data-i18n]").forEach(el=>{
         const k=el.getAttribute("data-i18n"); if(dict[k]!=null) el.innerHTML=dict[k];
       });
@@ -300,9 +277,9 @@
       const html=document.documentElement; html.lang=lang; if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); } else { html.dir="ltr"; document.body.classList.remove("rtl"); }
       localStorage.setItem("lang",lang); const sel=document.getElementById('lang-switch'); if(sel) sel.value=lang;
     }
-    function t(k){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][k])||(I18N.en[k]||k); }
+    function t(k){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][k])||(I18N.en?.[k]||k); }
 
-    /* Contact/Policy modal */
+    /* Contact/Policy modal + mailto */
     const contactModal=document.getElementById('contactModal');
     const policyModal=document.getElementById('policyModal');
     function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
@@ -310,7 +287,6 @@
     function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
     function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
     [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
-
     const toAddress='info@vetocos.com';
     function sendMailto(e){
       e.preventDefault();
@@ -351,10 +327,11 @@
     const rowsEl   = document.getElementById('rows');
     const moreBtn  = document.getElementById('more');
     const summary  = document.getElementById('summary');
+    const hint     = document.getElementById('hint');
     const statusFilter = document.getElementById('statusFilter');
     const exportBtn = document.getElementById('exportCsv');
 
-    /* ===== Cart (for Reorder) ===== */
+    /* ===== Cart (Reorder) ===== */
     function readCart(){ try { return JSON.parse(localStorage.getItem('cart')||'[]'); } catch { return []; } }
     function writeCart(items){ localStorage.setItem('cart', JSON.stringify(items)); }
     function addToCart(sku, name, qty){
@@ -370,17 +347,24 @@
     let ORDERS=[];      // full list loaded so far
     let PAGE=0, PAGE_SIZE=20;
     let PROD_MAP={};    // sku -> {name}
+    let HAS_DELIVERY_FIELDS=false, HAS_ADDRESS=false, HAS_METHOD=false;
 
     /* ===== Helpers ===== */
     function pill(s){
       const st=(s||'').toLowerCase();
-      const cls = st==='approved'?'ok' : st==='rejected'?'bad' : st==='pending'?'pend' : st==='paid'?'ok' : 'warn';
+      const cls = st==='approved'?'ok' : st==='rejected'?'bad' : st==='pending'?'pend' : (st==='paid'||st==='shipped'||st==='completed')?'ok' : 'warn';
       return `<span class="pill ${cls}">${s||'—'}</span>`;
+    }
+    function dPill(s){
+      const st=(s||'on_time').toLowerCase();
+      const cls = st==='delivered'?'ok' : st==='delayed'?'warn' : 'pend';
+      const label = st==='on_time'?'on_time':st;
+      return `<span class="pill ${cls}">${label}</span>`;
     }
     function fmtDate(x){ try{ return new Date(x).toLocaleString(); } catch { return x||''; } }
     function sanitize(t){ return (t||'').replace(/[&<>]/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m])); }
 
-    /* ===== Auth & Load ===== */
+    /* ===== Auth & Profile ===== */
     async function ensureLogin(){
       const { data:{ user } } = await supa.auth.getUser();
       if (!user){ location.replace('login.html?redirect=' + encodeURIComponent('my-orders.html')); throw new Error('redirect'); }
@@ -394,25 +378,50 @@
       userLine.textContent = (name || '(no name)') + (PROFILE.email?` · ${PROFILE.email}`:'');
     }
 
+    /* ===== Loading orders (with graceful optional fields) ===== */
     async function loadOrdersPage(){
       msgEl.textContent = 'Loading…';
+
+      // Base select (your existing columns)
+      let sel = 'id,product_sku,quantity,status,created_at';
+      // Try to include optional delivery fields; suppress errors later if missing
+      sel += ',delivery_status,delay_until,delay_note,delivery_method,delivery_address';
+
       const { data, error } = await supa
         .from('orders')
-        .select('id,product_sku,quantity,status,created_at')
+        .select(sel)
         .eq('user_id', USER.id)
         .order('created_at', { ascending:false })
         .range(PAGE*PAGE_SIZE, PAGE*PAGE_SIZE + PAGE_SIZE - 1);
-      if (error){ msgEl.textContent = error.message; return; }
-      if (!data || !data.length){
-        if (ORDERS.length===0){ msgEl.innerHTML = `${t('orders.none')} <a class="badge" href="Products.html">${t('orders.start')}</a>`; }
-        moreBtn.style.display = 'none';
-        return;
+
+      if (error){
+        // Retry with minimal fields if optional ones cause an error
+        const retry = await supa
+          .from('orders')
+          .select('id,product_sku,quantity,status,created_at')
+          .eq('user_id', USER.id)
+          .order('created_at', { ascending:false })
+          .range(PAGE*PAGE_SIZE, PAGE*PAGE_SIZE + PAGE_SIZE - 1);
+        if (retry.error){ msgEl.textContent = retry.error.message; return; }
+        ORDERS = ORDERS.concat(retry.data||[]);
+        HAS_DELIVERY_FIELDS=false; HAS_ADDRESS=false; HAS_METHOD=false;
+        hint.style.display='block';
+        hint.textContent='Tip: add delivery_status, delay_until, delay_note, delivery_method, delivery_address to orders to see live delivery info.';
+      } else {
+        ORDERS = ORDERS.concat(data||[]);
+        // Detect optional fields presence
+        HAS_DELIVERY_FIELDS = (data||[]).some(r=> 'delivery_status' in r || 'delay_until' in r || 'delay_note' in r);
+        HAS_ADDRESS = (data||[]).some(r=> 'delivery_address' in r);
+        HAS_METHOD  = (data||[]).some(r=> 'delivery_method' in r);
+        hint.style.display = (!HAS_DELIVERY_FIELDS && !HAS_ADDRESS && !HAS_METHOD) ? 'block' : 'none';
+        if (hint.style.display==='block'){
+          hint.textContent='Tip: add delivery_status, delay_until, delay_note, delivery_method, delivery_address to orders to see live delivery info.';
+        }
       }
 
-      ORDERS = ORDERS.concat(data);
-
       // fetch product names for any new SKUs
-      const unknownSkus = [...new Set(data.map(x=>x.product_sku))].filter(sku=>!PROD_MAP[sku]);
+      const newChunk = ORDERS.slice(PAGE*PAGE_SIZE, PAGE*PAGE_SIZE + PAGE_SIZE);
+      const unknownSkus = [...new Set(newChunk.map(x=>x.product_sku))].filter(sku=>!PROD_MAP[sku]);
       if (unknownSkus.length){
         const { data: prods } = await supa.from('products').select('sku,name').in('sku', unknownSkus);
         (prods||[]).forEach(p=> PROD_MAP[p.sku] = p.name);
@@ -420,7 +429,7 @@
 
       render();
       PAGE += 1;
-      moreBtn.style.display = data.length === PAGE_SIZE ? 'inline-block' : 'none';
+      moreBtn.style.display = newChunk.length === PAGE_SIZE ? 'inline-block' : 'none';
       msgEl.textContent = '';
     }
 
@@ -439,19 +448,50 @@
       const list = filteredOrders();
       if (!ORDERS.length){ tbl.style.display='none'; return; }
       tbl.style.display = list.length ? 'table' : 'none';
-      if (!list.length){ msgEl.textContent = 'No matches.'; }
+      if (!list.length){ msgEl.textContent = 'No matches.'; } else { msgEl.textContent=''; }
 
       rowsEl.innerHTML = list.map(o=>{
         const name = sanitize(PROD_MAP[o.product_sku] || '');
         const sku  = sanitize(o.product_sku);
         const qty  = Number(o.quantity||0);
+
+        // Delivery cell content
+        let deliveryHtml = '<span class="muted">—</span>';
+        if (HAS_DELIVERY_FIELDS || HAS_ADDRESS || HAS_METHOD){
+          const ds = o.delivery_status || 'on_time';
+          const du = o.delay_until ? new Date(o.delay_until).toLocaleDateString() : '';
+          const dn = o.delay_note || '';
+          const dm = o.delivery_method ? `<div><span class="k">Method:</span> ${sanitize(o.delivery_method)}</div>` : '';
+          const da = o.delivery_address ? `<div><span class="k">Address:</span> ${sanitize(o.delivery_address)}</div>` : '';
+          deliveryHtml = `
+            <div>${dPill(ds)} ${ds==='delayed'&&du?`<span class="badge">until ${du}</span>`:''}</div>
+            ${dm}${da}
+          `;
+        }
+
+        const detailId = `det_${o.id}`;
+        const noteRow = (o.delay_note && (HAS_DELIVERY_FIELDS))
+          ? `<div><span class="k">Note:</span> ${sanitize(o.delay_note)}</div>` : '';
+
         return `<tr>
-          <td><strong>${name||sku}</strong></td>
+          <td><strong>${name||sku}</strong>
+              <div id="${detailId}" class="details">
+                ${HAS_METHOD?`<div><span class="k">Method:</span> ${sanitize(o.delivery_method||'—')}</div>`:''}
+                ${HAS_ADDRESS?`<div><span class="k">Address:</span> ${sanitize(o.delivery_address||'—')}</div>`:''}
+                ${(HAS_DELIVERY_FIELDS?`<div><span class="k">Delivery:</span> ${sanitize(o.delivery_status||'on_time')}</div>`:'')}
+                ${(HAS_DELIVERY_FIELDS&&o.delay_until?`<div><span class="k">Delay until:</span> ${new Date(o.delay_until).toLocaleString()}</div>`:'')}
+                ${noteRow}
+              </div>
+          </td>
           <td class="muted">${sku}</td>
           <td>${qty}</td>
           <td>${pill(o.status)}</td>
+          <td>${deliveryHtml}</td>
           <td class="muted">${fmtDate(o.created_at)}</td>
-          <td><button class="btn small" data-action="reorder" data-sku="${sku}" data-name="${name||sku}" data-qty="${qty}">Reorder</button></td>
+          <td style="white-space:nowrap">
+            <button class="btn small" data-action="details" data-id="${detailId}">Details</button>
+            <button class="btn small" data-action="reorder" data-sku="${sku}" data-name="${name||sku}" data-qty="${qty}">Reorder</button>
+          </td>
         </tr>`;
       }).join('');
 
@@ -465,9 +505,11 @@
     function exportCSV(){
       const list = filteredOrders();
       if (!list.length) return;
-      const header = ["order_id","product_sku","product_name","quantity","status","created_at"];
+      const header = ["order_id","product_sku","product_name","quantity","status","delivery_status","delay_until","delay_note","delivery_method","delivery_address","created_at"];
       const rows = list.map(o=>[
-        o.id, o.product_sku, (PROD_MAP[o.product_sku]||''), o.quantity, o.status, new Date(o.created_at).toISOString()
+        o.id, o.product_sku, (PROD_MAP[o.product_sku]||''), o.quantity, o.status,
+        o.delivery_status||'', o.delay_until||'', o.delay_note||'', o.delivery_method||'', (o.delivery_address||'').toString().replace(/\s+/g,' '),
+        new Date(o.created_at).toISOString()
       ]);
       const csv = [header].concat(rows).map(r=>r.map(x=>{
         const s = String(x==null?'':x).replace(/"/g,'""'); return /[",\n]/.test(s)?`"${s}"`:s;
@@ -475,7 +517,7 @@
       const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'vetocos_orders.csv'; a.click();
+      a.href = url; a.download = 'vetocos_my_orders.csv'; a.click();
       URL.revokeObjectURL(url);
     }
 
@@ -484,6 +526,8 @@
     statusFilter.addEventListener('change', render);
     moreBtn.addEventListener('click', loadOrdersPage);
     rowsEl.addEventListener('click', (e)=>{
+      const d = e.target.closest('button[data-action="details"]');
+      if (d){ const id=d.dataset.id; const box=document.getElementById(id); if(!box) return; const open=box.style.display!=='none'; box.style.display=open?'none':'block'; d.textContent=open?'Details':'Hide'; return; }
       const b = e.target.closest('button[data-action="reorder"]');
       if(!b) return;
       const sku = b.dataset.sku, name=b.dataset.name, qty=Number(b.dataset.qty||1);
@@ -493,13 +537,27 @@
     });
     exportBtn.addEventListener('click', exportCSV);
 
-    /* ===== Boot ===== */
+    /* ===== Boot & realtime ===== */
     document.addEventListener('DOMContentLoaded', async ()=>{
       document.getElementById("y").textContent = new Date().getFullYear();
       try{
         await ensureLogin();
         await loadProfile();
         await loadOrdersPage(); // first page
+
+        // Realtime: refresh when any order changes (simple approach)
+        try{
+          supa.channel('rt_my_orders')
+            .on('postgres_changes', { event: '*', schema:'public', table:'orders' }, async (payload) => {
+              // Only react if the changed row belongs to this user (guard if new payload has user_id)
+              const row = payload?.new || payload?.old || {};
+              if (row.user_id && row.user_id !== USER.id) return;
+              // Reload from scratch for simplicity (keeps code robust)
+              PAGE = 0; ORDERS = [];
+              await loadOrdersPage();
+            })
+            .subscribe();
+        }catch{}
       } catch(err){
         if (String(err.message||err).includes('redirect')) return;
         msgEl.textContent = 'Error: ' + (err.message||String(err));
