@@ -43,7 +43,6 @@
     table{width:100%;border-collapse:collapse}
     th,td{padding:8px 10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
     .link{color:var(--accent);text-decoration:none}
-    /* Drawer */
     .drawer{position:fixed;top:0;right:-560px;width:560px;max-width:96vw;height:100vh;background:#0f162f;
             border-left:1px solid rgba(141,158,199,.18);box-shadow:-8px 0 24px rgba(0,0,0,.25);transition:right .28s ease;
             z-index:9998;display:flex;flex-direction:column}
@@ -53,24 +52,7 @@
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
            border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
   </style>
-  <!-- Supabase SDK (primary) -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <!-- Fallback loader (jsdelivr) with helpful error text -->
-  <script>
-    (function ensureSupabase(){
-      function ready(){ return !!window.supabase; }
-      if (ready()) return;
-      var s = document.createElement('script');
-      s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-      s.onload = () => { if (!ready()) showErr("Couldn’t load Supabase SDK (blocked)."); };
-      s.onerror = () => showErr("Couldn’t load Supabase SDK. Check your CSP or network.");
-      document.head.appendChild(s);
-      function showErr(msg){
-        var el = document.getElementById('authMsg'); if (el) el.textContent = msg;
-        var lb = document.getElementById('loginBtn'); if (lb) lb.classList.remove('hidden');
-      }
-    })();
-  </script>
 </head>
 <body>
 <main>
@@ -264,7 +246,7 @@
   </div>
 </main>
 
-<!-- RIGHT DRAWER: Full Control -->
+<!-- RIGHT DRAWER -->
 <aside id="drawer" class="drawer" aria-hidden="true">
   <header>
     <div>
@@ -324,27 +306,18 @@
 <div id="toast"></div>
 
 <script>
-/* ================= Supabase config & client ================= */
+/* ================= Supabase client ================= */
 const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
+const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+});
 
+/* ================= Config ================= */
 const PRODUCT_BUCKET = "ProductFiles";
 const NEWS_BUCKET    = "NewsFiles";
 const DOCS_BUCKET    = "Documents";
 const ADMIN_EMAILS   = ["anwar.moumenjamai19@gmail.com"].map(e=>e.toLowerCase());
-
-let supa = null;
-try {
-  if (!window.supabase) throw new Error("Supabase SDK not loaded");
-  supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-    auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
-  });
-} catch (e) {
-  const el = document.getElementById('authMsg');
-  if (el) el.textContent = e?.message || "Init error";
-  const lb = document.getElementById('loginBtn');
-  if (lb) lb.classList.remove('hidden');
-}
 
 /* ================= Helpers/UI ================= */
 const toastEl  = document.getElementById("toast");
@@ -363,59 +336,29 @@ function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;
 const authMsg  = document.getElementById("authMsg");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
-
-if (loginBtn) {
-  loginBtn.onclick = () => {
-    const u = new URL("login.html", location.origin);
-    u.searchParams.set("admin", "1");
-    u.searchParams.set("redirect", "admin.html");
-    location.href = u.toString();
-  };
-}
-if (logoutBtn) {
-  logoutBtn.onclick = async () => { if(supa){ await supa.auth.signOut(); } location.href='index.html'; };
-}
+loginBtn.onclick = () => {
+  const u = new URL("login.html", location.href);
+  u.searchParams.set("admin", "1");
+  u.searchParams.set("redirect", "admin.html");
+  location.href = u.toString();
+};
+logoutBtn.onclick = async () => { await supa.auth.signOut(); location.href='index.html'; };
 
 async function checkAdmin(){
-  try{
-    authMsg.textContent = "Checking session…";
-    if (!supa) throw new Error("Supabase not initialized");
+  authMsg.textContent = "Checking session…";
+  const { data:{ session } } = await supa.auth.getSession();
+  if (!session?.user){ authMsg.textContent="Not signed in."; loginBtn.classList.remove('hidden'); return false; }
+  authMsg.textContent = `Signed in as ${session.user.email}`;
+  logoutBtn.classList.remove('hidden');
 
-    const { data:{ session }, error: sErr } = await supa.auth.getSession();
-    if (sErr) throw sErr;
-    if (!session?.user){ authMsg.textContent="Not signed in."; loginBtn.classList.remove('hidden'); return false; }
-
-    const email = String(session.user.email||'').toLowerCase();
-    authMsg.textContent = `Signed in as ${email}`;
-    logoutBtn.classList.remove('hidden');
-
-    if (ADMIN_EMAILS.includes(email)) return true;
-
-    const { data: prof, error } = await supa.from("profiles")
-      .select("is_admin")
-      .eq("id", session.user.id)
-      .maybeSingle();
-
-    if (error){ console.warn(error); }
-    if (prof?.is_admin) return true;
-
-    authMsg.textContent = "This account isn’t allowed to access admin.";
-    setTimeout(()=> location.replace('index.html'), 1200);
-    return false;
-  } catch(e){
-    authMsg.textContent = e?.message || "Auth error";
-    loginBtn.classList.remove('hidden');
-    return false;
-  }
+  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
+  const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
+  if (!prof?.is_admin){ location.replace('index.html'); return false; }
+  return true;
 }
-</script>
-
-<!-- ======= ORIGINAL FUNCTIONAL LOGIC FROM YOUR ADMIN PAGE (unchanged) ======= -->
-<script>
-/* ================= Config (buckets already above) ================= */
 
 /* =======================================================================
-   USERS (Full control)
+   USERS
 ======================================================================= */
 const usersWrap   = document.getElementById('usersWrap');
 const usersSearch = document.getElementById('usersSearch');
@@ -423,15 +366,15 @@ const usersRefresh= document.getElementById('usersRefresh');
 const usersMsg    = document.getElementById('usersMsg');
 const usersList   = document.getElementById('usersList');
 
-usersSearch && usersSearch.addEventListener('input', renderUsers);
-usersRefresh && usersRefresh.addEventListener('click', loadUsers);
+usersSearch.addEventListener('input', renderUsers);
+usersRefresh.addEventListener('click', loadUsers);
 
 let USERS_CACHE = [];
 async function loadUsers(){
   usersMsg.textContent = 'Loading…';
   const { data: profs, error } = await supa
     .from('profiles')
-    .select('id,email,first_name,last_name,is_admin,can_purchase')
+    .select('id,email,first_name,last_name,is_admin,can_purchase,created_at')
     .order('created_at', { ascending:false })
     .limit(3000);
   if (error){ usersMsg.textContent = error.message; return; }
@@ -474,7 +417,7 @@ async function loadUsers(){
   renderUsers();
 }
 function renderUsers(){
-  const q = (usersSearch?.value||'').toLowerCase().trim();
+  const q = (usersSearch.value||'').toLowerCase().trim();
   const rows = USERS_CACHE.filter(u=>{
     const name = [u.first_name||'',u.last_name||''].join(' ').toLowerCase();
     const em   = (u.email||'').toLowerCase();
@@ -528,7 +471,7 @@ const dwCartAdd = document.getElementById('dwCartAdd');
 const dwCartMsg = document.getElementById('dwCartMsg');
 
 let DRAWER_USER_ID = null;
-dwClose && (dwClose.onclick = ()=>{ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); });
+dwClose.onclick = ()=>{ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); };
 
 async function openDrawer(userId){
   DRAWER_USER_ID = userId;
@@ -607,7 +550,7 @@ async function loadDrawerApplication(userId){
 }
 
 /* Delete user (Edge Function) */
-dwDeleteUser && (dwDeleteUser.onclick = async ()=>{
+dwDeleteUser.onclick = async ()=>{
   if (!DRAWER_USER_ID) return;
   if (!confirm('Delete this user and related data?')) return;
   try{
@@ -619,10 +562,10 @@ dwDeleteUser && (dwDeleteUser.onclick = async ()=>{
   }catch(e){
     toast(e?.message || String(e) || 'Delete failed', true);
   }
-});
+};
 
 /* Approvals in drawer */
-document.getElementById('dwReloadApprovals') && (document.getElementById('dwReloadApprovals').onclick = ()=> loadDrawerApprovals());
+document.getElementById('dwReloadApprovals').onclick = ()=> loadDrawerApprovals();
 async function loadDrawerApprovals(){
   dwVPABox.textContent = 'Loading…';
   const { data: rows, error } = await supa
@@ -681,7 +624,7 @@ async function loadDrawerApprovals(){
     };
   });
 }
-document.getElementById('dwSaveVpa') && (document.getElementById('dwSaveVpa').onclick = async ()=>{
+document.getElementById('dwSaveVpa').onclick = async ()=>{
   const sku = (dwSku.value||'').trim(); const qty = Math.max(0, Number(dwQty.value||0)|0); const status = dwStatus.value;
   if(!sku){ toast('Enter SKU', true); return; }
   const { error } = await supa.from('vet_product_approvals').upsert({
@@ -689,13 +632,13 @@ document.getElementById('dwSaveVpa') && (document.getElementById('dwSaveVpa').on
   }, { onConflict:'user_id,product_sku' });
   if (error){ toast(error.message,true); return; }
   toast('Saved'); dwSku.value=''; dwQty.value='1'; dwStatus.value='pending'; await loadDrawerApprovals();
-});
+};
 
 /* =======================================================================
-   CART MANAGEMENT (drawer)
+   CART MANAGEMENT
 ======================================================================= */
-dwReloadCart && (dwReloadCart.onclick = ()=> loadDrawerCart());
-dwCartAdd && (dwCartAdd.onclick = async ()=>{
+dwReloadCart.onclick = ()=> loadDrawerCart();
+dwCartAdd.onclick = async ()=>{
   if (!DRAWER_USER_ID) return;
   const sku = (dwCartSku.value||'').trim();
   const qty = Math.max(1, Number(dwCartQty.value||1)|0);
@@ -709,7 +652,7 @@ dwCartAdd && (dwCartAdd.onclick = async ()=>{
   dwCartMsg.textContent='Saved';
   dwCartSku.value=''; dwCartQty.value='1';
   await loadDrawerCart();
-});
+};
 
 async function loadDrawerCart(){
   dwCartBox.textContent = 'Loading…';
@@ -804,7 +747,7 @@ async function loadProducts(){
   prodMsg.textContent = "";
 }
 function renderProducts(){
-  const q = (prodSearch?.value||'').toLowerCase().trim();
+  const q = (prodSearch.value||'').toLowerCase().trim();
   const rows = PROD_CACHE.filter(p=>{
     if (!q) return true;
     return (p.sku||'').toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q);
@@ -837,10 +780,10 @@ function renderProducts(){
   }).join('');
   prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
 }
-prodSearch && prodSearch.addEventListener('input', renderProducts);
-prodRefresh && prodRefresh.addEventListener('click', loadProducts);
+prodSearch.addEventListener('input', renderProducts);
+prodRefresh.addEventListener('click', loadProducts);
 
-apCreate && (apCreate.onclick = async ()=>{
+apCreate.onclick = async ()=>{
   apMsg.textContent = "Creating…"; apCreate.disabled=true;
   const name = (apName.value||'').trim();
   const sku  = (apSku.value||'').trim();
@@ -855,14 +798,14 @@ apCreate && (apCreate.onclick = async ()=>{
 
   if (img){
     if (!['image/jpeg','image/png'].includes(img.type)){ apMsg.textContent='Image must be JPG/PNG'; apCreate.disabled=false; return; }
-    const p = `img/${Date.now()}_${img.name.replace(/\\s+/g,'_').replace([^\\w.\\-]/g,'')}`;
+    const p = `img/${Date.now()}_${img.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
     const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, img, { upsert:false, cacheControl:'3600', contentType: img.type });
     if (up.error){ apMsg.textContent = up.error.message; apCreate.disabled=false; return; }
     image_path = up.data.path;
   }
   if (pdf){
     if (pdf.type !== 'application/pdf'){ apMsg.textContent='Attachment must be PDF'; apCreate.disabled=false; return; }
-    const p = `files/${Date.now()}_${pdf.name.replace(/\\s+/g,'_').replace([^\\w.\\-]/g,'')}`;
+    const p = `files/${Date.now()}_${pdf.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
     const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, pdf, { upsert:false, cacheControl:'3600', contentType: pdf.type });
     if (up.error){ apMsg.textContent = up.error.message; apCreate.disabled=false; return; }
     pdf_path = up.data.path;
@@ -876,9 +819,9 @@ apCreate && (apCreate.onclick = async ()=>{
   apName.value=''; apSku.value=''; apDesc.value=''; apQty.value='0'; apImg.value=''; apPdf.value=''; apAvail.value='true'; apReq.value='false';
   apCreate.disabled=false;
   await loadProducts();
-});
+};
 
-prodList && prodList.addEventListener('click', async (e)=>{
+prodList.addEventListener('click', async (e)=>{
   const card = e.target.closest('.card[data-sku]'); if (!card) return;
   const sku = card.dataset.sku;
 
@@ -904,14 +847,14 @@ prodList && prodList.addEventListener('click', async (e)=>{
   }
 });
 
-prodList && prodList.addEventListener('change', async (e)=>{
+prodList.addEventListener('change', async (e)=>{
   const input = e.target;
   const card = input.closest('.card[data-sku]'); if (!card) return;
   const sku = card.dataset.sku;
   if (input.dataset.action === 'upload-img'){
     const f = input.files[0]; if(!f) return;
     if (!['image/jpeg','image/png'].includes(f.type)){ toast('Image must be JPG/PNG', true); input.value=''; return; }
-    const p = `img/${Date.now()}_${f.name.replace(/\\s+/g,'_').replace([^\\w.\\-]/g,'')}`;
+    const p = `img/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
     const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
     if (up.error){ toast(up.error.message, true); input.value=''; return; }
     await supa.from('products').update({ image_path: up.data.path }).eq('sku', sku);
@@ -920,7 +863,7 @@ prodList && prodList.addEventListener('change', async (e)=>{
   if (input.dataset.action === 'upload-pdf'){
     const f = input.files[0]; if(!f) return;
     if (f.type!=='application/pdf'){ toast('Attachment must be PDF', true); input.value=''; return; }
-    const p = `files/${Date.now()}_${f.name.replace(/\\s+/g,'_').replace([^\\w.\\-]/g,'')}`;
+    const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
     const up = await supa.storage.from(PRODUCT_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
     if (up.error){ toast(up.error.message, true); input.value=''; return; }
     await supa.from('products').update({ pdf_path: up.data.path }).eq('sku', sku);
@@ -937,8 +880,8 @@ const appsRefresh= document.getElementById('appsRefresh');
 const appsMsg    = document.getElementById('appsMsg');
 const appsList   = document.getElementById('appsList');
 
-appsSearch && appsSearch.addEventListener('input', renderApps);
-appsRefresh && appsRefresh.addEventListener('click', loadApps);
+appsSearch.addEventListener('input', renderApps);
+appsRefresh.addEventListener('click', loadApps);
 
 let APP_CACHE = [];
 async function loadApps(){
@@ -956,7 +899,7 @@ async function loadApps(){
   renderApps();
 }
 function renderApps(){
-  const q = (appsSearch?.value||'').toLowerCase().trim();
+  const q = (appsSearch.value||'').toLowerCase().trim();
   appsList.innerHTML = (APP_CACHE.filter(a=>{
     const name = [(a.profiles?.first_name||''),(a.profiles?.last_name||'')].join(' ').toLowerCase();
     const email= (a.profiles?.email||'').toLowerCase();
@@ -995,7 +938,7 @@ function renderApps(){
   });
 }
 
-appsList && appsList.addEventListener('click', async (e)=>{
+appsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const card = b.closest('[data-app]'); const appId = card.dataset.app;
   const action = b.dataset.action;
@@ -1029,10 +972,10 @@ const vpaUpsert = document.getElementById('vpaUpsert');
 
 let VPA_CACHE = [];
 
-vpaSearch && vpaSearch.addEventListener('input', renderVPA);
-vpaRefresh && vpaRefresh.addEventListener('click', loadVPA);
+vpaSearch.addEventListener('input', renderVPA);
+vpaRefresh.addEventListener('click', loadVPA);
 
-vpaUpsert && (vpaUpsert.onclick = async ()=>{
+vpaUpsert.onclick = async ()=>{
   vpaMsg.textContent = 'Saving…';
   const email = (vpaEmail.value||'').trim().toLowerCase();
   const sku   = (vpaSku.value||'').trim();
@@ -1048,7 +991,7 @@ vpaUpsert && (vpaUpsert.onclick = async ()=>{
   if (error){ vpaMsg.textContent = error.message; return; }
   vpaMsg.textContent = 'Saved';
   await loadVPA();
-});
+};
 
 async function loadVPA(){
   vpaMsg2.textContent='Loading…';
@@ -1066,7 +1009,7 @@ async function loadVPA(){
   renderVPA();
 }
 function renderVPA(){
-  const q = (vpaSearch?.value||'').toLowerCase().trim();
+  const q = (vpaSearch.value||'').toLowerCase().trim();
   const orderScore = s => s==='pending'?0 : s==='approved'?1 : 2;
 
   const rows = (VPA_CACHE||[])
@@ -1108,7 +1051,7 @@ function renderVPA(){
     b.onclick = ()=> openDrawer(b.dataset.full);
   });
 }
-vpaList && vpaList.addEventListener('click', async (e)=>{
+vpaList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const card = b.closest('[data-user][data-sku]');
   const user_id = card.dataset.user, product_sku = card.dataset.sku;
@@ -1161,13 +1104,13 @@ async function loadVetNotice(){
     vetNoticeEl.value = (typeof data?.value === 'string') ? data.value : '';
   }catch{}
 }
-document.getElementById('saveVetNotice') && (document.getElementById('saveVetNotice').onclick = async ()=>{
+document.getElementById('saveVetNotice').onclick = async ()=>{
   vetNoticeMsg.textContent='Saving…';
   const val = vetNoticeEl.value || '';
   const { error } = await supa.from('site_settings').upsert({ key:'vet_notice', value: val }, { onConflict:'key' });
   if (error){ vetNoticeMsg.textContent = error.message; return; }
   vetNoticeMsg.textContent='Saved.'; toast('Vet notice saved');
-});
+};
 
 async function ensureSettings(){
   try{
@@ -1185,12 +1128,12 @@ async function loadRegions(){
     return `<label style="display:flex;align-items:center;gap:8px"><input type="checkbox" class="reg" value="${r}" ${on?'checked':''}/> ${r}</label>`;
   }).join(' ');
 }
-saveRegions && (saveRegions.onclick = async ()=>{
+saveRegions.onclick = async ()=>{
   const chosen = [...regionToggles.querySelectorAll('input.reg:checked')].map(i=>i.value);
   const { error } = await supa.from('site_settings').upsert({ key:'active_regions', value: chosen }, { onConflict:'key' });
   if (error){ regMsg.textContent = error.message; return; }
   regMsg.textContent = "Saved."; setTimeout(()=> regMsg.textContent = "", 1500);
-});
+};
 
 async function loadNews(){
   newsMsg.textContent = "Loading…";
@@ -1223,7 +1166,7 @@ async function loadNews(){
   newsMsg.textContent = rows.length ? "" : "No news yet.";
 }
 
-newsList && newsList.addEventListener('click', async (e)=>{
+newsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const { action, id } = b.dataset;
   if(action==='edit'){
@@ -1251,22 +1194,22 @@ function clearNewsForm(){
   nImg.value=""; nFile.value="";
   nCreate.disabled=false; nUpdate.disabled=true; nMsg.textContent="";
 }
-document.getElementById('nClear') && (document.getElementById('nClear').onclick = clearNewsForm);
+document.getElementById('nClear').onclick = clearNewsForm;
 
-document.getElementById('nCreate') && (document.getElementById('nCreate').onclick = async ()=>{
+document.getElementById('nCreate').onclick = async ()=>{
   nMsg.textContent = "Creating…"; nCreate.disabled=true;
   let image_path=null, file_path=null;
   const i = nImg.files[0]||null, f = nFile.files[0]||null;
   if(i){
     if(!['image/jpeg','image/png'].includes(i.type)) { nMsg.textContent='Image must be JPG/PNG'; nCreate.disabled=false; return; }
-    const p = `img/${Date.now()}_${i.name.replace(/\\s+/g,'_').replace([^\\w.\\-]/g,'')}`;
+    const p = `img/${Date.now()}_${i.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
     const up = await supa.storage.from(NEWS_BUCKET).upload(p, i, { upsert:false, cacheControl:'3600', contentType:i.type });
     if (up.error){ nMsg.textContent = up.error.message; nCreate.disabled=false; return; }
     image_path = up.data.path;
   }
   if(f){
     if(f.type!=='application/pdf'){ nMsg.textContent='Attachment must be PDF'; nCreate.disabled=false; return; }
-    const p = `files/${Date.now()}_${f.name.replace(/\\s+/g,'_').replace([^\\w.\\-]/g,'')}`;
+    const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
     const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType: f.type });
     if (up.error){ nMsg.textContent = up.error.message; nCreate.disabled=false; return; }
     file_path = up.data.path;
@@ -1284,23 +1227,23 @@ document.getElementById('nCreate') && (document.getElementById('nCreate').onclic
   const { error } = await supa.from('news').insert(row);
   if (error){ nMsg.textContent = error.message; nCreate.disabled=false; return; }
   nMsg.textContent = "Created."; toast('News created'); clearNewsForm(); await loadNews();
-});
+};
 
-document.getElementById('nUpdate') && (document.getElementById('nUpdate').onclick = async ()=>{
+document.getElementById('nUpdate').onclick = async ()=>{
   const id = nId.value; if(!id) return;
   nMsg.textContent = "Updating…"; nUpdate.disabled=true;
   let image_path=null, file_path=null;
   const i = nImg.files[0]||null, f = nFile.files[0]||null;
   if(i){
     if(!['image/jpeg','image/png'].includes(i.type)) { nMsg.textContent='Image must be JPG/PNG'; nUpdate.disabled=false; return; }
-    const p = `img/${Date.now()}_${i.name.replace(/\\s+/g,'_').replace([^\\w.\\-]/g,'')}`;
+    const p = `img/${Date.now()}_${i.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
     const up = await supa.storage.from(NEWS_BUCKET).upload(p, i, { upsert:false, cacheControl:'3600', contentType:i.type });
     if (up.error){ nMsg.textContent = up.error.message; nUpdate.disabled=false; return; }
     image_path = up.data.path;
   }
   if(f){
     if(f.type!=='application/pdf'){ nMsg.textContent='Attachment must be PDF'; nUpdate.disabled=false; return; }
-    const p = `files/${Date.now()}_${f.name.replace(/\\s+/g,'_').replace([^\\w.\\-]/g,'')}`;
+    const p = `files/${Date.now()}_${f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'')}`;
     const up = await supa.storage.from(NEWS_BUCKET).upload(p, f, { upsert:false, cacheControl:'3600', contentType:f.type });
     if (up.error){ nMsg.textContent = up.error.message; nUpdate.disabled=false; return; }
     file_path = up.data.path;
@@ -1317,7 +1260,7 @@ document.getElementById('nUpdate') && (document.getElementById('nUpdate').onclic
   const { error } = await supa.from('news').update(patch).eq('id', id);
   if (error){ nMsg.textContent = error.message; nUpdate.disabled=false; return; }
   nMsg.textContent = "Updated."; toast('News updated'); nUpdate.disabled=false; await loadNews();
-});
+};
 
 /* =======================================================================
    Realtime notifications
@@ -1347,16 +1290,14 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   const ok = await checkAdmin();
   if (!ok) return;
   ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
+
   await Promise.all([ loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice() ]);
+
   document.getElementById('newsRefresh').onclick = ()=> loadNews();
   document.getElementById('prodRefresh').onclick = ()=> loadProducts();
+
   subscribeRealtime();
 });
-
-// Reflect auth state changes immediately
-if (supa && supa.auth && supa.auth.onAuthStateChange) {
-  supa.auth.onAuthStateChange(async ()=>{ try{ await checkAdmin(); }catch{} });
-}
 </script>
 </body>
 </html>
