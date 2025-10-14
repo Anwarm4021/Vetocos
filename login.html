@@ -100,7 +100,7 @@
 
     <div id="pwWrap">
       <label><span data-i18n="login.password">Password</span> <span class="muted" data-i18n="login.passwordHint">(leave empty to receive a magic link)</span></label>
-      <input id="password" type="password" class="input" data-i18n="login.passwordPH" data-i18n-attr="placeholder" placeholder="Optional" autocomplete="current-password"/>
+      <input id="password" type="password" class="input" data-i18n="login.passwordPH" data-i18n-attr="placeholder" placeholder="Optional"/>
     </div>
 
     <button id="continue" class="btn" data-i18n="login.continue">Continue</button>
@@ -356,11 +356,6 @@
     else { html.dir="ltr"; document.body.classList.remove("rtl"); }
     localStorage.setItem("lang", lang);
     const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
-
-    // keep title/kicker in sync with admin mode after language switch
-    const wantAdmin = new URLSearchParams(location.search).get('admin') === '1';
-    document.getElementById('title').textContent = dict[wantAdmin ? "login.adminTitle" : "login.title"];
-    document.getElementById('kicker').textContent = dict[wantAdmin ? "login.adminKicker" : "login.kicker"];
   }
 
   // Contact & Policy modals
@@ -370,8 +365,6 @@
   function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
   function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
   function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
-  window.openContact=openContact; window.closeContact=closeContact;
-  window.openPolicy=openPolicy;   window.closePolicy=closePolicy;
   [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
 
   // mailto
@@ -394,7 +387,6 @@
     window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
     return false;
   }
-  window.sendMailto=sendMailto;
 
   // Init
   document.addEventListener('DOMContentLoaded', ()=>{
@@ -419,7 +411,7 @@ const supa = supabase.createClient(
 );
 
 /* ===== Config ===== */
-const ADMIN_EMAILS = ["anwar.moumenjamai19@gmail.com"].map(s=>s.toLowerCase());
+const ADMIN_EMAILS = ["anwar.moumenjamai19@gmail.com"]; // lower-case
 
 /* ===== DOM ===== */
 const titleEl = document.getElementById('title');
@@ -436,83 +428,62 @@ const params = new URLSearchParams(location.search);
 const wantAdmin = params.get('admin') === '1';   // admin-intent flag
 const fallbackRedirect = params.get('redirect') || (wantAdmin ? 'admin.html' : 'index.html');
 
-function dict(){ return I18N[localStorage.getItem("lang")||"en"] || I18N.en; }
-function setMsgKey(key, cls='muted'){ msgEl.textContent = (dict()[key] || key); msgEl.className=cls; }
+function setMsgKey(key, cls='muted'){ msgEl.textContent = (I18N[localStorage.getItem("lang")||"en"][key] || key); msgEl.className=cls; }
 function setMsg(t, cls='muted'){ msgEl.textContent=t; msgEl.className=cls; }
 function lc(s){ return (s||'').toLowerCase(); }
 
 async function isAdminUser(uid, em){
   if (ADMIN_EMAILS.includes(lc(em))) return true;
   try {
-    const { data, error } = await supa.from('profiles').select('is_admin').eq('id', uid).maybeSingle();
-    if (error) return false;
+    const { data } = await supa.from('profiles').select('is_admin').eq('id', uid).maybeSingle();
     return !!data?.is_admin;
   } catch { return false; }
 }
 
 async function redirectAfterLogin(){
-  try{
-    const { data:{ session } } = await supa.auth.getSession();
-    if (!session?.user) return;
+  const { data:{ session } } = await supa.auth.getSession();
+  if (!session?.user) return;
 
-    const uid = session.user.id;
-    const em  = lc(session.user.email || '');
+  const uid = session.user.id;
+  const em  = lc(session.user.email || '');
 
-    if (wantAdmin){
-      const ok = await isAdminUser(uid, em);
-      if (ok){ location.replace('admin.html'); return; }
-      // Not admin → message + switch option
-      notAdminBox.style.display = 'block';
-      notAdminBox.innerHTML = `
-        <div><strong>This account isn’t an admin.</strong></div>
-        <div style="margin-top:6px">You signed in as <code>${em || '(no email)'}</code> but this user isn’t allowed to access the admin dashboard.</div>
-        <div style="margin-top:8px">You can <a href="#" id="swap">switch to your admin account</a>.</div>
-      `;
-      const swap = document.getElementById('swap');
-      if (swap) swap.onclick = async (e)=>{ e.preventDefault(); await supa.auth.signOut(); location.reload(); };
-      logoutBtn.style.display = 'inline-block';
-      return;
-    }
-
-    location.replace(fallbackRedirect);
-  }catch(e){
-    // Non-fatal; show nothing to user
+  if (wantAdmin){
+    const ok = await isAdminUser(uid, em);
+    if (ok){ location.replace('admin.html'); return; }
+    // Not admin → message + switch option
+    notAdminBox.style.display = 'block';
+    notAdminBox.innerHTML = `
+      <div><strong>This account isn’t an admin.</strong></div>
+      <div style="margin-top:6px">You signed in as <code>${em || '(no email)'}</code> but this user isn’t allowed to access the admin dashboard.</div>
+      <div style="margin-top:8px">You can <a href="#" id="swap">switch to your admin account</a>.</div>
+    `;
+    document.getElementById('swap').onclick = async (e)=>{ e.preventDefault(); await supa.auth.signOut(); location.reload(); };
+    logoutBtn.style.display = 'inline-block';
+    return;
   }
+
+  location.replace(fallbackRedirect);
 }
-
-/* ===== Handle PKCE/OTP callback (?code=...) early ===== */
-(async function handleSupabaseCallback(){
-  if (location.search.includes('code=')) {
-    try {
-      const { error } = await supa.auth.exchangeCodeForSession(location.href);
-      if (error) throw error;
-      await redirectAfterLogin();
-    } catch (e) {
-      setMsg('Sign-in link error: ' + (e.message || e), 'alert');
-    }
-  } else {
-    // if already signed in, go where we need to
-    redirectAfterLogin();
-  }
-})();
 
 /* ===== UI text for admin mode (i18n) ===== */
 (function syncAdminText(){
   const lang = localStorage.getItem("lang") || "en";
-  const d = I18N[lang] || I18N.en;
   if (wantAdmin){
-    titleEl.textContent = d["login.adminTitle"];
-    kicker.textContent  = d["login.adminKicker"];
+    titleEl.textContent = I18N[lang]["login.adminTitle"];
+    kicker.textContent  = I18N[lang]["login.adminKicker"];
   } else {
-    titleEl.textContent = d["login.title"];
-    kicker.textContent  = d["login.kicker"];
+    titleEl.textContent = I18N[lang]["login.title"];
+    kicker.textContent  = I18N[lang]["login.kicker"];
   }
-  const sel = document.getElementById('lang-switch');
-  if (sel) sel.addEventListener('change', ()=>{
+  document.getElementById('lang-switch').addEventListener('change', ()=>{
     const L = localStorage.getItem("lang") || "en";
-    const d2 = I18N[L] || I18N.en;
-    titleEl.textContent = d2[wantAdmin ? "login.adminTitle" : "login.title"];
-    kicker.textContent  = d2[wantAdmin ? "login.adminKicker" : "login.kicker"];
+    if (wantAdmin){
+      titleEl.textContent = I18N[L]["login.adminTitle"];
+      kicker.textContent  = I18N[L]["login.adminKicker"];
+    } else {
+      titleEl.textContent = I18N[L]["login.title"];
+      kicker.textContent  = I18N[L]["login.kicker"];
+    }
   });
 })();
 
@@ -530,20 +501,17 @@ continueBtn.onclick = async ()=>{
     if (pw){
       const { error } = await supa.auth.signInWithPassword({ email: em, password: pw });
       if (error) throw error;
-      await redirectAfterLogin();
     } else {
       // Magic link
-      const redirectTo = new URL('login.html', location.origin);
-      redirectTo.searchParams.set('admin', wantAdmin ? '1' : '0');
-      redirectTo.searchParams.set('redirect', fallbackRedirect);
-
       const { error } = await supa.auth.signInWithOtp({
         email: em,
-        options: { emailRedirectTo: redirectTo.toString() }
+        options: { emailRedirectTo: location.origin + '/login.html?admin='+(wantAdmin?'1':'0')+'&redirect='+encodeURIComponent(fallbackRedirect) }
       });
       if (error) throw error;
       setMsgKey('login.checkEmail','ok');
+      return;
     }
+    await redirectAfterLogin();
   }catch(err){
     setMsg(err.message || String(err), 'alert');
   }
@@ -551,7 +519,8 @@ continueBtn.onclick = async ()=>{
 
 logoutBtn.onclick = async ()=>{ await supa.auth.signOut(); location.reload(); };
 
-/* ===== Also react to auth changes (e.g., token refresh) ===== */
+/* ===== On load: if already signed in, route appropriately ===== */
+document.addEventListener('DOMContentLoaded', redirectAfterLogin);
 supa.auth.onAuthStateChange((_event, _session)=>{ redirectAfterLogin(); });
 
 /* ===== Year & policy date ===== */
