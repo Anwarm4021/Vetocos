@@ -16,6 +16,7 @@
     .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
          background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer}
     .btn.small{padding:6px 10px;font-size:.9rem}
+    .btn.danger{background:linear-gradient(135deg,rgba(255,120,120,.18),rgba(255,80,80,.16))}
     .muted{color:var(--muted)}
     .toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap}
     .search{width:280px;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
@@ -32,6 +33,8 @@
     .address{white-space:pre-wrap}
     .mini{font-size:.88rem}
     .hidden{display:none}
+    #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
+           border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -95,6 +98,8 @@
   </div>
 </main>
 
+<div id="toast"></div>
+
 <script>
 /* ---------- Supabase ---------- */
 const supa = supabase.createClient(
@@ -110,17 +115,23 @@ const STR = {
       login_admin:"Login as Admin",logout:"Logout",search_placeholder:"Search name / email / order #",method:"Method",
       all:"All",collect:"Collect",delivery:"Delivery",status:"Status",pending:"pending",paid:"paid",shipped:"shipped",
       completed:"completed",cancelled:"cancelled",from:"From",to:"To",refresh:"Refresh",loading:"Loading…",
-      order:"#",customer:"Customer",email:"Email",created:"Created",total:"Total",items:"Items",qty_short:"Qty",delivery_addr:"Delivery address",pickup_note:"Pickup at store",view_items:"View items",hide_items:"Hide items"},
+      order:"#",customer:"Customer",email:"Email",created:"Created",total:"Total",items:"Items",delivery_addr:"Delivery address",
+      pickup_note:"Pickup at store",view_items:"View items",hide_items:"Hide items",delete:"Delete",deleting:"Deleting…",
+      deleted:"Deleted",confirm_delete:"Delete this order and its items? This cannot be undone."},
   fr:{title:"Historique des achats",back_admin:"Retour à l’Admin",language:"Langue",checking_session:"Vérification de session…",
       login_admin:"Se connecter (Admin)",logout:"Se déconnecter",search_placeholder:"Rech. nom / email / n° commande",method:"Méthode",
       all:"Toutes",collect:"Retrait",delivery:"Livraison",status:"Statut",pending:"en attente",paid:"payée",shipped:"expédiée",
       completed:"terminée",cancelled:"annulée",from:"Du",to:"Au",refresh:"Rafraîchir",loading:"Chargement…",
-      order:"N°",customer:"Client",email:"Email",created:"Créée",total:"Total",items:"Articles",qty_short:"Qté",delivery_addr:"Adresse de livraison",pickup_note:"Retrait en magasin",view_items:"Voir articles",hide_items:"Masquer"},
+      order:"N°",customer:"Client",email:"Email",created:"Créée",total:"Total",items:"Articles",delivery_addr:"Adresse de livraison",
+      pickup_note:"Retrait en magasin",view_items:"Voir articles",hide_items:"Masquer",delete:"Supprimer",deleting:"Suppression…",
+      deleted:"Supprimée",confirm_delete:"Supprimer cette commande et ses articles ? Action irréversible."},
   ar:{title:"سجل المشتريات",back_admin:"العودة للوحة التحكم",language:"اللغة",checking_session:"جارٍ فحص الجلسة…",
       login_admin:"تسجيل دخول كمدير",logout:"تسجيل خروج",search_placeholder:"بحث اسم / بريد / رقم الطلب",method:"الطريقة",
       all:"الكل",collect:"استلام",delivery:"تسليم",status:"الحالة",pending:"قيد الانتظار",paid:"مدفوع",shipped:"تم الشحن",
       completed:"مكتمل",cancelled:"ملغي",from:"من",to:"إلى",refresh:"تحديث",loading:"جارٍ التحميل…",
-      order:"الطلب",customer:"العميل",email:"البريد",created:"أُنشئ",total:"الإجمالي",items:"العناصر",qty_short:"الكمية",delivery_addr:"عنوان التسليم",pickup_note:"استلام من المتجر",view_items:"عرض العناصر",hide_items:"إخفاء العناصر"}
+      order:"الطلب",customer:"العميل",email:"البريد",created:"أُنشئ",total:"الإجمالي",items:"العناصر",delivery_addr:"عنوان التسليم",
+      pickup_note:"استلام من المتجر",view_items:"عرض العناصر",hide_items:"إخفاء العناصر",delete:"حذف",deleting:"جارٍ الحذف…",
+      deleted:"تم الحذف",confirm_delete:"حذف هذا الطلب وعناصره؟ لا يمكن التراجع."}
 };
 function applyLang(lang){
   document.documentElement.setAttribute('data-lang', lang);
@@ -139,6 +150,10 @@ function initLang(){
   sel.addEventListener('change', ()=>{ const v=sel.value; localStorage.setItem('lang', v); applyLang(v); render(); });
 }
 
+/* ---------- Toast ---------- */
+const toastEl = document.getElementById("toast");
+function toast(msg){ toastEl.textContent = msg; toastEl.style.display="block"; clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.style.display="none",2000); }
+
 /* ---------- Auth ---------- */
 const authMsg  = document.getElementById("authMsg");
 const loginBtn = document.getElementById("loginBtn");
@@ -155,14 +170,10 @@ async function checkAdmin(){
   const lang = localStorage.getItem('lang')||'en';
   authMsg.textContent = STR[lang].checking_session;
   const { data:{ session } } = await supa.auth.getSession();
-  if (!session?.user){
-    authMsg.textContent = 'Not signed in.';
-    loginBtn.classList.remove('hidden');
-    return false;
-  }
+  if (!session?.user){ authMsg.textContent = "Not signed in."; loginBtn.classList.remove('hidden'); return false; }
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove('hidden');
-  if (ADMIN_EMAILS.map(e=>e.toLowerCase()).includes(String(session.user.email||'').toLowerCase())) return true;
+  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){ location.replace('index.html'); return false; }
   return true;
@@ -177,35 +188,37 @@ const toEl = document.getElementById('to');
 document.getElementById('refresh').onclick = load;
 
 let ORDERS = [];
+
+/* Two-step fetch: orders → related profiles (no join required) */
 async function load(){
   const msg = document.getElementById('msg');
-  msg.textContent = (STR[localStorage.getItem('lang')||'en'].loading);
+  const L = localStorage.getItem('lang')||'en';
+  msg.textContent = STR[L].loading;
 
-  // FIX: removed inline comment and kept a clean select string.
-  const { data, error } = await supa
+  // 1) Orders
+  const { data: orders, error: err1 } = await supa
     .from('orders')
-    .select(`
-      id,
-      order_number,
-      user_id,
-      status,
-      delivery_method,
-      created_at,
-      total_amount,
-      currency,
-      delivery_address,
-      profiles:profiles!inner(
-        email,
-        first_name,
-        last_name
-      )
-    `)
+    .select('id,order_number,user_id,status,delivery_method,created_at,total_amount,currency,delivery_address')
     .order('created_at', { ascending:false })
     .limit(1000);
 
-  if (error){ msg.textContent = error.message; return; }
-  ORDERS = data || [];
-  msg.textContent='';
+  if (err1){ msg.textContent = err1.message; return; }
+
+  // 2) Profiles in batch
+  const userIds = [...new Set((orders||[]).map(o=>o.user_id).filter(Boolean))];
+  let profilesById = {};
+  if (userIds.length){
+    const { data: profs, error: err2 } = await supa
+      .from('profiles')
+      .select('id,email,first_name,last_name')
+      .in('id', userIds);
+    if (err2){ msg.textContent = err2.message; return; }
+    (profs||[]).forEach(p=>{ profilesById[p.id]=p; });
+  }
+
+  // 3) stitch
+  ORDERS = (orders||[]).map(o=>({ ...o, profiles: profilesById[o.user_id] || null }));
+  msg.textContent = '';
   render();
 }
 
@@ -217,6 +230,35 @@ async function fetchItems(orderId){
     .order('product_sku', { ascending:true });
   if (error) return [];
   return data || [];
+}
+
+/* Delete order (delete items first, then order) */
+async function deleteOrder(orderId){
+  const L = localStorage.getItem('lang')||'en';
+  if (!confirm(STR[L].confirm_delete)) return;
+
+  const delBtn = document.querySelector(`button[data-del="${orderId}"]`);
+  const oldText = delBtn ? delBtn.innerText : '';
+  if (delBtn) { delBtn.disabled = true; delBtn.innerText = STR[L].deleting; }
+
+  try{
+    // delete children first
+    const delItems = await supa.from('order_items').delete().eq('order_id', orderId);
+    if (delItems.error) throw delItems.error;
+
+    // delete order
+    const delOrder = await supa.from('orders').delete().eq('id', orderId);
+    if (delOrder.error) throw delOrder.error;
+
+    toast(STR[L].deleted);
+    // remove locally & re-render
+    ORDERS = ORDERS.filter(o=>o.id !== orderId);
+    render();
+  }catch(e){
+    alert(e?.message || String(e));
+  }finally{
+    if (delBtn){ delBtn.disabled = false; delBtn.innerText = STR[L].delete || 'Delete'; }
+  }
 }
 
 async function render(){
@@ -259,6 +301,7 @@ async function render(){
           <th>${t.items}</th>
           <th>${t.total}</th>
           <th>${t.delivery_addr}</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -266,9 +309,9 @@ async function render(){
           const pill = o.status==='completed'?'ok':o.status==='pending'?'pend':o.status==='cancelled'?'bad':'';
           const name = [o.profiles?.first_name, o.profiles?.last_name].filter(Boolean).join(' ') || '(no name)';
           const method = o.delivery_method==='collect' ? t.collect : t.delivery;
-          const addr = (o.delivery_method==='collect')
+          const addrVal = o.delivery_method==='collect'
             ? `<div class="mini">${t.pickup_note}</div>`
-            : `<div class="address mini">${escapeHtml(String(o.delivery_address||''))}</div>`;
+            : `<div class="address mini">${escapeHtml(typeof o.delivery_address==='object' ? JSON.stringify(o.delivery_address,null,2) : String(o.delivery_address||''))}</div>`;
           return `<tr data-order="${o.id}">
             <td><strong>${o.order_number || o.id}</strong><div class="mini muted">${method}</div></td>
             <td>${escapeHtml(name)}</td>
@@ -280,7 +323,10 @@ async function render(){
               <div class="mini" data-items-box style="display:none; margin-top:6px">…</div>
             </td>
             <td>${Number(o.total_amount||0).toFixed(2)} ${o.currency||''}</td>
-            <td>${addr}</td>
+            <td>${addrVal}</td>
+            <td style="text-align:right">
+              <button class="btn danger small" data-del="${o.id}">${t.delete}</button>
+            </td>
           </tr>`;
         }).join('')}
       </tbody>
@@ -301,16 +347,10 @@ async function render(){
       box.textContent = t.loading;
       const orderId = tr.getAttribute('data-order');
       const items = await fetchItems(orderId);
-      if (!items.length){
-        box.textContent = '-';
-        box.setAttribute('data-loaded','1');
-        box.style.display='block';
-        btn.innerText = t.hide_items;
-        return;
-      }
+      if (!items.length){ box.textContent = '-'; box.setAttribute('data-loaded','1'); box.style.display='block'; btn.innerText = t.hide_items; return; }
       box.innerHTML = `
         <table class="mini" style="width:100%">
-          <thead><tr><th>SKU</th><th>${t.items}</th><th>${t.qty_short}</th><th>${t.total}</th></tr></thead>
+          <thead><tr><th>SKU</th><th>${t.items}</th><th>${t.qty_short||'Qty'}</th><th>${t.total}</th></tr></thead>
           <tbody>
             ${items.map(it=>`<tr>
               <td>${escapeHtml(it.product_sku||'')}</td>
@@ -326,6 +366,11 @@ async function render(){
       btn.innerText = t.hide_items;
     };
   });
+
+  // bind deletes
+  list.querySelectorAll('button[data-del]').forEach(btn=>{
+    btn.onclick = ()=> deleteOrder(btn.getAttribute('data-del'));
+  });
 }
 
 /* ---------- Utils ---------- */
@@ -339,7 +384,6 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   document.getElementById('filtersWrap').classList.remove('hidden');
   document.getElementById('listWrap').classList.remove('hidden');
 
-  // search live
   qEl.addEventListener('input', render);
   methodEl.addEventListener('change', render);
   statusEl.addEventListener('change', render);
@@ -347,6 +391,16 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   toEl.addEventListener('change', render);
 
   await load();
+
+  // Realtime (optional): refresh when orders/items change
+  try{
+    supa.channel('rt_orders')
+      .on('postgres_changes', { event: '*', schema:'public', table:'orders' }, ()=> load())
+      .subscribe();
+    supa.channel('rt_order_items')
+      .on('postgres_changes', { event: '*', schema:'public', table:'order_items' }, ()=> load())
+      .subscribe();
+  }catch{}
 });
 </script>
 </body>
