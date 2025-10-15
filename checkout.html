@@ -909,7 +909,7 @@ async function placeOrder(){
       user_id: user.id, email, status:'pending',
       total_qty: eligibleItems.reduce((n,x)=>n+Number(x.qty||0),0),
       total_amount: Object.keys(totals).length===1 ? Object.values(totals)[0] : null,
-      amounts_by_currency: totals
+
     };
 
     let res = await supa.from('orders').insert([basePayload]).select('id').single();
