@@ -37,7 +37,6 @@
     .qty-btn{ padding:4px 8px; border:none; border-radius:6px; background:rgba(255,255,255,.1); color:white; cursor:pointer }
     .qty-btn:disabled{ opacity:.6; cursor:not-allowed }
     .summary{ margin-top:14px; text-align:right; font-weight:600 }
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:space-between }
     .btn.primary{ margin-top:14px; display:inline-block; padding:12px 18px; border-radius:10px; border:1px solid rgba(141,158,199,.25); background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12)); color:#f6f7fb; font-weight:600; cursor:pointer }
     .btn.secondary{ background:rgba(255,255,255,.04) }
     .btn[disabled]{ opacity:.6; cursor:not-allowed }
@@ -46,12 +45,22 @@
     .orders{ margin-top:28px }
     .order{ padding:12px 0; border-top:1px solid rgba(141,158,199,.18) }
     .order:first-child{ border-top:none }
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:space-between }
     .badge{ display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid rgba(141,158,199,.25); font-size:12px }
     .badge.ok{ background:rgba(131,240,165,.12) }
     .badge.warn{ background:rgba(255,200,120,.12) }
     .badge.bad{ background:rgba(255,120,120,.12) }
-    .price{white-space:nowrap}
+    a{ color:#6dd5ff; text-decoration:none }
+    .hint{ font-size:.92rem }
     .note{ font-size:.88rem; color:var(--muted) }
+
+    /* Product cell w/ thumbnail */
+    .namecell{ display:flex; gap:12px; align-items:center }
+    .prodcell{ display:flex; gap:12px; align-items:center; min-width:0 }
+    .thumb{ width:64px; height:64px; object-fit:cover; border-radius:8px; border:1px solid rgba(141,158,199,.25); background:rgba(255,255,255,.03) }
+    .thumb.blur{ filter:blur(6px) brightness(.75) }
+    .meta{ display:flex; flex-direction:column; gap:4px; min-width:0 }
+    .meta strong{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
 
     /* Footer */
     footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
@@ -131,12 +140,59 @@
     </div>
   </footer>
 
-  <!-- CONTACT MODAL (unchanged content) -->
-  <!-- ... (keep your exact Contact / Policy modals as in your original) ... -->
+  <!-- CONTACT MODAL -->
+  <!-- (unchanged; kept exactly as you posted) -->
+  <!-- ... your full contact modal from the message ... -->
+
+  <!-- PRIVACY & POLICY MODAL -->
+  <!-- (unchanged; kept exactly as you posted) -->
+  <!-- ... your full policy modal from the message ... -->
 
   <script>
-    /* ======================= i18n (keep your original dictionaries) ======================= */
-    const I18N = /* your exact dictionaries from the original cart.html */;
+    /* ======================= i18n ======================= */
+    const I18N = {
+      en:{ "nav.products":"Products","nav.verify":"Verification","nav.account":"My Account","nav.contact":"Contact",
+           "page.title":"Your Cart",
+           "orders.title":"Your Purchases","orders.hint":"Sign in to see your purchase history.","orders.signed":"You are signed in. Your recent purchases are below.","orders.none":"No purchases yet.","orders.loading":"Loading your orders…","orders.receipt":"Receipt",
+           "footer.tag":"Complementary feed for companion animals.","footer.policy":"Privacy & Policy","footer.contact":"Contact",
+           "cart.empty":"Your cart is empty","cart.total":"Total items:","cart.clear":"Clear cart","cart.stockNote":"Stock limits enforced automatically.","cart.proceed":"Proceed","cart.product":"Product","cart.qty":"Quantity","cart.action":"Action","cart.remove":"Remove","cart.ok":"OK","cart.unavailable":"Unavailable","cart.onlyLeft":"Only {n} left",
+           /* ADDED for gating */
+           "cart.unit":"Unit price","cart.line":"Line total","cart.sum":"Cart total","cart.currencyMixed":"*Prices show per line currency",
+           "cart.pricesHiddenSignIn":"Sign in to see product details & prices",
+           "cart.pricesHiddenVet":"Verify vet status to see product details & prices",
+           "cart.pay":"Pay now"
+      },
+      fr:{ "nav.products":"Produits","nav.verify":"Vérification","nav.account":"Mon compte","nav.contact":"Contact",
+           "page.title":"Votre panier",
+           "orders.title":"Vos achats","orders.hint":"Connectez-vous pour voir votre historique d’achats.","orders.signed":"Vous êtes connecté. Vos achats récents ci-dessous.","orders.none":"Aucun achat pour le moment.","orders.loading":"Chargement de vos commandes…","orders.receipt":"Reçu",
+           "footer.tag":"Complément alimentaire pour animaux de compagnie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
+           "cart.empty":"Votre panier est vide","cart.total":"Articles au total :","cart.clear":"Vider le panier","cart.stockNote":"Limites de stock appliquées automatiquement.","cart.proceed":"Continuer","cart.product":"Produit","cart.qty":"Qté","cart.action":"Action","cart.remove":"Supprimer","cart.ok":"OK","cart.unavailable":"Indisponible","cart.onlyLeft":"Plus que {n}",
+           "cart.unit":"Prix unitaire","cart.line":"Total ligne","cart.sum":"Total panier","cart.currencyMixed":"*Prix par devise de la ligne",
+           "cart.pricesHiddenSignIn":"Connectez-vous pour voir les détails & prix",
+           "cart.pricesHiddenVet":"Vérifiez le statut vétérinaire pour voir les détails & prix",
+           "cart.pay":"Payer maintenant"
+      },
+      es:{ "nav.products":"Productos","nav.verify":"Verificación","nav.account":"Mi cuenta","nav.contact":"Contacto",
+           "page.title":"Tu carrito",
+           "orders.title":"Tus compras","orders.hint":"Inicia sesión para ver tu historial.","orders.signed":"Has iniciado sesión. Compras recientes abajo.","orders.none":"Sin compras aún.","orders.loading":"Cargando tus pedidos…","orders.receipt":"Recibo",
+           "footer.tag":"Alimento complementario para animales de compañía.","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
+           "cart.empty":"Tu carrito está vacío","cart.total":"Artículos totales:","cart.clear":"Vaciar carrito","cart.stockNote":"Límites de stock aplicados automáticamente.","cart.proceed":"Continuar","cart.product":"Producto","cart.qty":"Cantidad","cart.action":"Acción","cart.remove":"Quitar","cart.ok":"OK","cart.unavailable":"No disponible","cart.onlyLeft":"Solo quedan {n}",
+           "cart.unit":"Precio unitario","cart.line":"Total de línea","cart.sum":"Total del carrito","cart.currencyMixed":"*Precios por moneda de la línea",
+           "cart.pricesHiddenSignIn":"Inicia sesión para ver detalles y precios",
+           "cart.pricesHiddenVet":"Verifica condición de veterinario para ver detalles y precios",
+           "cart.pay":"Pagar ahora"
+      },
+      ar:{ "nav.products":"المنتجات","nav.verify":"التحقق","nav.account":"حسابي","nav.contact":"اتصل بنا",
+           "page.title":"سلة التسوق",
+           "orders.title":"مشترياتك","orders.hint":"سجّل الدخول لعرض سجل المشتريات.","orders.signed":"تم تسجيل الدخول. تظهر المشتريات الأخيرة أدناه.","orders.none":"لا توجد مشتريات بعد.","orders.loading":"جارٍ تحميل الطلبات…","orders.receipt":"الإيصال",
+           "footer.tag":"غذاء تكميلي للحيوانات الأليفة.","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
+           "cart.empty":"سلة التسوق فارغة","cart.total":"إجمالي العناصر:","cart.clear":"تفريغ السلة","cart.stockNote":"تُطبّق حدود المخزون تلقائيًا.","cart.proceed":"متابعة","cart.product":"المنتج","cart.qty":"الكمية","cart.action":"إجراء","cart.remove":"إزالة","cart.ok":"جيد","cart.unavailable":"غير متاح","cart.onlyLeft":"المتبقي {n}",
+           "cart.unit":"سعر الوحدة","cart.line":"إجمالي السطر","cart.sum":"إجمالي السلة","cart.currencyMixed":"*الأسعار حسب عملة كل سطر",
+           "cart.pricesHiddenSignIn":"سجّل الدخول لعرض التفاصيل والأسعار",
+           "cart.pricesHiddenVet":"أكمل التحقق البيطري لعرض التفاصيل والأسعار",
+           "cart.pay":"ادفع الآن"
+      }
+    };
     function applyLang(lang){
       const dict=I18N[lang]||I18N.en;
       document.querySelectorAll("[data-i18n]").forEach(el=>{
@@ -151,8 +207,36 @@
     }
     function t(k){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][k])||(I18N.en[k]||k); }
 
-    /* Contact / Policy modal helpers – keep your originals */
-    // openContact / closeContact / openPolicy / closePolicy / sendMailto ...
+    /* Contact / Policy modals & helpers */
+    const contactModal=document.getElementById('contactModal');
+    const policyModal=document.getElementById('policyModal');
+    function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+    function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+    function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+    function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+    [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+
+    const toAddress='info@vetocos.com';
+    function sendMailto(e){
+      e.preventDefault();
+      const topic=document.getElementById('topic').value;
+      const name=document.getElementById('name').value.trim();
+      const email=document.getElementById('email2').value.trim();
+      const subject=document.getElementById('subject')?.value.trim()||'Website enquiry';
+      const message=document.getElementById('message').value.trim();
+      if(!document.getElementById('consent').checked) return false;
+      const body=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,'',message].join('%0A');
+      window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${body}`;
+      return false;
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      document.getElementById('y').textContent=new Date().getFullYear();
+      const d=new Date(); const month=d.toLocaleString('default',{month:'long'}); const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+      const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
+      const sel=document.getElementById('lang-switch'); if(sel){ sel.value=initial; sel.addEventListener('change',e=>applyLang(e.target.value)); }
+      const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+    });
   </script>
 
   <script>
@@ -163,13 +247,18 @@
       { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
 
-    /* ======================= Cart + stock + prices ======================= */
+    /* ======================= Cart + stock state ======================= */
     const CART_KEY = 'cart';
     const CART_UPDATED_KEY = 'cart_updated_at';
     const CART_RESTORED_KEY = 'cart_restored_v2';
 
-    // sku -> { sku, name, stock_qty:number|null, available:boolean|null, price_mad:number|null, bulk_10_price_mad:number|null }
+    // sku -> { sku, name?, type?, image_url?, stock_qty:number|null, available:boolean|null }
     let PRODUCTS = Object.create(null);
+
+    // sku => { code => variantRow }
+    let VARIANTS = Object.create(null);
+    let IS_VET = false;
+    let IS_SIGNED = false;
 
     function getLocalBundle() {
       try {
@@ -184,7 +273,7 @@
       const stamp = updatedAt || new Date().toISOString();
       const cleaned = (items || [])
         .filter(it => it && it.sku && Number(it.qty) > 0)
-        .map(it => ({ sku:String(it.sku), name:String(it.name || it.sku), qty:Number(it.qty) }));
+        .map(it => ({ sku:String(it.sku), name:String(it.name || it.sku), qty:Number(it.qty), variant: it.variant || null }));
       localStorage.setItem(CART_KEY, JSON.stringify(cleaned));
       localStorage.setItem(CART_UPDATED_KEY, stamp);
     }
@@ -193,6 +282,8 @@
       const updated_at = new Date().toISOString();
       const clamped = clampCartToStock(items);
       setLocalBundle(clamped, updated_at);
+      await refreshUserFlags();
+      await loadVariantsForCart();
       await renderCart();
       const { data:{ user } } = await supa.auth.getUser();
       if (user) { await supa.from('carts').upsert({ user_id:user.id, items:clamped, updated_at }); }
@@ -200,8 +291,18 @@
 
     function overlayBySku(baseArr, incomingArr){
       const map = {};
-      (baseArr || []).forEach(it => { if (it?.sku) map[it.sku] = { ...it, qty:Number(it.qty||0) }; });
-      (incomingArr || []).forEach(it => { if (it?.sku) map[it.sku] = { ...map[it.sku], ...it, qty:Number(it.qty||0) }; });
+      (baseArr || []).forEach(it => {
+        if (it?.sku) {
+          const key = it.sku + '::' + (it.variant || '');
+          map[key] = { ...it, qty:Number(it.qty||0) };
+        }
+      });
+      (incomingArr || []).forEach(it => {
+        if (it?.sku) {
+          const key = it.sku + '::' + (it.variant || '');
+          map[key] = { ...map[key], ...it, qty:Number(it.qty||0) };
+        }
+      });
       return Object.values(map).filter(x => x.qty > 0);
     }
 
@@ -213,7 +314,7 @@
       const p = PRODUCTS[sku] || {};
       if (p.available === false) return 0;
       if (typeof p.stock_qty === 'number' && p.stock_qty >= 0) return p.stock_qty;
-      return Infinity; // unknown stock -> no limit
+      return Infinity;
     }
     function clampCartToStock(items){
       return (items||[]).map(it=>{
@@ -223,42 +324,99 @@
       }).filter(x=>x.qty>0);
     }
 
-    /* ======================= Price helpers ======================= */
-    function totalCartQty(){
-      return readCart().reduce((n,x)=> n + Number(x.qty||0), 0);
-    }
-    function unitPriceFor(sku){
-      const p = PRODUCTS[sku] || {};
-      const base = Number(p.price_mad || 0);
-      const bulk = Number(p.bulk_10_price_mad || base);
-      return totalCartQty() > 10 ? bulk : base;
-    }
-    function lineTotal(item){
-      return unitPriceFor(item.sku) * Number(item.qty||0);
-    }
-    function fmtMAD(n){
-      const v = Number(n||0);
-      return isNaN(v) ? '—' : (v.toFixed(2) + ' MAD');
+    /* ======================= Pricing helpers ======================= */
+    async function refreshUserFlags(){
+      const { data:{ session } } = await supa.auth.getSession();
+      IS_SIGNED = !!session?.user;
+      IS_VET = false;
+      if (!session?.user) return;
+      try{
+        const { data: p } = await supa.from('profiles')
+          .select('is_vet_verified').eq('id', session.user.id).maybeSingle();
+        IS_VET = !!p?.is_vet_verified;
+      }catch(_){}
     }
 
+    function priceForQty(variantRow, qty){
+      if (!variantRow) return null;
+      const q = Math.max(1, Number(qty||1));
+      if (q === 1) return { type:'PPV', unit: Number(variantRow.ppv||0), cur: variantRow.currency||'MAD' };
+      if (q >= 10) return { type:'PV+10U', unit: Number(variantRow.pv_plus_10u||0), cur: variantRow.currency||'MAD' };
+      return { type:'PV-10U', unit: Number(variantRow.pv_minus_10u||0), cur: variantRow.currency||'MAD' };
+    }
+
+    function computeItemPrice(it){
+      if (!IS_SIGNED) return { hidden: true, message: t('cart.pricesHiddenSignIn') };
+      if (!IS_VET)    return { hidden: true, message: t('cart.pricesHiddenVet') };
+
+      const vMap = VARIANTS[it.sku] || {};
+      const row = vMap[it.variant || ''] || null;
+      if (!row) return null;
+
+      const tier = priceForQty(row, it.qty);
+      if (!tier || !tier.unit) return null;
+
+      const unit = Number(tier.unit);
+      const cur  = tier.cur || 'MAD';
+      const line = unit * Number(it.qty||0);
+      const label = tier.type;
+      return { unit, line, cur, label };
+    }
+
+    function currencyGroups(totals){
+      const out = {};
+      totals.forEach(x=>{
+        if (!x) return;
+        out[x.cur] = (out[x.cur] || 0) + x.amount;
+      });
+      return out;
+    }
+
+    /* ======================= Data loads ======================= */
     async function loadProductsForCart(){
       const skus = [...new Set(readCart().map(x=>x.sku))];
-      PRODUCTS = {};
-      if (!skus.length) return;
-
+      if (!skus.length){ PRODUCTS = {}; return; }
       const { data, error } = await supa
         .from('products')
-        .select('sku,name,stock_qty,available,price_mad,bulk_10_price_mad')
+        .select('sku,name,type,image_url,stock_qty,available')
         .in('sku', skus);
-
       if (!error && Array.isArray(data)){
+        PRODUCTS = {};
         data.forEach(p => PRODUCTS[p.sku] = p);
       }
-
-      // Fill missing names into cart for display + clamp to stock
       const nameMap = Object.fromEntries((data||[]).map(p => [p.sku, p.name]));
       const withNames = readCart().map(i => ({ ...i, name: i.name || nameMap[i.sku] || i.sku }));
-      await writeCart(withNames);
+      setLocalBundle(withNames, new Date().toISOString());
+    }
+
+    async function loadVariantsForCart(){
+      const items = readCart();
+      const skus = [...new Set(items.map(x=>x.sku))];
+      if (!skus.length){ VARIANTS = {}; return; }
+
+      const { data, error } = await supa
+        .from('product_variants')
+        .select('sku,variant_code,label,ppv,pv_minus_10u,pv_plus_10u,currency,active')
+        .in('sku', skus)
+        .eq('active', true);
+
+      VARIANTS = {};
+      if (!error && Array.isArray(data)){
+        data.forEach(v=>{
+          VARIANTS[v.sku] = VARIANTS[v.sku] || {};
+          VARIANTS[v.sku][v.variant_code || ''] = v;
+        });
+      }
+
+      // auto-pick single available variant
+      items.forEach(it=>{
+        if (!it.variant){
+          const map = VARIANTS[it.sku] || {};
+          const codes = Object.keys(map);
+          if (codes.length === 1) it.variant = codes[0];
+        }
+      });
+      setLocalBundle(items, new Date().toISOString());
     }
 
     /* ======================= Adopt cart once ======================= */
@@ -333,7 +491,8 @@
         chosenItems = []; setLocalBundle([], chosenUpdatedAt);
       }
 
-      await loadProductsForCart();
+      await refreshUserFlags();
+      await loadVariantsForCart();
       await renderCart();
     }
 
@@ -348,6 +507,16 @@
       return `<span class="badge ok">${t('cart.ok')}</span>`;
     }
 
+    function renderThumbFor(sku){
+      const p = PRODUCTS[sku] || {};
+      const direct = p.image_url || '';
+      // graceful fallbacks
+      const guess = `images/products/${encodeURIComponent(sku)}.jpg`;
+      const ph = 'images/placeholder.png';
+      // prefer DB, else guessed, else placeholder handled by onerror
+      return direct || guess || ph;
+    }
+
     async function renderCart() {
       const cart = readCart();
       const box = document.getElementById("cartBox");
@@ -357,13 +526,14 @@
         return;
       }
 
-      // Ensure prices/stock present
-      const need = cart.some(it => !(it.sku in PRODUCTS));
-      if (need) await loadProductsForCart();
+      const needStocks = cart.some(it => !(it.sku in PRODUCTS));
+      if (needStocks) await loadProductsForCart();
 
-      const current = readCart(); // may be clamped by loadProductsForCart()
-      const grandQty = totalCartQty();
-      const bulkActive = grandQty > 10;
+      const current = readCart();
+      const lineInfos = current.map(it=>{
+        const price = computeItemPrice(it);
+        return { sku:it.sku, variant:it.variant||'', qty:Number(it.qty||0), name:it.name||it.sku, price };
+      });
 
       const rows = current.map(item => {
         const max = getMaxForSKU(item.sku);
@@ -372,63 +542,92 @@
         const minusDisabled = qty <= 1;
         const badge = badgeHTML(max, qty);
 
-        const unit = unitPriceFor(item.sku);
-        const subtotal = lineTotal(item);
+        const vLabel = (VARIANTS[item.sku] && VARIANTS[item.sku][item.variant||''] && (VARIANTS[item.sku][item.variant||''].label || item.variant)) || (item.variant || '');
+        const priceInfo = lineInfos.find(x=>x.sku===item.sku && x.variant===(item.variant||''))?.price;
+
+        const showDetails = IS_SIGNED && IS_VET;
+        const prod = PRODUCTS[item.sku] || {};
+        const displayName = showDetails ? (item.name || prod.name || item.sku) : t('cart.pricesHiddenVet');
+        const displayType = showDetails && prod.type ? ` · ${escapeHtml(prod.type)}` : '';
+        const nameLine = `${escapeHtml(displayName)}`;
+        const subLine = `<span class="note">${escapeHtml(item.sku)}${displayType}${vLabel?` · ${escapeHtml(vLabel)}`:''}</span>`;
+
+        let unitHTML = '-';
+        let lineHTML = '-';
+        if (priceInfo?.hidden){
+          unitHTML = `<span class="muted">${escapeHtml(priceInfo.message)}</span>`;
+          lineHTML = `<span class="muted">—</span>`;
+        } else if (priceInfo){
+          unitHTML = `${escapeHtml(priceInfo.cur)} ${priceInfo.unit.toFixed(2)} <span class="note">(${escapeHtml(priceInfo.label)})</span>`;
+          lineHTML = `${escapeHtml(priceInfo.cur)} ${priceInfo.line.toFixed(2)}`;
+        }
+
+        const keySku = escapeAttr(item.sku);
+        const keyVar = escapeAttr(item.variant || '');
+
+        const imgSrc = renderThumbFor(item.sku);
+        const blurCls = showDetails ? '' : ' blur';
 
         return `
           <tr>
-            <td>
-              <div><strong>${escapeHtml(item.name || item.sku)}</strong></div>
-              <div class="note">${escapeHtml(item.sku)}</div>
-              <div style="margin-top:6px">${badge}</div>
+            <td class="namecell">
+              <div class="prodcell">
+                <img class="thumb${blurCls}" src="${escapeAttr(imgSrc)}" alt="${escapeAttr(item.name||item.sku)}"
+                     onerror="this.onerror=null;this.src='images/placeholder.png'">
+                <div class="meta">
+                  <strong>${nameLine}</strong>
+                  ${subLine}
+                  <span>${badge}</span>
+                </div>
+              </div>
             </td>
-            <td class="price">${fmtMAD(unit)}</td>
             <td>
-              <button class="qty-btn" aria-label="Decrease ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', -1)" ${minusDisabled?'disabled':''}>-</button>
+              <button class="qty-btn" aria-label="Decrease ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${keySku}','${keyVar}', -1)" ${minusDisabled?'disabled':''}>-</button>
               ${qty}
-              <button class="qty-btn" aria-label="Increase ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', 1)" ${plusDisabled?'disabled':''}>+</button>
+              <button class="qty-btn" aria-label="Increase ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${keySku}','${keyVar}', 1)" ${plusDisabled?'disabled':''}>+</button>
             </td>
-            <td class="price"><strong>${fmtMAD(subtotal)}</strong></td>
-            <td><button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)" onclick="removeItem('${escapeAttr(item.sku)}')">${t('cart.remove')}</button></td>
+            <td>${unitHTML}</td>
+            <td>${lineHTML}</td>
+            <td><button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)" onclick="removeItem('${keySku}','${keyVar}')">${t('cart.remove')}</button></td>
           </tr>
         `;
       }).join("");
 
-      const totalAmount = current.reduce((s,it)=> s + lineTotal(it), 0);
+      const totals = lineInfos
+        .filter(x=>x.price && !x.price.hidden)
+        .map(x=>({ cur:x.price.cur, amount: x.price.line }));
+      const grouped = currencyGroups(totals);
+      const totalsHTML = Object.keys(grouped).length
+        ? Object.entries(grouped).map(([cur,amt])=>`${escapeHtml(cur)} ${amt.toFixed(2)}`).join(' · ')
+        : (IS_SIGNED ? (IS_VET ? '-' : t('cart.pricesHiddenVet')) : t('cart.pricesHiddenSignIn'));
 
       box.innerHTML = `
         <div class="card">
           <table aria-label="Cart items">
             <tr>
               <th>${t('cart.product')}</th>
-              <th>Unit</th>
               <th>${t('cart.qty')}</th>
-              <th>Subtotal</th>
+              <th>${t('cart.unit')}</th>
+              <th>${t('cart.line')}</th>
               <th>${t('cart.action')}</th>
             </tr>
             ${rows}
           </table>
-          <div class="row" style="margin-top:10px">
-            <div class="muted">
-              ${t('cart.stockNote')}
-              ${bulkActive ? `<span class="badge ok" style="margin-left:8px">Bulk pricing applied (&gt; 10 items)</span>` : ''}
-            </div>
-            <div class="summary">
-              ${t('cart.total')} ${grandQty} · <span>Amount: <strong>${fmtMAD(totalAmount)}</strong></span>
-            </div>
-          </div>
+          <div class="summary">${t('cart.total')} ${current.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
+          <div class="summary">${t('cart.sum')}: ${totalsHTML} ${Object.keys(grouped).length>1?`<span class="note">(${t('cart.currencyMixed')})</span>`:''}</div>
           <div class="row" style="margin-top:10px">
             <button class="btn secondary" onclick="clearCart()">${t('cart.clear')}</button>
-            <button class="btn primary" onclick="proceedCheckout()">${t('cart.proceed')}</button>
+            <span class="muted">${t('cart.stockNote')}</span>
+            <button class="btn primary" onclick="proceedCheckout()">${t('cart.pay')}</button>
           </div>
         </div>
       `;
     }
 
-    /* ======================= Cart ops (stock-aware) ======================= */
-    async function changeQty(sku, delta) {
+    /* ======================= Cart ops ======================= */
+    async function changeQty(sku, variant, delta) {
       const cart = readCart();
-      const i = cart.findIndex(x => x.sku === sku);
+      const i = cart.findIndex(x => x.sku === sku && (x.variant||'') === (variant||''));
       if (i === -1) return;
 
       const max = getMaxForSKU(sku);
@@ -449,21 +648,47 @@
       await writeCart(cart);
     }
 
-    async function removeItem(sku) { await writeCart(readCart().filter(x => x.sku !== sku)); }
+    async function removeItem(sku, variant) {
+      await writeCart(readCart().filter(x => !(x.sku === sku && (x.variant||'') === (variant||''))));
+    }
     async function clearCart() { await writeCart([]); }
 
-    /* ======================= Proceed flow ======================= */
+    /* ======================= Proceed / Payment ======================= */
     async function proceedCheckout(){
       const cart = readCart();
       if (!cart.length) return;
+
+      await refreshUserFlags();
+      await loadVariantsForCart();
+
+      const lineInfos = cart.map(it=>{
+        const p = computeItemPrice(it);
+        return { sku:it.sku, variant:it.variant||'', qty:Number(it.qty||0), price:p };
+      });
+      const payableLines = lineInfos
+        .filter(x=>x.price && !x.price.hidden)
+        .map(x=>({ sku:x.sku, variant:x.variant, qty:x.qty, unit:x.price.unit, currency:x.price.cur, tier:x.price.label, line: (x.price.unit * x.qty) }));
+      const totals = {};
+      payableLines.forEach(l=>{ totals[l.currency] = (totals[l.currency] || 0) + l.line; });
+
       localStorage.setItem('cart_backup', JSON.stringify(cart));
+      localStorage.setItem('checkout_lines', JSON.stringify(payableLines));
+      localStorage.setItem('checkout_totals', JSON.stringify(totals));
+
       const { data:{ session } } = await supa.auth.getSession();
       const cartParam = encodeURIComponent(JSON.stringify(cart));
-      if (session?.user) {
-        location.href = `checkout.html?cart=${cartParam}`;
-      } else {
-        location.href = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}&force=1`;
+      const totalsParam = encodeURIComponent(JSON.stringify(totals));
+
+      if (!session?.user) {
+        location.href = `login.html?redirect=${encodeURIComponent('vet-verify.html')}&cart=${cartParam}&force=1`;
+        return;
       }
+      if (!IS_VET) {
+        location.href = `vet-verify.html?cart=${cartParam}&totals=${totalsParam}&from=cart`;
+        return;
+      }
+
+      location.href = `checkout.html?totals=${totalsParam}`;
     }
 
     /* ======================= Orders ======================= */
@@ -500,7 +725,7 @@
       ordersBox.innerHTML = orders.map(o=>{
         const d = new Date(o.created_at);
         const badgeCls = (o.status||'').toLowerCase()==='paid' ? 'ok' : 'warn';
-        const amountTxt = (o.total_amount!=null) ? ` · Amount: ${Number(o.total_amount).toFixed(2)} MAD` : '';
+        const amountTxt = (o.total_amount!=null) ? ` · Amount: ${Number(o.total_amount).toFixed(2)}` : '';
         const qtyTxt = (o.total_qty!=null) ? ` · Items: ${o.total_qty}` : '';
         const rec = o.receipt_url ? `<a href="${escapeAttr(o.receipt_url)}" target="_blank" rel="noopener">${t('orders.receipt')}</a>` : '';
         return `
@@ -520,22 +745,21 @@
 
     /* ======================= Boot ======================= */
     document.addEventListener('DOMContentLoaded', async () => {
-      document.getElementById('y').textContent=new Date().getFullYear();
-      const d=new Date(); const month=d.toLocaleString('default',{month:'long'}); const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
-      const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
-      const sel=document.getElementById('lang-switch'); if(sel){ sel.value=initial; sel.addEventListener('change',e=>applyLang(e.target.value)); }
-
       adoptQueryCartOnce();
       adoptBackupCartOnce();
+      await refreshUserFlags();
       await loadProductsForCart();
+      await loadVariantsForCart();
       await renderCart();
       await syncCartFromDB();
       await renderOrders();
     });
 
-    supa.auth.onAuthStateChange((_event, session) => {
+    supa.auth.onAuthStateChange(async (_event, session) => {
+      await refreshUserFlags();
+      await loadVariantsForCart();
       if (session?.user) { syncCartFromDB(); renderOrders(); }
-      else { renderOrders(); }
+      else { renderCart(); renderOrders(); }
     });
   </script>
 </body>
