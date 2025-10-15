@@ -17,6 +17,7 @@
     .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.06);color:var(--text);text-decoration:none;display:inline-block;cursor:pointer}
     .warn{background:rgba(255,200,120,.12)}
     .err{color:#ffd2d2}
+    .price{white-space:nowrap}
   </style>
 </head>
 <body>
@@ -33,6 +34,8 @@
       <section class="card">
         <h3>Items</h3>
         <div id="items"></div>
+        <div class="row" style="margin-top:10px"><div>Total items</div><div id="sumQty" class="muted">0</div></div>
+        <div class="row" style="margin-top:6px"><div>Total amount</div><div id="sumAmt" class="price">—</div></div>
       </section>
     </div>
 
@@ -61,11 +64,14 @@
     const btnCancel = document.getElementById('btnCancel');
     const btnEdit = document.getElementById('btnEdit');
     const btnBack = document.getElementById('btnBack');
+    const sumQty = document.getElementById('sumQty');
+    const sumAmt = document.getElementById('sumAmt');
     const fmt = (dt)=>{ try{ return new Date(dt).toLocaleString(); }catch{ return dt||'-'; } };
+    const fmtMAD = (n)=>{ const v=Number(n||0); return isNaN(v)?'—':(v.toFixed(2)+' MAD'); };
 
     btnBack.addEventListener('click', ()=>{
       if (history.length > 1) history.back();
-      else location.href = 'my-order.html';
+      else location.href = 'my-orders.html'; // fixed
     });
 
     async function load(){
@@ -80,7 +86,6 @@
           return;
         }
 
-        // Get the order (RLS should enforce ownership; we also filter by id)
         const { data:o, error:oErr } = await supa.from('orders').select('*').eq('id', ORDER_ID).maybeSingle();
         if (oErr) { meta.innerHTML = `<span class="err">${oErr.message}</span>`; return; }
         if (!o) { meta.innerHTML = '<span class="err">Order not found.</span>'; return; }
@@ -97,10 +102,19 @@
         `;
 
         const { data:its, error:itErr } = await supa.from('order_items').select('*').eq('order_id', ORDER_ID);
-        if (itErr) { items.innerHTML = `<div class="err">${itErr.message}</div>`; }
-        else {
-          items.innerHTML = (its||[]).map(it=>`<div class="row"><div>${it.product_name||it.product_sku}</div><div>x${it.quantity}</div></div>`).join('') || '<div class="muted">No items</div>';
-        }
+        if (itErr) { items.innerHTML = `<div class="err">${itErr.message}</div>`; return; }
+
+        let tq=0, ta=0;
+        items.innerHTML = (its||[]).map(it=>{
+          const q = Number(it.quantity||0);
+          const up = Number(it.unit_price||0);
+          const lt = Number(it.line_total ?? (up*q));
+          tq += q; ta += lt;
+          return `<div class="row"><div>${it.product_name||it.product_sku}</div><div class="price">${fmtMAD(up)} × ${q} = <strong>${fmtMAD(lt)}</strong></div></div>`;
+        }).join('') || '<div class="muted">No items</div>';
+
+        sumQty.textContent = tq;
+        sumAmt.textContent = fmtMAD(ta);
 
         btnEdit.href = `order-pay.html?order=${encodeURIComponent(ORDER_ID)}`;
 
@@ -111,7 +125,6 @@
             const { error } = await supa.from('orders').update({ status:'cancelled' }).eq('id', ORDER_ID);
             if(error){ msg.textContent = error.message; return; }
             msg.textContent = 'Order cancelled.';
-            // Reload just this page to reflect status
             setTimeout(()=>location.reload(), 700);
           }catch(e){ msg.textContent = e.message || 'Could not cancel.'; }
         };
