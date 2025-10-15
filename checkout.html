@@ -60,7 +60,7 @@
     .btn.wide{width:100%}
     .btn[disabled]{opacity:.55;cursor:not-allowed}
     .table{width:100%;border-collapse:collapse}
-    .table th,.table td{padding:10px;border-bottom:1px solid rgba(141,158,199,.15);text-align:left;vertical-align:middle}
+    .table th,.table td{padding:10px;border-bottom:1px solid rgba(141,158,199,.15);text-align:left}
     .badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem}
     .ok{background:rgba(131,240,165,.12)}
     .warn{background:rgba(255,200,120,.12)}
@@ -99,13 +99,6 @@
     body.rtl .links a{text-align:right}
     body.rtl .grid, body.rtl .pro-grid{direction:rtl}
     body.rtl label{text-align:right}
-
-    /* NEW: tiny thumbnail style */
-    .thumb{
-      width:56px;height:56px;object-fit:cover;border-radius:10px;
-      border:1px solid rgba(141,158,199,.2);display:block
-    }
-    .itemcell{display:flex;gap:10px;align-items:center}
   </style>
 
   <!-- SAFETY SHIM (prevents crashes if i18n not loaded yet) -->
@@ -174,7 +167,7 @@
         "place.okAll":"Pedido realizado. Te avisaremos tras la revisión.",
         "contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Escríbenos","contact.reachText":"Encantados de ayudar con dudas de producto, disponibilidad o comentarios.",
         "form.topic":"Tema","form.email":"Correo electrónico","form.country":"País","form.phone":"Teléfono (opcional)","form.name":"Nombre","form.subject":"Asunto","form.message":"Mensaje / Comentarios",
-        "form.namePH":"Nombre completo","form.emailPH":"nombre@ejemplo.com","form.countryPH":"País (optional)","form.phonePH":"+212 537742213","form.subjectPH":"Consulta sobre un producto…","form.messagePH":"Escribe tu solicitud…",
+        "form.namePH":"Nombre completo","form.emailPH":"nombre@ejemplo.com","form.countryPH":"País (opcional)","form.phonePH":"+212 537742213","form.subjectPH":"Consulta sobre un producto…","form.messagePH":"Escribe tu solicitud…",
         "form.phoneHint":"Se permiten dígitos, espacios y +() -","form.consent":"Autorizo a VetoCos a usar mis datos para responder a esta consulta.","form.privacyNote":"Tu mensaje se envía con tu aplicación de correo; no lo almacenamos.","form.cancel":"Cancelar","form.send":"Enviar",
         "policy.title":"Privacidad y Política","policy.close":"Cerrar","policy.overviewTitle":"Resumen","policy.overviewText":"VetoCos ofrece complementos alimentarios…","policy.dataTitle":"Datos que podemos recibir","policy.data1":"Mensajes enviados…","policy.data2":"Analítica básica anónima…","policy.useTitle":"Cómo usamos los datos","policy.use1":"Responder a tus solicitudes…","policy.use2":"No vendemos datos personales…","policy.cookiesTitle":"Cookies","policy.cookiesText":"Usamos solo cookies esenciales…","policy.choiceTitle":"Tus opciones","policy.choice1":"Puedes pedir que eliminemos tus datos…","policy.choice2":"Puedes desactivar las cookies…","policy.contactTitle":"Contacto","policy.contactText":"Para privacidad, usa el enlace de Contacto…","policy.updated":"Última actualización:",
         "price.unit":"Precio unitario","price.line":"Total de línea","price.hidden.sign":"Inicia sesión para ver precios","price.hidden.vet":"Verifica tu condición veterinaria para ver precios","price.mixed":"*Totales por divisa"
@@ -519,14 +512,6 @@ const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
 });
 const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
 
-/* ================== Storage helper for product images ================== */
-const PRODUCT_BUCKET = "ProductFiles";
-function filePublicUrl(path){
-  if(!path) return null;
-  const p = String(path).replace(/^ProductFiles\//,'');
-  return `${SUPABASE_URL}/storage/v1/object/public/${PRODUCT_BUCKET}/${encodeURI(p)}`;
-}
-
 /* ================== Header auth & nav ================== */
 const signInBtn  = document.getElementById('signInBtn');
 const signUpBtn  = document.getElementById('signUpBtn');
@@ -610,7 +595,7 @@ function updateCartBadge(){
 }
 
 let USER=null, PROFILE=null, CART=[];
-let PRODUCTS={};         // sku -> {sku,name,stock_qty,available,image_path}
+let PRODUCTS={};         // sku -> {sku,name,stock_qty,available}
 let APPROVALS={};        // sku -> approvedQty
 let VARIANTS = {};       // sku -> { code -> variantRow }
 let IS_VET = false;      // profiles.is_vet_verified
@@ -639,13 +624,6 @@ function groupTotals(lines){ // [{cur, amount}]
 }
 
 /* ====== Rendering ====== */
-function productThumb(sku){
-  const p = PRODUCTS[sku] || {};
-  const url = p.image_path ? filePublicUrl(p.image_path) : '';
-  if (!url) return `<div class="thumb" style="display:grid;place-items:center;font-size:.7rem;opacity:.6">—</div>`;
-  return `<img class="thumb" src="${url}" alt="${p.name||sku}">`;
-}
-
 function renderCart(){
   if(!CART.length){
     cartBox.innerHTML = `<div class="muted" data-i18n="cart.empty">${t("cart.empty")}</div>`;
@@ -673,14 +651,9 @@ function renderCart(){
     else if (price){ unitHTML = `${price.cur} ${price.unit.toFixed(2)} <span class="muted small">(${price.label})</span>`; lineHTML = `${price.cur} ${price.line.toFixed(2)}`; }
 
     return `<tr>
-      <td style="width:64px">${productThumb(sku)}</td>
-      <td style="max-width:420px">
-        <div class="itemcell">
-          <div>
-            <strong>${it.name||sku}</strong>
-            <div class="muted small">${t("ui.sku")}${sku}${vLabel?` · ${vLabel}`:''}</div>
-          </div>
-        </div>
+      <td style="max-width:380px">
+        <strong>${it.name||sku}</strong>
+        <div class="muted small">${t("ui.sku")}${sku}${vLabel?` · ${vLabel}`:''}</div>
       </td>
       <td>${qty}</td>
       <td>${unitHTML}</td>
@@ -692,7 +665,7 @@ function renderCart(){
   cartBox.innerHTML = `
     <table class="table" aria-describedby="cart summary">
       <thead><tr>
-        <th></th><th>Product</th><th>Qty</th><th>${t('price.unit')}</th><th>${t('price.line')}</th><th>Status</th>
+        <th>Product</th><th>Qty</th><th>${t('price.unit')}</th><th>${t('price.line')}</th><th>Status</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
@@ -788,7 +761,7 @@ async function loadProfile(){
 async function loadProductsForCart(){
   const skus = [...new Set(CART.map(x=>x.sku))];
   if (!skus.length) return;
-  const { data, error } = await supa.from('products').select('sku,name,stock_qty,available,image_path').in('sku', skus);
+  const { data, error } = await supa.from('products').select('sku,name,stock_qty,available').in('sku', skus);
   if (error) throw new Error(error.message);
   PRODUCTS={}; (data||[]).forEach(p=>PRODUCTS[p.sku]=p);
 }
@@ -874,13 +847,13 @@ async function placeOrder(){
       user_id: user.id, email, status:'pending',
       total_qty: eligibleItems.reduce((n,x)=>n+Number(x.qty||0),0),
       total_amount: Object.keys(totals).length===1 ? Object.values(totals)[0] : null,
-      amounts_by_currency: totals
+      amounts_by_currency: totals // JSONB if available; will be ignored if column doesn't exist
     };
 
     let res = await supa.from('orders').insert([basePayload]).select('id').single();
     orderRow = res.data; orderErr = res.error;
 
-    // Fallback if schema requires product_sku
+    // Fallback in case schema enforces product_sku (legacy)
     if (!orderRow && orderErr && /product_sku/i.test(orderErr.message || '')){
       const first = eligibleItems[0];
       res = await supa.from('orders').insert([{ ...basePayload, product_sku:first?.sku||'unknown' }]).select('id').single();
@@ -940,8 +913,8 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
     await ensureLogin();
     await loadProfile();
-    await loadProductsForCart();   // now also pulls image_path
-    await loadVariantsForCart();   // for price tiers
+    await loadProductsForCart();
+    await loadVariantsForCart();
     await loadApprovalsForCart();
 
     const { ineligible, issues } = computeEligibility();
