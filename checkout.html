@@ -622,7 +622,16 @@ function priceTierForQty(row, qty){
   if (q >= 10) return { unit: Number(row.pv_plus_10u||0), label: 'PV+10U', cur: row.currency||'MAD' };
   return { unit: Number(row.pv_minus_10u||0), label: 'PV-10U', cur: row.currency||'MAD' };
 }
+/* ====== Pricing helpers (updated to NOT require vet verification) ====== */
+function priceTierForQty(row, qty){
+  const q = Math.max(1, Number(qty||1));
+  if (q === 1) return { unit: Number(row.ppv||0),         label: 'PPV',      cur: row.currency||'MAD' };
+  if (q >= 10) return { unit: Number(row.pv_plus_10u||0), label: 'PV+10U',   cur: row.currency||'MAD' };
+  return         { unit: Number(row.pv_minus_10u||0),     label: 'PV-10U',   cur: row.currency||'MAD' };
+}
+
 function computeItemPrice(it){
+  // Only hide price if NOT logged in. Vet verification no longer blocks prices at checkout.
   if (!IS_LOGGED_IN) return { hidden:true, message: t('price.hidden.sign') };
 
   const vMap = VARIANTS[it.sku] || {};
@@ -632,7 +641,7 @@ function computeItemPrice(it){
   const tier = priceTierForQty(row, it.qty);
   const unit = Number(tier.unit||0);
   const line = unit * Number(it.qty||0);
-  return { unit, line, cur: tier.cur, label: tier.label };
+  return { unit, line, cur:tier.cur, label:tier.label };
 }
 
 function groupTotals(lines){ // [{cur, amount}]
@@ -640,20 +649,15 @@ function groupTotals(lines){ // [{cur, amount}]
   return out;
 }
 
-/* ====== Rendering ====== */
-function productThumb(sku){
-  const p = PRODUCTS[sku] || {};
-  const url = p.image_path ? filePublicUrl(p.image_path) : '';
-  if (!url) return `<div class="thumb" style="display:grid;place-items:center;font-size:.7rem;opacity:.6">—</div>`;
-  return `<img class="thumb" src="${url}" alt="${p.name||sku}">`;
-}
-
+/* ====== Rendering (updated totals branch) ====== */
 function renderCart(){
-  if (!totals.length){
-  sumTotal.textContent = (!IS_LOGGED_IN ? t('price.hidden.sign') : '—');
-} else {
-  // (unchanged)
-}
+  if(!CART.length){
+    cartBox.innerHTML = `<div class="muted" data-i18n="cart.empty">${t("cart.empty")}</div>`;
+    sumItems.textContent='0'; 
+    sumTotal.textContent='—'; 
+    btnOrder.disabled=true; 
+    return;
+  }
   btnOrder.disabled=false;
 
   const rows = CART.map(it=>{
@@ -666,24 +670,26 @@ function renderCart(){
     // stock flags
     const flags = [];
     if (prod.available === false) flags.push(`<span class="badge bad">${t("status.unavailable")}</span>`);
-    if (typeof prod.stock_qty === 'number' && prod.stock_qty < qty) flags.push(`<span class="badge warn">${t("status.only").replace("__N__", String(prod.stock_qty|0))}</span>`);
+    if (typeof prod.stock_qty === 'number' && prod.stock_qty < qty) {
+      flags.push(`<span class="badge warn">${t("status.only").replace("__N__", String(prod.stock_qty|0))}</span>`);
+    }
     const ok = (!flags.length) ? `<span class="badge ok">${t("status.ok")}</span>` : flags.join(' ');
 
     // pricing
     const price = computeItemPrice(it);
     let unitHTML='—', lineHTML='—';
-    if (price?.hidden){ unitHTML = `<span class="muted small">${price.message}</span>`; lineHTML='—'; }
-    else if (price){ unitHTML = `${price.cur} ${price.unit.toFixed(2)} <span class="muted small">(${price.label})</span>`; lineHTML = `${price.cur} ${price.line.toFixed(2)}`; }
+    if (price?.hidden){
+      unitHTML = `<span class="muted small">${price.message}</span>`;
+      lineHTML = '—';
+    } else if (price){
+      unitHTML = `${price.cur} ${price.unit.toFixed(2)} <span class="muted small">(${price.label})</span>`;
+      lineHTML = `${price.cur} ${price.line.toFixed(2)}`;
+    }
 
     return `<tr>
-      <td style="width:64px">${productThumb(sku)}</td>
-      <td style="max-width:420px">
-        <div class="itemcell">
-          <div>
-            <strong>${it.name||sku}</strong>
-            <div class="muted small">${t("ui.sku")}${sku}${vLabel?` · ${vLabel}`:''}</div>
-          </div>
-        </div>
+      <td style="max-width:380px">
+        <strong>${it.name||sku}</strong>
+        <div class="muted small">${t("ui.sku")}${sku}${vLabel?` · ${vLabel}`:''}</div>
       </td>
       <td>${qty}</td>
       <td>${unitHTML}</td>
@@ -695,7 +701,7 @@ function renderCart(){
   cartBox.innerHTML = `
     <table class="table" aria-describedby="cart summary">
       <thead><tr>
-        <th></th><th>Product</th><th>Qty</th><th>${t('price.unit')}</th><th>${t('price.line')}</th><th>Status</th>
+        <th>Product</th><th>Qty</th><th>${t('price.unit')}</th><th>${t('price.line')}</th><th>Status</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
@@ -710,11 +716,14 @@ function renderCart(){
     return (p && !p.hidden) ? { cur:p.cur, amount:p.line } : null;
   }).filter(Boolean);
 
+  // === This is the part you asked for, written out fully ===
   if (!totals.length){
-    sumTotal.textContent = (!IS_LOGGED_IN ? t('price.hidden.sign') : (!IS_VET ? t('price.hidden.vet') : '—'));
+    sumTotal.textContent = (!IS_LOGGED_IN ? t('price.hidden.sign') : '—');
   } else {
     const grouped = groupTotals(totals);
-    const txt = Object.entries(grouped).map(([cur,amt])=>`${cur} ${amt.toFixed(2)}`).join(' · ');
+    const txt = Object.entries(grouped)
+      .map(([cur,amt])=>`${cur} ${amt.toFixed(2)}`)
+      .join(' · ');
     sumTotal.textContent = txt + (Object.keys(grouped).length>1?`  (${t('price.mixed')})`:``);
   }
 }
