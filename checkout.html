@@ -624,15 +624,17 @@ function priceTierForQty(row, qty){
 }
 function computeItemPrice(it){
   if (!IS_LOGGED_IN) return { hidden:true, message: t('price.hidden.sign') };
-  if (!IS_VET)       return { hidden:true, message: t('price.hidden.vet') };
+
   const vMap = VARIANTS[it.sku] || {};
   const row  = vMap[it.variant||''] || null;
   if (!row) return null;
+
   const tier = priceTierForQty(row, it.qty);
   const unit = Number(tier.unit||0);
   const line = unit * Number(it.qty||0);
-  return { unit, line, cur:tier.cur, label:tier.label };
+  return { unit, line, cur: tier.cur, label: tier.label };
 }
+
 function groupTotals(lines){ // [{cur, amount}]
   const out={}; lines.forEach(x => { out[x.cur] = (out[x.cur]||0) + x.amount; });
   return out;
@@ -647,10 +649,11 @@ function productThumb(sku){
 }
 
 function renderCart(){
-  if(!CART.length){
-    cartBox.innerHTML = `<div class="muted" data-i18n="cart.empty">${t("cart.empty")}</div>`;
-    sumItems.textContent='0'; sumTotal.textContent='—'; btnOrder.disabled=true; return;
-  }
+  if (!totals.length){
+  sumTotal.textContent = (!IS_LOGGED_IN ? t('price.hidden.sign') : '—');
+} else {
+  // (unchanged)
+}
   btnOrder.disabled=false;
 
   const rows = CART.map(it=>{
