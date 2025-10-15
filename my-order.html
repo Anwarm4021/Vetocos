@@ -46,9 +46,10 @@
           return;
         }
 
+        // Explicitly filter by user_id to avoid any RLS surprises
         const { data: orders, error } = await supa
           .from('orders')
-          .select('id,status,created_at,updated_at,delivery_method,payment_method,total_qty,total_amount')
+          .select('id,status,created_at,updated_at,delivery_method,payment_method')
           .eq('user_id', user.id)
           .order('created_at', { ascending:false });
 
@@ -58,6 +59,7 @@
           return;
         }
 
+        // Count items per order
         const ids = orders.map(o=>o.id);
         const { data: items, error:itemsErr } = await supa
           .from('order_items')
@@ -73,7 +75,7 @@
         const rows = [
           `<div class="row head"><div>Order</div><div>Status</div><div>Items</div><div>Updated</div><div>Action</div></div>`,
           ...orders.map(o=>{
-            const n = countMap[o.id] || o.total_qty || 0;
+            const n = countMap[o.id] || 0;
             const idShort = String(o.id).slice(0,8);
             return `<div class="row">
               <div><strong>#${idShort}</strong><div class="muted">${fmt(o.created_at)}</div></div>
