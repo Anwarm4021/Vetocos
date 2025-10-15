@@ -776,15 +776,38 @@ async function ensureLogin(){
   USER = user;
   return user;
 }
+
 async function loadProfile(){
-  const { data, error } = await supa.from('profiles')
+  // current user
+  const { data: { user } } = await supa.auth.getUser();
+  if (!user) throw new Error('No session');
+
+  // try by id first
+  let { data, error } = await supa
+    .from('profiles')
     .select('id,first_name,last_name,email,can_purchase,is_vet_verified')
-    .eq('id', USER.id).maybeSingle();
-  if (error) throw new Error(error.message);
-  PROFILE = data || { id: USER.id, email: USER.email, can_purchase:false, is_vet_verified:false };
-  IS_VET = !!PROFILE.is_vet_verified;
-  userInfo.textContent = `${PROFILE.first_name||''} ${PROFILE.last_name||''} · ${PROFILE.email||USER.email||''}`.trim();
+    .eq('id', user.id)
+    .maybeSingle();
+
+  // fallback: try by email (helps if the row was created with email only)
+  if ((!data || error) && user.email){
+    const tryEmail = await supa
+      .from('profiles')
+      .select('id,first_name,last_name,email,can_purchase,is_vet_verified')
+      .eq('email', user.email)
+      .order('id', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (tryEmail.data) data = tryEmail.data;
+  }
+
+  PROFILE = data || { id: user.id, email: user.email, can_purchase:false, is_vet_verified:false };
+  IS_VET  = !!PROFILE.is_vet_verified;
+
+  const full = [PROFILE.first_name, PROFILE.last_name].filter(Boolean).join(' ').trim();
+  userInfo.textContent = `${full || ''} ${full ? '· ' : ''}${PROFILE.email || user.email || ''}`;
 }
+
 async function loadProductsForCart(){
   const skus = [...new Set(CART.map(x=>x.sku))];
   if (!skus.length) return;
