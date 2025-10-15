@@ -19,6 +19,7 @@
     .muted{color:var(--muted)}
     .badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem}
     .hidden{display:none}
+    .price{white-space:nowrap}
   </style>
 </head>
 <body>
@@ -76,6 +77,8 @@
       <aside class="card">
         <h3>Items</h3>
         <div id="items"></div>
+        <div class="row" style="margin-top:10px"><div>Total items</div><div id="sumQty" class="badge">0</div></div>
+        <div class="row" style="margin-top:6px"><div>Total amount</div><div id="sumAmt" class="price">—</div></div>
       </aside>
     </div>
   </div>
@@ -107,12 +110,15 @@
       postal: document.getElementById('postal'),
       btnCancel: document.getElementById('btnCancel'),
       btnContinue: document.getElementById('btnContinue'),
-      btnBack: document.getElementById('btnBack')
+      btnBack: document.getElementById('btnBack'),
+      sumQty: document.getElementById('sumQty'),
+      sumAmt: document.getElementById('sumAmt')
     };
 
     els.btnBack.addEventListener('click', ()=> location.assign('cart.html'));
 
-    // Toggle address fields when pickup is chosen
+    function fmtMAD(n){ const v=Number(n||0); return isNaN(v)?'—':(v.toFixed(2)+' MAD'); }
+
     function toggleAddress(){
       const isPickup = els.delivery.value === 'pickup';
       els.addressBlock.style.display = isPickup ? 'none' : 'block';
@@ -122,10 +128,24 @@
     async function load(){
       const { data: o } = await supa.from('orders').select('*').eq('id', ORDER_ID).maybeSingle();
       if(!o){ location.replace('checkout.html'); return; }
-      els.meta.textContent = `Order ${ORDER_ID.slice(0,8)} • Status: ${o.status}`;
+      els.meta.textContent = `Order ${String(ORDER_ID).slice(0,8)} • Status: ${o.status}`;
 
       const { data: items } = await supa.from('order_items').select('*').eq('order_id', ORDER_ID);
-      els.items.innerHTML = (items||[]).map(it=>`<div class="row" style="justify-content:space-between"><div>${it.product_name||it.product_sku}</div><div class="badge">x${it.quantity}</div></div>`).join('');
+      let totalQty = 0, totalAmt = 0;
+
+      els.items.innerHTML = (items||[]).map(it=>{
+        const q = Number(it.quantity||0);
+        const up = Number(it.unit_price||0);
+        const lt = Number(it.line_total ?? (up*q));
+        totalQty += q; totalAmt += lt;
+        return `<div class="row" style="justify-content:space-between">
+          <div>${it.product_name||it.product_sku}</div>
+          <div class="price">${fmtMAD(up)} × ${q} = <strong>${fmtMAD(lt)}</strong></div>
+        </div>`;
+      }).join('');
+
+      els.sumQty.textContent = totalQty;
+      els.sumAmt.textContent = fmtMAD(totalAmt);
 
       // Prefill from order or session
       const { data: ses } = await supa.auth.getUser();
@@ -160,7 +180,6 @@
         postal_code: isPickup ? null : (els.postal.value.trim() || null)
       };
 
-      // Basic validation
       if (!patch.full_name) { els.msg.textContent = 'Full name required'; return false; }
       if (!patch.email) { els.msg.textContent = 'Email required'; return false; }
       if (!patch.phone_number) { els.msg.textContent = 'Phone required'; return false; }
@@ -187,17 +206,7 @@
     els.btnContinue.addEventListener('click', async ()=>{
       const ok = await saveDetails();
       if(!ok) return;
-
-      // For COD / Card-on-delivery we keep status 'pending'
       await supa.from('orders').update({ status: 'pending' }).eq('id', ORDER_ID);
-
-      // OPTIONAL: send admin + buyer emails if you deployed the function:
-      // await fetch(`${SUPABASE_URL}/functions/v1/send-order-emails`,{
-      //   method:'POST',
-      //   headers:{ 'Content-Type':'application/json', 'Authorization': `Bearer ${SUPABASE_ANON}` },
-      //   body: JSON.stringify({ order_id: ORDER_ID })
-      // });
-
       const method = els.method.value;
       const way = els.delivery.value;
       location.assign(`thank-you.html?order=${encodeURIComponent(ORDER_ID)}&m=${method}&way=${way}`);
@@ -207,4 +216,3 @@
   </script>
 </body>
 </html>
-
