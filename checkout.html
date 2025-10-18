@@ -491,6 +491,17 @@ const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
 });
+  // Keep login state updated automatically
+supa.auth.onAuthStateChange((_event, session) => {
+  IS_LOGGED_IN = !!session?.user;
+  if (IS_LOGGED_IN) {
+    USER = session.user;
+  } else {
+    USER = null;
+  }
+  renderCart?.();  // re-render cart/prices when sign-in status changes
+});
+
 const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
 
 /* ================== Header auth & nav ================== */
@@ -866,6 +877,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
     // Must be logged in to check out
     await ensureLogin();
+    IS_LOGGED_IN = true;
     await loadProfile();
     await loadProductsForCart();   // pulls stock + prices
     await loadApprovalsForCart();
