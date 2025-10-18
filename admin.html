@@ -61,7 +61,7 @@
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a class="btn small" href="Products.html" target="_blank" rel="noopener">Open Products</a>
       <a class="btn small" href="news.html" target="_blank" rel="noopener">Open News</a>
-      <a class="btn small" href="history.html" target="_blank" rel="noopener">Open History</a>
+      <a class="btn small" id="historyBtn" href="history.html" target="_blank" rel="noopener" style="display:none">Open History</a>
       <a class="btn small" href="index.html">Home</a>
     </div>
   </div>
@@ -355,6 +355,19 @@ async function checkAdmin(){
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){ location.replace('index.html'); return false; }
   return true;
+}
+
+  async function showHistoryIfOrdersExist(){
+  try{
+    const { count, error } = await supa
+      .from('orders')
+      .select('id', { count: 'exact', head: true });
+
+    if (!error && (count || 0) > 0) {
+      const btn = document.getElementById('historyBtn');
+      if (btn) btn.style.display = 'inline-block';
+    }
+  }catch(_){}
 }
 
 /* =======================================================================
@@ -1449,6 +1462,15 @@ function subscribeRealtime(){
         toast('Cart changed'); if (DRAWER_USER_ID) loadDrawerCart(); loadUsers();
       })
       .subscribe();
+
+    // ⬇️ Add this block
+    supa.channel('rt_orders')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => {
+        const btn = document.getElementById('historyBtn');
+        if (btn) btn.style.display = 'inline-block';
+        toast('New order placed');
+      })
+      .subscribe();
   }catch{}
 }
 
@@ -1457,6 +1479,9 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   const ok = await checkAdmin();
   if (!ok) return;
   ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
+
+  // ⬇️ Add this:
+  await showHistoryIfOrdersExist();
 
   await Promise.all([ loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice() ]);
 
