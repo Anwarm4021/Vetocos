@@ -412,47 +412,48 @@ function applyLang(lang){
 }
 </script>
 
+<script>
+/* Modals + contact handlers (unchanged) */
+const contactModal = document.getElementById('contactModal');
+const policyModal  = document.getElementById('policyModal');
+function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+[contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
 
-    /* Modals + contact handlers (unchanged) */
-    const contactModal=document.getElementById('contactModal');
-    const policyModal=document.getElementById('policyModal');
-    function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
-    function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
-    function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
-    function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
-    [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+const toAddress = 'info@vetocos.com';
+function sendMailto(e){
+  e.preventDefault();
+  const topic   = document.getElementById('topic').value;
+  const name    = document.getElementById('name').value.trim();
+  const email   = document.getElementById('email').value.trim();
+  const country = document.getElementById('country').value.trim();
+  const phone   = document.getElementById('phone').value.trim();
+  const subject = document.getElementById('subject').value.trim() || 'Website enquiry';
+  const message = document.getElementById('message').value.trim();
+  if (!document.getElementById('consent').checked) return false;
 
-    const toAddress = 'info@vetocos.com';
-    function sendMailto(e){
-      e.preventDefault();
-      const topic   = document.getElementById('topic').value;
-      const name    = document.getElementById('name').value.trim();
-      const email   = document.getElementById('email').value.trim();
-      const country = document.getElementById('country').value.trim();
-      const phone   = document.getElementById('phone').value.trim();
-      const subject = document.getElementById('subject').value.trim() || 'Website enquiry';
-      const message = document.getElementById('message').value.trim();
-      if (!document.getElementById('consent').checked) return false;
+  const lines = [`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,country ? `Country: ${country}` : null,phone ? `Phone: ${phone}` : null,'',message].filter(Boolean).join('%0A');
+  const mailto = `mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
+  window.location.href = mailto; return false;
+}
 
-      const lines = [`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,country ? `Country: ${country}` : null,phone ? `Phone: ${phone}` : null,'',message].filter(Boolean).join('%0A');
-      const mailto = `mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
-      window.location.href = mailto; return false;
-    }
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById("y").textContent = new Date().getFullYear();
+  const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
+  const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
 
-    document.addEventListener('DOMContentLoaded', ()=>{
-      document.getElementById("y").textContent = new Date().getFullYear();
-      const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
-      const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+  const initial = localStorage.getItem("lang") || "en";
+  applyLang(initial);
+  const sel = document.getElementById("lang-switch");
+  if (sel){ sel.value = initial; sel.addEventListener("change", e => applyLang(e.target.value)); }
 
-      const initial = localStorage.getItem("lang") || "en";
-      applyLang(initial);
-      const sel = document.getElementById("lang-switch");
-      if (sel){ sel.value = initial; sel.addEventListener("change", e => applyLang(e.target.value)); }
+  const msg = document.getElementById('message'); const cnt = document.getElementById('msgCount');
+  if (msg && cnt){ const upd = () => { cnt.textContent = String(msg.value.length); }; msg.addEventListener('input', upd); upd(); }
+});
+</script>
 
-      const msg = document.getElementById('message'); const cnt = document.getElementById('msgCount');
-      if (msg && cnt){ const upd = () => { cnt.textContent = String(msg.value.length); }; msg.addEventListener('input', upd); upd(); }
-    });
-  </script>
 
   <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -1184,5 +1185,6 @@ function buildAdminForm(){
   </div>
 </body>
 </html>
+
 
 
