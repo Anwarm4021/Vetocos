@@ -53,7 +53,8 @@
     .divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
     .pill{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem;background:rgba(109,213,255,.12)}
     .captcha{display:flex;gap:10px;align-items:center}
-    body.rtl .wrap, body.rtl main, body.rtl .pro-grid{direction:rtl}
+    body.rtl { direction:rtl }
+    body.rtl header .wrap, body.rtl main, body.rtl footer{ direction:rtl }
     body.rtl label{text-align:right}
   </style>
 
@@ -69,12 +70,10 @@
       <span>VetoCos</span>
     </div>
     <nav class="links">
-      <button class="contact-btn" type="button" onclick="openContact()">Contact</button>
-      <select id="lang-switch" aria-label="Language">
-        <option value="en">English</option>
-        <option value="fr">Français</option>
-        <option value="es">Español</option>
-        <option value="ar">العربية</option>
+      <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
+      <select id="lang-switch" aria-label="Language" class="contact-btn">
+        <option value="en">English</option><option value="fr">Français</option>
+        <option value="es">Español</option><option value="ar">العربية</option>
       </select>
     </nav>
   </div>
@@ -82,103 +81,114 @@
 
 <main>
   <div class="card">
-    <h1 id="title">Sign in</h1>
-    <p id="kicker" class="muted">Use your email and password. Leave password empty to receive a magic link.</p>
+    <h1 id="title" data-i18n="auth.title">Sign in</h1>
+    <p id="kicker" class="muted" data-i18n="auth.kicker">Use your email and password. Leave password empty to receive a magic link.</p>
 
-    <label>Email</label>
-    <input id="email" type="email" class="input" placeholder="you@example.com" autocomplete="email"/>
+    <label data-i18n="auth.email">Email</label>
+    <input id="email" type="email" class="input" placeholder="you@example.com" autocomplete="email" data-i18n="auth.emailPH" data-i18n-attr="placeholder"/>
 
     <div id="pwWrap">
-      <label>Password <span class="muted">(optional for magic link)</span></label>
-      <input id="password" type="password" class="input" placeholder="••••••••" autocomplete="current-password"/>
+      <label data-i18n="auth.passwordLabel">Password <span class="muted">(optional for magic link)</span></label>
+      <input id="password" type="password" class="input" placeholder="••••••••" autocomplete="current-password" data-i18n="auth.passwordPH" data-i18n-attr="placeholder"/>
     </div>
 
     <!-- Simple math captcha -->
     <div class="row" style="margin-top:8px;align-items:center">
       <div class="pill" id="mathQ" aria-live="polite"></div>
-      <input id="mathA" class="input" style="max-width:140px" placeholder="Answer" inputmode="numeric" />
-      <button id="refreshCaptcha" class="btn" type="button" style="margin:0">↻</button>
+      <input id="mathA" class="input" style="max-width:140px" placeholder="Answer" inputmode="numeric" data-i18n="auth.captchaPH" data-i18n-attr="placeholder"/>
+      <button id="refreshCaptcha" class="btn" type="button" style="margin:0" data-i18n="auth.captchaRefresh">Refresh</button>
     </div>
-    <div class="hint">Basic captcha to reduce abuse. (Optional hCaptcha block is commented in code.)</div>
+    <div class="hint" data-i18n="auth.captchaHint">Basic captcha to reduce abuse. (Optional hCaptcha block is commented in code.)</div>
 
-    <button id="continue" class="btn">Continue</button>
+    <button id="continue" class="btn" data-i18n="auth.continue">Continue</button>
     <div id="msg" class="muted" style="margin-top:8px"></div>
 
     <div class="row" style="margin-top:6px">
-      <button id="forgotBtn" class="btn" type="button">Forgot password</button>
-      <button id="logout" class="btn" style="display:none">Switch account</button>
-      <a id="goHome" href="index.html">Back to Home</a>
+      <button id="forgotBtn" class="btn" type="button" data-i18n="auth.forgot">Forgot password</button>
+      <button id="logout" class="btn" style="display:none" data-i18n="auth.switch">Switch account</button>
+      <a id="goHome" href="index.html" data-i18n="nav.home">Home</a>
     </div>
 
     <div id="notAdminBox" class="alert" style="display:none;margin-top:14px"></div>
 
     <div class="sep"></div>
-    <div class="hint">If your workspace enforces CAPTCHA in Supabase Auth settings, enable the hCaptcha block in code and verify tokens on your server.</div>
+    <div class="hint" data-i18n="auth.serverCaptchaNote">If CAPTCHA is enforced in Supabase, enable hCaptcha in code and verify tokens server-side.</div>
   </div>
 </main>
 
 <footer>
   <div class="wrap">
-    © <span id="y"></span> VetoCos · <span>Complementary feed for companion animals</span>
+    © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals</span>
     <div class="footer-links">
-      <a href="#" onclick="openPolicy();return false;">Privacy & Policy</a>
-      <a href="#" onclick="openContact();return false;">Contact</a>
+      <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
+      <a href="#" onclick="openContact();return false;" data-i18n="footer.contact">Contact</a>
     </div>
   </div>
 </footer>
 
-<!-- CONTACT MODAL (unchanged) -->
+<!-- CONTACT MODAL (same UI, i18n-ready) -->
 <div id="contactModal" class="modal" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
     <div class="sheet-head">
-      <h2 id="contactTitle" class="sheet-title">Contact Us</h2>
-      <button class="close" type="button" onclick="closeContact()">Close</button>
+      <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
+      <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
     </div>
     <div class="sheet-body">
       <div class="pro-grid">
         <form id="contactForm" onsubmit="return sendMailto(event)">
           <div class="field">
-            <label for="topic">Topic</label>
+            <label for="topic" data-i18n="form.topic">Topic</label>
             <select id="topic" name="topic" class="select">
-              <option value="product">Product question</option>
-              <option value="availability">Availability / Where to buy</option>
-              <option value="order">Order / Delivery</option>
-              <option value="feedback">Feedback</option>
-              <option value="other">Other</option>
+              <option value="product" data-i18n="form.topicProduct">Product question</option>
+              <option value="availability" data-i18n="form.topicAvailability">Availability / Where to buy</option>
+              <option value="order" data-i18n="form.topicOrder">Order / Delivery</option>
+              <option value="feedback" data-i18n="form.topicFeedback">Feedback</option>
+              <option value="other" data-i18n="form.topicOther">Other</option>
             </select>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
             <div class="field">
-              <label for="name">Name</label>
-              <input id="name" name="name" class="input" autocomplete="name" required placeholder="Full name">
+              <label for="name" data-i18n="form.name">Name</label>
+              <input id="name" name="name" class="input" autocomplete="name" required
+                     data-i18n="form.namePH" data-i18n-attr="placeholder" placeholder="Full name">
             </div>
             <div class="field">
-              <label for="email2">Email</label>
-              <input id="email2" name="email" type="email" class="input" autocomplete="email" required placeholder="name@example.com">
+              <label for="email2" data-i18n="form.email">Email</label>
+              <input id="email2" name="email" type="email" class="input" autocomplete="email" required
+                     inputmode="email" data-i18n="form.emailPH" data-i18n-attr="placeholder" placeholder="name@example.com">
             </div>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
             <div class="field">
-              <label for="country">Country</label>
-              <input id="country" name="country" class="input" placeholder="Country (optional)">
+              <label for="country" data-i18n="form.country">Country</label>
+              <input id="country" name="country" class="input"
+                     data-i18n="form.countryPH" data-i18n-attr="placeholder"
+                     placeholder="Country (optional)">
             </div>
             <div class="field">
-              <label for="phone">Phone (optional)</label>
-              <input id="phone" name="phone" class="input" inputmode="tel" pattern="^[0-9+() -]{6,}$" placeholder="+212 537742213">
-              <span class="hint">Digits, spaces and +() - allowed</span>
+              <label for="phone" data-i18n="form.phone">Phone (optional)</label>
+              <input id="phone" name="phone" class="input" inputmode="tel"
+                     pattern="^[0-9+() -]{6,}$"
+                     data-i18n="form.phonePH" data-i18n-attr="placeholder"
+                     placeholder="+212 537742213">
+              <span class="hint" data-i18n="form.phoneHint">Digits, spaces and +() - allowed</span>
             </div>
           </div>
 
           <div class="field" style="margin-top:10px">
-            <label for="subject">Subject</label>
-            <input id="subject" name="subject" class="input" maxlength="120" required placeholder="Question about a product…">
+            <label for="subject" data-i18n="form.subject">Subject</label>
+            <input id="subject" name="subject" class="input" maxlength="120" required
+                   data-i18n="form.subjectPH" data-i18n-attr="placeholder"
+                   placeholder="Question about a product…">
           </div>
 
           <div class="field" style="margin-top:10px">
-            <label for="message">Message / Comments</label>
-            <textarea id="message" name="message" class="textarea" maxlength="1200" required placeholder="Write your help request or comment…"></textarea>
+            <label for="message" data-i18n="form.message">Message / Comments</label>
+            <textarea id="message" name="message" class="textarea" maxlength="1200" required
+                      data-i18n="form.messagePH" data-i18n-attr="placeholder"
+                      placeholder="Write your help request or comment…"></textarea>
             <div class="hint"><span id="msgCount">0</span>/1200</div>
           </div>
 
@@ -187,67 +197,114 @@
           <div class="field">
             <label style="display:flex;gap:8px;align-items:flex-start">
               <input type="checkbox" id="consent" required>
-              <span>I consent to VetoCos using my details to respond to this enquiry.</span>
+              <span data-i18n="form.consent">I consent to VetoCos using my details to respond to this enquiry.</span>
             </label>
-            <span class="hint">Your message is sent via your email app; we don't store it on this site.</span>
+            <span class="hint" data-i18n="form.privacyNote">Your message is sent via your email app; we don't store it on this site.</span>
           </div>
 
           <div class="actions-fw">
-            <button class="close" type="button" onclick="closeContact()">Cancel</button>
-            <button class="contact-btn" type="submit">Send</button>
+            <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
+            <button class="contact-btn" type="submit" data-i18n="form.send">Send</button>
           </div>
         </form>
 
         <div class="card" style="height:fit-content">
-          <h3>Reach us</h3>
-          <p class="muted" style="margin:4px 0 10px">We’re happy to help with product questions, availability, or feedback.</p>
+          <h3 data-i18n="contact.reach">Reach us</h3>
+          <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
 
-          <p><strong>Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
-          <p><strong>Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
-          <p><strong>WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
-          <p><strong>Hours:</strong> Mon–Fri, 9:00–17:00</p>
+          <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
+          <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
+          <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
+          <p><strong data-i18n="contact.hours">Hours:</strong> <span data-i18n="contact.hoursVal">Mon–Fri, 9:00–17:00</span></p>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- PRIVACY & POLICY MODAL (unchanged) -->
+<!-- PRIVACY & POLICY MODAL -->
 <div id="policyModal" class="modal" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
     <div class="sheet-head">
-      <h2 id="policyTitle" class="sheet-title">Privacy & Policy</h2>
-      <button class="close" type="button" onclick="closePolicy()">Close</button>
+      <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
+      <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
     </div>
     <div class="sheet-body policy-body">
-      <h3>Overview</h3>
-      <p>VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.</p>
-      <h3>Data we may receive</h3>
+      <h3 data-i18n="policy.overviewTitle">Overview</h3>
+      <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.</p>
+      <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
       <ul>
-        <li>Messages you send via the contact form (your name, email, and message content).</li>
-        <li>Basic, anonymized analytics (page views, device type) to improve the site.</li>
+        <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
+        <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
       </ul>
-      <h3>How we use data</h3>
+      <h3 data-i18n="policy.useTitle">How we use data</h3>
       <ul>
-        <li>To respond to your requests and improve our products and site experience.</li>
-        <li>We do not sell personal data.</li>
+        <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
+        <li data-i18n="policy.use2">We do not sell personal data.</li>
       </ul>
-      <h3>Cookies</h3>
-      <p>We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
-      <h3>Your choices</h3>
+      <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
+      <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
+      <h3 data-i18n="policy.choiceTitle">Your choices</h3>
       <ul>
-        <li>You can request that we delete your message and contact details at any time.</li>
-        <li>You can disable cookies in your browser settings.</li>
+        <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
+        <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
       </ul>
-      <h3>Contact</h3>
-      <p>For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
-      <p class="muted" style="margin-top:8px">Last updated: <span id="policyDate"></span></p>
+      <h3 data-i18n="policy.contactTitle">Contact</h3>
+      <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
+      <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
     </div>
   </div>
 </div>
 
 <script>
-  // mailto
+/* ===== i18n (same keys used across site) ===== */
+const I18N = {
+  en:{ "nav.contact":"Contact","nav.home":"Home","footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact",
+       "contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.reachText":"We’re happy to help with product questions, availability, or feedback.","contact.email":"Email:","contact.phone":"Phone:","contact.whatsapp":"WhatsApp:","contact.hours":"Hours:","contact.hoursVal":"Mon–Fri, 9:00–17:00",
+       "form.topic":"Topic","form.topicProduct":"Product question","form.topicAvailability":"Availability / Where to buy","form.topicOrder":"Order / Delivery","form.topicFeedback":"Feedback","form.topicOther":"Other","form.name":"Name","form.namePH":"Full name","form.email":"Email","form.emailPH":"name@example.com","form.country":"Country","form.countryPH":"Country (optional)","form.phone":"Phone (optional)","form.phonePH":"+212 537742213","form.phoneHint":"Digits, spaces and +() - allowed","form.subject":"Subject","form.subjectPH":"Question about a product…","form.message":"Message / Comments","form.messagePH":"Write your help request or comment…","form.consent":"I consent to VetoCos using my details to respond to this enquiry.","form.privacyNote":"Your message is sent via your email app; we don't store it on this site.","form.cancel":"Cancel","form.send":"Send",
+       "policy.title":"Privacy & Policy","policy.close":"Close","policy.overviewTitle":"Overview","policy.overviewText":"VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.","policy.dataTitle":"Data we may receive","policy.data1":"Messages you send via the contact form (your name, email, and message content).","policy.data2":"Basic, anonymized analytics (page views, device type) to improve the site.","policy.useTitle":"How we use data","policy.use1":"To respond to your requests and improve our products and site experience.","policy.use2":"We do not sell personal data.","policy.cookiesTitle":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.","policy.choiceTitle":"Your choices","policy.choice1":"You can request that we delete your message and contact details at any time.","policy.choice2":"You can disable cookies in your browser settings.","policy.contactTitle":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Last updated:",
+       "auth.title":"Sign in","auth.kicker":"Use your email and password. Leave password empty to receive a magic link.","auth.email":"Email","auth.emailPH":"you@example.com","auth.passwordLabel":"Password <span class='muted'>(optional for magic link)</span>","auth.passwordPH":"••••••••","auth.captchaPH":"Answer","auth.captchaRefresh":"Refresh","auth.captchaHint":"Basic captcha to reduce abuse. (Optional hCaptcha block is commented in code.)","auth.continue":"Continue","auth.forgot":"Forgot password","auth.switch":"Switch account","auth.serverCaptchaNote":"If CAPTCHA is enforced in Supabase, enable hCaptcha in code and verify tokens server-side."
+  },
+  fr:{ "nav.contact":"Contact","nav.home":"Accueil","footer.tag":"Aliment complémentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
+       "contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Nous aidons volontiers pour toute question produit, disponibilité ou avis.","contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00",
+       "form.topic":"Sujet","form.topicProduct":"Question produit","form.topicAvailability":"Disponibilité / Où acheter","form.topicOrder":"Commande / Livraison","form.topicFeedback":"Avis","form.topicOther":"Autre","form.name":"Nom","form.namePH":"Nom complet","form.email":"E-mail","form.emailPH":"nom@exemple.com","form.country":"Pays","form.countryPH":"Pays (facultatif)","form.phone":"Téléphone (facultatif)","form.phonePH":"+212 537742213","form.phoneHint":"Chiffres, espaces et +() - autorisés","form.subject":"Objet","form.subjectPH":"Question à propos d’un produit…","form.message":"Message / Commentaires","form.messagePH":"Écrivez votre demande…","form.consent":"J’autorise VetoCos à utiliser mes données pour répondre à cette demande.","form.privacyNote":"Votre message est envoyé via votre application e-mail ; il n’est pas stocké sur ce site.","form.cancel":"Annuler","form.send":"Envoyer",
+       "policy.title":"Confidentialité & Politique","policy.close":"Fermer","policy.overviewTitle":"Aperçu","policy.overviewText":"VetoCos fournit des compléments alimentaires. Site compatible ordinateur et mobile. Aucune donnée personnelle collectée sauf si vous nous contactez.","policy.dataTitle":"Données susceptibles d’être reçues","policy.data1":"Messages envoyés via le formulaire (nom, e-mail, contenu).","policy.data2":"Analyses anonymisées de base.","policy.useTitle":"Utilisation","policy.use1":"Répondre à vos demandes et améliorer l’expérience.","policy.use2":"Nous ne vendons pas de données.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies essentiels minimaux uniquement.","policy.choiceTitle":"Vos choix","policy.choice1":"Demander la suppression de vos messages/données.","policy.choice2":"Désactiver les cookies dans votre navigateur.","policy.contactTitle":"Contact","policy.contactText":"Questions confidentialité : <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Dernière mise à jour :",
+       "auth.title":"Se connecter","auth.kicker":"Utilisez votre e-mail et mot de passe. Laissez vide pour recevoir un lien magique.","auth.email":"E-mail","auth.emailPH":"vous@exemple.com","auth.passwordLabel":"Mot de passe <span class='muted'>(facultatif pour lien magique)</span>","auth.passwordPH":"••••••••","auth.captchaPH":"Réponse","auth.captchaRefresh":"Actualiser","auth.captchaHint":"Captcha basique contre l’abus. (Bloc hCaptcha en commentaire.)","auth.continue":"Continuer","auth.forgot":"Mot de passe oublié","auth.switch":"Changer de compte","auth.serverCaptchaNote":"Si CAPTCHA est activé dans Supabase, activez hCaptcha et vérifiez côté serveur."
+  },
+  es:{ "nav.contact":"Contacto","nav.home":"Inicio","footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
+       "contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Cómo contactarnos","contact.reachText":"Encantados de ayudarte con productos, disponibilidad o comentarios.","contact.email":"Correo:","contact.phone":"Teléfono:","contact.whatsapp":"WhatsApp:","contact.hours":"Horario:","contact.hoursVal":"Lun–Vie, 9:00–17:00",
+       "form.topic":"Tema","form.topicProduct":"Consulta de producto","form.topicAvailability":"Disponibilidad / Dónde comprar","form.topicOrder":"Pedido / Entrega","form.topicFeedback":"Comentarios","form.topicOther":"Otro","form.name":"Nombre","form.namePH":"Nombre completo","form.email":"Correo","form.emailPH":"nombre@ejemplo.com","form.country":"País","form.countryPH":"País (opcional)","form.phone":"Teléfono (opcional)","form.phonePH":"+212 537742213","form.phoneHint":"Se permiten dígitos, espacios y +() -","form.subject":"Asunto","form.subjectPH":"Consulta sobre un producto…","form.message":"Mensaje / Comentarios","form.messagePH":"Escribe tu solicitud…","form.consent":"Autorizo el uso de mis datos para responder esta consulta.","form.privacyNote":"El mensaje se envía con tu app de correo; no se guarda en este sitio.","form.cancel":"Cancelar","form.send":"Enviar",
+       "policy.title":"Privacidad y Política","policy.close":"Cerrar","policy.overviewTitle":"Resumen","policy.overviewText":"VetoCos ofrece alimentos complementarios. Web compatible con ordenador y móvil. Sin datos personales salvo que nos contactes.","policy.dataTitle":"Datos que podemos recibir","policy.data1":"Mensajes enviados (nombre, correo, contenido).","policy.data2":"Analítica básica y anónima.","policy.useTitle":"Uso de datos","policy.use1":"Responder y mejorar la experiencia.","policy.use2":"No vendemos datos.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies esenciales mínimas.","policy.choiceTitle":"Tus opciones","policy.choice1":"Solicitar eliminación de mensajes/datos.","policy.choice2":"Desactivar cookies en el navegador.","policy.contactTitle":"Contacto","policy.contactText":"Privacidad: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Última actualización:",
+       "auth.title":"Iniciar sesión","auth.kicker":"Usa tu correo y contraseña. Déjala vacía para recibir un enlace mágico.","auth.email":"Correo","auth.emailPH":"tu@ejemplo.com","auth.passwordLabel":"Contraseña <span class='muted'>(opcional para enlace mágico)</span>","auth.passwordPH":"••••••••","auth.captchaPH":"Respuesta","auth.captchaRefresh":"Actualizar","auth.captchaHint":"Captcha básico para reducir abusos. (Bloque hCaptcha comentado.)","auth.continue":"Continuar","auth.forgot":"Olvidé mi contraseña","auth.switch":"Cambiar cuenta","auth.serverCaptchaNote":"Si Supabase exige CAPTCHA, habilita hCaptcha y verifica en tu servidor."
+  },
+  ar:{ "nav.contact":"اتصل بنا","nav.home":"الرئيسية","footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
+       "contact.title":"اتصل بنا","contact.close":"إغلاق","contact.reach":"تواصل معنا","contact.reachText":"نساعدك في الأسئلة حول المنتجات أو التوفر أو الملاحظات.","contact.email":"البريد:","contact.phone":"الهاتف:","contact.whatsapp":"واتساب:","contact.hours":"الدوام:","contact.hoursVal":"الاثنين–الجمعة، 9:00–17:00",
+       "form.topic":"الموضوع","form.topicProduct":"استفسار عن منتج","form.topicAvailability":"التوفر / أين أشتري","form.topicOrder":"طلب / توصيل","form.topicFeedback":"ملاحظات","form.topicOther":"أخرى","form.name":"الاسم","form.namePH":"الاسم الكامل","form.email":"البريد الإلكتروني","form.emailPH":"name@example.com","form.country":"البلد","form.countryPH":"البلد (اختياري)","form.phone":"الهاتف (اختياري)","form.phonePH":"+212 537742213","form.phoneHint":"مسموح بالأرقام والمسافات والرموز +() -","form.subject":"الموضوع","form.subjectPH":"سؤال حول منتج…","form.message":"الرسالة / التعليقات","form.messagePH":"اكتب طلبك…","form.consent":"أوافق على استخدام بياناتي للرد على هذا الاستفسار.","form.privacyNote":"يتم إرسال الرسالة عبر تطبيق بريدك؛ لا نخزنها في الموقع.","form.cancel":"إلغاء","form.send":"إرسال",
+       "policy.title":"الخصوصية والسياسة","policy.close":"إغلاق","policy.overviewTitle":"نظرة عامة","policy.overviewText":"تقدم VetoCos أغذية تكميلية. الموقع متوافق مع سطح المكتب والجوال. لا نجمع بيانات شخصية إلا إذا تواصلت معنا.","policy.dataTitle":"البيانات التي قد نستلمها","policy.data1":"رسائل نموذج الاتصال (الاسم، البريد، المحتوى).","policy.data2":"تحليلات أساسية مجهولة.","policy.useTitle":"كيفية الاستخدام","policy.use1":"للرد وتحسين التجربة.","policy.use2":"لا نبيع البيانات.","policy.cookiesTitle":"ملفات تعريف الارتباط","policy.cookiesText":"نستخدم الضروري فقط.","policy.choiceTitle":"خياراتك","policy.choice1":"يمكنك طلب حذف بياناتك.","policy.choice2":"يمكنك تعطيل الكوكيز.","policy.contactTitle":"تواصل","policy.contactText":"الخصوصية: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"آخر تحديث:",
+       "auth.title":"تسجيل الدخول","auth.kicker":"استخدم بريدك وكلمة المرور. اترك كلمة المرور فارغة لإرسال رابط دخول.","auth.email":"البريد الإلكتروني","auth.emailPH":"you@example.com","auth.passwordLabel":"كلمة المرور <span class='muted'>(اختياري للرابط السحري)</span>","auth.passwordPH":"••••••••","auth.captchaPH":"الإجابة","auth.captchaRefresh":"تحديث","auth.captchaHint":"اختبار بسيط لمنع الإساءة. (hCaptcha اختياري في الكود.)","auth.continue":"متابعة","auth.forgot":"نسيت كلمة المرور","auth.switch":"تبديل الحساب","auth.serverCaptchaNote":"إذا فُرض CAPTCHA في Supabase فعّل hCaptcha وتحقق في الخادم."
+  }
+};
+function t(k){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][k])||(I18N.en[k]||k); }
+function applyLang(lang){
+  const dict=I18N[lang]||I18N.en;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const k=el.getAttribute("data-i18n"); if(dict[k]!=null) el.innerHTML=dict[k];
+  });
+  document.querySelectorAll("[data-i18n-attr]").forEach(el=>{
+    const k=el.getAttribute("data-i18n"); const attrs=(el.getAttribute("data-i18n-attr")||"").split(",").map(s=>s.trim()).filter(Boolean);
+    if(dict[k]==null) return; attrs.forEach(a=>el.setAttribute(a, dict[k]));
+  });
+  const html=document.documentElement; html.lang=lang; if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); } else { html.dir="ltr"; document.body.classList.remove("rtl"); }
+  localStorage.setItem("lang",lang); const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
+  const sel=document.getElementById("lang-switch"); if(sel){ sel.value=initial; sel.addEventListener("change",e=>applyLang(e.target.value)); }
+});
+</script>
+
+<script>
+  // mailto (unchanged)
   const toAddress='info@vetocos.com';
   function sendMailto(e){
     e.preventDefault();
@@ -265,7 +322,7 @@
     return false;
   }
 
-  // Modals + counters + small UI init
+  // Modals + counters
   const contactModal=document.getElementById('contactModal');
   const policyModal=document.getElementById('policyModal');
   function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
@@ -276,10 +333,8 @@
 
   document.addEventListener('DOMContentLoaded', ()=>{
     const y=document.getElementById('y'); if(y) y.textContent=new Date().getFullYear();
-    const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
-    const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
-    const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount');
-    if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+    const d=new Date(); const month=d.toLocaleString('default',{month:'long'}); const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+    const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
   });
 </script>
 
@@ -345,8 +400,8 @@ async function redirectAfterLogin(){
   else {
     notAdminBox.style.display='block';
     notAdminBox.innerHTML = `
-      <div><strong>This account isn’t an admin.</strong></div>
-      <div style="margin-top:6px">You signed in as <code>${em || '(no email)'}</code> but this user isn’t allowed to access the admin dashboard.</div>
+      <div><strong>${t('auth.title')} —</strong> ${t('nav.home')}</div>
+      <div style="margin-top:6px">This account is not an admin.</div>
       <div style="margin-top:8px">You can <a href="#" id="swap">switch to your admin account</a>.</div>
     `;
     const swap = document.getElementById('swap');
@@ -373,21 +428,20 @@ async function redirectAfterLogin(){
 
 /* ===== Sign-in / Magic link ===== */
 continueBtn.onclick = async ()=>{
-  continueBtn.disabled = true; continueBtn.textContent = 'Signing in…';
-  setMsg('Signing in…'); notAdminBox.style.display='none';
+  continueBtn.disabled = true; continueBtn.textContent = t('auth.continue')+'…';
+  setMsg(t('auth.continue')+'…'); notAdminBox.style.display='none';
 
   const em = (email.value||'').trim().toLowerCase();
   const pw = password.value;
 
-  if (!em){ setMsg('Enter your email.','alert'); continueBtn.disabled=false; continueBtn.textContent='Continue'; return; }
-  if (!captchaOK()){ setMsg('Captcha incorrect. Try again.','alert'); newCaptcha(); continueBtn.disabled=false; continueBtn.textContent='Continue'; return; }
+  if (!em){ setMsg(t('auth.email')+': ?', 'alert'); continueBtn.disabled=false; continueBtn.textContent=t('auth.continue'); return; }
+  if (!captchaOK()){ setMsg('Captcha incorrect. '+t('auth.captchaRefresh'), 'alert'); newCaptcha(); continueBtn.disabled=false; continueBtn.textContent=t('auth.continue'); return; }
 
   try{
     if (pw){
       const { error } = await supa.auth.signInWithPassword({ email: em, password: pw });
       if (error) throw error;
-      // Immediate redirect
-      location.replace(fallbackRedirect);
+      location.replace(fallbackRedirect); // instant redirect
     }else{
       const { error } = await supa.auth.signInWithOtp({
         email: em,
@@ -401,14 +455,14 @@ continueBtn.onclick = async ()=>{
     const m = (err?.message||'').toLowerCase();
     if (m.includes('invalid login credentials')) setMsg('Incorrect email or password.','alert');
     else if (m.includes('email not confirmed')) setMsg('Please confirm your email first (check inbox/spam).','alert');
-    else if (m.includes('captcha')) setMsg('CAPTCHA required by server. Enable hCaptcha block or disable CAPTCHA in Supabase Auth settings.','alert');
+    else if (m.includes('captcha')) setMsg('CAPTCHA required by server. Enable hCaptcha or disable in Supabase Auth settings.','alert');
     else setMsg(err?.message || 'Sign-in failed.','alert');
   }finally{
-    continueBtn.disabled = false; continueBtn.textContent = 'Continue';
+    continueBtn.disabled = false; continueBtn.textContent = t('auth.continue');
   }
 };
 
-// Also react to auth changes (magic link)
+// on auth change (magic link)
 supa.auth.onAuthStateChange((_ev, session)=>{ if (session?.user) redirectAfterLogin(); });
 document.addEventListener('DOMContentLoaded', async ()=>{ newCaptcha(); const { data:{ session } } = await supa.auth.getSession(); if (session?.user) redirectAfterLogin(); });
 
@@ -416,7 +470,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{ newCaptcha(); const { 
 document.getElementById('forgotBtn').onclick = async ()=>{
   const em = (email.value||'').trim().toLowerCase();
   if (!em){ setMsg('Enter your email above first.','alert'); return; }
-  if (!captchaOK()){ setMsg('Captcha incorrect. Try again.','alert'); newCaptcha(); return; }
+  if (!captchaOK()){ setMsg('Captcha incorrect. '+t('auth.captchaRefresh'), 'alert'); newCaptcha(); return; }
 
   try{
     const { error } = await supa.auth.resetPasswordForEmail(em, {
@@ -428,13 +482,6 @@ document.getElementById('forgotBtn').onclick = async ()=>{
     setMsg(err?.message || 'Could not send reset email.','alert');
   }
 };
-
-/* ===== Optional: hCaptcha (UI only; needs server-side verify) ===== */
-/*
-  <div class="h-captcha" data-sitekey="YOUR_HCAPTCHA_SITE_KEY"></div>
-  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
-  // Read token from window.hcaptcha.getResponse() and POST it to your server for verification
-*/
 </script>
 </body>
 </html>
