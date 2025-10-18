@@ -73,7 +73,7 @@
     footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
     .footer-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
 
-    /* Modals (Contact / Policy) */
+    /* Modals */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
     .modal.open{display:flex}
     .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
@@ -86,10 +86,7 @@
     .pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
     @media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
     .field{display:flex;flex-direction:column;gap:6px}
-    .input,.select,.textarea{
-      width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
-      background:rgba(255,255,255,.03);color:var(--text);outline:none
-    }
+    .input,.select,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text);outline:none}
     .textarea{min-height:140px;resize:vertical}
     .hint{font-size:12px;color:var(--muted)}
     .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
@@ -101,7 +98,7 @@
     body.rtl label{text-align:right}
   </style>
 
-  <!-- i18n (same keys your cart uses) -->
+  <!-- i18n -->
   <script>
     window.I18N = window.I18N || {
       en: {
@@ -115,7 +112,7 @@
         "checkout.note":"Note: Some products may require vet verification or admin approval. If so, your order will be submitted for review.",
         "cart.empty":"Your cart is empty.","status.ok":"OK","status.unavailable":"Unavailable","status.only":"Only __N__ in stock",
         "issues.approval":"Some items require approval. You can request vet verification here: <a href=\"vet-verify.html\">vet-verify.html</a>.",
-        "issues.stock":"Some items are currently out of stock or unavailable. You can remove them or adjust quantities on the products page.",
+        "issues.stock":"Some items are currently out of stock or unavailable.",
         "place.none":"Nothing eligible to order yet. See notes above.","place.okPartial":"Order placed for eligible items. Some items still need approval/stock—see notes above.","place.okAll":"Order placed. You'll receive updates after admin review.",
         "contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.reachText":"We’re happy to help with product questions, availability, or feedback.",
         "contact.email":"Email:","contact.phone":"Phone:","contact.whatsapp":"WhatsApp:","contact.hours":"Hours:","contact.hoursVal":"Mon–Fri, 9:00–17:00",
@@ -126,56 +123,37 @@
         "policy.title":"Privacy & Policy","policy.close":"Close","policy.overviewTitle":"Overview","policy.overviewText":"VetoCos provides complementary feed (alimentary) products. We do not collect personal data unless you choose to contact us.","policy.dataTitle":"Data we may receive","policy.data1":"Messages you send via the contact form (your name, email, and message content).","policy.data2":"Basic, anonymized analytics (page views, device type) to improve the site.","policy.useTitle":"How we use data","policy.use1":"To respond to your requests and improve our products and site experience.","policy.use2":"We do not sell personal data.","policy.cookiesTitle":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for functionality and anonymous analytics.","policy.choiceTitle":"Your choices","policy.choice1":"You can request that we delete your message and contact details at any time.","policy.choice2":"You can disable cookies in your browser settings.","policy.contactTitle":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Last updated:",
         "price.unit":"Unit","price.line":"Line total","price.hidden.sign":"Sign in to see prices","price.mixed":"*Totals grouped by currency"
       },
-      fr: {
-        "nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact",
-        "nav.account":"Paramètres du compte","nav.cart":"Panier","nav.checkout":"Paiement",
-        "footer.tag":"Complément alimentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
-        "auth.login":"Connexion","auth.signup":"Créer un compte","auth.logout":"Déconnexion","auth.vetVerify":"Vérification vétérinaire","orders.myOrders":"Mes commandes",
-        "ui.loading":"Chargement…","ui.sku":"Réf : ",
-        "checkout.title":"Paiement","checkout.cartTitle":"Votre panier","checkout.continue":"← Continuer vos achats",
-        "checkout.summary":"Récapitulatif","checkout.items":"Articles","checkout.total":"Total estimé","checkout.place":"Passer la commande",
-        "checkout.note":"Remarque : certains produits peuvent nécessiter une vérification vétérinaire ou une approbation.",
+      fr:{ "nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact",
+        "nav.account":"Paramètres du compte","nav.cart":"Panier","nav.checkout":"Paiement","footer.tag":"Complément alimentaire pour animaux de compagnie",
+        "footer.policy":"Confidentialité & Politique","footer.contact":"Contact","auth.login":"Connexion","auth.signup":"Créer un compte","auth.logout":"Déconnexion",
+        "auth.vetVerify":"Vérification vétérinaire","orders.myOrders":"Mes commandes","ui.loading":"Chargement…","ui.sku":"Réf : ",
+        "checkout.title":"Paiement","checkout.cartTitle":"Votre panier","checkout.continue":"← Continuer vos achats","checkout.summary":"Récapitulatif",
+        "checkout.items":"Articles","checkout.total":"Total estimé","checkout.place":"Passer la commande","checkout.note":"Remarque : certains produits peuvent nécessiter une vérification vétérinaire ou une approbation.",
         "cart.empty":"Votre panier est vide.","status.ok":"OK","status.unavailable":"Indisponible","status.only":"Plus que __N__ en stock",
-        "issues.approval":"Certains articles nécessitent une approbation. Demandez-la ici : <a href=\"vet-verify.html\">vet-verify.html</a>.",
-        "issues.stock":"Certains articles sont en rupture ou indisponibles.",
-        "place.none":"Aucun article éligible pour le moment.","place.okPartial":"Commande passée pour les articles éligibles.","place.okAll":"Commande passée. Vous recevrez des mises à jour après examen.",
-        "contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Nous sommes à votre écoute…",
-        "contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00",
-        "form.topic":"Objet","form.email":"E-mail","form.country":"Pays","form.phone":"Téléphone (optionnel)","form.name":"Nom","form.subject":"Sujet","form.message":"Message / Commentaires",
-        "form.namePH":"Nom complet","form.emailPH":"nom@exemple.com","form.countryPH":"Pays (optionnel)","form.phonePH":"+212 537742213","form.subjectPH":"Question à propos d’un produit…","form.messagePH":"Écrivez votre demande…",
-        "form.phoneHint":"Chiffres, espaces et +() - autorisés","form.consent":"J’autorise VetoCos à utiliser mes coordonnées…","form.privacyNote":"Votre message est envoyé via votre application e-mail ; nous ne le stockons pas.","form.cancel":"Annuler","form.send":"Envoyer",
-        "policy.title":"Confidentialité & Politique","policy.close":"Fermer","policy.overviewTitle":"Aperçu","policy.updated":"Dernière mise à jour :",
-        "price.unit":"Prix unitaire","price.line":"Total ligne","price.hidden.sign":"Connectez-vous pour voir les prix","price.mixed":"*Totaux par devise"
+        "issues.approval":"Certains articles nécessitent une approbation.","issues.stock":"Certains articles sont en rupture ou indisponibles.",
+        "place.none":"Aucun article éligible pour le moment.","place.okPartial":"Commande passée partiellement.","place.okAll":"Commande passée.",
+        "contact.title":"Nous contacter","contact.close":"Fermer","price.unit":"Prix unitaire","price.line":"Total ligne","price.hidden.sign":"Connectez-vous pour voir les prix","price.mixed":"*Totaux par devise"
       },
-      es: {
-        "nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"En el mundo","nav.news":"Noticias","nav.contact":"Contacto",
-        "nav.account":"Ajustes de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar",
-        "footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
-        "auth.login":"Iniciar sesión","auth.signup":"Crear cuenta","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria","orders.myOrders":"Mis pedidos",
-        "ui.loading":"Cargando…","ui.sku":"SKU: ",
-        "checkout.title":"Pagar","checkout.cartTitle":"Tu carrito","checkout.continue":"← Seguir comprando",
-        "checkout.summary":"Resumen","checkout.items":"Artículos","checkout.total":"Total estimado","checkout.place":"Realizar pedido",
-        "checkout.note":"Nota: algunos productos pueden requerir verificación veterinaria o aprobación del administrador.",
+      es:{ "nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"En el mundo","nav.news":"Noticias","nav.contact":"Contacto",
+        "nav.account":"Ajustes de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar","footer.tag":"Alimento complementario para animales de compañía",
+        "footer.policy":"Privacidad y Política","footer.contact":"Contacto","auth.login":"Iniciar sesión","auth.signup":"Crear cuenta","auth.logout":"Cerrar sesión",
+        "auth.vetVerify":"Verificación veterinaria","orders.myOrders":"Mis pedidos","ui.loading":"Cargando…","ui.sku":"SKU: ",
+        "checkout.title":"Pagar","checkout.cartTitle":"Tu carrito","checkout.continue":"← Seguir comprando","checkout.summary":"Resumen",
+        "checkout.items":"Artículos","checkout.total":"Total estimado","checkout.place":"Realizar pedido","checkout.note":"Nota: algunos productos pueden requerir verificación veterinaria o aprobación del administrador.",
         "cart.empty":"Tu carrito está vacío.","status.ok":"OK","status.unavailable":"No disponible","status.only":"Solo quedan __N__",
-        "issues.approval":"Algunos artículos requieren aprobación.","issues.stock":"Algunos artículos no tienen stock.",
-        "place.none":"No hay artículos elegibles todavía.","place.okPartial":"Pedido realizado parcialmente.","place.okAll":"Pedido realizado.",
-        "contact.title":"Contáctanos","contact.close":"Cerrar",
+        "issues.approval":"Algunos artículos requieren aprobación.","issues.stock":"Algunos artículos no tienen stock.","place.none":"No hay artículos elegibles todavía.",
+        "place.okPartial":"Pedido realizado parcialmente.","place.okAll":"Pedido realizado.","contact.title":"Contáctanos","contact.close":"Cerrar",
         "price.unit":"Precio unitario","price.line":"Total de línea","price.hidden.sign":"Inicia sesión para ver precios","price.mixed":"*Totales por divisa"
       },
-      ar: {
-        "nav.home":"الصفحة الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا",
-        "nav.account":"إعدادات الحساب","nav.cart":"السلة","nav.checkout":"الدفع",
-        "footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
+      ar:{ "nav.home":"الصفحة الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا",
+        "nav.account":"إعدادات الحساب","nav.cart":"السلة","nav.checkout":"الدفع","footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
         "auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"التحقق البيطري","orders.myOrders":"طلباتي",
-        "ui.loading":"جارٍ التحميل…","ui.sku":"رقم الصنف: ",
-        "checkout.title":"الدفع","checkout.cartTitle":"سلة التسوق","checkout.continue":"← متابعة التسوق",
+        "ui.loading":"جارٍ التحميل…","ui.sku":"رقم الصنف: ","checkout.title":"الدفع","checkout.cartTitle":"سلة التسوق","checkout.continue":"← متابعة التسوق",
         "checkout.summary":"الملخص","checkout.items":"العناصر","checkout.total":"الإجمالي التقديري","checkout.place":"إرسال الطلب",
-        "checkout.note":"قد تتطلب بعض المنتجات تحققًا بيطريًا أو موافقة.",
-        "cart.empty":"سلة التسوق فارغة.","status.ok":"حسنًا","status.unavailable":"غير متوفر","status.only":"متبقٍ __N__ فقط",
-        "issues.approval":"بعض العناصر تتطلب موافقة.","issues.stock":"بعض العناصر غير متوفرة.",
+        "checkout.note":"قد تتطلب بعض المنتجات تحققًا بيطريًا أو موافقة.","cart.empty":"سلة التسوق فارغة.","status.ok":"حسنًا","status.unavailable":"غير متوفر",
+        "status.only":"متبقٍ __N__ فقط","issues.approval":"بعض العناصر تتطلب موافقة.","issues.stock":"بعض العناصر غير متوفرة.",
         "place.none":"لا توجد عناصر مؤهلة بعد.","place.okPartial":"تم تقديم الطلب جزئيًا.","place.okAll":"تم تقديم الطلب.",
-        "contact.title":"اتصل بنا","contact.close":"إغلاق",
-        "price.unit":"سعر الوحدة","price.line":"إجمالي السطر","price.hidden.sign":"سجّل الدخول لعرض الأسعار","price.mixed":"*الإجماليات حسب العملة"
+        "contact.title":"اتصل بنا","contact.close":"إغلاق","price.unit":"سعر الوحدة","price.line":"إجمالي السطر","price.hidden.sign":"سجّل الدخول لعرض الأسعار","price.mixed":"*الإجماليات حسب العملة"
       }
     };
     function t(key){
@@ -332,31 +310,24 @@
             <div class="field">
               <label for="name" data-i18n="form.name">Name</label>
               <input id="name" name="name" class="input" autocomplete="name" required
-                     data-i18n="form.namePH" data-i18n-attr="placeholder"
-                     placeholder="Full name">
+                     data-i18n="form.namePH" data-i18n-attr="placeholder" placeholder="Full name">
             </div>
             <div class="field">
               <label for="email" data-i18n="form.email">Email</label>
               <input id="email" name="email" type="email" class="input" autocomplete="email" required
-                     inputmode="email"
-                     data-i18n="form.emailPH" data-i18n-attr="placeholder"
-                     placeholder="name@example.com">
+                     inputmode="email" data-i18n="form.emailPH" data-i18n-attr="placeholder" placeholder="name@example.com">
             </div>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
             <div class="field">
               <label for="country" data-i18n="form.country">Country</label>
-              <input id="country" name="country" class="input"
-                     data-i18n="form.countryPH" data-i18n-attr="placeholder"
-                     placeholder="Country (optional)">
+              <input id="country" name="country" class="input" data-i18n="form.countryPH" data-i18n-attr="placeholder" placeholder="Country (optional)">
             </div>
             <div class="field">
               <label for="phone" data-i18n="form.phone">Phone (optional)</label>
-              <input id="phone" name="phone" class="input" inputmode="tel"
-                     pattern="^[0-9+() -]{6,}$"
-                     data-i18n="form.phonePH" data-i18n-attr="placeholder"
-                     placeholder="+212 537742213">
+              <input id="phone" name="phone" class="input" inputmode="tel" pattern="^[0-9+() -]{6,}$"
+                     data-i18n="form.phonePH" data-i18n-attr="placeholder" placeholder="+212 537742213">
               <span class="hint" data-i18n="form.phoneHint">Digits, spaces and +() - allowed</span>
             </div>
           </div>
@@ -364,15 +335,13 @@
           <div class="field" style="margin-top:10px">
             <label for="subject" data-i18n="form.subject">Subject</label>
             <input id="subject" name="subject" class="input" maxlength="120" required
-                   data-i18n="form.subjectPH" data-i18n-attr="placeholder"
-                   placeholder="Question about a product…">
+                   data-i18n="form.subjectPH" data-i18n-attr="placeholder" placeholder="Question about a product…">
           </div>
 
           <div class="field" style="margin-top:10px">
             <label for="message" data-i18n="form.message">Message / Comments</label>
             <textarea id="message" name="message" class="textarea" maxlength="1200" required
-                      data-i18n="form.messagePH" data-i18n-attr="placeholder"
-                      placeholder="Write your help request or comment…"></textarea>
+                      data-i18n="form.messagePH" data-i18n-attr="placeholder" placeholder="Write your help request or comment…"></textarea>
             <div class="hint"><span id="msgCount">0</span>/1200</div>
           </div>
 
@@ -412,7 +381,7 @@
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
     <div class="sheet-head">
       <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
-    <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
+      <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
     </div>
     <div class="sheet-body policy-body">
       <h3 data-i18n="policy.overviewTitle">Overview</h3>
@@ -491,15 +460,15 @@ const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
 });
-  // Keep login state updated automatically
+
+/* ===== Keep login state current & re-render prices when it changes ===== */
+let IS_LOGGED_IN = false;
+let USER = null;
 supa.auth.onAuthStateChange((_event, session) => {
   IS_LOGGED_IN = !!session?.user;
-  if (IS_LOGGED_IN) {
-    USER = session.user;
-  } else {
-    USER = null;
-  }
-  renderCart?.();  // re-render cart/prices when sign-in status changes
+  USER = IS_LOGGED_IN ? session.user : null;
+  renderHeaderVisibility();
+  renderCart?.();
 });
 
 const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
@@ -530,8 +499,20 @@ if (accountBtn) accountBtn.addEventListener('click', ()=>{
 });
 if (logoutBtn) logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
 
-function readCart(){ try { return JSON.parse(localStorage.getItem('cart') || '[]'); } catch { return []; } }
-function writeCart(items){ localStorage.setItem('cart', JSON.stringify(items)); updateCartBadge(); }
+function renderHeaderVisibility(){
+  if (!IS_LOGGED_IN){
+    if (signInBtn) signInBtn.style.display='inline-block';
+    if (signUpBtn) signUpBtn.style.display='inline-block';
+    if (acctBlock) acctBlock.style.display='none';
+    if (adminBtn) adminBtn.style.display='none';
+  } else {
+    if (signInBtn) signInBtn.style.display='none';
+    if (signUpBtn) signUpBtn.style.display='none';
+    if (acctBlock) acctBlock.style.display='inline-flex';
+  }
+  updateCartBadge();
+}
+
 function countCart(){ return readCart().reduce((n,x)=>n + Number(x.qty||0), 0); }
 function updateCartBadge(){
   if (!cartCount) return;
@@ -540,34 +521,41 @@ function updateCartBadge(){
   else { cartCount.style.display='none'; if (cartLink) cartLink.style.display='none'; }
 }
 
-async function refreshHeader(){
-  const { data:{ session } } = await supa.auth.getSession();
-  if (!session?.user){
-    if (signInBtn) signInBtn.style.display='inline-block';
-    if (signUpBtn) signUpBtn.style.display='inline-block';
-    if (acctBlock) acctBlock.style.display='none';
-    if (adminBtn) adminBtn.style.display='none';
-    updateCartBadge();
-    return;
+/* ================== Cart storage helpers (+ DB sync) ================== */
+function readCart(){ try { return JSON.parse(localStorage.getItem('cart') || '[]'); } catch { return []; } }
+function writeCart(items){ localStorage.setItem('cart', JSON.stringify(items || [])); updateCartBadge(); }
+function setLocalCart(items){ try { localStorage.setItem('cart', JSON.stringify(items || [])); } catch {} }
+
+async function syncCartFromDBIfEmpty(){
+  const local = readCart();
+  if (Array.isArray(local) && local.length > 0) return;
+
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user) return;
+
+  const { data: row, error } = await supa
+    .from('carts')
+    .select('items, updated_at')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) { console.warn('carts select error:', error.message); return; }
+  const items = Array.isArray(row?.items) ? row.items : [];
+  if (items.length){
+    setLocalCart(items);
+    CART = items.filter(it => it && it.sku && Number(it.qty) > 0);
   }
-
-  let display=session.user.email||'';
-  let isAdmin=false;
-  try{
-    const { data: p } = await supa.from('profiles').select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
-    const full=[p?.first_name,p?.last_name].filter(Boolean).join(' ').trim();
-    if(full) display=full;
-    isAdmin=!!p?.is_admin;
-  }catch(_){}
-  if (helloName) helloName.textContent=display;
-  if (accountHeader) accountHeader.innerHTML = `<div><strong>${display}</strong><div class="muted">${session.user.email||''}</div></div>`;
-
-  if (signInBtn) signInBtn.style.display='none';
-  if (signUpBtn) signUpBtn.style.display='none';
-  if (acctBlock) acctBlock.style.display='inline-flex';
-  if (adminBtn) adminBtn.style.display = (isAdmin || (session.user.email && SUPER_ADMINS.includes(session.user.email))) ? 'inline-block' : 'none';
-  updateCartBadge();
 }
+
+/* react to other tabs/pages changing the cart */
+window.addEventListener('storage', (e) => {
+  if (e.key === 'cart') {
+    try {
+      CART = (JSON.parse(e.newValue || '[]') || []).filter(it => it && it.sku && Number(it.qty) > 0);
+      renderCart();
+    } catch {}
+  }
+});
 
 /* ================== Checkout logic (+ PRICING same as cart) ================== */
 const DEFAULT_CURRENCY = 'MAD';
@@ -580,7 +568,7 @@ const btnOrder  = document.getElementById('placeOrder');
 const msgEl     = document.getElementById('msg');
 const userInfo  = document.getElementById('userInfo');
 
-let USER=null, PROFILE=null, CART=[];
+let PROFILE=null, CART=[];
 let PRODUCTS={};         // sku -> {sku,name,stock_qty,available,price_ppv,price_pv_minus10,price_pv_plus10,currency}
 let APPROVALS={};        // sku -> approvedQty
 let CAN_PURCHASE=false;  // profiles.can_purchase
@@ -592,14 +580,12 @@ function priceTierForQty(productRow, qty){
   if (q >= 10)  return { unit: Number(productRow.price_pv_plus10||0),   label:'PV+10U', cur };
   return         { unit: Number(productRow.price_pv_minus10||0),        label:'PV-10U', cur };
 }
+
+/* FIX: computeItemPrice now uses PRODUCTS, not VARIANTS */
 function computeItemPrice(it){
-  const loggedIn = !!USER;            // USER is set by ensureLogin()
-  if (!loggedIn) return { hidden:true, message: t('price.hidden.sign') };
-
-  const vMap = VARIANTS[it.sku] || {};
-  const row  = vMap[it.variant||''] || null;
+  if (!IS_LOGGED_IN) return { hidden:true, message: t('price.hidden.sign') };
+  const row = PRODUCTS[it.sku];
   if (!row) return null;
-
   const tier = priceTierForQty(row, it.qty);
   const unit = Number(tier.unit||0);
   const line = unit * Number(it.qty||0);
@@ -609,14 +595,11 @@ function computeItemPrice(it){
 function groupTotals(lines){ const out={}; lines.forEach(x=>{ out[x.cur]=(out[x.cur]||0)+x.amount; }); return out; }
 
 function renderCart(){
-  const { data:{ session } = {} } = supa.auth.getSessionSync ? supa.auth.getSessionSync() : { data:{} };
-  const loggedIn = !!session?.user;
-
   if(!CART.length){
     cartBox.innerHTML = `<div class="muted" data-i18n="cart.empty">${t("cart.empty")}</div>`;
-    sumItems.textContent='0'; 
-    sumTotal.textContent='—'; 
-    btnOrder.disabled=true; 
+    sumItems.textContent='0';
+    sumTotal.textContent='—';
+    btnOrder.disabled=true;
     return;
   }
   btnOrder.disabled=false;
@@ -632,7 +615,7 @@ function renderCart(){
     }
     const ok = (!flags.length) ? `<span class="badge ok">${t("status.ok")}</span>` : flags.join(' ');
 
-    const price = computeItemPrice(it, loggedIn);
+    const price = computeItemPrice(it);
     let unitHTML='—', lineHTML='—';
     if (price?.hidden){
       unitHTML = `<span class="muted small">${price.message}</span>`;
@@ -667,12 +650,12 @@ function renderCart(){
   sumItems.textContent = totalQty;
 
   const totals = CART.map(it=>{
-    const p = computeItemPrice(it, loggedIn);
+    const p = computeItemPrice(it);
     return (p && !p.hidden) ? { cur:p.cur, amount:p.line } : null;
   }).filter(Boolean);
 
   if (!totals.length){
-    sumTotal.textContent = (!loggedIn ? t('price.hidden.sign') : '—');
+    sumTotal.textContent = (!IS_LOGGED_IN ? t('price.hidden.sign') : '—');
   } else {
     const grouped = groupTotals(totals);
     const txt = Object.entries(grouped).map(([cur,amt])=>`${cur} ${amt.toFixed(2)}`).join(' · ');
@@ -708,7 +691,7 @@ function computeEligibility(){
     const lacking = ineligible.filter(x=>/Approval/.test(x.reason));
     if (lacking.length){ issues.push(t("issues.approval")); }
   }
-  if (ineligible.some(x=>/stock|available|متوفر|Disponible|Disponible/i.test(x.reason))){ issues.push(t("issues.stock")); }
+  if (ineligible.some(x=>/stock|available|متوفر|Disponible/i.test(x.reason))){ issues.push(t("issues.stock")); }
 
   return { eligibleKeys, ineligible, issues };
 }
@@ -734,6 +717,7 @@ async function ensureLogin(){
     location.replace(url);
     throw new Error('redirect');
   }
+  IS_LOGGED_IN = true;
   USER = user;
   return user;
 }
@@ -763,7 +747,15 @@ async function loadProfile(){
   CAN_PURCHASE = !!PROFILE.can_purchase;
 
   const full = [PROFILE.first_name, PROFILE.last_name].filter(Boolean).join(' ').trim();
-  userInfo.textContent = `${full || ''} ${full ? '· ' : ''}${PROFILE.email || user.email || ''}`;
+  const label = `${full || ''} ${full ? '· ' : ''}${PROFILE.email || user.email || ''}`;
+  const ui = document.getElementById('userInfo'); if (ui) ui.textContent = label;
+
+  // header name + admin
+  let isAdmin=false;
+  try{ isAdmin = !!(await supa.from('profiles').select('is_admin').eq('id', user.id).maybeSingle()).data?.is_admin; }catch(_){}
+  if (helloName) helloName.textContent = full || (user.email||'');
+  if (accountHeader) accountHeader.innerHTML = `<div><strong>${full||user.email||''}</strong><div class="muted">${user.email||''}</div></div>`;
+  if (adminBtn) adminBtn.style.display = (isAdmin || (user.email && SUPER_ADMINS.includes(user.email))) ? 'inline-block' : 'none';
 }
 
 async function loadProductsForCart(){
@@ -775,7 +767,14 @@ async function loadProductsForCart(){
     .in('sku', skus);
   if (error) throw new Error(error.message);
   PRODUCTS={}; (data||[]).forEach(p=>PRODUCTS[p.sku]=p);
+
+  // backfill names into CART and localStorage
+  const nameMap = Object.fromEntries((data||[]).map(p => [p.sku, p.name]));
+  const updated = CART.map(i => ({ ...i, name: i.name || nameMap[i.sku] || i.sku }));
+  writeCart(updated);
+  CART = updated;
 }
+
 async function loadApprovalsForCart(){
   if (CAN_PURCHASE){ APPROVALS={}; return; }
   const skus = [...new Set(CART.map(x=>x.sku))];
@@ -813,15 +812,17 @@ async function placeOrder(){
 
     // Calculate prices for eligible items
     const lines = eligibleItems.map(it=>{
-      const p = computeItemPrice(it, true);
-      return p ? {
+      const p = computeItemPrice(it);
+      return (p && !p.hidden) ? {
         sku: it.sku, name: it.name||it.sku,
         qty: Number(it.qty||0), unit: p.unit, line: p.line, currency: p.cur, tier: p.label
       } : null;
     }).filter(Boolean);
 
+    // Group totals by currency
     const totals = {}; lines.forEach(l => { totals[l.currency] = (totals[l.currency]||0) + l.line; });
 
+    // Insert order
     const email = user.email || PROFILE?.email || null;
     const basePayload = {
       user_id: user.id, email, status:'pending',
@@ -833,23 +834,24 @@ async function placeOrder(){
     if (orderErr){ msgEl.textContent = orderErr.message || 'Failed to create order.'; return; }
     const order_id = orderRow.id;
 
+    // Insert order items
     const itemsPayload = eligibleItems.map(it=>{
-      const p = computeItemPrice(it, true) || {};
+      const p = computeItemPrice(it) || {};
       return {
         order_id,
         product_sku: it.sku,
         product_name: it.name || it.sku,
         quantity: Number(it.qty||0),
-        unit_price: p.unit ?? null,
-        currency: p.cur ?? null,
-        price_tier: p.label ?? null,
-        line_total: p.line ?? null
+        unit_price: (p && !p.hidden) ? p.unit : null,
+        currency: (p && !p.hidden) ? p.cur : null,
+        price_tier: (p && !p.hidden) ? p.label : null,
+        line_total: (p && !p.hidden) ? p.line : null
       };
     });
     const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
     if (itemsErr){ msgEl.textContent = itemsErr.message || 'Failed to add items.'; return; }
 
-    // Remove only eligible skus from local cart
+    // Remove eligible SKUs from cart
     const remaining = readCart().filter(x => !eligibleItems.some(e => e.sku===x.sku));
     writeCart(remaining);
     CART = remaining;
@@ -866,10 +868,27 @@ async function placeOrder(){
 }
 
 /* ======== Boot ======== */
+async function refreshHeader(){
+  const { data:{ session } } = await supa.auth.getSession();
+  IS_LOGGED_IN = !!session?.user;
+  USER = session?.user || null;
+
+  if (!IS_LOGGED_IN){
+    if (signInBtn) signInBtn.style.display='inline-block';
+    if (signUpBtn) signUpBtn.style.display='inline-block';
+    if (acctBlock) acctBlock.style.display='none';
+    if (adminBtn) adminBtn.style.display='none';
+  } else {
+    if (signInBtn) signInBtn.style.display='none';
+    if (signUpBtn) signUpBtn.style.display='none';
+    if (acctBlock) acctBlock.style.display='inline-flex';
+  }
+  updateCartBadge();
+}
+
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
     await refreshHeader();
-    updateCartBadge();
 
     // Adopt cart from URL once
     const qs=new URLSearchParams(location.search); const raw=qs.get('cart');
@@ -882,7 +901,11 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
     // Must be logged in to check out
     await ensureLogin();
-    IS_LOGGED_IN = true;
+
+    // If local cart is empty, try to hydrate from DB (matches cart.html behavior)
+    await syncCartFromDBIfEmpty();
+    CART = (readCart()||[]).filter(it=>it && it.sku && Number(it.qty)>0);
+
     await loadProfile();
     await loadProductsForCart();   // pulls stock + prices
     await loadApprovalsForCart();
@@ -890,7 +913,6 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     const { ineligible, issues } = computeEligibility();
     renderIssues(ineligible, issues);
     renderCart();
-
   }catch(e){ console.warn(e); }
 });
 
