@@ -51,23 +51,13 @@
     .textarea{min-height:140px;resize:vertical}
     .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
     .divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
+    .pill{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem;background:rgba(109,213,255,.12)}
+    .captcha{display:flex;gap:10px;align-items:center}
     body.rtl .wrap, body.rtl main, body.rtl .pro-grid{direction:rtl}
     body.rtl label{text-align:right}
   </style>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    (function ensureSupabase(){
-      function ok(){ return !!window.supabase; }
-      if (ok()) return;
-      var s = document.createElement('script');
-      s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-      s.onload = () => { if (!ok()) showErr("Couldn’t load Supabase SDK (blocked)."); };
-      s.onerror = () => showErr("Couldn’t load Supabase SDK. Check your CSP or network.");
-      document.head.appendChild(s);
-      function showErr(msg){ const el=document.getElementById('msg'); if(el){ el.textContent=msg; el.className='alert'; } }
-    })();
-  </script>
 </head>
 <body>
 <header class="site">
@@ -93,27 +83,37 @@
 <main>
   <div class="card">
     <h1 id="title">Sign in</h1>
-    <p id="kicker" class="muted">Enter your email to continue.</p>
+    <p id="kicker" class="muted">Use your email and password. Leave password empty to receive a magic link.</p>
 
     <label>Email</label>
     <input id="email" type="email" class="input" placeholder="you@example.com" autocomplete="email"/>
 
     <div id="pwWrap">
-      <label>Password <span class="muted">(leave empty to receive a magic link)</span></label>
-      <input id="password" type="password" class="input" placeholder="Optional" autocomplete="current-password"/>
-      <div class="hint">If you don’t have a password, leave it empty and we’ll email you a sign-in link.</div>
+      <label>Password <span class="muted">(optional for magic link)</span></label>
+      <input id="password" type="password" class="input" placeholder="••••••••" autocomplete="current-password"/>
     </div>
+
+    <!-- Simple math captcha -->
+    <div class="row" style="margin-top:8px;align-items:center">
+      <div class="pill" id="mathQ" aria-live="polite"></div>
+      <input id="mathA" class="input" style="max-width:140px" placeholder="Answer" inputmode="numeric" />
+      <button id="refreshCaptcha" class="btn" type="button" style="margin:0">↻</button>
+    </div>
+    <div class="hint">Basic captcha to reduce abuse. (Optional hCaptcha block is commented in code.)</div>
 
     <button id="continue" class="btn">Continue</button>
     <div id="msg" class="muted" style="margin-top:8px"></div>
 
-    <div id="notAdminBox" class="alert" style="display:none;margin-top:14px"></div>
-
-    <div class="sep"></div>
-    <div class="row">
+    <div class="row" style="margin-top:6px">
+      <button id="forgotBtn" class="btn" type="button">Forgot password</button>
       <button id="logout" class="btn" style="display:none">Switch account</button>
       <a id="goHome" href="index.html">Back to Home</a>
     </div>
+
+    <div id="notAdminBox" class="alert" style="display:none;margin-top:14px"></div>
+
+    <div class="sep"></div>
+    <div class="hint">If your workspace enforces CAPTCHA in Supabase Auth settings, enable the hCaptcha block in code and verify tokens on your server.</div>
   </div>
 </main>
 
@@ -127,7 +127,7 @@
   </div>
 </footer>
 
-<!-- CONTACT MODAL -->
+<!-- CONTACT MODAL (unchanged) -->
 <div id="contactModal" class="modal" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
     <div class="sheet-head">
@@ -212,7 +212,7 @@
   </div>
 </div>
 
-<!-- PRIVACY & POLICY MODAL -->
+<!-- PRIVACY & POLICY MODAL (unchanged) -->
 <div id="policyModal" class="modal" aria-hidden="true">
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
     <div class="sheet-head">
@@ -222,31 +222,25 @@
     <div class="sheet-body policy-body">
       <h3>Overview</h3>
       <p>VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.</p>
-
       <h3>Data we may receive</h3>
       <ul>
         <li>Messages you send via the contact form (your name, email, and message content).</li>
         <li>Basic, anonymized analytics (page views, device type) to improve the site.</li>
       </ul>
-
       <h3>How we use data</h3>
       <ul>
         <li>To respond to your requests and improve our products and site experience.</li>
         <li>We do not sell personal data.</li>
       </ul>
-
       <h3>Cookies</h3>
       <p>We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
-
       <h3>Your choices</h3>
       <ul>
         <li>You can request that we delete your message and contact details at any time.</li>
         <li>You can disable cookies in your browser settings.</li>
       </ul>
-
       <h3>Contact</h3>
       <p>For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
-
       <p class="muted" style="margin-top:8px">Last updated: <span id="policyDate"></span></p>
     </div>
   </div>
@@ -266,10 +260,7 @@
     const message=document.getElementById('message').value.trim();
     if(!document.getElementById('consent').checked) return false;
 
-    const lines=[
-      `Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,
-      country?`Country: ${country}`:null, phone?`Phone: ${phone}`:null,'', message
-    ].filter(Boolean).join('%0A');
+    const lines=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,country?`Country: ${country}`:null, phone?`Phone: ${phone}`:null,'',message].filter(Boolean).join('%0A');
     window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
     return false;
   }
@@ -296,16 +287,9 @@
 /* ===== Supabase ===== */
 const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
-
-let supa=null;
-try{
-  if (!window.supabase) throw new Error("Supabase SDK not loaded");
-  supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-    auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
-  });
-}catch(e){
-  const msg = document.getElementById('msg'); if (msg){ msg.textContent = e?.message || 'Init error'; msg.className='alert'; }
-}
+const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+});
 
 /* ===== Config ===== */
 const ADMIN_EMAILS = ["anwar.moumenjamai19@gmail.com"].map(e=>e.toLowerCase());
@@ -321,10 +305,17 @@ const logoutBtn = document.getElementById('logout');
 /* ===== Helpers ===== */
 const params = new URLSearchParams(location.search);
 const wantAdmin = params.get('admin') === '1';
-const fallbackRedirect = params.get('redirect') || (wantAdmin ? 'admin.html' : 'index.html');
+const fallbackRedirect = params.get('redirect') || (wantAdmin ? 'admin.html' : 'Products.html');
 function setMsg(t, cls='muted'){ msgEl.textContent=t; msgEl.className=cls; }
 function lc(s){ return (s||'').toLowerCase(); }
 
+// Math captcha
+let A=0,B=0;
+function newCaptcha(){ A = 3+Math.floor(Math.random()*7); B = 3+Math.floor(Math.random()*7); document.getElementById('mathQ').textContent = `${A} + ${B} = ?`; document.getElementById('mathA').value=''; }
+function captchaOK(){ return String(Number(document.getElementById('mathA').value||NaN)) === String(A+B); }
+document.getElementById('refreshCaptcha').addEventListener('click', newCaptcha);
+
+/* ===== Admin check ===== */
 async function isAdminUser(uid, em){
   try{
     if (ADMIN_EMAILS.includes(lc(em))) return true;
@@ -334,16 +325,14 @@ async function isAdminUser(uid, em){
 }
 
 async function redirectAfterLogin(){
-  if (!supa) return;
   const { data:{ session } } = await supa.auth.getSession();
   if (!session?.user) return;
-
   const uid = session.user.id;
   const em  = lc(session.user.email || '');
 
   if (!wantAdmin) { location.replace(fallbackRedirect); return; }
 
-  let ok = false;
+  let ok=false;
   try{
     if (ADMIN_EMAILS.includes(em)) ok = true;
     else {
@@ -352,10 +341,9 @@ async function redirectAfterLogin(){
     }
   }catch{}
 
-  if (ok) {
-    location.replace('admin.html');
-  } else {
-    notAdminBox.style.display = 'block';
+  if (ok) location.replace('admin.html');
+  else {
+    notAdminBox.style.display='block';
     notAdminBox.innerHTML = `
       <div><strong>This account isn’t an admin.</strong></div>
       <div style="margin-top:6px">You signed in as <code>${em || '(no email)'}</code> but this user isn’t allowed to access the admin dashboard.</div>
@@ -363,102 +351,90 @@ async function redirectAfterLogin(){
     `;
     const swap = document.getElementById('swap');
     if (swap) swap.onclick = async (e)=>{ e.preventDefault(); await supa.auth.signOut(); location.reload(); };
-    logoutBtn.style.display = 'inline-block';
+    logoutBtn.style.display='inline-block';
   }
 }
 
 /* ===== Handle magic-link return (PKCE) ===== */
 (async () => {
-  if (!supa) return;
   try {
     const cameFromEmail = location.search.includes('code=') || location.hash.includes('access_token');
     if (cameFromEmail) {
       await supa.auth.exchangeCodeForSession(location.href);
       const clean = new URL(location.href);
-      ['code','type','access_token','refresh_token','expires_in','token_type'].forEach(k=>{ clean.searchParams.delete(k); });
+      ['code','type','access_token','refresh_token','expires_in','token_type'].forEach(k=>clean.searchParams.delete(k));
       history.replaceState({}, '', clean.toString());
     }
   } catch (e) {
     console.error('exchangeCodeForSession failed:', e);
-    if (msgEl){ msgEl.textContent = (e?.message || 'Sign-in link error'); msgEl.className = 'alert'; }
+    setMsg(e?.message || 'Sign-in link error', 'alert');
   }
 })();
 
-/* ===== Sign-in button ===== */
-if (continueBtn){
-  continueBtn.onclick = async ()=>{
-    if (!supa){ setMsg('Supabase not initialized', 'alert'); return; }
-    continueBtn.disabled = true;
-    continueBtn.textContent = 'Signing in…';
-    setMsg('Signing in…');
-    notAdminBox.style.display = 'none';
+/* ===== Sign-in / Magic link ===== */
+continueBtn.onclick = async ()=>{
+  continueBtn.disabled = true; continueBtn.textContent = 'Signing in…';
+  setMsg('Signing in…'); notAdminBox.style.display='none';
 
-    const em = (email.value || '').trim().toLowerCase();
-    const pw = password.value;
+  const em = (email.value||'').trim().toLowerCase();
+  const pw = password.value;
 
-    if (!em){
-      setMsg('Enter your email.','alert');
-      continueBtn.disabled = false; continueBtn.textContent = 'Continue';
-      return;
+  if (!em){ setMsg('Enter your email.','alert'); continueBtn.disabled=false; continueBtn.textContent='Continue'; return; }
+  if (!captchaOK()){ setMsg('Captcha incorrect. Try again.','alert'); newCaptcha(); continueBtn.disabled=false; continueBtn.textContent='Continue'; return; }
+
+  try{
+    if (pw){
+      const { error } = await supa.auth.signInWithPassword({ email: em, password: pw });
+      if (error) throw error;
+      // Immediate redirect
+      location.replace(fallbackRedirect);
+    }else{
+      const { error } = await supa.auth.signInWithOtp({
+        email: em,
+        options:{ emailRedirectTo: `${location.origin}/login.html${location.search || ''}` }
+      });
+      if (error) throw error;
+      setMsg('Magic link sent. Check your inbox.', 'ok');
     }
+  }catch(err){
+    console.error(err);
+    const m = (err?.message||'').toLowerCase();
+    if (m.includes('invalid login credentials')) setMsg('Incorrect email or password.','alert');
+    else if (m.includes('email not confirmed')) setMsg('Please confirm your email first (check inbox/spam).','alert');
+    else if (m.includes('captcha')) setMsg('CAPTCHA required by server. Enable hCaptcha block or disable CAPTCHA in Supabase Auth settings.','alert');
+    else setMsg(err?.message || 'Sign-in failed.','alert');
+  }finally{
+    continueBtn.disabled = false; continueBtn.textContent = 'Continue';
+  }
+};
 
-    try{
-      if (pw){
-        const { error } = await supa.auth.signInWithPassword({ email: em, password: pw });
-        if (error) throw error;
+// Also react to auth changes (magic link)
+supa.auth.onAuthStateChange((_ev, session)=>{ if (session?.user) redirectAfterLogin(); });
+document.addEventListener('DOMContentLoaded', async ()=>{ newCaptcha(); const { data:{ session } } = await supa.auth.getSession(); if (session?.user) redirectAfterLogin(); });
 
-        // Poll for session up to 5s (handles storage delays)
-        const start = Date.now();
-        let got = null;
-        while (Date.now() - start < 5000) {
-          const { data:{ session } } = await supa.auth.getSession();
-          if (session) { got = session; break; }
-          await new Promise(r=>setTimeout(r,200));
-        }
-        if (!got) throw new Error("Signed in, but no session detected. Check browser privacy extensions.");
+/* ===== Forgot password -> send reset email ===== */
+document.getElementById('forgotBtn').onclick = async ()=>{
+  const em = (email.value||'').trim().toLowerCase();
+  if (!em){ setMsg('Enter your email above first.','alert'); return; }
+  if (!captchaOK()){ setMsg('Captcha incorrect. Try again.','alert'); newCaptcha(); return; }
 
-        await redirectAfterLogin();
-        if (wantAdmin) location.replace('admin.html');
-        else location.replace(fallbackRedirect);
+  try{
+    const { error } = await supa.auth.resetPasswordForEmail(em, {
+      redirectTo: `${location.origin}/update-password.html?redirect=${encodeURIComponent(fallbackRedirect)}`
+    });
+    if (error) throw error;
+    setMsg('Password reset email sent. Check your inbox.', 'ok');
+  }catch(err){
+    setMsg(err?.message || 'Could not send reset email.','alert');
+  }
+};
 
-      } else {
-        const { error } = await supa.auth.signInWithOtp({
-          email: em,
-          options: { emailRedirectTo: `${location.origin}/login.html${location.search || ''}` }
-        });
-        if (error) throw error;
-        setMsg('Check your email for the sign-in link.', 'ok');
-      }
-    }catch(err){
-      console.error('Login failed:', err);
-      const msg = (err?.message || '').toLowerCase();
-      if (msg.includes('invalid login credentials')) {
-        setMsg('Incorrect email or password.', 'alert');
-      } else if (msg.includes('email not confirmed')) {
-        setMsg('Please confirm your email first (check inbox/spam).', 'alert');
-      } else if (msg.includes('signups not allowed')) {
-        setMsg('Signups are disabled and this user doesn’t exist. Create the user in Supabase → Auth → Users, or enable signups.', 'alert');
-      } else if (msg.includes('captcha')) {
-        setMsg('CAPTCHA is required but not provided. Disable CAPTCHA in Supabase or integrate hCaptcha.', 'alert');
-      } else {
-        setMsg(err.message || String(err), 'alert');
-      }
-    }finally{
-      continueBtn.disabled = false;
-      continueBtn.textContent = 'Continue';
-    }
-  };
-}
-
-if (logoutBtn){
-  logoutBtn.onclick = async ()=>{ if(supa){ await supa.auth.signOut(); } location.reload(); };
-}
-
-/* ===== Route if already signed in ===== */
-document.addEventListener('DOMContentLoaded', redirectAfterLogin);
-if (supa && supa.auth && supa.auth.onAuthStateChange){
-  supa.auth.onAuthStateChange((_event, _session)=>{ redirectAfterLogin(); });
-}
+/* ===== Optional: hCaptcha (UI only; needs server-side verify) ===== */
+/*
+  <div class="h-captcha" data-sitekey="YOUR_HCAPTCHA_SITE_KEY"></div>
+  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+  // Read token from window.hcaptcha.getResponse() and POST it to your server for verification
+*/
 </script>
 </body>
 </html>
