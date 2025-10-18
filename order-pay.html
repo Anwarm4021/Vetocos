@@ -15,10 +15,12 @@
     .field{display:flex;flex-direction:column;gap:6px}
     .input,.select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text)}
     .btn{padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
     .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
     .muted{color:var(--muted)}
     .badge{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem}
     .price{white-space:nowrap}
+    .line{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid rgba(141,158,199,.12)}
   </style>
 </head>
 <body>
@@ -84,10 +86,17 @@
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
+    /* ========= Supabase ========= */
     const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
     const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
-    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
 
+    /* ========= Config ========= */
+    const ADMIN_EMAIL = "info@vetocos.com"; // <-- change if needed
+
+    /* ========= DOM ========= */
     const qs = new URLSearchParams(location.search);
     const ORDER_ID = qs.get('order');
     if(!ORDER_ID){ location.replace('checkout.html'); }
@@ -114,46 +123,90 @@
       sumAmt: document.getElementById('sumAmt')
     };
 
-    els.btnBack.addEventListener('click', ()=> location.assign('cart.html'));
-
-    function fmtMAD(n){ const v=Number(n||0); return isNaN(v)?'—':(v.toFixed(2)+' MAD'); }
-
+    /* ========= Helpers ========= */
+    function fmtPrice(cur, n){ const v=Number(n||0); return isNaN(v)?'—':`${v.toFixed(2)} ${cur||'MAD'}`; }
     function toggleAddress(){
       const isPickup = els.delivery.value === 'pickup';
       els.addressBlock.style.display = isPickup ? 'none' : 'block';
     }
     els.delivery.addEventListener('change', toggleAddress);
 
+    async function withBusy(btn, fn){
+      try { btn.disabled = true; await fn(); }
+      finally { btn.disabled = false; }
+    }
+
+    /* ========= Auth guard ========= */
+    let CURRENT_USER = null;
+    async function requireLogin(){
+      const { data:{ user } } = await supa.auth.getUser();
+      if(!user){
+        location.replace('login.html?redirect='+encodeURIComponent(location.href));
+        throw new Error('redirect');
+      }
+      CURRENT_USER = user;
+      return user;
+    }
+    supa.auth.onAuthStateChange((_e, session) => {
+      if(!session?.user){
+        location.replace('login.html?redirect='+encodeURIComponent(location.href));
+      }
+    });
+
+    /* ========= Load order + items ========= */
+    let ORDER=null, ORDER_ITEMS=[];
     async function load(){
-      const { data: o } = await supa.from('orders').select('*').eq('id', ORDER_ID).maybeSingle();
-      if(!o){ location.replace('checkout.html'); return; }
+      await requireLogin();
+
+      // enforce ownership
+      const { data: o, error:oErr } = await supa
+        .from('orders')
+        .select('*')
+        .eq('id', ORDER_ID)
+        .eq('user_id', CURRENT_USER.id)
+        .maybeSingle();
+
+      if(oErr || !o){ location.replace('checkout.html'); return; }
+      ORDER = o;
+
       els.meta.textContent = `Order ${String(ORDER_ID).slice(0,8)} • Status: ${o.status}`;
 
-      const { data: items } = await supa.from('order_items').select('*').eq('order_id', ORDER_ID);
-      let totalQty = 0, totalAmt = 0;
+      const { data: items } = await supa.from('order_items')
+        .select('product_sku,product_name,quantity,unit_price,line_total,currency,price_tier')
+        .eq('order_id', ORDER_ID);
 
-      els.items.innerHTML = (items||[]).map(it=>{
+      ORDER_ITEMS = items || [];
+
+      // render items + totals (support multi-currency)
+      let totalQty = 0;
+      const totalsByCur = {};
+      els.items.innerHTML = ORDER_ITEMS.map(it=>{
         const q = Number(it.quantity||0);
         const up = Number(it.unit_price||0);
         const lt = Number(it.line_total ?? (up*q));
-        totalQty += q; totalAmt += lt;
-        return `<div class="row" style="justify-content:space-between">
-          <div>${it.product_name||it.product_sku}</div>
-          <div class="price">${fmtMAD(up)} × ${q} = <strong>${fmtMAD(lt)}</strong></div>
+        const cur = it.currency || 'MAD';
+        totalQty += q;
+        totalsByCur[cur] = (totalsByCur[cur]||0) + lt;
+        return `<div class="line">
+          <div>${(it.product_name||it.product_sku)} <span class="muted">· ${it.price_tier||''}</span></div>
+          <div class="price">${fmtPrice(cur, up)} × ${q} = <strong>${fmtPrice(cur, lt)}</strong></div>
         </div>`;
       }).join('');
 
       els.sumQty.textContent = totalQty;
-      els.sumAmt.textContent = fmtMAD(totalAmt);
+      els.sumAmt.textContent = Object.entries(totalsByCur).map(([cur,amt])=>fmtPrice(cur, amt)).join(' · ');
 
-      // Prefill from order or session
+      // Prefill contact
       const { data: ses } = await supa.auth.getUser();
       els.email.value = o.email || ses?.user?.email || '';
       els.full.value = o.full_name || '';
       els.phone.value = o.phone_number || '';
+
+      // Prefill delivery/payment
       els.delivery.value = o.delivery_method || 'delivery';
       els.method.value = o.payment_method || 'cod';
 
+      // Prefill address (if delivery)
       els.country.value = o.country || '';
       els.address1.value = o.address_line1 || '';
       els.address2.value = o.address_line2 || '';
@@ -161,11 +214,27 @@
       els.postal.value = o.postal_code || '';
 
       toggleAddress();
+
+      // Optional: if blank, try profiles for name/phone
+      if (!els.full.value || !els.phone.value){
+        const { data: prof } = await supa
+          .from('profiles')
+          .select('first_name,last_name,phone')
+          .eq('id', CURRENT_USER.id)
+          .maybeSingle();
+        if (prof){
+          if (!els.full.value){
+            const full = [prof.first_name, prof.last_name].filter(Boolean).join(' ').trim();
+            if (full) els.full.value = full;
+          }
+          if (!els.phone.value && prof.phone) els.phone.value = prof.phone;
+        }
+      }
     }
 
+    /* ========= Save details ========= */
     async function saveDetails(){
       const isPickup = els.delivery.value === 'pickup';
-
       const patch = {
         full_name: els.full.value.trim(),
         email: els.email.value.trim(),
@@ -179,38 +248,81 @@
         postal_code: isPickup ? null : (els.postal.value.trim() || null)
       };
 
-      if (!patch.full_name) { els.msg.textContent = 'Full name required'; return false; }
-      if (!patch.email) { els.msg.textContent = 'Email required'; return false; }
-      if (!patch.phone_number) { els.msg.textContent = 'Phone required'; return false; }
-      if (patch.delivery_method === 'delivery') {
+      if (!patch.full_name){ els.msg.textContent='Full name required'; return false; }
+      if (!patch.email){ els.msg.textContent='Email required'; return false; }
+      if (!patch.phone_number){ els.msg.textContent='Phone required'; return false; }
+      if (patch.delivery_method === 'delivery'){
         if (!patch.country || !patch.address_line1 || !patch.city || !patch.postal_code){
-          els.msg.textContent = 'Please complete the delivery address.'; return false;
+          els.msg.textContent='Please complete the delivery address.'; return false;
         }
       }
 
-      const { error } = await supa.from('orders').update(patch).eq('id', ORDER_ID);
-      if(error){ els.msg.textContent = error.message; return false; }
+      const { error } = await supa.from('orders').update(patch).eq('id', ORDER_ID).eq('user_id', CURRENT_USER.id);
+      if (error){ els.msg.textContent = error.message; return false; }
       return true;
     }
 
-    els.btnCancel.addEventListener('click', async ()=>{
-      const { data: o } = await supa.from('orders').select('status').eq('id', ORDER_ID).single();
-      if(o?.status === 'delivered'){ els.msg.textContent = 'Cannot cancel a delivered order.'; return; }
-      const { error } = await supa.from('orders').update({ status: 'cancelled' }).eq('id', ORDER_ID);
-      if(error){ els.msg.textContent = error.message; return; }
-      els.msg.textContent = 'Order cancelled.';
-      setTimeout(()=>location.assign('index.html'), 700);
-    });
+    /* ========= Cancel / Continue ========= */
+    els.btnBack.addEventListener('click', ()=> location.assign('cart.html'));
 
-    els.btnContinue.addEventListener('click', async ()=>{
+    els.btnCancel.addEventListener('click', () => withBusy(els.btnCancel, async ()=>{
+      const { data: o } = await supa.from('orders').select('status').eq('id', ORDER_ID).eq('user_id', CURRENT_USER.id).single();
+      if(o?.status === 'delivered'){ els.msg.textContent = 'Cannot cancel a delivered order.'; return; }
+      const { error } = await supa.from('orders').update({ status: 'cancelled' }).eq('id', ORDER_ID).eq('user_id', CURRENT_USER.id);
+      els.msg.textContent = error ? error.message : 'Order cancelled.';
+      if(!error) setTimeout(()=>location.assign('index.html'), 700);
+    }));
+
+    els.btnContinue.addEventListener('click', () => withBusy(els.btnContinue, async ()=>{
       const ok = await saveDetails();
       if(!ok) return;
-      await supa.from('orders').update({ status: 'pending' }).eq('id', ORDER_ID);
+
+      // update order status to pending (placed)
+      const { error: upErr } = await supa.from('orders')
+        .update({ status:'pending' })
+        .eq('id', ORDER_ID)
+        .eq('user_id', CURRENT_USER.id);
+      if (upErr){ els.msg.textContent = upErr.message; return; }
+
+      // fire emails via Edge Function
+      try{
+        const payload = {
+          kind: 'order_placed',
+          order_id: ORDER_ID,
+          order: ORDER,                 // basic order meta (may be stale by 1 step, that’s ok)
+          items: ORDER_ITEMS,           // array of items
+          customer: {
+            id: CURRENT_USER.id,
+            email: els.email.value.trim(),
+            full_name: els.full.value.trim(),
+            phone: els.phone.value.trim(),
+          },
+          delivery: {
+            method: els.delivery.value,
+            country: els.country.value.trim() || null,
+            address1: els.address1.value.trim() || null,
+            address2: els.address2.value.trim() || null,
+            city: els.city.value.trim() || null,
+            postal: els.postal.value.trim() || null,
+          },
+          payment_method: els.method.value,
+          // recipients (the function can send to both)
+          to_customer: els.email.value.trim(),
+          to_admin: ADMIN_EMAIL
+        };
+
+        // This requires a deployed Edge Function named "send-order-email"
+        const { error: fnErr } = await supa.functions.invoke('send-order-email', { body: payload });
+        if (fnErr){ console.warn('email function error:', fnErr); /* don’t block checkout */ }
+      }catch(err){ console.warn('email invoke failed:', err); }
+
+      // go to thank you
       const method = els.method.value;
       const way = els.delivery.value;
       location.assign(`thank-you.html?order=${encodeURIComponent(ORDER_ID)}&m=${method}&way=${way}`);
-    });
+    }));
 
+    /* ========= Boot ========= */
     load();
   </script>
 </body>
