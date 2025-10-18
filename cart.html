@@ -8,344 +8,51 @@
   <meta name="theme-color" content="#0b1020" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root{ --bg:#0b1020; --card:#0f162f; --muted:#8ea0c8; --text:#f6f7fb; --radius:12px; --shadow:0 10px 30px rgba(0,0,0,.25) }
-    *{ box-sizing:border-box }
-    body{ margin:0; font-family:Inter,sans-serif; background:linear-gradient(135deg,var(--bg),#101835); color:var(--text) }
-
-    header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
-    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-    .wrap{ max-width:1100px; margin:0 auto; padding:0 18px }
-    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
-    .brand-logo{width:60px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
-    .links{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .btn, .contact-btn, #lang-switch{
-      padding:10px 12px;border-radius:12px;border:1px solid rgba(141,158,199,.25);
-      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer
-    }
-    #lang-switch{background:rgba(255,255,255,.04);min-width:120px}
-
-    main{ max-width:1100px; margin:40px auto; padding:0 18px }
-    h1{ margin:0 0 16px }
-    h2{ margin:26px 0 10px; font-size:1.15rem }
-    .card{ background:var(--card); border:1px solid rgba(141,158,199,.18); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow) }
-    table{ width:100%; border-collapse:collapse; background:var(--card); border:1px solid rgba(141,158,199,.18); border-radius:10px; overflow:hidden }
-    th,td{ padding:12px; text-align:left; vertical-align:middle }
-    th{ background:rgba(141,158,199,.15); color:var(--muted) }
-    tr:not(:last-child){ border-bottom:1px solid rgba(141,158,199,.18) }
-    .qty-btn{ padding:4px 8px; border:none; border-radius:6px; background:rgba(255,255,255,.1); color:white; cursor:pointer }
-    .qty-btn:disabled{ opacity:.6; cursor:not-allowed }
-    .summary{ margin-top:14px; text-align:right; font-weight:600 }
-    .btn.primary{ margin-top:14px; display:inline-block; padding:12px 18px; border-radius:10px; border:1px solid rgba(141,158,199,.25); background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12)); color:#f6f7fb; font-weight:600; cursor:pointer }
-    .btn.secondary{ background:rgba(255,255,255,.04) }
-    .btn[disabled]{ opacity:.6; cursor:not-allowed }
-    .empty{ text-align:center; padding:36px; background:var(--card); border:1px solid rgba(141,158,199,.18); border-radius:10px; color:var(--muted) }
-    .muted{ color:var(--muted) }
-    .orders{ margin-top:28px }
-    .order{ padding:12px 0; border-top:1px solid rgba(141,158,199,.18) }
-    .order:first-child{ border-top:none }
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:space-between }
-    .badge{ display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid rgba(141,158,199,.25); font-size:12px }
-    .badge.ok{ background:rgba(131,240,165,.12) }
-    .badge.warn{ background:rgba(255,200,120,.12) }
-    .badge.bad{ background:rgba(255,120,120,.12) }
-    a{ color:#6dd5ff; text-decoration:none }
-    .hint{ font-size:.92rem }
-    .note{ font-size:.88rem; color:var(--muted) }
-    .namecell{ display:flex; flex-direction:column; gap:4px }
-
-    footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
-    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
-
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:90}
-    .modal.open{display:flex}
-    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
-    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
-    .sheet-title{margin:0;font-size:1.1rem}
-    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
-    .sheet-body{padding:16px}
-    .pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
-    @media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
-    .field{display:flex;flex-direction:column;gap:6px}
-    .input,.select,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text);outline:none}
-    .textarea{min-height:140px;resize:vertical}
-    .hint12{font-size:12px;color:var(--muted)}
-    .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
-    .divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
-
-    body.rtl .wrap, body.rtl main, body.rtl table, body.rtl .pro-grid{direction:rtl}
-    body.rtl th, body.rtl td{text-align:inherit}
-
-    .signin-banner{margin:10px 0 20px;padding:12px;border:1px dashed rgba(141,158,199,.45);border-radius:12px;background:rgba(255,255,255,.03);display:none}
+    :root{ --bg:#0b1020; --card:#0f162f; --muted:#8ea0c8; --text:#f6f7fb; --radius:12px; }
+    body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
+    main{max-width:900px;margin:40px auto;padding:0 18px}
+    h1{margin:0 0 16px}
+    h2{margin:26px 0 10px;font-size:1.15rem}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--radius);padding:16px}
+    table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:10px;overflow:hidden}
+    th,td{padding:12px;text-align:left;vertical-align:middle}
+    th{background:rgba(141,158,199,.15);color:var(--muted)}
+    tr:not(:last-child){border-bottom:1px solid rgba(141,158,199,.18)}
+    .qty-btn{padding:4px 8px;border:none;border-radius:6px;background:rgba(255,255,255,.1);color:white;cursor:pointer}
+    .qty-btn:disabled{opacity:.6;cursor:not-allowed}
+    .remove{color:#ff8080;cursor:pointer}
+    .summary{margin-top:14px;text-align:right;font-weight:600}
+    .btn{margin-top:14px;display:inline-block;padding:12px 18px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:#f6f7fb;font-weight:600;cursor:pointer}
+    .btn.secondary{background:rgba(255,255,255,.04)}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .empty{text-align:center;padding:36px;background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:10px;color:var(--muted)}
+    .muted{color:var(--muted)}
+    .orders{margin-top:28px}
+    .order{padding:12px 0;border-top:1px solid rgba(141,158,199,.18)}
+    .order:first-child{border-top:none}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:12px}
+    .badge.ok{background:rgba(131,240,165,.12)}
+    .badge.warn{background:rgba(255,180,180,.12)}
+    a{color:#6dd5ff;text-decoration:none}
+    .hint{font-size:.92rem}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
-
-  <!-- Header -->
-  <header class="site">
-    <div class="wrap nav">
-      <div class="brand">
-        <a href="index.html" aria-label="VetoCos home">
-          <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
-        </a>
-        <span>VetoCos</span>
-      </div>
-      <nav class="links">
-        <a class="btn" href="Products.html" data-i18n="nav.products">Products</a>
-        <a class="btn" href="vet-verify.html" data-i18n="nav.verify">Verification</a>
-        <a class="btn" href="account.html" data-i18n="nav.account">My Account</a>
-        <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
-        <select id="lang-switch" aria-label="Language">
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="es">Español</option>
-          <option value="ar">العربية</option>
-        </select>
-      </nav>
-    </div>
-  </header>
-
   <main>
-    <div class="wrap">
-      <h1 data-i18n="page.title">Your Cart</h1>
+    <h1>Your Cart</h1>
+    <div id="cartBox" aria-live="polite"></div>
 
-      <!-- Sign-in banner -->
-      <div id="signinBanner" class="signin-banner">
-        <span id="signinText">To see prices and your orders, please sign in.</span>
-        <button class="btn" style="margin-left:10px" onclick="goLogin()">Sign in</button>
+    <!-- Optional: signed-in user’s recent orders -->
+    <section class="orders">
+      <div class="row">
+        <h2 style="margin:0">Your Purchases</h2>
+        <div id="ordersHint" class="muted hint">Sign in during checkout to keep your history & receipts.</div>
       </div>
-
-      <div id="cartBox" aria-live="polite"></div>
-
-      <!-- Orders -->
-      <section class="orders">
-        <div class="row">
-          <h2 style="margin:0" data-i18n="orders.title">Your Purchases</h2>
-          <div id="ordersHint" class="muted hint" data-i18n="orders.hint">Sign in to see your purchase history.</div>
-        </div>
-        <div id="ordersBox" class="card" style="margin-top:10px;display:none"></div>
-      </section>
-    </div>
+      <div id="ordersBox" class="card" style="margin-top:10px;display:none"></div>
+    </section>
   </main>
-
-  <!-- Footer -->
-  <footer>
-    <div class="wrap">
-      © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals.</span>
-      <div class="footer-links">
-        <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
-        <a href="#" onclick="openContact();return false;" data-i18n="footer.contact">Contact</a>
-      </div>
-    </div>
-  </footer>
-
-  <!-- CONTACT MODAL -->
-  <div id="contactModal" class="modal" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
-      <div class="sheet-head">
-        <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
-        <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
-      </div>
-      <div class="sheet-body">
-        <div class="pro-grid">
-          <form id="contactForm" onsubmit="return sendMailto(event)">
-            <div class="field">
-              <label for="topic" data-i18n="form.topic">Topic</label>
-              <select id="topic" name="topic" class="select">
-                <option value="product" data-i18n="form.topicProduct">Product question</option>
-                <option value="availability" data-i18n="form.topicAvailability">Availability / Where to buy</option>
-                <option value="order" data-i18n="form.topicOrder">Order / Delivery</option>
-                <option value="feedback" data-i18n="form.topicFeedback">Feedback</option>
-                <option value="other" data-i18n="form.topicOther">Other</option>
-              </select>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-              <div class="field">
-                <label for="name" data-i18n="form.name">Name</label>
-                <input id="name" name="name" class="input" autocomplete="name" required data-i18n="form.namePH" data-i18n-attr="placeholder" placeholder="Full name">
-              </div>
-              <div class="field">
-                <label for="email2" data-i18n="form.email">Email</label>
-                <input id="email2" name="email" type="email" class="input" autocomplete="email" required inputmode="email" data-i18n="form.emailPH" data-i18n-attr="placeholder" placeholder="name@example.com">
-              </div>
-            </div>
-
-            <div class="field" style="margin-top:10px">
-              <label for="subject" data-i18n="form.subject">Subject</label>
-              <input id="subject" name="subject" class="input" maxlength="120" required data-i18n="form.subjectPH" data-i18n-attr="placeholder" placeholder="Question about a product…">
-            </div>
-
-            <div class="field" style="margin-top:10px">
-              <label for="message" data-i18n="form.message">Message / Comments</label>
-              <textarea id="message" name="message" class="textarea" maxlength="1200" required data-i18n="form.messagePH" data-i18n-attr="placeholder" placeholder="Write your help request or comment…"></textarea>
-              <div class="hint12"><span id="msgCount">0</span>/1200</div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="field">
-              <label style="display:flex;gap:8px;align-items:flex-start">
-                <input type="checkbox" id="consent" required>
-                <span data-i18n="form.consent">I consent to VetoCos using my details to respond to this enquiry.</span>
-              </label>
-              <span class="hint12" data-i18n="form.privacyNote">Your message is sent via your email app; we don't store it on this site.</span>
-            </div>
-
-            <div class="actions-fw">
-              <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
-              <button class="contact-btn" type="submit" data-i18n="form.send">Send</button>
-            </div>
-          </form>
-
-          <div class="card" style="height:fit-content">
-            <h3 data-i18n="contact.reach">Reach us</h3>
-            <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
-            <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
-            <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
-            <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
-            <p><strong data-i18n="contact.hours">Hours:</strong> <span data-i18n="contact.hoursVal">Mon–Fri, 9:00–17:00</span></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PRIVACY & POLICY MODAL -->
-  <div id="policyModal" class="modal" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
-      <div class="sheet-head">
-        <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
-        <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
-      </div>
-      <div class="sheet-body">
-        <h3 data-i18n="policy.overviewTitle">Overview</h3>
-        <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. We do not collect personal data unless you choose to contact us.</p>
-        <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
-        <ul>
-          <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
-          <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
-        </ul>
-        <h3 data-i18n="policy.useTitle">How we use data</h3>
-        <ul>
-          <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
-          <li data-i18n="policy.use2">We do not sell personal data.</li>
-        </ul>
-        <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
-        <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for functionality and anonymous analytics.</p>
-        <h3 data-i18n="policy.choiceTitle">Your choices</h3>
-        <ul>
-          <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
-          <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
-        </ul>
-        <h3 data-i18n="policy.contactTitle">Contact</h3>
-        <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
-        <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    /* ======================= i18n ======================= */
-    const I18N = {
-      en:{ "nav.products":"Products","nav.verify":"Verification","nav.account":"My Account","nav.contact":"Contact",
-           "page.title":"Your Cart",
-           "orders.title":"Your Purchases","orders.hint":"Sign in to see your purchase history.","orders.signed":"You are signed in. Your recent purchases are below.","orders.none":"No purchases yet.","orders.loading":"Loading your orders…","orders.receipt":"Receipt",
-           "footer.tag":"Complementary feed for companion animals.","footer.policy":"Privacy & Policy","footer.contact":"Contact",
-           "cart.empty":"Your cart is empty","cart.total":"Total items:","cart.clear":"Clear cart","cart.stockNote":"Stock limits enforced automatically.","cart.proceed":"Proceed","cart.product":"Product","cart.qty":"Quantity","cart.action":"Action","cart.remove":"Remove","cart.ok":"OK","cart.unavailable":"Unavailable","cart.onlyLeft":"Only {n} left",
-           "contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.reachText":"We’re happy to help with product questions, availability, or feedback.","contact.email":"Email:","contact.phone":"Phone:","contact.whatsapp":"WhatsApp:","contact.hours":"Hours:","contact.hoursVal":"Mon–Fri, 9:00–17:00",
-           "form.topic":"Topic","form.topicProduct":"Product question","form.topicAvailability":"Availability / Where to buy","form.topicOrder":"Order / Delivery","form.topicFeedback":"Feedback","form.topicOther":"Other",
-           "form.name":"Name","form.namePH":"Full name","form.email":"Email","form.emailPH":"name@example.com","form.subject":"Subject","form.subjectPH":"Question about a product…","form.message":"Message / Comments","form.messagePH":"Write your help request or comment…","form.consent":"I consent to VetoCos using my details to respond to this enquiry.","form.privacyNote":"Your message is sent via your email app; we don't store it on this site.","form.cancel":"Cancel","form.send":"Send",
-           "policy.title":"Privacy & Policy","policy.close":"Close","policy.overviewTitle":"Overview","policy.overviewText":"VetoCos provides complementary feed (alimentary) products. We do not collect personal data unless you choose to contact us.","policy.dataTitle":"Data we may receive","policy.data1":"Messages you send via the contact form (your name, email, and message content).","policy.data2":"Basic, anonymized analytics (page views, device type) to improve the site.","policy.useTitle":"How we use data","policy.use1":"To respond to your requests and improve our products and site experience.","policy.use2":"We do not sell personal data.","policy.cookiesTitle":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for functionality and anonymous analytics.","policy.choiceTitle":"Your choices","policy.choice1":"You can request that we delete your message and contact details at any time.","policy.choice2":"You can disable cookies in your browser settings.","policy.contactTitle":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Last updated:",
-           "cart.unit":"Unit price","cart.line":"Line total","cart.sum":"Cart total","cart.pricesHiddenSignIn":"Sign in to see prices","cart.pricesHiddenVet":"Verify vet status to see prices","cart.currencyMixed":"*Prices show per line currency","cart.pay":"Pay now"
-      },
-      fr:{ "nav.products":"Produits","nav.verify":"Vérification","nav.account":"Mon compte","nav.contact":"Contact",
-           "page.title":"Votre panier",
-           "orders.title":"Vos achats","orders.hint":"Connectez-vous pour voir votre historique d’achats.","orders.signed":"Vous êtes connecté. Vos achats récents ci-dessous.","orders.none":"Aucun achat pour le moment.","orders.loading":"Chargement de vos commandes…","orders.receipt":"Reçu",
-           "footer.tag":"Complément alimentaire pour animaux de compagnie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
-           "cart.empty":"Votre panier est vide","cart.total":"Articles au total :","cart.clear":"Vider le panier","cart.stockNote":"Limites de stock appliquées automatiquement.","cart.proceed":"Continuer","cart.product":"Produit","cart.qty":"Qté","cart.action":"Action","cart.remove":"Supprimer","cart.ok":"OK","cart.unavailable":"Indisponible","cart.onlyLeft":"Plus que {n}",
-           "contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Nous aidons volontiers pour toute question sur les produits, la disponibilité, ou vos retours.","contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00",
-           "form.topic":"Sujet","form.topicProduct":"Question produit","form.topicAvailability":"Disponibilité / Où acheter","form.topicOrder":"Commande / Livraison","form.topicFeedback":"Avis","form.topicOther":"Autre",
-           "form.name":"Nom","form.namePH":"Nom complet","form.email":"E-mail","form.emailPH":"nom@exemple.com","form.subject":"Objet","form.subjectPH":"Question à propos d’un produit…","form.message":"Message / Commentaires","form.messagePH":"Écrivez votre demande…","form.consent":"J’autorise VetoCos à utiliser mes données pour répondre à cette demande.","form.privacyNote":"Votre message est envoyé via votre application e-mail ; il n’est pas stocké sur ce site.","form.cancel":"Annuler","form.send":"Envoyer",
-           "policy.title":"Confidentialité & Politique","policy.close":"Fermer","policy.overviewTitle":"Aperçu","policy.overviewText":"VetoCos fournit des compléments alimentaires. Nous ne collectons pas de données personnelles sauf si vous nous contactez.","policy.dataTitle":"Données susceptibles d’être reçues","policy.data1":"Messages envoyés via le formulaire (nom, e-mail, contenu).","policy.data2":"Analyses anonymisées de base.","policy.useTitle":"Utilisation","policy.use1":"Répondre à vos demandes et améliorer l’expérience.","policy.use2":"Nous ne vendons pas de données.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies essentiels minimaux uniquement.","policy.choiceTitle":"Vos choix","policy.choice1":"Demander la suppression de vos messages/données.","policy.choice2":"Désactiver les cookies dans votre navigateur.","policy.contactTitle":"Contact","policy.contactText":"Pour toute question confidentialité : <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Dernière mise à jour :",
-           "cart.unit":"Prix unitaire","cart.line":"Total ligne","cart.sum":"Total panier","cart.pricesHiddenSignIn":"Connectez-vous pour voir les prix","cart.pricesHiddenVet":"Vérifiez le statut vétérinaire pour voir les prix","cart.currencyMixed":"*Prix par devise de la ligne","cart.pay":"Payer maintenant"
-      },
-      es:{ "nav.products":"Productos","nav.verify":"Verificación","nav.account":"Mi cuenta","nav.contact":"Contacto",
-           "page.title":"Tu carrito",
-           "orders.title":"Tus compras","orders.hint":"Inicia sesión para ver tu historial.","orders.signed":"Has iniciado sesión. Compras recientes abajo.","orders.none":"Sin compras aún.","orders.loading":"Cargando tus pedidos…","orders.receipt":"Recibo",
-           "footer.tag":"Alimento complementario para animales de compañía.","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
-           "cart.empty":"Tu carrito está vacío","cart.total":"Artículos totales:","cart.clear":"Vaciar carrito","cart.stockNote":"Límites de stock aplicados automáticamente.","cart.proceed":"Continuar","cart.product":"Producto","cart.qty":"Cantidad","cart.action":"Acción","cart.remove":"Quitar","cart.ok":"OK","cart.unavailable":"No disponible","cart.onlyLeft":"Solo quedan {n}",
-           "contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Cómo contactarnos","contact.reachText":"Encantados de ayudarte con product os, disponibilidad o comentarios.","contact.email":"Correo:","contact.phone":"Teléfono:","contact.whatsapp":"WhatsApp:","contact.hours":"Horario:","contact.hoursVal":"Lun–Vie, 9:00–17:00",
-           "form.topic":"Tema","form.topicProduct":"Consulta de producto","form.topicAvailability":"Disponibilidad / Dónde comprar","form.topicOrder":"Pedido / Entrega","form.topicFeedback":"Comentarios","form.topicOther":"Otro",
-           "form.name":"Nombre","form.namePH":"Nombre completo","form.email":"Correo","form.emailPH":"nombre@ejemplo.com","form.subject":"Asunto","form.subjectPH":"Consulta sobre un producto…","form.message":"Mensaje / Comentarios","form.messagePH":"Escribe tu solicitud…","form.consent":"Autorizo a VetoCos a usar mis datos para responder esta consulta.","form.privacyNote":"El mensaje se envía con tu app de correo; no se guarda en este sitio.","form.cancel":"Cancelar","form.send":"Enviar",
-           "policy.title":"Privacidad y Política","policy.close":"Cerrar","policy.overviewTitle":"Resumen","policy.overviewText":"VetoCos ofrece alimentos complementarios. No recopilamos datos personales salvo que nos contactes.","policy.dataTitle":"Datos que podemos recibir","policy.data1":"Mensajes enviados (nombre, correo, contenido).","policy.data2":"Analítica básica y anónima.","policy.useTitle":"Uso de datos","policy.use1":"Responder y mejorar la experiencia.","policy.use2":"No vendemos datos.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies esenciales mínimas.","policy.choiceTitle":"Tus opciones","policy.choice1":"Solicitar eliminación de mensajes/datos.","policy.choice2":"Desactivar cookies en el navegador.","policy.contactTitle":"Contacto","policy.contactText":"Privacidad: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Última actualización:",
-           "cart.unit":"Precio unitario","cart.line":"Total de línea","cart.sum":"Total del carrito","cart.pricesHiddenSignIn":"Inicia sesión para ver precios","cart.pricesHiddenVet":"Verifica tu condición de veterinario para ver precios","cart.currencyMixed":"*Precios por moneda de la línea","cart.pay":"Pagar ahora"
-      },
-      ar:{ "nav.products":"المنتجات","nav.verify":"التحقق","nav.account":"حسابي","nav.contact":"اتصل بنا",
-           "page.title":"سلة التسوق",
-           "orders.title":"مشترياتك","orders.hint":"سجّل الدخول لعرض سجل المشتريات.","orders.signed":"تم تسجيل الدخول. تظهر المشتريات الأخيرة أدناه.","orders.none":"لا توجد مشتريات بعد.","orders.loading":"جارٍ تحميل الطلبات…","orders.receipt":"الإيصال",
-           "footer.tag":"غذاء تكميلي للحيوانات الأليفة.","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
-           "cart.empty":"سلة التسوق فارغة","cart.total":"إجمالي العناصر:","cart.clear":"تفريغ السلة","cart.stockNote":"تُطبّق حدود المخزون تلقائيًا.","cart.proceed":"متابعة","cart.product":"المنتج","cart.qty":"الكمية","cart.action":"إجراء","cart.remove":"إزالة","cart.ok":"جيد","cart.unavailable":"غير متاح","cart.onlyLeft":"المتبقي {n}",
-           "contact.title":"اتصل بنا","contact.close":"إغلاق","contact.reach":"تواصل معنا","contact.reachText":"نسعد بمساعدتك في الاستفسارات حول المنتجات أو التوفر أو الملاحظات.","contact.email":"البريد:","contact.phone":"الهاتف:","contact.whatsapp":"واتساب:","contact.hours":"الدوام:","contact.hoursVal":"الاثنين–الجمعة، 9:00–17:00",
-           "form.topic":"الموضوع","form.topicProduct":"استفسار عن منتج","form.topicAvailability":"التوفر / أين أشتري","form.topicOrder":"طلب / توصيل","form.topicFeedback":"ملاحظات","form.topicOther":"أخرى",
-           "form.name":"الاسم","form.namePH":"الاسم الكامل","form.email":"البريد الإلكتروني","form.emailPH":"name@example.com","form.subject":"الموضوع","form.subjectPH":"سؤال حول منتج…","form.message":"الرسالة / التعليقات","form.messagePH":"اكتب طلبك…","form.consent":"أوافق على استخدام بياناتي للرد على هذا الاستفسار.","form.privacyNote":"يتم إرسال الرسالة عبر تطبيق بريدك؛ لا نخزنها في الموقع.","form.cancel":"إلغاء","form.send":"إرسال",
-           "policy.title":"الخصوصية والسياسة","policy.close":"إغلاق","policy.overviewTitle":"نظرة عامة","policy.overviewText":"تقدم VetoCos أغذية تكميلية. لا نجمع بيانات شخصية إلا إذا تواصلت معنا.","policy.dataTitle":"البيانات التي قد نستلمها","policy.data1":"رسائل نموذج الاتصال (الاسم، البريد، المحتوى).","policy.data2":"تحليلات أساسية مجهولة.","policy.useTitle":"كيفية الاستخدام","policy.use1":"للرد وتحسين التجربة.","policy.use2":"لا نبيع البيانات.","policy.cookiesTitle":"ملفات تعريف الارتباط","policy.cookiesText":"نستخدم الضروري فقط.","policy.choiceTitle":"خياراتك","policy.choice1":"يمكنك طلب حذف بياناتك.","policy.choice2":"يمكنك تعطيل الكوكيز.","policy.contactTitle":"تواصل","policy.contactText":"الخصوصية: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"آخر تحديث:",
-           "cart.unit":"سعر الوحدة","cart.line":"إجمالي السطر","cart.sum":"إجمالي السلة","cart.pricesHiddenSignIn":"سجّل الدخول لعرض الأسعار","cart.pricesHiddenVet":"أكمل التحقق البيطري لعرض الأسعار","cart.currencyMixed":"*الأسعار حسب عملة كل سطر","cart.pay":"ادفع الآن"
-      }
-    };
-    function applyLang(lang){
-      const dict=I18N[lang]||I18N.en;
-      document.querySelectorAll("[data-i18n]").forEach(el=>{
-        const k=el.getAttribute("data-i18n"); if(dict[k]!=null) el.innerHTML=dict[k];
-      });
-      document.querySelectorAll("[data-i18n-attr]").forEach(el=>{
-        const k=el.getAttribute("data-i18n"); const attrs=(el.getAttribute("data-i18n-attr")||"").split(",").map(s=>s.trim()).filter(Boolean);
-        if(dict[k]==null) return; attrs.forEach(a=>el.setAttribute(a, dict[k]));
-      });
-      const html=document.documentElement; html.lang=lang; if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); } else { html.dir="ltr"; document.body.classList.remove("rtl"); }
-      localStorage.setItem("lang",lang); const sel=document.getElementById('lang-switch'); if(sel) sel.value=lang;
-    }
-    function t(k){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][k])||(I18N.en[k]||k); }
-
-    /* Contact / Policy modals & helpers */
-    const contactModal=document.getElementById('contactModal');
-    const policyModal=document.getElementById('policyModal');
-    function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
-    function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
-    function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
-    function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
-    [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
-
-    const toAddress='info@vetocos.com';
-    function sendMailto(e){
-      e.preventDefault();
-      const topic=document.getElementById('topic').value;
-      const name=document.getElementById('name').value.trim();
-      const email=document.getElementById('email2').value.trim();
-      const subject=document.getElementById('subject')?.value.trim()||'Website enquiry';
-      const message=document.getElementById('message').value.trim();
-      if(!document.getElementById('consent').checked) return false;
-      const body=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,'',message].join('%0A');
-      window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${body}`;
-      return false;
-    }
-
-    document.addEventListener('DOMContentLoaded', ()=>{
-      document.getElementById('y').textContent=new Date().getFullYear();
-      const d=new Date(); const month=d.toLocaleString('default',{month:'long'}); const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
-      const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
-      const sel=document.getElementById('lang-switch');
-      if(sel){
-        sel.value=initial;
-        sel.addEventListener('change', async e=>{
-          applyLang(e.target.value);
-          await renderCart();        // live refresh cart translations
-          await renderOrders();
-        });
-      }
-      const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
-    });
-  </script>
 
   <script>
     /* ======================= Supabase client ======================= */
@@ -355,29 +62,10 @@
       { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
 
-    /* ======================= PKCE / magic-link return handling ======================= */
-    (async () => {
-      try {
-        if (location.search.includes('code=') || location.hash.includes('access_token')) {
-          await supa.auth.exchangeCodeForSession(location.href);
-          const clean = new URL(location.href);
-          ['code','type','access_token','refresh_token','expires_in','token_type'].forEach(k=>clean.searchParams.delete(k));
-          history.replaceState({}, '', clean.toString());
-        }
-      } catch (e) {
-        console.error('PKCE exchange failed:', e);
-      }
-    })();
-
-    /* ======================= Cart + stock state ======================= */
+    /* ======================= Cart utils (idempotent) ======================= */
     const CART_KEY = 'cart';
     const CART_UPDATED_KEY = 'cart_updated_at';
-    const CART_RESTORED_KEY = 'cart_restored_v2';
-
-    let PRODUCTS = Object.create(null);
-    let VARIANTS = Object.create(null);
-    let IS_VET = false;
-    let IS_SIGNED = false;
+    const CART_RESTORED_KEY = 'cart_restored_v2'; // per-tab session guard
 
     function getLocalBundle() {
       try {
@@ -392,143 +80,24 @@
       const stamp = updatedAt || new Date().toISOString();
       const cleaned = (items || [])
         .filter(it => it && it.sku && Number(it.qty) > 0)
-        .map(it => ({ sku:String(it.sku), name:String(it.name || it.sku), qty:Number(it.qty), variant: it.variant || null }));
+        .map(it => ({ sku:String(it.sku), name:String(it.name || it.sku), qty:Number(it.qty) }));
       localStorage.setItem(CART_KEY, JSON.stringify(cleaned));
       localStorage.setItem(CART_UPDATED_KEY, stamp);
     }
     function readCart(){ return getLocalBundle().items; }
-    async function writeCart(items){
-      const updated_at = new Date().toISOString();
-      const clamped = clampCartToStock(items);
-      setLocalBundle(clamped, updated_at);
-      await refreshUserFlags();
-      await loadVariantsForCart();
-      await renderCart();
-      const { data:{ user } } = await supa.auth.getUser();
-      if (user) { await supa.from('carts').upsert({ user_id:user.id, items:clamped, updated_at }); }
-    }
 
+    // Overwrite quantities by SKU (no summing!)
     function overlayBySku(baseArr, incomingArr){
       const map = {};
-      (baseArr || []).forEach(it => {
-        if (it?.sku) {
-          const key = it.sku + '::' + (it.variant || '');
-          map[key] = { ...it, qty:Number(it.qty||0) };
-        }
-      });
+      (baseArr || []).forEach(it => { if (it?.sku) map[it.sku] = { ...it, qty: Number(it.qty || 0) }; });
       (incomingArr || []).forEach(it => {
-        if (it?.sku) {
-          const key = it.sku + '::' + (it.variant || '');
-          map[key] = { ...map[key], ...it, qty:Number(it.qty||0) };
-        }
+        if (!it?.sku) return;
+        map[it.sku] = { ...map[it.sku], ...it, qty: Number(it.qty || 0) }; // overwrite qty
       });
       return Object.values(map).filter(x => x.qty > 0);
     }
 
-    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]) ); }
-    function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
-
-    /* Stock helpers */
-    function getMaxForSKU(sku){
-      const p = PRODUCTS[sku] || {};
-      if (p.available === false) return 0;
-      if (typeof p.stock_qty === 'number' && p.stock_qty >= 0) return p.stock_qty;
-      return Infinity;
-    }
-    function clampCartToStock(items){
-      return (items||[]).map(it=>{
-        const max = getMaxForSKU(it.sku);
-        const newQty = Math.max(0, Math.min(Number(it.qty||0), Number.isFinite(max)?max:it.qty));
-        return { ...it, qty:newQty };
-      }).filter(x=>x.qty>0);
-    }
-
-    /* Load products + variants */
-    async function loadProductsForCart(){
-      const skus = [...new Set(readCart().map(x=>x.sku))];
-      if (!skus.length){ PRODUCTS = {}; return; }
-      const { data, error } = await supa
-        .from('products')
-        .select('sku,name,stock_qty,available,price_ppv,price_pv_minus10,price_pv_plus10,variants')
-        .in('sku', skus);
-
-      if (!error && Array.isArray(data)){
-        PRODUCTS = {};
-        data.forEach(p => { PRODUCTS[p.sku] = p; });
-      }
-
-      // ensure names in cart
-      const nameMap = Object.fromEntries((data||[]).map(p => [p.sku, p.name]));
-      const withNames = readCart().map(i => ({ ...i, name: i.name || nameMap[i.sku] || i.sku }));
-      setLocalBundle(withNames, new Date().toISOString());
-    }
-
-    async function loadVariantsForCart(){
-      const items = readCart();
-      const skus = [...new Set(items.map(x=>x.sku))];
-      VARIANTS = {};
-
-      skus.forEach(sku=>{
-        const p = PRODUCTS[sku] || {};
-        const list = Array.isArray(p.variants) ? p.variants : [];
-        if (!list.length){
-          VARIANTS[sku] = {
-            'default': {
-              label: 'Default',
-              price_ppv:        p.price_ppv ?? null,
-              price_pv_minus10: p.price_pv_minus10 ?? null,
-              price_pv_plus10:  p.price_pv_plus10 ?? null,
-              currency: 'MAD'
-            }
-          };
-        }else{
-          const map = {};
-          list.forEach(v=>{
-            const code = String(v.code ?? v.variant_code ?? v.name ?? 'default');
-            map[code] = {
-              label: v.name || v.label || code,
-              price_ppv:        (v.price_ppv        ?? v.ppv        ?? null),
-              price_pv_minus10: (v.price_pv_minus10 ?? v.pv_minus_10u ?? null),
-              price_pv_plus10:  (v.price_pv_plus10  ?? v.pv_plus_10u  ?? null),
-              currency: v.currency || 'MAD'
-            };
-          });
-          VARIANTS[sku] = map;
-        }
-      });
-
-      // auto-pick default variant if none set and only one exists
-      items.forEach(it=>{
-        if (!it.variant){
-          const map = VARIANTS[it.sku] || {};
-          const codes = Object.keys(map);
-          if (codes.length === 1) it.variant = codes[0];
-        }
-      });
-      setLocalBundle(items, new Date().toISOString());
-    }
-
-    /* Auth / flags */
-    async function refreshUserFlags(){
-      const { data:{ session } } = await supa.auth.getSession();
-      IS_SIGNED = !!session?.user;
-      IS_VET = false;
-      const banner = document.getElementById('signinBanner');
-      if (!session?.user){
-        if (banner) banner.style.display = 'block';
-        return;
-      }
-      if (banner) banner.style.display = 'none';
-      try{
-        const { data: p } = await supa.from('profiles')
-          .select('is_vet_verified')
-          .eq('id', session.user.id)
-          .maybeSingle();
-        IS_VET = !!p?.is_vet_verified;
-      }catch(_){}
-    }
-
-    /* Adopt once helpers (from Products.html handoff) */
+    // Adopt ?cart= exactly once per tab session, then strip from URL (for privacy)
     function adoptQueryCartOnce(){
       if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
       const qs = new URLSearchParams(location.search);
@@ -546,6 +115,8 @@
         sessionStorage.setItem(CART_RESTORED_KEY, '1');
       }
     }
+
+    // Adopt cart_backup once (used after auth redirects), then clear it
     function adoptBackupCartOnce(){
       if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
       const backup = localStorage.getItem('cart_backup');
@@ -554,303 +125,27 @@
         const incoming = JSON.parse(backup);
         const merged = overlayBySku(readCart(), Array.isArray(incoming) ? incoming : []);
         setLocalBundle(merged, new Date().toISOString());
-      } catch(e){ console.warn('backup restore failed', e); }
+      } catch(e){ console.warn('cart restore from backup failed', e); }
       finally {
         localStorage.removeItem('cart_backup');
         sessionStorage.setItem(CART_RESTORED_KEY, '1');
       }
     }
 
-    /* Price computation */
-    function priceForQtyRow(row, qty){
-      const q = Math.max(1, Number(qty||1));
-      const cur = row.currency || 'MAD';
-      if (q === 1)  return { type:'PPV', unit:Number(row.price_ppv||0), cur };
-      if (q >= 10)  return { type:'PV+10U', unit:Number(row.price_pv_plus10||0), cur };
-      return { type:'PV-10U', unit:Number(row.price_pv_minus10||0), cur };
-    }
-
-    function computeItemPrice(it){
-      if (!IS_SIGNED) return { hidden: true, message: t('cart.pricesHiddenSignIn') };
-      if (!IS_VET)    return { hidden: true, message: t('cart.pricesHiddenVet') };
-
-      const vMap = VARIANTS[it.sku] || {};
-      const row = vMap[it.variant || 'default'] || null;
-      if (!row) return null;
-
-      const tier = priceForQtyRow(row, it.qty);
-      if (!tier || !tier.unit) return null;
-
-      const unit = Number(tier.unit);
-      const cur  = tier.cur || 'MAD';
-      const line = unit * Number(it.qty||0);
-      const label = tier.type;
-      return { unit, line, cur, label };
-    }
-
-    function currencyGroups(totals){
-      const out = {};
-      totals.forEach(x=>{
-        if (!x) return;
-        out[x.cur] = (out[x.cur] || 0) + x.amount;
-      });
-      return out;
-    }
-
-    /* Rendering */
-    function badgeHTML(max, qty){
-      if (max === 0) return `<span class="badge bad">${t('cart.unavailable')}</span>`;
-      if (Number.isFinite(max) && max >= 0){
-        if (qty >= max || max <= 5){
-          return `<span class="badge warn">${t('cart.onlyLeft').replace('{n}', max)}</span>`;
-        }
+    // Write + upsert (last-writer-wins for server copy)
+    async function writeCart(items){
+      const updated_at = new Date().toISOString();
+      setLocalBundle(items, updated_at);
+      renderCart();
+      const { data: { user } } = await supa.auth.getUser();
+      if (user) {
+        await supa.from('carts').upsert({ user_id: user.id, items, updated_at });
       }
-      return `<span class="badge ok">${t('cart.ok')}</span>`;
     }
 
-    async function renderCart() {
-      const cart = readCart();
-      const box = document.getElementById("cartBox");
-
-      if (cart.length === 0) {
-        box.innerHTML = `<div class="empty">${t('cart.empty')}</div>`;
-        return;
-      }
-
-      const missingProducts = cart.some(it => !(it.sku in PRODUCTS));
-      if (missingProducts) await loadProductsForCart();
-      await loadVariantsForCart();
-
-      const current = readCart();
-      const lineInfos = current.map(it=>{
-        const price = computeItemPrice(it);
-        return { sku:it.sku, variant:it.variant||'default', qty:Number(it.qty||0), name:it.name||it.sku, price };
-      });
-
-      const rows = current.map(item => {
-        const max = getMaxForSKU(item.sku);
-        const qty = Number(item.qty || 0);
-        const plusDisabled = !(max === Infinity || qty < max);
-        const minusDisabled = qty <= 1;
-        const badge = badgeHTML(max, qty);
-
-        const vLabel = (VARIANTS[item.sku] && VARIANTS[item.sku][item.variant||'default'] && (VARIANTS[item.sku][item.variant||'default'].label || item.variant)) || (item.variant || '');
-        const priceInfo = lineInfos.find(x=>x.sku===item.sku && x.variant===(item.variant||'default'))?.price;
-
-        let unitHTML = '-';
-        let lineHTML = '-';
-        if (priceInfo?.hidden){
-          unitHTML = `<span class="muted">${escapeHtml(priceInfo.message)}</span>`;
-          lineHTML = `<span class="muted">—</span>`;
-        } else if (priceInfo){
-          unitHTML = `${escapeHtml(priceInfo.cur)} ${priceInfo.unit.toFixed(2)} <span class="note">(${escapeHtml(priceInfo.label)})</span>`;
-          lineHTML = `${escapeHtml(priceInfo.cur)} ${priceInfo.line.toFixed(2)}`;
-        }
-
-        const keySku = escapeAttr(item.sku);
-        const keyVar = escapeAttr(item.variant || 'default');
-
-        return `
-          <tr>
-            <td class="namecell">
-              <strong>${escapeHtml(item.name || item.sku)}</strong>
-              <span class="note">${escapeHtml(item.sku)}${vLabel?` · ${escapeHtml(vLabel)}`:''}</span>
-              <span>${badge}</span>
-            </td>
-            <td>
-              <button class="qty-btn" aria-label="Decrease ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${keySku}','${keyVar}', -1)" ${minusDisabled?'disabled':''}>-</button>
-              ${qty}
-              <button class="qty-btn" aria-label="Increase ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${keySku}','${keyVar}', 1)" ${plusDisabled?'disabled':''}>+</button>
-            </td>
-            <td>${unitHTML}</td>
-            <td>${lineHTML}</td>
-            <td><button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)" onclick="removeItem('${keySku}','${keyVar}')">${t('cart.remove')}</button></td>
-          </tr>
-        `;
-      }).join("");
-
-      const totals = lineInfos
-        .filter(x=>x.price && !x.price.hidden)
-        .map(x=>({ cur:x.price.cur, amount: x.price.line }));
-
-      const grouped = currencyGroups(totals);
-      const totalsHTML = Object.keys(grouped).length
-        ? Object.entries(grouped).map(([cur,amt])=>`${escapeHtml(cur)} ${amt.toFixed(2)}`).join(' · ')
-        : (IS_SIGNED ? (IS_VET ? '-' : t('cart.pricesHiddenVet')) : t('cart.pricesHiddenSignIn'));
-
-      box.innerHTML = `
-        <div class="card">
-          <table aria-label="Cart items">
-            <tr>
-              <th>${t('cart.product')}</th>
-              <th>${t('cart.qty')}</th>
-              <th>${t('cart.unit')}</th>
-              <th>${t('cart.line')}</th>
-              <th>${t('cart.action')}</th>
-            </tr>
-            ${rows}
-          </table>
-          <div class="summary">${t('cart.total')} ${current.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
-          <div class="summary">${t('cart.sum')}: ${totalsHTML} ${Object.keys(grouped).length>1?`<span class="note">(${t('cart.currencyMixed')})</span>`:''}</div>
-          <div class="row" style="margin-top:10px">
-            <button class="btn secondary" onclick="clearCart()">${t('cart.clear')}</button>
-            <span class="muted">${t('cart.stockNote')}</span>
-            <button class="btn primary" onclick="proceedCheckout()">${t('cart.pay')}</button>
-          </div>
-        </div>
-      `;
-
-      // show/hide sign-in banner depending on session
-      const banner = document.getElementById('signinBanner');
-      if (banner) banner.style.display = IS_SIGNED ? 'none' : 'block';
-      const txt = document.getElementById('signinText');
-      if (txt) txt.textContent = IS_VET ? '' : 'To see prices and your orders, please sign in.';
-    }
-
-    /* Cart ops */
-    async function changeQty(sku, variant, delta) {
-      const cart = readCart();
-      const i = cart.findIndex(x => x.sku === sku && (x.variant||'default') === (variant||'default'));
-      if (i === -1) return;
-
-      const max = getMaxForSKU(sku);
-
-      if (delta > 0) {
-        if (!Number.isFinite(max) ? false : (max <= 0)) return;
-        const next = Number(cart[i].qty || 0) + 1;
-        if (Number.isFinite(max) && next > max) return;
-        cart[i].qty = next;
-      } else if (delta < 0) {
-        const next = Number(cart[i].qty || 0) - 1;
-        if (next <= 0) cart.splice(i, 1);
-        else cart[i].qty = next;
-      }
-      await writeCart(cart);
-    }
-
-    async function removeItem(sku, variant) {
-      await writeCart(readCart().filter(x => !(x.sku === sku && (x.variant||'default') === (variant||'default'))));
-    }
-    async function clearCart() { await writeCart([]); }
-
-    /* Sign in helper – keeps cart snapshot and returns to this page */
-    function goLogin(){
-      const cartSnapshot = encodeURIComponent(localStorage.getItem('cart') || '[]');
-      const redirect = encodeURIComponent('cart.html?cart=' + cartSnapshot);
-      location.href = `login.html?redirect=${redirect}`;
-    }
-
-    /* Proceed / Payment hook */
-    async function proceedCheckout(){
-      const cart = readCart();
-      if (!cart.length) return;
-
-      await refreshUserFlags();
-      await loadVariantsForCart();
-
-      const lineInfos = cart.map(it=>{
-        const p = computeItemPrice(it);
-        return { sku:it.sku, variant:it.variant||'default', qty:Number(it.qty||0), price:p };
-      });
-
-      const payableLines = lineInfos
-        .filter(x=>x.price && !x.price.hidden)
-        .map(x=>({
-          sku:x.sku, variant:x.variant, qty:x.qty,
-          unit:x.price.unit, currency:x.price.cur,
-          tier:x.price.label, line: (x.price.unit * x.qty)
-        }));
-
-      const totals = {};
-      payableLines.forEach(l=>{
-        totals[l.currency] = (totals[l.currency] || 0) + l.line;
-      });
-
-      localStorage.setItem('cart_backup', JSON.stringify(cart));
-      localStorage.setItem('checkout_lines', JSON.stringify(payableLines));
-      localStorage.setItem('checkout_totals', JSON.stringify(totals));
-
-      const { data:{ session } } = await supa.auth.getSession();
-      const cartParam = encodeURIComponent(JSON.stringify(cart));
-      const totalsParam = encodeURIComponent(JSON.stringify(totals));
-
-      if (!session?.user) {
-        location.href = `login.html?redirect=${encodeURIComponent('vet-verify.html')}&cart=${cartParam}&force=1`;
-        return;
-      }
-      if (!IS_VET) {
-        location.href = `vet-verify.html?cart=${cartParam}&totals=${totalsParam}&from=cart`;
-        return;
-      }
-      location.href = `checkout.html?totals=${totalsParam}`;
-    }
-
-    /* Orders */
-    async function renderOrders(){
-      const ordersBox = document.getElementById('ordersBox');
-      const hint = document.getElementById('ordersHint');
-      const { data:{ user } } = await supa.auth.getUser();
-
-      if (!user) {
-        ordersBox.style.display = 'none';
-        hint.textContent = t('orders.hint');
-        return;
-      }
-      hint.textContent = t('orders.signed');
-      ordersBox.style.display = 'block';
-      ordersBox.innerHTML = `<div class="muted">${t('orders.loading')}</div>`;
-
-      const { data: orders, error } = await supa
-        .from('orders')
-        .select('id, created_at, status, total_qty, total_amount, receipt_url')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending:false })
-        .limit(20);
-
-      if (error) {
-        ordersBox.innerHTML = `<div class="muted">Could not load orders: ${escapeHtml(error.message)}</div>`;
-        return;
-      }
-      if (!orders || !orders.length){
-        ordersBox.innerHTML = `<div class="muted">${t('orders.none')}</div>`;
-        return;
-      }
-
-      ordersBox.innerHTML = orders.map(o=>{
-        const d = new Date(o.created_at);
-        const badgeCls = (o.status||'').toLowerCase()==='paid' ? 'ok' : 'warn';
-        const amountTxt = (o.total_amount!=null) ? ` · Amount: ${Number(o.total_amount).toFixed(2)}` : '';
-        const qtyTxt = (o.total_qty!=null) ? ` · Items: ${o.total_qty}` : '';
-        const rec = o.receipt_url ? `<a href="${escapeAttr(o.receipt_url)}" target="_blank" rel="noopener">${t('orders.receipt')}</a>` : '';
-        return `
-          <div class="order">
-            <div class="row">
-              <div><strong>Order #${escapeHtml(o.id)}</strong> · <span class="muted">${d.toLocaleString()}</span></div>
-              <span class="badge ${badgeCls}">${escapeHtml(o.status || 'pending')}</span>
-            </div>
-            <div class="muted">${qtyTxt}${amountTxt}</div>
-            <div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">
-              ${rec}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    /* Boot */
-    document.addEventListener('DOMContentLoaded', async () => {
-      adoptQueryCartOnce();
-      adoptBackupCartOnce();
-      await refreshUserFlags();
-      await loadProductsForCart();
-      await loadVariantsForCart();
-      await renderCart();
-      await syncCartFromDB();
-      await renderOrders();
-    });
-
+    /* ======================= Cross-device sync (last-writer-wins) ======================= */
     async function syncCartFromDB() {
-      const { data:{ user } } = await supa.auth.getUser();
+      const { data: { user } } = await supa.auth.getUser();
       if (!user) return;
 
       const { data: row, error } = await supa
@@ -868,37 +163,212 @@
       let chosenUpdatedAt = new Date().toISOString();
 
       if (serverItems && (!local.items || local.items.length === 0)) {
-        chosenItems = serverItems; chosenUpdatedAt = serverUpdated || chosenUpdatedAt;
+        chosenItems = serverItems;
+        chosenUpdatedAt = serverUpdated || chosenUpdatedAt;
         setLocalBundle(chosenItems, chosenUpdatedAt);
       } else if ((!serverItems || serverItems.length === 0) && local.items.length > 0) {
-        chosenItems = local.items; chosenUpdatedAt = local.updated_at || chosenUpdatedAt;
-        await supa.from('carts').upsert({ user_id:user.id, items:chosenItems, updated_at:chosenUpdatedAt });
+        chosenItems = local.items;
+        chosenUpdatedAt = local.updated_at || chosenUpdatedAt;
+        await supa.from('carts').upsert({ user_id: user.id, items: chosenItems, updated_at: chosenUpdatedAt });
       } else if (serverItems && local.items.length > 0) {
         const localTime = local.updated_at ? Date.parse(local.updated_at) : 0;
         const serverTime = serverUpdated ? Date.parse(serverUpdated) : 0;
         if (serverTime >= localTime) {
-          chosenItems = serverItems; chosenUpdatedAt = serverUpdated || chosenUpdatedAt;
+          chosenItems = serverItems;
+          chosenUpdatedAt = serverUpdated || chosenUpdatedAt;
           setLocalBundle(chosenItems, chosenUpdatedAt);
         } else {
-          chosenItems = local.items; chosenUpdatedAt = local.updated_at || chosenUpdatedAt;
-          await supa.from('carts').upsert({ user_id:user.id, items:chosenItems, updated_at:chosenUpdatedAt });
+          chosenItems = local.items;
+          chosenUpdatedAt = local.updated_at || chosenUpdatedAt;
+          await supa.from('carts').upsert({ user_id: user.id, items: chosenItems, updated_at: chosenUpdatedAt });
         }
       } else {
-        chosenItems = []; setLocalBundle([], chosenUpdatedAt);
+        chosenItems = [];
+        setLocalBundle([], chosenUpdatedAt);
       }
 
-      await refreshUserFlags();
-      await loadProductsForCart();
-      await loadVariantsForCart();
-      await renderCart();
+      renderCart();
     }
 
-    supa.auth.onAuthStateChange(async () => {
-      await refreshUserFlags();
-      await loadProductsForCart();
-      await loadVariantsForCart();
-      await renderCart();
+    /* ======================= Boot: adopt once, then sync ======================= */
+    adoptQueryCartOnce();
+    adoptBackupCartOnce();
+
+    /* ======================= Rendering ======================= */
+    async function renderCart() {
+      const cart = readCart();
+      const box = document.getElementById("cartBox");
+
+      if (cart.length === 0) {
+        box.innerHTML = `<div class="empty">Your cart is empty</div>`;
+        return;
+      }
+
+      // Fill missing product names (privacy: only name/sku)
+      const missing = cart.filter(i => !i.name).map(i => i.sku);
+      if (missing.length > 0) {
+        const { data: products } = await supa.from("products").select("sku,name").in("sku", missing);
+        if (Array.isArray(products)) {
+          const nameMap = Object.fromEntries(products.map(p => [p.sku, p.name]));
+          const updated = cart.map(i => ({ ...i, name: i.name || nameMap[i.sku] || i.sku }));
+          setLocalBundle(updated, new Date().toISOString());
+        }
+      }
+
+      const current = readCart(); // re-read in case names were set
+      const rows = current.map(item => `
+        <tr>
+          <td>${escapeHtml(item.name || item.sku)}</td>
+          <td>
+            <button class="qty-btn" aria-label="Decrease ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', -1)">-</button>
+            ${Number(item.qty || 0)}
+            <button class="qty-btn" aria-label="Increase ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', 1)">+</button>
+          </td>
+          <td><button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)" onclick="removeItem('${escapeAttr(item.sku)}')">Remove</button></td>
+        </tr>
+      `).join("");
+
+      box.innerHTML = `
+        <div class="card">
+          <table aria-label="Cart items">
+            <tr><th>Product</th><th>Quantity</th><th>Action</th></tr>
+            ${rows}
+          </table>
+          <div class="summary">Total items: ${current.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn secondary" onclick="clearCart()">Clear cart</button>
+            <span class="muted">Secure checkout via magic link sign-in.</span>
+            <button class="btn" onclick="proceedCheckout()">Proceed to Checkout</button>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ======================= Simple escaping helpers ======================= */
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+    function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
+
+    /* ======================= Cart operations ======================= */
+    function changeQty(sku, delta) {
+      const cart = readCart();
+      const i = cart.findIndex(x => x.sku === sku);
+      if (i > -1) {
+        cart[i].qty = Number(cart[i].qty || 0) + Number(delta || 0);
+        if (cart[i].qty <= 0) cart.splice(i, 1);
+        writeCart(cart);
+      }
+    }
+    function removeItem(sku) {
+      writeCart(readCart().filter(x => x.sku !== sku));
+    }
+    function clearCart() {
+      writeCart([]);
+    }
+
+    /* ======================= Checkout flow ======================= */
+    async function proceedCheckout(){
+      const cart = readCart();
+      if (!cart.length) { return; }
+      // Save a one-time backup for auth redirects (stays local)
+      localStorage.setItem('cart_backup', JSON.stringify(cart));
+      // Pass cart via URL once; receiving page will adopt-once and strip it
+      const cartParam = encodeURIComponent(JSON.stringify(cart));
+      const loginUrl  = `login.html?redirect=${encodeURIComponent('checkout.html')}&cart=${cartParam}&force=1`;
+      location.href = loginUrl;
+    }
+
+    /* ======================= Order history (signed-in users) ======================= */
+    async function renderOrders(){
+      const ordersBox = document.getElementById('ordersBox');
+      const hint = document.getElementById('ordersHint');
+      const { data: { user } } = await supa.auth.getUser();
+
+      if (!user) {
+        ordersBox.style.display = 'none';
+        hint.textContent = 'Sign in during checkout to keep your history & receipts.';
+        return;
+      }
+      hint.textContent = 'You are signed in. Your recent purchases are below.';
+      ordersBox.style.display = 'block';
+      ordersBox.innerHTML = `<div class="muted">Loading your orders…</div>`;
+
+      // Expecting table "orders": id, user_id, items(json), status, total_qty, total_amount, created_at, receipt_url
+      const { data: orders, error } = await supa
+        .from('orders')
+        .select('id, created_at, status, total_qty, total_amount, receipt_url')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending:false })
+        .limit(20);
+
+      if (error) {
+        ordersBox.innerHTML = `<div class="muted">Could not load orders: ${escapeHtml(error.message)}</div>`;
+        return;
+      }
+      if (!orders || !orders.length){
+        ordersBox.innerHTML = `<div class="muted">No purchases yet.</div>`;
+        return;
+      }
+
+      ordersBox.innerHTML = orders.map(o=>{
+        const d = new Date(o.created_at);
+        const badgeCls = (o.status||'').toLowerCase()==='paid' ? 'ok' : 'warn';
+        const amountTxt = (o.total_amount!=null) ? ` · Amount: ${Number(o.total_amount).toFixed(2)}` : '';
+        const qtyTxt = (o.total_qty!=null) ? ` · Items: ${o.total_qty}` : '';
+        const rec = o.receipt_url ? `<a href="${escapeAttr(o.receipt_url)}" target="_blank" rel="noopener">Receipt</a>` : '';
+        return `
+          <div class="order">
+            <div class="row">
+              <div><strong>Order #${escapeHtml(o.id)}</strong> · <span class="muted">${d.toLocaleString()}</span></div>
+              <span class="badge ${badgeCls}">${escapeHtml(o.status || 'pending')}</span>
+            </div>
+            <div class="muted">${qtyTxt}${amountTxt}</div>
+            <div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">
+              ${rec}
+              <button class="btn secondary" onclick="emailReceipt('${escapeAttr(o.id)}')">Email receipt</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Optional: call your Supabase Edge Function `send-receipt` to email a receipt
+    async function emailReceipt(orderId){
+      try{
+        const { data: { session } } = await supa.auth.getSession();
+        if (!session) { alert('Please sign in first.'); return; }
+
+        // Replace with your deployed Edge Function URL or relative path if proxied.
+        // Example (if you deployed as 'send-receipt'):
+        const resp = await fetch('/functions/v1/send-receipt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ order_id: orderId })
+        });
+
+        if (!resp.ok){
+          const txt = await resp.text();
+          throw new Error(txt || ('HTTP '+resp.status));
+        }
+        alert('Receipt email sent.');
+      }catch(e){
+        console.warn('emailReceipt error:', e);
+        alert('Could not send receipt email. If this persists, contact support.');
+      }
+    }
+
+    /* ======================= Boot sequence ======================= */
+    document.addEventListener('DOMContentLoaded', async () => {
+      renderCart();
+      await syncCartFromDB();
       await renderOrders();
+    });
+
+    supa.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) { syncCartFromDB(); renderOrders(); }
+      else { renderOrders(); }
     });
   </script>
 </body>
