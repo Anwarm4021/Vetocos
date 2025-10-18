@@ -13,11 +13,8 @@
     }
     *{box-sizing:border-box}
     html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
-
     a{color:inherit;text-decoration:none}
     .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
-
-    /* Header */
     header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:10px;font-weight:700}
@@ -40,8 +37,6 @@
       .hamb{display:block}
       .contact-btn,#lang-switch{width:100%;text-align:left}
     }
-
-    /* Account */
     .acct{position:relative;display:inline-flex;align-items:center;gap:8px}
     .avatar{width:28px;height:28px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:inline-block;border:1px solid rgba(141,158,199,.3)}
     .menu{position:absolute;top:42px;right:0;background:rgba(16,24,53,.98);border:1px solid rgba(141,158,199,.2);border-radius:12px;min-width:240px;display:none;box-shadow:var(--shadow)}
@@ -49,8 +44,6 @@
     .menu a,.menu button{display:block;width:100%;text-align:left;padding:10px 12px;background:transparent;border:0;color:var(--text);cursor:pointer}
     .menu a:hover,.menu button:hover{background:rgba(141,158,199,.15)}
     .menu .muted{font-size:12px}
-
-    /* Main layout */
     main{padding:28px 0}
     h1,h2{margin:.5rem 0 1rem}
     .grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
@@ -69,11 +62,8 @@
     .notice{padding:10px;border:1px dashed rgba(141,158,199,.35);border-radius:12px;background:rgba(255,255,255,.03);margin:10px 0}
     .small{font-size:.92rem}
     #msg{min-height:1.2em;margin-top:8px}
-
     footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
     .footer-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
-
-    /* Modals */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
     .modal.open{display:flex}
     .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
@@ -81,8 +71,6 @@
     .sheet-title{margin:0;font-size:1.1rem}
     .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
     .sheet-body{padding:16px}
-
-    /* Contact form layout */
     .pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
     @media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
     .field{display:flex;flex-direction:column;gap:6px}
@@ -91,8 +79,6 @@
     .hint{font-size:12px;color:var(--muted)}
     .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
     .divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
-
-    /* RTL tweaks */
     body.rtl .links a{text-align:right}
     body.rtl .grid, body.rtl .pro-grid{direction:rtl}
     body.rtl label{text-align:right}
@@ -202,14 +188,11 @@
 
       <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
 
-      <!-- Admin -->
       <a class="contact-btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
 
-      <!-- Auth -->
       <button class="contact-btn" id="signInBtn" type="button" data-i18n="auth.login">Sign in</button>
       <button class="contact-btn" id="signUpBtn" type="button" data-i18n="auth.signup">Sign up</button>
 
-      <!-- Account -->
       <div class="acct" id="acctBlock" style="display:none">
         <button class="contact-btn" id="accountBtn" type="button">
           <span class="avatar" aria-hidden="true"></span>
@@ -226,7 +209,6 @@
         </div>
       </div>
 
-      <!-- Language -->
       <select id="lang-switch" aria-label="Language" class="contact-btn">
         <option value="en">English</option>
         <option value="fr">Français</option>
@@ -243,7 +225,6 @@
   <h1 data-i18n="checkout.title">Checkout</h1>
 
   <div class="grid">
-    <!-- Left: Cart review -->
     <section class="card">
       <h2 data-i18n="checkout.cartTitle">Your Cart</h2>
       <div id="cartBox" class="muted" data-i18n="ui.loading">Loading…</div>
@@ -254,17 +235,10 @@
       </div>
     </section>
 
-    <!-- Right: Summary / Place order -->
     <aside class="card">
       <h2 data-i18n="checkout.summary">Summary</h2>
-      <div class="row small">
-        <span data-i18n="checkout.items">Items</span>
-        <strong id="sumItems">0</strong>
-      </div>
-      <div class="row small">
-        <span data-i18n="checkout.total">Estimated total</span>
-        <strong id="sumTotal">—</strong>
-      </div>
+      <div class="row small"><span data-i18n="checkout.items">Items</span><strong id="sumItems">0</strong></div>
+      <div class="row small"><span data-i18n="checkout.total">Estimated total</span><strong id="sumTotal">—</strong></div>
       <button id="placeOrder" class="btn wide" style="margin-top:12px" data-i18n="checkout.place">Place order</button>
       <div id="msg" class="muted" aria-live="polite"></div>
       <div class="small muted" style="margin-top:8px" data-i18n="checkout.note">
@@ -293,7 +267,6 @@
     </div>
     <div class="sheet-body">
       <div class="pro-grid">
-        <!-- Form -->
         <form id="contactForm" onsubmit="return sendMailto(event)">
           <div class="field">
             <label for="topic" data-i18n="form.topic">Topic</label>
@@ -361,11 +334,9 @@
           </div>
         </form>
 
-        <!-- Company contact panel -->
         <div class="card" style="height:fit-content">
           <h3 data-i18n="contact.reach">Reach us</h3>
           <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
-
           <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
           <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
           <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
@@ -386,38 +357,31 @@
     <div class="sheet-body policy-body">
       <h3 data-i18n="policy.overviewTitle">Overview</h3>
       <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. We do not collect personal data unless you choose to contact us.</p>
-
       <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
       <ul>
         <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
         <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
       </ul>
-
       <h3 data-i18n="policy.useTitle">How we use data</h3>
       <ul>
         <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
         <li data-i18n="policy.use2">We do not sell personal data.</li>
       </ul>
-
       <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
       <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
-
       <h3 data-i18n="policy.choiceTitle">Your choices</h3>
       <ul>
         <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
         <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
       </ul>
-
       <h3 data-i18n="policy.contactTitle">Contact</h3>
       <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
-
       <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
     </div>
   </div>
 </div>
 
 <script>
-  // Modals + mailto + lang init
   function openContact(){ document.getElementById('contactModal').classList.add('open'); }
   function closeContact(){ document.getElementById('contactModal').classList.remove('open'); }
   function openPolicy(){ document.getElementById('policyModal').classList.add('open'); }
@@ -433,10 +397,7 @@
     const subject=document.getElementById('subject').value.trim()||'Website enquiry';
     const message=document.getElementById('message').value.trim();
     if(!document.getElementById('consent').checked) return false;
-    const lines=[
-      `Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,
-      country?`Country: ${country}`:null, phone?`Phone: ${phone}`:null,'', message
-    ].filter(Boolean).join('%0A');
+    const lines=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,country?`Country: ${country}`:null, phone?`Phone: ${phone}`:null,'',message].filter(Boolean).join('%0A');
     window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
     return false;
   }
@@ -547,7 +508,6 @@ async function syncCartFromDBIfEmpty(){
   }
 }
 
-/* react to other tabs/pages changing the cart */
 window.addEventListener('storage', (e) => {
   if (e.key === 'cart') {
     try {
@@ -580,8 +540,6 @@ function priceTierForQty(productRow, qty){
   if (q >= 10)  return { unit: Number(productRow.price_pv_plus10||0),   label:'PV+10U', cur };
   return         { unit: Number(productRow.price_pv_minus10||0),        label:'PV-10U', cur };
 }
-
-/* FIX: computeItemPrice now uses PRODUCTS, not VARIANTS */
 function computeItemPrice(it){
   if (!IS_LOGGED_IN) return { hidden:true, message: t('price.hidden.sign') };
   const row = PRODUCTS[it.sku];
@@ -591,7 +549,6 @@ function computeItemPrice(it){
   const line = unit * Number(it.qty||0);
   return { unit, line, cur:tier.cur, label:tier.label };
 }
-
 function groupTotals(lines){ const out={}; lines.forEach(x=>{ out[x.cur]=(out[x.cur]||0)+x.amount; }); return out; }
 
 function renderCart(){
@@ -666,7 +623,7 @@ function renderCart(){
 function computeEligibility(){
   const canAll = !!CAN_PURCHASE;
   const issues = [];
-  const eligibleKeys = new Set(); // key "sku"
+  const eligibleKeys = new Set();
   const ineligible = [];
 
   CART.forEach(it=>{
@@ -750,7 +707,6 @@ async function loadProfile(){
   const label = `${full || ''} ${full ? '· ' : ''}${PROFILE.email || user.email || ''}`;
   const ui = document.getElementById('userInfo'); if (ui) ui.textContent = label;
 
-  // header name + admin
   let isAdmin=false;
   try{ isAdmin = !!(await supa.from('profiles').select('is_admin').eq('id', user.id).maybeSingle()).data?.is_admin; }catch(_){}
   if (helloName) helloName.textContent = full || (user.email||'');
@@ -768,7 +724,6 @@ async function loadProductsForCart(){
   if (error) throw new Error(error.message);
   PRODUCTS={}; (data||[]).forEach(p=>PRODUCTS[p.sku]=p);
 
-  // backfill names into CART and localStorage
   const nameMap = Object.fromEntries((data||[]).map(p => [p.sku, p.name]));
   const updated = CART.map(i => ({ ...i, name: i.name || nameMap[i.sku] || i.sku }));
   writeCart(updated);
@@ -792,7 +747,60 @@ async function loadApprovalsForCart(){
   });
 }
 
-/* ======== placeOrder() with totals (price taken from PRODUCTS) ======== */
+/* ====== NEW: consume approvals ONLY after a successful order placement ====== */
+async function consumeApprovalsForOrder(eligibleItems){
+  if (CAN_PURCHASE) return; // global purchase permission: nothing to consume
+
+  const need = {};
+  eligibleItems.forEach(it=>{
+    const qty = Number(it.qty||0);
+    if (!qty) return;
+    need[it.sku] = (need[it.sku]||0) + qty;
+  });
+
+  for (const [sku, toUse] of Object.entries(need)){
+    let remaining = toUse;
+
+    const { data: rows, error } = await supa
+      .from('vet_product_approvals')
+      .select('id,quantity')
+      .eq('user_id', USER.id)
+      .eq('product_sku', sku)
+      .eq('status','approved')
+      .order('created_at', { ascending:true });
+
+    if (error){ console.warn('Approval fetch error for', sku, error.message); continue; }
+
+    for (const row of (rows||[])){
+      if (remaining <= 0) break;
+      const have = Number(row.quantity||0);
+      if (have <= 0) continue;
+
+      if (have > remaining){
+        const { error: upErr } = await supa
+          .from('vet_product_approvals')
+          .update({ quantity: have - remaining })
+          .eq('id', row.id);
+        if (upErr) console.warn('Approval update error (partial) for', sku, upErr.message);
+        remaining = 0;
+        break;
+      } else {
+        const { error: delErr } = await supa
+          .from('vet_product_approvals')
+          .delete()
+          .eq('id', row.id);
+        if (delErr) console.warn('Approval delete error for', sku, delErr.message);
+        remaining -= have;
+      }
+    }
+
+    if (remaining > 0){
+      console.warn(`Approval shortfall after consume for ${sku}: ${remaining}`);
+    }
+  }
+}
+
+/* ======== placeOrder() with approval consumption ======== */
 async function placeOrder(){
   try{
     await loadProductsForCart();
@@ -850,6 +858,16 @@ async function placeOrder(){
     });
     const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
     if (itemsErr){ msgEl.textContent = itemsErr.message || 'Failed to add items.'; return; }
+
+    /* ✅ Consume approvals ONLY NOW (order + items successful) */
+    await consumeApprovalsForOrder(eligibleItems);
+
+    /* (Optional) keep the local APPROVALS cache in sync to avoid UI flicker */
+    eligibleItems.forEach(it=>{
+      if (CAN_PURCHASE) return;
+      const cur = Number(APPROVALS[it.sku]||0);
+      APPROVALS[it.sku] = Math.max(0, cur - Number(it.qty||0));
+    });
 
     // Remove eligible SKUs from cart
     const remaining = readCart().filter(x => !eligibleItems.some(e => e.sku===x.sku));
