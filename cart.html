@@ -74,6 +74,8 @@
 
     body.rtl .wrap, body.rtl main, body.rtl table, body.rtl .pro-grid{direction:rtl}
     body.rtl th, body.rtl td{text-align:inherit}
+
+    .signin-banner{margin:10px 0 20px;padding:12px;border:1px dashed rgba(141,158,199,.45);border-radius:12px;background:rgba(255,255,255,.03);display:none}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -104,17 +106,26 @@
   </header>
 
   <main>
-    <h1 data-i18n="page.title">Your Cart</h1>
-    <div id="cartBox" aria-live="polite"></div>
+    <div class="wrap">
+      <h1 data-i18n="page.title">Your Cart</h1>
 
-    <!-- Orders -->
-    <section class="orders">
-      <div class="row">
-        <h2 style="margin:0" data-i18n="orders.title">Your Purchases</h2>
-        <div id="ordersHint" class="muted hint" data-i18n="orders.hint">Sign in to see your purchase history.</div>
+      <!-- Sign-in banner -->
+      <div id="signinBanner" class="signin-banner">
+        <span id="signinText">To see prices and your orders, please sign in.</span>
+        <button class="btn" style="margin-left:10px" onclick="goLogin()">Sign in</button>
       </div>
-      <div id="ordersBox" class="card" style="margin-top:10px;display:none"></div>
-    </section>
+
+      <div id="cartBox" aria-live="polite"></div>
+
+      <!-- Orders -->
+      <section class="orders">
+        <div class="row">
+          <h2 style="margin:0" data-i18n="orders.title">Your Purchases</h2>
+          <div id="ordersHint" class="muted hint" data-i18n="orders.hint">Sign in to see your purchase history.</div>
+        </div>
+        <div id="ordersBox" class="card" style="margin-top:10px;display:none"></div>
+      </section>
+    </div>
   </main>
 
   <!-- Footer -->
@@ -253,7 +264,7 @@
            "orders.title":"Vos achats","orders.hint":"Connectez-vous pour voir votre historique d’achats.","orders.signed":"Vous êtes connecté. Vos achats récents ci-dessous.","orders.none":"Aucun achat pour le moment.","orders.loading":"Chargement de vos commandes…","orders.receipt":"Reçu",
            "footer.tag":"Complément alimentaire pour animaux de compagnie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
            "cart.empty":"Votre panier est vide","cart.total":"Articles au total :","cart.clear":"Vider le panier","cart.stockNote":"Limites de stock appliquées automatiquement.","cart.proceed":"Continuer","cart.product":"Produit","cart.qty":"Qté","cart.action":"Action","cart.remove":"Supprimer","cart.ok":"OK","cart.unavailable":"Indisponible","cart.onlyLeft":"Plus que {n}",
-           "contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Nous aidons volontiers pour toute question sur les produits, la disponibilité ou vos retours.","contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00",
+           "contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Nous aidons volontiers pour toute question sur les produits, la disponibilité, ou vos retours.","contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00",
            "form.topic":"Sujet","form.topicProduct":"Question produit","form.topicAvailability":"Disponibilité / Où acheter","form.topicOrder":"Commande / Livraison","form.topicFeedback":"Avis","form.topicOther":"Autre",
            "form.name":"Nom","form.namePH":"Nom complet","form.email":"E-mail","form.emailPH":"nom@exemple.com","form.subject":"Objet","form.subjectPH":"Question à propos d’un produit…","form.message":"Message / Commentaires","form.messagePH":"Écrivez votre demande…","form.consent":"J’autorise VetoCos à utiliser mes données pour répondre à cette demande.","form.privacyNote":"Votre message est envoyé via votre application e-mail ; il n’est pas stocké sur ce site.","form.cancel":"Annuler","form.send":"Envoyer",
            "policy.title":"Confidentialité & Politique","policy.close":"Fermer","policy.overviewTitle":"Aperçu","policy.overviewText":"VetoCos fournit des compléments alimentaires. Nous ne collectons pas de données personnelles sauf si vous nous contactez.","policy.dataTitle":"Données susceptibles d’être reçues","policy.data1":"Messages envoyés via le formulaire (nom, e-mail, contenu).","policy.data2":"Analyses anonymisées de base.","policy.useTitle":"Utilisation","policy.use1":"Répondre à vos demandes et améliorer l’expérience.","policy.use2":"Nous ne vendons pas de données.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies essentiels minimaux uniquement.","policy.choiceTitle":"Vos choix","policy.choice1":"Demander la suppression de vos messages/données.","policy.choice2":"Désactiver les cookies dans votre navigateur.","policy.contactTitle":"Contact","policy.contactText":"Pour toute question confidentialité : <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Dernière mise à jour :",
@@ -264,7 +275,7 @@
            "orders.title":"Tus compras","orders.hint":"Inicia sesión para ver tu historial.","orders.signed":"Has iniciado sesión. Compras recientes abajo.","orders.none":"Sin compras aún.","orders.loading":"Cargando tus pedidos…","orders.receipt":"Recibo",
            "footer.tag":"Alimento complementario para animales de compañía.","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
            "cart.empty":"Tu carrito está vacío","cart.total":"Artículos totales:","cart.clear":"Vaciar carrito","cart.stockNote":"Límites de stock aplicados automáticamente.","cart.proceed":"Continuar","cart.product":"Producto","cart.qty":"Cantidad","cart.action":"Acción","cart.remove":"Quitar","cart.ok":"OK","cart.unavailable":"No disponible","cart.onlyLeft":"Solo quedan {n}",
-           "contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Cómo contactarnos","contact.reachText":"Encantados de ayudarte con productos, disponibilidad o comentarios.","contact.email":"Correo:","contact.phone":"Teléfono:","contact.whatsapp":"WhatsApp:","contact.hours":"Horario:","contact.hoursVal":"Lun–Vie, 9:00–17:00",
+           "contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Cómo contactarnos","contact.reachText":"Encantados de ayudarte con product os, disponibilidad o comentarios.","contact.email":"Correo:","contact.phone":"Teléfono:","contact.whatsapp":"WhatsApp:","contact.hours":"Horario:","contact.hoursVal":"Lun–Vie, 9:00–17:00",
            "form.topic":"Tema","form.topicProduct":"Consulta de producto","form.topicAvailability":"Disponibilidad / Dónde comprar","form.topicOrder":"Pedido / Entrega","form.topicFeedback":"Comentarios","form.topicOther":"Otro",
            "form.name":"Nombre","form.namePH":"Nombre completo","form.email":"Correo","form.emailPH":"nombre@ejemplo.com","form.subject":"Asunto","form.subjectPH":"Consulta sobre un producto…","form.message":"Mensaje / Comentarios","form.messagePH":"Escribe tu solicitud…","form.consent":"Autorizo a VetoCos a usar mis datos para responder esta consulta.","form.privacyNote":"El mensaje se envía con tu app de correo; no se guarda en este sitio.","form.cancel":"Cancelar","form.send":"Enviar",
            "policy.title":"Privacidad y Política","policy.close":"Cerrar","policy.overviewTitle":"Resumen","policy.overviewText":"VetoCos ofrece alimentos complementarios. No recopilamos datos personales salvo que nos contactes.","policy.dataTitle":"Datos que podemos recibir","policy.data1":"Mensajes enviados (nombre, correo, contenido).","policy.data2":"Analítica básica y anónima.","policy.useTitle":"Uso de datos","policy.use1":"Responder y mejorar la experiencia.","policy.use2":"No vendemos datos.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies esenciales mínimas.","policy.choiceTitle":"Tus opciones","policy.choice1":"Solicitar eliminación de mensajes/datos.","policy.choice2":"Desactivar cookies en el navegador.","policy.contactTitle":"Contacto","policy.contactText":"Privacidad: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Última actualización:",
@@ -361,14 +372,10 @@
     /* ======================= Cart + stock state ======================= */
     const CART_KEY = 'cart';
     const CART_UPDATED_KEY = 'cart_updated_at';
-    const CART_RESTORED_KEY = 'cart_restored_v2';  /* <-- keep only this single declaration */
+    const CART_RESTORED_KEY = 'cart_restored_v2';
 
-    // sku -> { sku, name?, stock_qty:number|null, available:boolean|null, price_ppv?, price_pv_minus10?, price_pv_plus10?, variants? }
     let PRODUCTS = Object.create(null);
-
-    // sku -> { variant_code -> {label, price_ppv, price_pv_minus10, price_pv_plus10, currency} }
     let VARIANTS = Object.create(null);
-
     let IS_VET = false;
     let IS_SIGNED = false;
 
@@ -395,7 +402,7 @@
       const clamped = clampCartToStock(items);
       setLocalBundle(clamped, updated_at);
       await refreshUserFlags();
-      await loadVariantsForCart();   // now reads from products.variants
+      await loadVariantsForCart();
       await renderCart();
       const { data:{ user } } = await supa.auth.getUser();
       if (user) { await supa.from('carts').upsert({ user_id:user.id, items:clamped, updated_at }); }
@@ -421,7 +428,7 @@
     function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]) ); }
     function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
 
-    /* ======================= Stock helpers ======================= */
+    /* Stock helpers */
     function getMaxForSKU(sku){
       const p = PRODUCTS[sku] || {};
       if (p.available === false) return 0;
@@ -436,7 +443,7 @@
       }).filter(x=>x.qty>0);
     }
 
-    /* ======================= Load products + variants (NEW SOURCE) ======================= */
+    /* Load products + variants */
     async function loadProductsForCart(){
       const skus = [...new Set(readCart().map(x=>x.sku))];
       if (!skus.length){ PRODUCTS = {}; return; }
@@ -450,13 +457,12 @@
         data.forEach(p => { PRODUCTS[p.sku] = p; });
       }
 
-      // Ensure names in cart
+      // ensure names in cart
       const nameMap = Object.fromEntries((data||[]).map(p => [p.sku, p.name]));
       const withNames = readCart().map(i => ({ ...i, name: i.name || nameMap[i.sku] || i.sku }));
       setLocalBundle(withNames, new Date().toISOString());
     }
 
-    // Build VARIANTS map from products.variants JSON (or fallback to base prices)
     async function loadVariantsForCart(){
       const items = readCart();
       const skus = [...new Set(items.map(x=>x.sku))];
@@ -465,7 +471,6 @@
       skus.forEach(sku=>{
         const p = PRODUCTS[sku] || {};
         const list = Array.isArray(p.variants) ? p.variants : [];
-
         if (!list.length){
           VARIANTS[sku] = {
             'default': {
@@ -503,12 +508,17 @@
       setLocalBundle(items, new Date().toISOString());
     }
 
-    /* ======================= Auth / flags ======================= */
+    /* Auth / flags */
     async function refreshUserFlags(){
       const { data:{ session } } = await supa.auth.getSession();
       IS_SIGNED = !!session?.user;
       IS_VET = false;
-      if (!session?.user) return;
+      const banner = document.getElementById('signinBanner');
+      if (!session?.user){
+        if (banner) banner.style.display = 'block';
+        return;
+      }
+      if (banner) banner.style.display = 'none';
       try{
         const { data: p } = await supa.from('profiles')
           .select('is_vet_verified')
@@ -518,7 +528,7 @@
       }catch(_){}
     }
 
-    /* ======================= Adopt once helpers ======================= */
+    /* Adopt once helpers (from Products.html handoff) */
     function adoptQueryCartOnce(){
       if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
       const qs = new URLSearchParams(location.search);
@@ -551,7 +561,7 @@
       }
     }
 
-    /* ======================= Price computation ======================= */
+    /* Price computation */
     function priceForQtyRow(row, qty){
       const q = Math.max(1, Number(qty||1));
       const cur = row.currency || 'MAD';
@@ -587,7 +597,7 @@
       return out;
     }
 
-    /* ======================= Rendering ======================= */
+    /* Rendering */
     function badgeHTML(max, qty){
       if (max === 0) return `<span class="badge bad">${t('cart.unavailable')}</span>`;
       if (Number.isFinite(max) && max >= 0){
@@ -607,7 +617,6 @@
         return;
       }
 
-      // Ensure we have product stocks and variant pricing in memory
       const missingProducts = cart.some(it => !(it.sku in PRODUCTS));
       if (missingProducts) await loadProductsForCart();
       await loadVariantsForCart();
@@ -690,9 +699,15 @@
           </div>
         </div>
       `;
+
+      // show/hide sign-in banner depending on session
+      const banner = document.getElementById('signinBanner');
+      if (banner) banner.style.display = IS_SIGNED ? 'none' : 'block';
+      const txt = document.getElementById('signinText');
+      if (txt) txt.textContent = IS_VET ? '' : 'To see prices and your orders, please sign in.';
     }
 
-    /* ======================= Cart ops ======================= */
+    /* Cart ops */
     async function changeQty(sku, variant, delta) {
       const cart = readCart();
       const i = cart.findIndex(x => x.sku === sku && (x.variant||'default') === (variant||'default'));
@@ -718,7 +733,14 @@
     }
     async function clearCart() { await writeCart([]); }
 
-    /* ======================= Proceed / Payment hook ======================= */
+    /* Sign in helper – keeps cart snapshot and returns to this page */
+    function goLogin(){
+      const cartSnapshot = encodeURIComponent(localStorage.getItem('cart') || '[]');
+      const redirect = encodeURIComponent('cart.html?cart=' + cartSnapshot);
+      location.href = `login.html?redirect=${redirect}`;
+    }
+
+    /* Proceed / Payment hook */
     async function proceedCheckout(){
       const cart = readCart();
       if (!cart.length) return;
@@ -763,7 +785,7 @@
       location.href = `checkout.html?totals=${totalsParam}`;
     }
 
-    /* ======================= Orders ======================= */
+    /* Orders */
     async function renderOrders(){
       const ordersBox = document.getElementById('ordersBox');
       const hint = document.getElementById('ordersHint');
@@ -815,13 +837,13 @@
       }).join('');
     }
 
-    /* ======================= Boot ======================= */
+    /* Boot */
     document.addEventListener('DOMContentLoaded', async () => {
       adoptQueryCartOnce();
       adoptBackupCartOnce();
-      await refreshUserFlags();        // ensure IS_SIGNED/IS_VET before first render
-      await loadProductsForCart();     // stocks + product names + base prices
-      await loadVariantsForCart();     // build VARIANTS from products.variants
+      await refreshUserFlags();
+      await loadProductsForCart();
+      await loadVariantsForCart();
       await renderCart();
       await syncCartFromDB();
       await renderOrders();
@@ -871,7 +893,7 @@
       await renderCart();
     }
 
-    supa.auth.onAuthStateChange(async (_event, _session) => {
+    supa.auth.onAuthStateChange(async () => {
       await refreshUserFlags();
       await loadProductsForCart();
       await loadVariantsForCart();
