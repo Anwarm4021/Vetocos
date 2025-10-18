@@ -734,18 +734,67 @@ const apReq  = document.getElementById('apReq');
 const apCreate=document.getElementById('apCreate');
 const apMsg  = document.getElementById('apMsg');
 
+// === Pricing + Variants (Add form) ===
+// (these exist only if you added the HTML blocks in the Add new product card)
+const apPPV   = document.getElementById('apPPV');
+const apPVm10 = document.getElementById('apPVm10');
+const apPVp10 = document.getElementById('apPVp10');
+const apVariantsBox = document.getElementById('apVariants');
+const apVariantAdd  = document.getElementById('apVariantAdd');
+
+let AP_VARIANTS = []; // temp variants while adding a product
+function renderApVariants(){
+  if (!apVariantsBox) return;
+  apVariantsBox.innerHTML = (AP_VARIANTS.length ? AP_VARIANTS.map((v, idx) => `
+    <div class="card" data-apv="${idx}" style="padding:10px">
+      <div class="grid3">
+        <div><label>Name <input type="text" value="${v.name||''}" data-vf="name"></label></div>
+        <div><label>PPV (€) <input type="number" step="0.01" min="0" value="${Number(v.price_ppv||0)}" data-vf="ppv"></label></div>
+        <div><label>PV-10 (€) <input type="number" step="0.01" min="0" value="${Number(v.price_pv_minus10||0)}" data-vf="pvm10"></label></div>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <div><label>PV+10 (€) <input type="number" step="0.01" min="0" value="${Number(v.price_pv_plus10||0)}" data-vf="pvp10"></label></div>
+        <div class="row" style="align-items:flex-end;justify-content:flex-end">
+          <button type="button" class="btn danger small" data-apv-del="${idx}">Remove</button>
+        </div>
+      </div>
+    </div>
+  `).join('') : '<div class="muted">No variants yet.</div>');
+}
+apVariantAdd?.addEventListener('click', () => {
+  AP_VARIANTS.push({ name:'', price_ppv:0, price_pv_minus10:0, price_pv_plus10:0 });
+  renderApVariants();
+});
+apVariantsBox?.addEventListener('input', (e) => {
+  const card = e.target.closest('[data-apv]'); if (!card) return;
+  const i = Number(card.dataset.apv);
+  const vf = e.target.dataset.vf;
+  if (vf === 'name') AP_VARIANTS[i].name = e.target.value || '';
+  if (vf === 'ppv')  AP_VARIANTS[i].price_ppv = Number(e.target.value||0);
+  if (vf === 'pvm10')AP_VARIANTS[i].price_pv_minus10 = Number(e.target.value||0);
+  if (vf === 'pvp10')AP_VARIANTS[i].price_pv_plus10 = Number(e.target.value||0);
+});
+apVariantsBox?.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-apv-del]'); if (!btn) return;
+  const i = Number(btn.dataset.apv_del);
+  AP_VARIANTS.splice(i,1);
+  renderApVariants();
+});
+renderApVariants();
+
 let PROD_CACHE = [];
 
 async function loadProducts(){
   prodMsg.textContent = "Loading products…";
   const { data, error } = await supa.from('products')
-    .select('sku,name,description,stock_qty,available,requires_verification,image_path,pdf_path,updated_at')
+    .select(`sku,name,description,stock_qty,available,requires_verification,image_path,pdf_path,updated_at,price_ppv,price_pv_minus10,price_pv_plus10,variants`)
     .order('name', { ascending:true });
   if (error){ prodMsg.textContent = error.message; return; }
   PROD_CACHE = data || [];
   renderProducts();
   prodMsg.textContent = "";
 }
+
 function renderProducts(){
   const q = (prodSearch.value||'').toLowerCase().trim();
   const rows = PROD_CACHE.filter(p=>{
@@ -760,7 +809,43 @@ function renderProducts(){
           <div style="font-weight:600">${p.name} <span class="muted mini">(${p.sku})</span></div>
           <div class="muted mini" style="max-height:3.5em;overflow:auto">${p.description||''}</div>
           <div class="muted mini">${p.updated_at?('Updated: '+new Date(p.updated_at).toLocaleString()):''}</div>
+
+          <!-- Pricing inline -->
+          <div class="grid3" style="margin-top:8px">
+            <div><label>PPV (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_ppv||0)}" data-field="price_ppv"></label></div>
+            <div><label>PV-10 (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_pv_minus10||0)}" data-field="price_pv_minus10"></label></div>
+            <div><label>PV+10 (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_pv_plus10||0)}" data-field="price_pv_plus10"></label></div>
+          </div>
+
+          <!-- Variants editor -->
+          <div class="card" style="margin-top:8px;padding:10px">
+            <div class="toolbar" style="margin:0 0 6px"><h4 style="margin:0">Variants</h4>
+              <button type="button" class="btn small" data-action="add-variant">Add variant</button>
+            </div>
+            <div data-variants>
+              ${
+                (Array.isArray(p.variants)?p.variants:[]).length
+                ? (p.variants||[]).map((v, i)=>`
+                    <div class="card" data-variant="${i}" style="padding:8px;margin-bottom:8px">
+                      <div class="grid3">
+                        <div><label>Name <input type="text" value="${(v.name||'')}" data-vf="name"></label></div>
+                        <div><label>PPV (€) <input type="number" step="0.01" min="0" value="${Number(v.price_ppv||0)}" data-vf="ppv"></label></div>
+                        <div><label>PV-10 (€) <input type="number" step="0.01" min="0" value="${Number(v.price_pv_minus10||0)}" data-vf="pvm10"></label></div>
+                      </div>
+                      <div class="grid2" style="margin-top:6px">
+                        <div><label>PV+10 (€) <input type="number" step="0.01" min="0" value="${Number(v.price_pv_plus10||0)}" data-vf="pvp10"></label></div>
+                        <div class="row" style="align-items:flex-end;justify-content:flex-end">
+                          <button type="button" class="btn danger small" data-variant-del="${i}">Remove</button>
+                        </div>
+                      </div>
+                    </div>
+                  `).join('')
+                : '<div class="muted mini">No variants.</div>'
+              }
+            </div>
+          </div>
         </div>
+
         <div><label>Qty<br><input class="qty-edit" type="number" min="0" value="${Number(p.stock_qty||0)}" data-field="stock_qty"></label></div>
         <div><label>Available<br>
           <select data-field="available"><option value="true" ${p.available?'selected':''}>Yes</option><option value="false" ${!p.available?'selected':''}>No</option></select>
@@ -783,6 +868,7 @@ function renderProducts(){
 prodSearch.addEventListener('input', renderProducts);
 prodRefresh.addEventListener('click', loadProducts);
 
+// CREATE product (with prices + variants)
 apCreate.onclick = async ()=>{
   apMsg.textContent = "Creating…"; apCreate.disabled=true;
   const name = (apName.value||'').trim();
@@ -792,6 +878,19 @@ apCreate.onclick = async ()=>{
   const qty  = Math.max(0, Number(apQty.value||0)|0);
   const available = apAvail.value === 'true';
   const requires_verification = apReq.value === 'true';
+
+  // base prices (optional fields — default 0 if not present)
+  const price_ppv        = Number(apPPV?.value   || 0);
+  const price_pv_minus10 = Number(apPVm10?.value || 0);
+  const price_pv_plus10  = Number(apPVp10?.value || 0);
+
+  // variants (only if the add-form UI exists)
+  const variants = (apVariantsBox ? AP_VARIANTS : []).filter(v => String(v.name||'').trim()).map(v => ({
+    name: v.name.trim(),
+    price_ppv: Number(v.price_ppv||0),
+    price_pv_minus10: Number(v.price_pv_minus10||0),
+    price_pv_plus10: Number(v.price_pv_plus10||0)
+  }));
 
   let image_path=null, pdf_path=null;
   const img = apImg.files[0]||null, pdf = apPdf.files[0]||null;
@@ -811,42 +910,112 @@ apCreate.onclick = async ()=>{
     pdf_path = up.data.path;
   }
 
-  const row = { sku, name, description:desc, stock_qty:qty, available, requires_verification, image_path, pdf_path };
+  const row = {
+    sku, name, description:desc, stock_qty:qty, available, requires_verification,
+    image_path, pdf_path,
+    price_ppv, price_pv_minus10, price_pv_plus10,
+    variants
+  };
   const { error } = await supa.from('products').insert(row);
   if (error){ apMsg.textContent = error.message; apCreate.disabled=false; return; }
   apMsg.textContent = "Created.";
   toast('Product created');
+
+  // reset fields
   apName.value=''; apSku.value=''; apDesc.value=''; apQty.value='0'; apImg.value=''; apPdf.value=''; apAvail.value='true'; apReq.value='false';
+  if (apPPV)   apPPV.value='0';
+  if (apPVm10) apPVm10.value='0';
+  if (apPVp10) apPVp10.value='0';
+  AP_VARIANTS = []; renderApVariants();
+
   apCreate.disabled=false;
   await loadProducts();
 };
 
+// Card actions (save/delete + add/remove variant)
 prodList.addEventListener('click', async (e)=>{
   const card = e.target.closest('.card[data-sku]'); if (!card) return;
   const sku = card.dataset.sku;
 
+  // SAVE product with prices + variants
   if (e.target.matches('button[data-action="save"]')){
     const qtyEl  = card.querySelector('input[data-field="stock_qty"]');
     const avaEl  = card.querySelector('select[data-field="available"]');
     const reqEl  = card.querySelector('select[data-field="requires_verification"]');
+
+    const ppvEl   = card.querySelector('input[data-field="price_ppv"]');
+    const pvm10El = card.querySelector('input[data-field="price_pv_minus10"]');
+    const pvp10El = card.querySelector('input[data-field="price_pv_plus10"]');
+
+    function getVariantsFromCard(c){
+      const box = c.querySelector('[data-variants]');
+      if (!box) return [];
+      const rows = Array.from(box.querySelectorAll('[data-variant]'));
+      return rows.map(r => ({
+        name: (r.querySelector('input[data-vf="name"]')?.value || '').trim(),
+        price_ppv:        Number(r.querySelector('input[data-vf="ppv"]')?.value || 0),
+        price_pv_minus10: Number(r.querySelector('input[data-vf="pvm10"]')?.value || 0),
+        price_pv_plus10:  Number(r.querySelector('input[data-vf="pvp10"]')?.value || 0)
+      })).filter(v => v.name);
+    }
+
     const patch = {
       stock_qty: Math.max(0, Number(qtyEl.value||0)|0),
-      available: avaEl.value === 'true',
-      requires_verification: reqEl.value === 'true'
+      available: (avaEl.value === 'true'),
+      requires_verification: (reqEl.value === 'true'),
+      price_ppv:        Number(ppvEl?.value || 0),
+      price_pv_minus10: Number(pvm10El?.value || 0),
+      price_pv_plus10:  Number(pvp10El?.value || 0),
+      variants: getVariantsFromCard(card)
     };
+
     const { error } = await supa.from('products').update(patch).eq('sku', sku);
     if (error) return toast(error.message, true);
     toast('Saved'); await loadProducts();
   }
 
+  // DELETE product
   if (e.target.matches('button[data-action="delete"]')){
     if (!confirm(`Delete product ${sku}? This cannot be undone.`)) return;
     const { error } = await supa.from('products').delete().eq('sku', sku);
     if (error) return toast(error.message, true);
     toast('Deleted'); await loadProducts();
   }
+
+  // ADD variant row (UI only; click Save to persist)
+  if (e.target.matches('button[data-action="add-variant"]')){
+    const vbox = card.querySelector('[data-variants]');
+    if (!vbox) return;
+    const idx = vbox.querySelectorAll('[data-variant]').length;
+    const row = document.createElement('div');
+    row.className = 'card';
+    row.setAttribute('data-variant', String(idx));
+    row.style.padding = '8px';
+    row.style.marginBottom = '8px';
+    row.innerHTML = `
+      <div class="grid3">
+        <div><label>Name <input type="text" data-vf="name"></label></div>
+        <div><label>PPV (€) <input type="number" step="0.01" min="0" value="0" data-vf="ppv"></label></div>
+        <div><label>PV-10 (€) <input type="number" step="0.01" min="0" value="0" data-vf="pvm10"></label></div>
+      </div>
+      <div class="grid2" style="margin-top:6px">
+        <div><label>PV+10 (€) <input type="number" step="0.01" min="0" value="0" data-vf="pvp10"></label></div>
+        <div class="row" style="align-items:flex-end;justify-content:flex-end">
+          <button type="button" class="btn danger small" data-variant-del="${idx}">Remove</button>
+        </div>
+      </div>
+    `;
+    vbox.appendChild(row);
+  }
+
+  // REMOVE a variant row (UI only; click Save to persist)
+  if (e.target.closest('button[data-variant-del]')){
+    const r = e.target.closest('[data-variant]');
+    r?.remove();
+  }
 });
 
+// Uploads
 prodList.addEventListener('change', async (e)=>{
   const input = e.target;
   const card = input.closest('.card[data-sku]'); if (!card) return;
@@ -871,6 +1040,7 @@ prodList.addEventListener('change', async (e)=>{
   }
 });
 
+
 /* =======================================================================
    VET APPLICATIONS
 ======================================================================= */
@@ -888,10 +1058,7 @@ async function loadApps(){
   appsMsg.textContent = 'Loading…';
   const { data, error } = await supa
     .from('vet_applications')
-    .select(`
-      id,user_id,identity_number,diploma_path,status,created_at,admin_note,
-      profiles:profiles!vet_applications_user_id_fkey(email,first_name,last_name)
-    `)
+    .select(`id,user_id,identity_number,diploma_path,status,created_at,admin_note,profiles:profiles!vet_applications_user_id_fkey(email,first_name,last_name)`)
     .order('created_at', { ascending:false });
   if (error){ appsMsg.textContent = error.message; return; }
   APP_CACHE = data || [];
