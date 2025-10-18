@@ -344,10 +344,24 @@
       { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
 
+    /* ======================= PKCE / magic-link return handling ======================= */
+    (async () => {
+      try {
+        if (location.search.includes('code=') || location.hash.includes('access_token')) {
+          await supa.auth.exchangeCodeForSession(location.href);
+          const clean = new URL(location.href);
+          ['code','type','access_token','refresh_token','expires_in','token_type'].forEach(k=>clean.searchParams.delete(k));
+          history.replaceState({}, '', clean.toString());
+        }
+      } catch (e) {
+        console.error('PKCE exchange failed:', e);
+      }
+    })();
+
     /* ======================= Cart + stock state ======================= */
     const CART_KEY = 'cart';
     const CART_UPDATED_KEY = 'cart_updated_at';
-    const CART_RESTORED_KEY = 'cart_restored_v2';
+    const CART_RESTORED_KEY = 'cart_restored_v2';  /* <-- keep only this single declaration */
 
     // sku -> { sku, name?, stock_qty:number|null, available:boolean|null, price_ppv?, price_pv_minus10?, price_pv_plus10?, variants? }
     let PRODUCTS = Object.create(null);
@@ -433,9 +447,7 @@
 
       if (!error && Array.isArray(data)){
         PRODUCTS = {};
-        data.forEach(p => {
-          PRODUCTS[p.sku] = p;
-        });
+        data.forEach(p => { PRODUCTS[p.sku] = p; });
       }
 
       // Ensure names in cart
@@ -455,7 +467,6 @@
         const list = Array.isArray(p.variants) ? p.variants : [];
 
         if (!list.length){
-          // single default from base prices
           VARIANTS[sku] = {
             'default': {
               label: 'Default',
@@ -508,7 +519,6 @@
     }
 
     /* ======================= Adopt once helpers ======================= */
-    const CART_RESTORED_KEY = 'cart_restored_v2';
     function adoptQueryCartOnce(){
       if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
       const qs = new URLSearchParams(location.search);
@@ -541,7 +551,7 @@
       }
     }
 
-    /* ======================= Price computation (matches Products.html tiers) ======================= */
+    /* ======================= Price computation ======================= */
     function priceForQtyRow(row, qty){
       const q = Math.max(1, Number(qty||1));
       const cur = row.currency || 'MAD';
@@ -861,7 +871,7 @@
       await renderCart();
     }
 
-    supa.auth.onAuthStateChange(async (_event, session) => {
+    supa.auth.onAuthStateChange(async (_event, _session) => {
       await refreshUserFlags();
       await loadProductsForCart();
       await loadVariantsForCart();
