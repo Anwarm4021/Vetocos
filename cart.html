@@ -316,7 +316,15 @@
       document.getElementById('y').textContent=new Date().getFullYear();
       const d=new Date(); const month=d.toLocaleString('default',{month:'long'}); const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
       const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
-      const sel=document.getElementById('lang-switch'); if(sel){ sel.value=initial; sel.addEventListener('change',e=>applyLang(e.target.value)); }
+      const sel=document.getElementById('lang-switch');
+      if(sel){
+        sel.value=initial;
+        sel.addEventListener('change', async e=>{
+          applyLang(e.target.value);
+          await renderCart();        // live refresh texts
+          await renderOrders();
+        });
+      }
       const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
     });
   </script>
@@ -421,7 +429,7 @@
 
     function computeItemPrice(item){
       const p = PRODUCTS[item.sku] || {};
-      if (p == null) return null;
+      if (!p) return null;
       const tier = priceForQtyRow(p, item.qty);
       if (!tier || !tier.unit) return null;
       const unit = tier.unit;
@@ -663,7 +671,6 @@
       ordersBox.style.display = 'block';
       ordersBox.innerHTML = `<div class="muted">${t('orders.loading')}</div>`;
 
-      // Removed 'receipt_url' from select to avoid: column orders.receipt_url does not exist
       const { data: orders, error } = await supa
         .from('orders')
         .select('id, created_at, status, total_qty, total_amount')
