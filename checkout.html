@@ -592,15 +592,20 @@ function priceTierForQty(productRow, qty){
   if (q >= 10)  return { unit: Number(productRow.price_pv_plus10||0),   label:'PV+10U', cur };
   return         { unit: Number(productRow.price_pv_minus10||0),        label:'PV-10U', cur };
 }
-function computeItemPrice(it, loggedIn){
-  if (!loggedIn) return { hidden:true, message:t('price.hidden.sign') };
-  const row = PRODUCTS[it.sku] || null;
+function computeItemPrice(it){
+  const loggedIn = !!USER;            // USER is set by ensureLogin()
+  if (!loggedIn) return { hidden:true, message: t('price.hidden.sign') };
+
+  const vMap = VARIANTS[it.sku] || {};
+  const row  = vMap[it.variant||''] || null;
   if (!row) return null;
+
   const tier = priceTierForQty(row, it.qty);
   const unit = Number(tier.unit||0);
   const line = unit * Number(it.qty||0);
   return { unit, line, cur:tier.cur, label:tier.label };
 }
+
 function groupTotals(lines){ const out={}; lines.forEach(x=>{ out[x.cur]=(out[x.cur]||0)+x.amount; }); return out; }
 
 function renderCart(){
