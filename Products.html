@@ -701,36 +701,52 @@ function applyLang(lang){
       }
 
       if (pdAdminForm){
-        pdAdminForm.addEventListener('submit', async (e)=>{
-          e.preventDefault();
-          const rows = [...pdAdminForm.querySelectorAll('[data-vid]')].map(row=>{
-            const id = row.getAttribute('data-vid');
-            return {
-              id,
-              ppv: Number(row.querySelector('[name="ppv"]').value || 0),
-              pv_minus_10u: Number(row.querySelector('[name="pv_minus_10u"]').value || 0),
-              pv_plus_10u: Number(row.querySelector('[name="pv_plus_10u"]').value || 0),
-              currency: row.querySelector('[name="currency"]').value || 'MAD',
-              active: row.querySelector('[name="active"]').checked
-            };
-          });
+  pdAdminForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
 
-          try{
-            for (const r of rows){
-              await supa.from('product_variants').update({
-                ppv: r.ppv, pv_minus_10u: r.pv_minus_10u, pv_plus_10u: r.pv_plus_10u, currency: r.currency, active: r.active
-              }).eq('id', r.id);
-            }
-            alert('Prices saved.');
-            await loadVariants(CURRENT_SKU);
-            buildAdminForm();
-            buildVariantSelector();
-            updatePriceUI();
-          }catch(err){
-            alert('Error: ' + (err.message||String(err)));
-          }
-        });
-      }
+    // collect edited values from the form
+    const edited = [...pdAdminForm.querySelectorAll('.admin-grid')].map(row=>{
+      const code = row.getAttribute('data-vid');
+      const src  = CURRENT_VARIANTS.find(v=> (v.variant_code||'') === code) || {};
+      const num  = (name)=> {
+        const v = row.querySelector(`[name="${name}"]`)?.value;
+        return (v === '' || v == null) ? null : Number(v);
+      };
+      return {
+        // canonical JSON we store in products.variants
+        code,
+        name: src.label || src._uiLabel || code,
+        price_ppv:        num('price_ppv'),
+        price_pv_minus10: num('price_pv_minus10'),
+        price_pv_plus10:  num('price_pv_plus10'),
+        currency: row.querySelector('[name="currency"]')?.value || 'MAD',
+        active:   row.querySelector('[name="active"]')?.checked !== false
+      };
+    });
+
+    try{
+      // persist to products.variants for CURRENT_SKU
+      const { error } = await supa.from('products')
+        .update({ variants: edited })
+        .eq('sku', CURRENT_SKU);
+
+      if (error) throw error;
+
+      // refresh local state + UI
+      PRODUCT_CACHE[CURRENT_SKU] = PRODUCT_CACHE[CURRENT_SKU] || {};
+      PRODUCT_CACHE[CURRENT_SKU].variants = edited;
+
+      await loadVariants(CURRENT_SKU);   // re-read into CURRENT_VARIANTS
+      buildAdminForm();                  // rebuild editor
+      buildVariantSelector();            // rebuild selector
+      updatePriceUI();                   // recompute price
+
+      alert('Prices saved.');
+    }catch(err){
+      alert('Error: ' + (err?.message || String(err)));
+    }
+  });
+}
     }
 
     function currentVariant(){
@@ -739,12 +755,19 @@ function applyLang(lang){
     }
 
     function priceForQty(variant, qty){
-      if (!variant) return null;
-      const q = Math.max(1, Number(qty||1));
-      if (q === 1) return { label: t('pd.ppv'), value: variant.ppv, currency: variant.currency||'MAD' };
-      if (q >= 10) return { label: t('pd.pv10p'), value: variant.pv_plus_10u, currency: variant.currency||'MAD' };
-      return { label: t('pd.pv10m'), value: variant.pv_minus_10u, currency: variant.currency||'MAD' };
-    }
+  if (!variant) return null;
+  const q = Math.max(1, Number(qty||1));
+
+  // Support both old table keys and new Admin JSON keys
+  const ppv   = (variant.ppv ?? variant.price_ppv);
+  const pv_m  = (variant.pv_minus_10u ?? variant.price_pv_minus10);
+  const pv_p  = (variant.pv_plus_10u  ?? variant.price_pv_plus10);
+  const cur   = variant.currency || 'MAD';
+
+  if (q === 1)  return { label: t('pd.ppv'),   value: ppv,  currency: cur };
+  if (q >= 10)  return { label: t('pd.pv10p'), value: pv_p, currency: cur };
+  return { label: t('pd.pv10m'), value: pv_m,  currency: cur };
+}
 
     function updatePriceUI(){
       const variant = currentVariant();
@@ -765,24 +788,42 @@ function applyLang(lang){
       pdPriceNote.textContent = `Total: ${tier.currency||'MAD'} ${total.toFixed(2)} (${qty} × ${Number(tier.value).toFixed(2)})`;
     }
 
-    async function loadVariants(sku){
-      const { data, error } = await supa.from('product_variants')
-        .select('id,sku,variant_code,label,ppv,pv_minus_10u,pv_plus_10u,currency,active,sort_order')
-        .eq('sku', sku).eq('active', true)
-        .order('sort_order', { ascending:true, nullsFirst:false })
-        .order('label', { ascending:true });
-      if (error) throw error;
-      let rows = Array.isArray(data) ? data : [];
-      if (!rows.length && sku === 'ART-ASUH'){
-        rows = [
-          { id:'FAKE1', sku, variant_code:'S',  label:'S',  ppv:null, pv_minus_10u:null, pv_plus_10u:null, currency:'MAD', active:true, sort_order:1 },
-          { id:'FAKE2', sku, variant_code:'XL', label:'XL', ppv:null, pv_minus_10u:null, pv_plus_10u:null, currency:'MAD', active:true, sort_order:2 }
-        ];
-      }
-      rows.forEach(v=>{ v._uiLabel = prettyVariantLabel(sku, v.variant_code||'', v.label||''); });
-      CURRENT_VARIANTS = rows;
-      return rows;
-    }
+async function loadVariants(sku){
+  const prod = PRODUCT_CACHE[sku] || {};
+  let list = Array.isArray(prod.variants) ? prod.variants : [];
+
+  // If no variants JSON, create a single default variant from base prices
+  if (!list.length){
+    const fallback = {
+      variant_code: 'default',
+      _uiLabel: 'Default',
+      label: 'Default',
+      price_ppv:        prod.price_ppv ?? null,
+      price_pv_minus10: prod.price_pv_minus10 ?? null,
+      price_pv_plus10:  prod.price_pv_plus10 ?? null,
+      currency: 'MAD'
+    };
+    CURRENT_VARIANTS = [fallback];
+    return CURRENT_VARIANTS;
+  }
+
+  // Normalize admin JSON -> UI structure
+  CURRENT_VARIANTS = list.map((v, i) => {
+    const code = String(v.code ?? v.variant_code ?? v.name ?? `v${i}`);
+    return {
+      variant_code: code,
+      _uiLabel: prettyVariantLabel(sku, code, v.name || v.label || ''),
+      label: v.name || v.label || '',
+      // accept either new JSON keys or old names if present
+      price_ppv:        (v.price_ppv        ?? v.ppv        ?? null) * 1 || (v.price_ppv===0||v.ppv===0 ? 0 : null),
+      price_pv_minus10: (v.price_pv_minus10 ?? v.pv_minus_10u ?? null) * 1 || (v.price_pv_minus10===0||v.pv_minus_10u===0 ? 0 : null),
+      price_pv_plus10:  (v.price_pv_plus10  ?? v.pv_plus_10u  ?? null) * 1 || (v.price_pv_plus10===0||v.pv_plus_10u===0 ? 0 : null),
+      currency: v.currency || 'MAD'
+    };
+  });
+
+  return CURRENT_VARIANTS;
+}
 
     function buildVariantSelector(preselectCode=null){
       if (!pdVariantSel) return;
@@ -799,35 +840,61 @@ function applyLang(lang){
         : CURRENT_VARIANTS[0].variant_code;
     }
 
-    function buildAdminForm(){
-      if (!pdAdminBox) return;
-      pdAdminBox.style.display = IS_ADMIN ? 'block' : 'none';
-      pdAdminForm.style.display = 'none';
-      if (!IS_ADMIN) return;
-      const rows = CURRENT_VARIANTS.length ? CURRENT_VARIANTS : [];
-      if (!rows.length){ pdAdminForm.innerHTML = `<div class="muted">${t('pd.variantMissing')}</div>`; return; }
-      pdAdminForm.innerHTML = rows.map(v=>`
-        <div class="admin-grid" data-vid="${v.id}">
-          <div><label class="muted">${t('pd.variant')}</label>
-            <input class="input" value="${(v._uiLabel || v.label || v.variant_code || '')}" disabled></div>
-          <div><label class="muted">${t('pd.ppv')}</label>
-            <input name="ppv" class="input" type="number" step="0.01" value="${v.ppv??''}"></div>
-          <div><label class="muted">${t('pd.pv10m')}</label>
-            <input name="pv_minus_10u" class="input" type="number" step="0.01" value="${v.pv_minus_10u??''}"></div>
-          <div><label class="muted">${t('pd.pv10p')}</label>
-            <input name="pv_plus_10u" class="input" type="number" step="0.01" value="${v.pv_plus_10u??''}"></div>
-          <div><label class="muted">Currency</label>
-            <input name="currency" class="input" value="${v.currency||'MAD'}"></div>
-          <div><label class="muted">Active</label><br>
-            <input name="active" type="checkbox" ${v.active?'checked':''}></div>
-        </div>
-        <div style="height:8px"></div>
-      `).join('') + `
-        <div class="actions-fw">
-          <button class="close" type="button" onclick="(function(f){ f.style.display='none'; })(document.getElementById('pdAdminForm'))">${t('pd.cancel')}</button>
-          <button class="contact-btn" type="submit">${t('pd.save')}</button>
-        </div>`;
-    }
+function buildAdminForm(){
+  if (!pdAdminBox) return;
+
+  // show/hide admin panel
+  pdAdminBox.style.display = IS_ADMIN ? 'block' : 'none';
+  if (!IS_ADMIN) return;
+
+  const rows = Array.isArray(CURRENT_VARIANTS) ? CURRENT_VARIANTS : [];
+  pdAdminForm.style.display = 'none';
+
+  if (!rows.length){
+    pdAdminForm.innerHTML = `<div class="muted">${t('pd.variantMissing')}</div>`;
+    return;
+  }
+
+  pdAdminForm.innerHTML = rows.map((v, i)=>`
+    <div class="admin-grid" data-vid="${v.variant_code || `v${i}`}">
+      <div>
+        <label class="muted">${t('pd.variant')}</label>
+        <input class="input" value="${(v._uiLabel || v.label || v.variant_code || '')}" disabled>
+      </div>
+
+      <div>
+        <label class="muted">${t('pd.ppv')}</label>
+        <input name="price_ppv" class="input" type="number" step="0.01" value="${(v.price_ppv ?? v.ppv ?? '')}">
+      </div>
+
+      <div>
+        <label class="muted">${t('pd.pv10m')}</label>
+        <input name="price_pv_minus10" class="input" type="number" step="0.01" value="${(v.price_pv_minus10 ?? v.pv_minus_10u ?? '')}">
+      </div>
+
+      <div>
+        <label class="muted">${t('pd.pv10p')}</label>
+        <input name="price_pv_plus10" class="input" type="number" step="0.01" value="${(v.price_pv_plus10 ?? v.pv_plus_10u ?? '')}">
+      </div>
+
+      <div>
+        <label class="muted">Currency</label>
+        <input name="currency" class="input" value="${(v.currency || 'MAD')}">
+      </div>
+
+      <div>
+        <label class="muted">Active</label><br>
+        <input name="active" type="checkbox" ${(v.active !== false) ? 'checked' : ''}>
+      </div>
+    </div>
+    <div style="height:8px"></div>
+  `).join('') + `
+    <div class="actions-fw">
+      <button class="close" type="button" onclick="(function(f){ f.style.display='none'; })(document.getElementById('pdAdminForm'))">${t('pd.cancel')}</button>
+      <button class="contact-btn" type="submit">${t('pd.save')}</button>
+    </div>
+  `;
+}
 
     function openPD(sku, preselectVariant=null){
       ensurePDRefs();
@@ -880,7 +947,7 @@ function applyLang(lang){
       let rows = [];
       const { data, error } = await supa
         .from('products')
-        .select('sku,name,description,stock_qty,available,image_path,pdf_path,sort_order,updated_at')
+        .select('sku,name,description,stock_qty,available,image_path,pdf_path,sort_order,updated_at,price_ppv,price_pv_minus10,price_pv_plus10,variants')
         .order('sort_order', { ascending:true, nullsFirst:false })
         .order('name', { ascending:true });
       if (!error && Array.isArray(data)) rows = data;
@@ -894,21 +961,26 @@ function applyLang(lang){
       rows.forEach(r=>{
         const f = FALLBACK[r.sku] || {};
         PRODUCT_CACHE[r.sku] = {
-          sku: r.sku,
-          name: r.name || f.name || r.sku,
-          description: r.description || '',
-          stock_qty: Number(r.stock_qty||0),
-          available: !!r.available,
-          image_path: r.image_path || null,
-          pdf_path: r.pdf_path || null,
-          category: f.category || '',
-          form: f.form || '',
-          size: f.size || '',
-          ingredients: f.ingredients || '',
-          usage: f.usage || '',
-          image: f.image || '',
-          page: f.page || '',
-          pdf: f.pdf || ''
+  sku: r.sku,
+  name: r.name || f.name || r.sku,
+  description: r.description || '',
+  stock_qty: Number(r.stock_qty||0),
+  available: !!r.available,
+  image_path: r.image_path || null,
+  pdf_path: r.pdf_path || null,
+  category: f.category || '',
+  form: f.form || '',
+  size: f.size || '',
+  ingredients: f.ingredients || '',
+  usage: f.usage || '',
+  image: f.image || '',
+  page: f.page || '',
+  pdf: f.pdf || '',
+  // ⬇️ NEW
+  price_ppv: r.price_ppv ?? null,
+  price_pv_minus10: r.price_pv_minus10 ?? null,
+  price_pv_plus10: r.price_pv_plus10 ?? null,
+  variants: Array.isArray(r.variants) ? r.variants : [],
         };
       });
       return rows;
@@ -916,21 +988,39 @@ function applyLang(lang){
 
     /* === CARD VARIANTS helpers === */
     async function getVariantsForSku(sku){
-      if (VARIANTS_CACHE[sku]) return VARIANTS_CACHE[sku];
-      let { data, error } = await supa.from('product_variants')
-        .select('id,sku,variant_code,label,active,sort_order')
-        .eq('sku', sku).eq('active', true)
-        .order('sort_order', { ascending:true, nullsFirst:false })
-        .order('label', { ascending:true });
-      if (error) data = [];
-      if (!data?.length && sku === 'ART-ASUH'){
-        data = [{ id:'FAKE1', sku, variant_code:'S',  label:'S',  active:true, sort_order:1 },
-                { id:'FAKE2', sku, variant_code:'XL', label:'XL', active:true, sort_order:2 }];
-      }
-      const enriched = (data||[]).map(v => ({...v, _uiLabel: prettyVariantLabel(sku, v.variant_code||'', v.label||'')}));
-      VARIANTS_CACHE[sku] = enriched;
-      return enriched;
-    }
+  // read from products.variants JSON written by Admin
+  const prod = PRODUCT_CACHE[sku] || {};
+  const list = Array.isArray(prod.variants) ? prod.variants : [];
+
+  // If no variants JSON, create a single “Default” variant from base prices
+  if (!list.length) {
+    const label = 'Default';
+    return VARIANTS_CACHE[sku] = [{
+      variant_code: 'default',
+      _uiLabel: label,
+      label,
+      // map to the keys used in priceForQty()
+      price_ppv: prod.price_ppv ?? null,
+      price_pv_minus10: prod.price_pv_minus10 ?? null,
+      price_pv_plus10: prod.price_pv_plus10 ?? null,
+      currency: 'MAD'
+    }];
+  }
+
+  // Normalize Admin JSON variants -> UI structure
+  const normalized = list.map((v, i) => ({
+    variant_code: (v.code || v.variant_code || v.name || `v${i}`).toString(),
+    _uiLabel: prettyVariantLabel(sku, (v.code||v.variant_code||v.name||'').toString(), v.name || v.label || ''),
+    label: v.name || v.label || '',
+    price_ppv: Number(v.price_ppv ?? 0) || null,
+    price_pv_minus10: Number(v.price_pv_minus10 ?? 0) || null,
+    price_pv_plus10: Number(v.price_pv_plus10 ?? 0) || null,
+    currency: v.currency || 'MAD'
+  }));
+
+  VARIANTS_CACHE[sku] = normalized;
+  return normalized;
+}
 
     async function renderProducts(){
       const grid = document.getElementById('productGrid');
@@ -1094,4 +1184,5 @@ function applyLang(lang){
   </div>
 </body>
 </html>
+
 
