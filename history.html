@@ -119,31 +119,31 @@ const STR = {
       all:"All",collect:"Collect",delivery:"Delivery",status:"Status",pending:"pending",paid:"paid",shipped:"shipped",
       completed:"completed",cancelled:"cancelled",from:"From",to:"To",refresh:"Refresh",loading:"Loading…",
       order:"#",customer:"Customer",email:"Email",created:"Created",total:"Total",items:"Items",method_col:"Method",
-      address:"Address",delivery_status:"Delivery status",delay_until:"Delay until",delay_note:"Delay note",
+      pay_col:"Payment",address:"Address",delivery_status:"Delivery status",delay_until:"Delay until",delay_note:"Delay note",
       view_items:"View items",hide_items:"Hide items",delete:"Delete",deleting:"Deleting…",deleted:"Deleted",
       save:"Save",saving:"Saving…",saved:"Saved",
       confirm_delete:"Delete this order and its items? This cannot be undone.",
-      feature_hint:"Tip: to enable address & delay controls, add columns delivery_address (text), delivery_status (text), delay_until (timestamp), delay_note (text) to public.orders."},
+      feature_hint:"Tip: address is built from country + address1/2 + city + postal. Make sure these columns exist in public.orders."},
   fr:{title:"Historique des achats",back_admin:"Retour à l’Admin",language:"Langue",checking_session:"Vérification de session…",
       login_admin:"Se connecter (Admin)",logout:"Se déconnecter",search_placeholder:"Rech. nom / email / n° commande",method:"Méthode",
       all:"Toutes",collect:"Retrait",delivery:"Livraison",status:"Statut",pending:"en attente",paid:"payée",shipped:"expédiée",
       completed:"terminée",cancelled:"annulée",from:"Du",to:"Au",refresh:"Rafraîchir",loading:"Chargement…",
       order:"N°",customer:"Client",email:"Email",created:"Créée",total:"Total",items:"Articles",method_col:"Méthode",
-      address:"Adresse",delivery_status:"Statut livraison",delay_until:"Report jusqu’au",delay_note:"Note de retard",
+      pay_col:"Paiement",address:"Adresse",delivery_status:"Statut livraison",delay_until:"Report jusqu’au",delay_note:"Note de retard",
       view_items:"Voir articles",hide_items:"Masquer",delete:"Supprimer",deleting:"Suppression…",deleted:"Supprimée",
       save:"Enregistrer",saving:"Enregistrement…",saved:"Enregistré",
       confirm_delete:"Supprimer cette commande et ses articles ? Action irréversible.",
-      feature_hint:"Astuce : pour activer l’adresse et le retard, ajoutez delivery_address (text), delivery_status (text), delay_until (timestamp), delay_note (text) à public.orders."},
+      feature_hint:"Astuce : l’adresse est composée de pays + adresse 1/2 + ville + code postal."},
   ar:{title:"سجل المشتريات",back_admin:"العودة للوحة التحكم",language:"اللغة",checking_session:"جارٍ فحص الجلسة…",
       login_admin:"تسجيل دخول كمدير",logout:"تسجيل خروج",search_placeholder:"بحث اسم / بريد / رقم الطلب",method:"الطريقة",
       all:"الكل",collect:"استلام",delivery:"تسليم",status:"الحالة",pending:"قيد الانتظار",paid:"مدفوع",shipped:"تم الشحن",
       completed:"مكتمل",cancelled:"ملغي",from:"من",to:"إلى",refresh:"تحديث",loading:"جارٍ التحميل…",
       order:"الطلب",customer:"العميل",email:"البريد",created:"أُنشئ",total:"الإجمالي",items:"العناصر",method_col:"الطريقة",
-      address:"العنوان",delivery_status:"حالة التوصيل",delay_until:"مؤجل حتى",delay_note:"ملاحظة التأجيل",
+      pay_col:"الدفع",address:"العنوان",delivery_status:"حالة التوصيل",delay_until:"مؤجل حتى",delay_note:"ملاحظة التأجيل",
       view_items:"عرض العناصر",hide_items:"إخفاء العناصر",delete:"حذف",deleting:"جارٍ الحذف…",deleted:"تم الحذف",
       save:"حفظ",saving:"جارٍ الحفظ…",saved:"تم الحفظ",
       confirm_delete:"حذف هذا الطلب وعناصره؟ لا يمكن التراجع.",
-      feature_hint:"تلميح: لتفعيل العنوان والتأجيل أضف الأعمدة: delivery_address, delivery_status, delay_until, delay_note إلى public.orders."}
+      feature_hint:"تلميح: العنوان مُركّب من الدولة + السطر 1/2 + المدينة + الرمز البريدي."}
 };
 function applyLang(lang){
   document.documentElement.setAttribute('data-lang', lang);
@@ -185,7 +185,7 @@ async function checkAdmin(){
   if (!session?.user){ authMsg.textContent = "Not signed in."; loginBtn.classList.remove('hidden'); return false; }
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove('hidden');
-  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
+  if (["anwar.moumenjamai19@gmail.com","info@vetocos.com"].includes(String(session.user.email||'').toLowerCase())) return true;
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){ location.replace('index.html'); return false; }
   return true;
@@ -200,77 +200,75 @@ const toEl = document.getElementById('to');
 document.getElementById('refresh').onclick = load;
 
 let ORDERS = [];
-let HAS_DELAY_FIELDS = false;
-let HAS_ADDRESS = false;
 
-/* helper: display-friendly code */
+/* helpers */
 function displayOrderNumber(o){
   return o.order_number || ('ORD-' + String(o.id || '').toUpperCase().slice(0,8));
 }
+function normalizeMethod(v){
+  const s = String(v||'').toLowerCase();
+  if (s==='collect' || s==='pickup') return 'collect';
+  if (s==='delivery') return 'delivery';
+  return s || '';
+}
+function fmtMethod(v){
+  return normalizeMethod(v)==='collect' ? STR[localStorage.getItem('lang')||'en'].collect : STR[localStorage.getItem('lang')||'en'].delivery;
+}
+function fmtPay(m){
+  const s = String(m||'').toLowerCase();
+  if (s==='card_on_delivery') return 'Card on delivery';
+  if (s==='cod') return 'Cash on delivery';
+  return m || '—';
+}
+function buildAddress(o){
+  const rows = [
+    o.address_line1,
+    o.address_line2,
+    [o.city, o.country].filter(Boolean).join(', '),
+    o.postal_code
+  ].filter(Boolean);
+  return rows.length ? rows.join('\n') : '—';
+}
 
-/* Orders + profiles + optional fields (address & delay) */
+/* Orders + profiles */
 async function load(){
   const msg = document.getElementById('msg');
   const L = localStorage.getItem('lang')||'en';
   msg.textContent = STR[L].loading;
 
-  // 1) Orders (safe baseline columns known to exist)
-  const { data: orders, error: err1 } = await supa
+  const { data: orders, error } = await supa
     .from('orders')
-    .select('id,user_id,status,delivery_method,created_at')
+    .select(`
+      id,user_id,created_at,status,
+      full_name,email,phone_number,
+      delivery_method,payment_method,
+      country,address_line1,address_line2,city,postal_code
+    `)
     .order('created_at', { ascending:false })
     .limit(1000);
-  if (err1){ msg.textContent = err1.message; return; }
 
-  // Try to fetch optional columns in a separate call (if they don't exist, we'll ignore)
-  HAS_DELAY_FIELDS = false; HAS_ADDRESS = false;
-  try{
-    const { data: opt, error: errOpt } = await supa
-      .from('orders')
-      .select('id,delivery_address,delivery_status,delay_until,delay_note')
-      .in('id', (orders||[]).map(o=>o.id));
-    if (!errOpt && opt){
-      const byId = {}; opt.forEach(r=> byId[r.id]=r);
-      orders.forEach(o=>{
-        const x = byId[o.id]||{};
-        o.delivery_address = x.delivery_address ?? null;
-        o.delivery_status  = x.delivery_status ?? null;
-        o.delay_until      = x.delay_until ?? null;
-        o.delay_note       = x.delay_note ?? null;
-      });
-      HAS_ADDRESS = opt.some(r=> 'delivery_address' in r);
-      HAS_DELAY_FIELDS = opt.some(r=> 'delivery_status' in r || 'delay_until' in r || 'delay_note' in r);
-    }
-  }catch{}
+  if (error){ msg.textContent = error.message; return; }
 
-  // 2) Profiles in batch
+  // profiles (optional – we already have email/phone from orders)
   const userIds = [...new Set((orders||[]).map(o=>o.user_id).filter(Boolean))];
   let profilesById = {};
   if (userIds.length){
-    const { data: profs, error: err2 } = await supa
+    const { data: profs } = await supa
       .from('profiles')
-      .select('id,email,first_name,last_name')
+      .select('id,first_name,last_name')
       .in('id', userIds);
-    if (err2){ msg.textContent = err2.message; return; }
     (profs||[]).forEach(p=>{ profilesById[p.id]=p; });
   }
 
-  // stitch
-  ORDERS = (orders||[]).map(o=>({ ...o, profiles: profilesById[o.user_id] || null }));
+  ORDERS = (orders||[]).map(o=>{
+    const prof = profilesById[o.user_id] || null;
+    // prefer explicit full_name from order, fallback to profile
+    const profName = [prof?.first_name, prof?.last_name].filter(Boolean).join(' ').trim();
+    return { ...o, display_name: (o.full_name || profName || '(no name)') };
+  });
+
   msg.textContent = '';
   render();
-  showFeatureHint();
-}
-
-function showFeatureHint(){
-  const box = document.getElementById('featureHint');
-  const L = localStorage.getItem('lang')||'en';
-  if (!HAS_ADDRESS || !HAS_DELAY_FIELDS){
-    box.textContent = STR[L].feature_hint;
-    box.classList.remove('hidden');
-  } else {
-    box.classList.add('hidden');
-  }
 }
 
 async function fetchItems(orderId){
@@ -283,67 +281,54 @@ async function fetchItems(orderId){
   return data || [];
 }
 
-/* Save per-order delivery controls */
-async function saveOrderControls(orderId, patch){
+/* Save basic status (you can extend for delay controls later) */
+async function saveOrder(orderId, patch){
   const L = localStorage.getItem('lang')||'en';
   const btn = document.querySelector(`button[data-save="${orderId}"]`);
-  const t0 = btn ? btn.innerText : '';
+  const old = btn ? btn.innerText : '';
   if (btn){ btn.disabled = true; btn.innerText = STR[L].saving; }
   try{
     const { error } = await supa.from('orders').update(patch).eq('id', orderId);
     if (error) throw error;
     toast(STR[L].saved);
-  }catch(e){
-    alert(e?.message || String(e));
-  }finally{
-    if (btn){ btn.disabled = false; btn.innerText = t0 || STR[L].save; }
-  }
+  }catch(e){ alert(e?.message || String(e)); }
+  finally{ if (btn){ btn.disabled=false; btn.innerText = old || STR[L].save; } }
 }
 
-/* Delete order (delete items first, then order) */
 async function deleteOrder(orderId){
   const L = localStorage.getItem('lang')||'en';
   if (!confirm(STR[L].confirm_delete)) return;
-
   const delBtn = document.querySelector(`button[data-del="${orderId}"]`);
-  const oldText = delBtn ? delBtn.innerText : '';
-  if (delBtn) { delBtn.disabled = true; delBtn.innerText = STR[L].deleting; }
-
+  const old = delBtn ? delBtn.innerText : '';
+  if (delBtn){ delBtn.disabled = true; delBtn.innerText = STR[L].deleting; }
   try{
     const delItems = await supa.from('order_items').delete().eq('order_id', orderId);
     if (delItems.error) throw delItems.error;
-
     const delOrder = await supa.from('orders').delete().eq('id', orderId);
     if (delOrder.error) throw delOrder.error;
-
-    toast(STR[L].deleted);
-    ORDERS = ORDERS.filter(o=>o.id !== orderId);
+    ORDERS = ORDERS.filter(o=>o.id!==orderId);
     render();
-  }catch(e){
-    alert(e?.message || String(e));
-  }finally{
-    if (delBtn){ delBtn.disabled = false; delBtn.innerText = oldText || STR[L].delete; }
-  }
+    toast(STR[L].deleted);
+  }catch(e){ alert(e?.message || String(e)); }
+  finally{ if (delBtn){ delBtn.disabled=false; delBtn.innerText = old || STR[L].delete; } }
 }
 
-async function render(){
+function render(){
   const list = document.getElementById('list');
   const lang = localStorage.getItem('lang')||'en';
   const t = STR[lang];
 
-  // filters
   const q = (qEl.value||'').toLowerCase().trim();
-  const meth = methodEl.value;
+  const meth = methodEl.value; // 'collect' | 'delivery' | ''
   const st = statusEl.value;
   const from = fromEl.value ? new Date(fromEl.value) : null;
   const to = toEl.value ? new Date(toEl.value) : null;
 
   const rows = ORDERS.filter(o=>{
-    if (meth && o.delivery_method!==meth) return false;
+    if (meth && normalizeMethod(o.delivery_method)!==meth) return false;
     if (st && o.status!==st) return false;
-    const name = [o.profiles?.first_name||'', o.profiles?.last_name||''].join(' ').trim();
-    const tstr = `${displayOrderNumber(o)} ${(o.profiles?.email||'').toLowerCase()} ${name.toLowerCase()}`;
-    if (q && !tstr.includes(q)) return false;
+    const blob = `${displayOrderNumber(o)} ${o.email||''} ${o.display_name||''} ${o.phone_number||''}`.toLowerCase();
+    if (q && !blob.includes(q)) return false;
     const d = new Date(o.created_at);
     if (from && d < from) return false;
     if (to){ let td = new Date(to); td.setHours(23,59,59,999); if (d>td) return false; }
@@ -362,40 +347,24 @@ async function render(){
           <th>${t.order}</th>
           <th>${t.customer}</th>
           <th>${t.email}</th>
+          <th>Phone</th>
           <th>${t.created}</th>
           <th>${t.status}</th>
           <th>${t.items}</th>
           <th>${t.total}</th>
           <th>${t.method_col}</th>
+          <th>${t.pay_col}</th>
           <th>${t.address}</th>
-          <th>${t.delivery_status}</th>
-          <th>${t.delay_until}</th>
-          <th>${t.delay_note}</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         ${rows.map(o=>{
-          const pill = o.status==='completed'?'ok':o.status==='pending'?'pend':o.status==='cancelled'?'bad':'';
-          const name = [o.profiles?.first_name, o.profiles?.last_name].filter(Boolean).join(' ') || '(no name)';
-          const method = o.delivery_method==='collect' ? t.collect : t.delivery;
-          const delStatus = o.delivery_status || 'on_time'; // UI default
-          const delayDate = o.delay_until ? new Date(o.delay_until).toISOString().slice(0,10) : '';
-          const addr = HAS_ADDRESS ? `<div class="address mini">${escapeHtml(String(o.delivery_address||''))}</div>` : `<div class="mini muted">—</div>`;
-          const delayControls = HAS_DELAY_FIELDS ? `
-            <select data-ds="${o.id}">
-              <option value="on_time" ${delStatus==='on_time'?'selected':''}>on_time</option>
-              <option value="delayed" ${delStatus==='delayed'?'selected':''}>delayed</option>
-              <option value="delivered" ${delStatus==='delivered'?'selected':''}>delivered</option>
-            </select>
-          ` : `<span class="mini muted">—</span>`;
-          const delayUntilCtrl = HAS_DELAY_FIELDS ? `<input type="date" data-du="${o.id}" value="${delayDate}" />` : `<span class="mini muted">—</span>`;
-          const delayNoteCtrl = HAS_DELAY_FIELDS ? `<textarea data-dn="${o.id}" placeholder="${t.delay_note}">${escapeHtml(o.delay_note||'')}</textarea>` : `<span class="mini muted">—</span>`;
-
           return `<tr data-order="${o.id}">
             <td><strong>${displayOrderNumber(o)}</strong></td>
-            <td>${escapeHtml(name)}</td>
-            <td>${escapeHtml(o.profiles?.email||'')}</td>
+            <td>${escapeHtml(o.display_name||'(no name)')}</td>
+            <td>${escapeHtml(o.email||'')}</td>
+            <td>${escapeHtml(o.phone_number||'')}</td>
             <td class="mini">${new Date(o.created_at).toLocaleString()}</td>
             <td>
               <select data-st="${o.id}">
@@ -411,16 +380,11 @@ async function render(){
               <div class="mini" data-items-box style="display:none; margin-top:6px">…</div>
             </td>
             <td class="mini" data-total="${o.id}">—</td>
-            <td class="mini">${method}</td>
-            <td>${addr}</td>
-            <td>${delayControls}</td>
-            <td>${delayUntilCtrl}</td>
-            <td>${delayNoteCtrl}</td>
+            <td class="mini">${fmtMethod(o.delivery_method)}</td>
+            <td class="mini">${fmtPay(o.payment_method)}</td>
+            <td class="mini address">${escapeHtml(buildAddress(o))}</td>
             <td style="text-align:right; min-width:160px">
-              ${HAS_DELAY_FIELDS
-                ? `<button class="btn small" data-save="${o.id}">${t.save}</button>`
-                : `<span class="mini muted">—</span>`
-              }
+              <button class="btn small" data-save="${o.id}">${t.save}</button>
               <button class="btn danger small" data-del="${o.id}">${t.delete}</button>
             </td>
           </tr>`;
@@ -429,7 +393,7 @@ async function render(){
     </table>
   `;
 
-  // bind item toggles (and compute total on first open)
+  // items toggle
   list.querySelectorAll('button[data-items="toggle"]').forEach(btn=>{
     btn.onclick = async ()=>{
       const tr = btn.closest('tr');
@@ -470,28 +434,17 @@ async function render(){
     };
   });
 
-  // bind saves (delivery status / delay fields + main status)
+  // save status
   list.querySelectorAll('button[data-save]').forEach(btn=>{
     btn.onclick = async ()=>{
       const id = btn.getAttribute('data-save');
       const st = list.querySelector(`select[data-st="${id}"]`)?.value;
-      const ds = list.querySelector(`select[data-ds="${id}"]`)?.value;
-      const du = list.querySelector(`input[data-du="${id}"]`)?.value || null;
-      const dn = list.querySelector(`textarea[data-dn="${id}"]`)?.value || null;
-
-      const patch = {};
-      if (st) patch.status = st;
-      if (HAS_DELAY_FIELDS){
-        patch.delivery_status = ds || null;
-        patch.delay_until = du ? new Date(du).toISOString() : null;
-        patch.delay_note = dn || null;
-      }
-      await saveOrderControls(id, patch);
+      await saveOrder(id, { status: st });
       await load();
     };
   });
 
-  // bind deletes
+  // delete
   list.querySelectorAll('button[data-del]').forEach(btn=>{
     btn.onclick = ()=> deleteOrder(btn.getAttribute('data-del'));
   });
@@ -516,7 +469,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
   await load();
 
-  // optional realtime
+  // realtime (optional)
   try{
     supa.channel('rt_orders')
       .on('postgres_changes', { event: '*', schema:'public', table:'orders' }, ()=> load())
