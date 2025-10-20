@@ -404,22 +404,28 @@ async function checkAdmin(){
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove('hidden');
 
-  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
+  // ✅ If email allowlist
+  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) {
+    const hb = document.getElementById('historyBtn');
+    if (hb) hb.style.display = 'inline-block';     // <— add this
+    return true;
+  }
+
+  // ✅ If profiles.is_admin
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){ location.replace('index.html'); return false; }
+
+  const hb = document.getElementById('historyBtn');
+  if (hb) hb.style.display = 'inline-block';       // <— add this
   return true;
 }
 
 async function showHistoryIfOrdersExist(){
-  try{
-    const { count, error } = await supa
-      .from('orders')
-      .select('id', { count: 'exact', head: true });
+  // Always show; counting may fail due to RLS
+  const btn = document.getElementById('historyBtn');
+  if (btn) btn.style.display = 'inline-block';
+}
 
-    if (!error && (count || 0) > 0) {
-      const btn = document.getElementById('historyBtn');
-      if (btn) btn.style.display = 'inline-block';
-    }
   }catch(_){}
 }
 
