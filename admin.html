@@ -383,42 +383,62 @@ loginBtn.onclick = () => {
 };
 logoutBtn.onclick = async () => { await supa.auth.signOut(); location.href='index.html'; };
 
-async function checkAdmin(){
+async function checkAdmin() {
   authMsg.textContent = "Checking session…";
-  const { data:{ session } } = await supa.auth.getSession();
-  if (!session?.user){
+  const { data: { session } } = await supa.auth.getSession();
+
+  if (!session?.user) {
     authMsg.textContent = "Not signed in.";
-    loginBtn.classList.remove('hidden');
+    loginBtn.classList.remove("hidden");
     return false;
   }
+
   authMsg.textContent = `Signed in as ${session.user.email}`;
-  logoutBtn.classList.remove('hidden');
+  logoutBtn.classList.remove("hidden");
 
-  // 1) email allowlist
-  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) {
-    const btn = document.getElementById('historyBtn');
-    if (btn) btn.style.display = 'inline-block'; // <<< SHOW BUTTON FOR ADMINS
+  // 1) Email allowlist (instant pass)
+  if (ADMIN_EMAILS.includes(String(session.user.email || "").toLowerCase())) {
+    const btn = document.getElementById("historyBtn");
+    if (btn) btn.style.display = "inline-block";
     return true;
   }
 
-  // 2) profiles.is_admin check
-  const { data: prof } = await supa
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", session.user.id)
-    .maybeSingle();
-
-  if (prof?.is_admin) {
-    const btn = document.getElementById('historyBtn');
-    if (btn) btn.style.display = 'inline-block'; // <<< SHOW BUTTON FOR ADMINS
-    return true;
+  // 2) Ask the DB: is this JWT an admin? (no profiles query = no RLS recursion)
+  try {
+    const { data: isAdmin, error } = await supa.rpc("is_admin_jwt");
+    if (error) console.warn("is_admin_jwt RPC error:", error);
+    if (isAdmin === true) {
+      const btn = document.getElementById("historyBtn");
+      if (btn) btn.style.display = "inline-block";
+      return true;
+    }
+  } catch (e) {
+    console.warn("RPC call failed:", e);
   }
 
-  // Not admin – keep page usable without bouncing you away while debugging
+  // 3) (Optional) legacy fallback – keep only if you still store profiles.is_admin
+  try {
+    const { data: prof, error } = await supa
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    if (!error && prof?.is_admin) {
+      const btn = document.getElementById("historyBtn");
+      if (btn) btn.style.display = "inline-block";
+      return true;
+    }
+  } catch (e) {
+    console.warn("profiles check failed:", e);
+  }
+
+  // Not admin — don't redirect while you’re debugging
   authMsg.textContent = "You are signed in but not an admin.";
-  // location.replace('index.html'); // <-- leave commented during setup
+  // location.replace("index.html");
   return false;
 }
+
 
 async function showHistoryIfOrdersExist(){
   try{
