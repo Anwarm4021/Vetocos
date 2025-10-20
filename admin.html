@@ -386,14 +386,38 @@ logoutBtn.onclick = async () => { await supa.auth.signOut(); location.href='inde
 async function checkAdmin(){
   authMsg.textContent = "Checking session…";
   const { data:{ session } } = await supa.auth.getSession();
-  if (!session?.user){ authMsg.textContent="Not signed in."; loginBtn.classList.remove('hidden'); return false; }
+  if (!session?.user){
+    authMsg.textContent = "Not signed in.";
+    loginBtn.classList.remove('hidden');
+    return false;
+  }
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove('hidden');
 
-  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
-  const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
-  if (!prof?.is_admin){ location.replace('index.html'); return false; }
-  return true;
+  // 1) email allowlist
+  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) {
+    const btn = document.getElementById('historyBtn');
+    if (btn) btn.style.display = 'inline-block'; // <<< SHOW BUTTON FOR ADMINS
+    return true;
+  }
+
+  // 2) profiles.is_admin check
+  const { data: prof } = await supa
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", session.user.id)
+    .maybeSingle();
+
+  if (prof?.is_admin) {
+    const btn = document.getElementById('historyBtn');
+    if (btn) btn.style.display = 'inline-block'; // <<< SHOW BUTTON FOR ADMINS
+    return true;
+  }
+
+  // Not admin – keep page usable without bouncing you away while debugging
+  authMsg.textContent = "You are signed in but not an admin.";
+  // location.replace('index.html'); // <-- leave commented during setup
+  return false;
 }
 
 async function showHistoryIfOrdersExist(){
