@@ -61,7 +61,7 @@
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <a class="btn small" href="Products.html" target="_blank" rel="noopener">Open Products</a>
       <a class="btn small" href="news.html" target="_blank" rel="noopener">Open News</a>
-      <a class="btn small" id="historyBtn" href="history.html" target="_blank" rel="noopener">Open History</a>
+      <a class="btn small" id="historyBtn" href="history.html" target="_blank" rel="noopener" style="display:none">Open History</a>
       <a class="btn small" href="index.html">Home</a>
     </div>
   </div>
@@ -313,6 +313,45 @@ const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
 });
 
+/* ================= Edge Function config (DELETE USER) ================= */
+const ADMIN_DELETE_FN = 'super-endpoint'; // your deployed function name
+
+// Helper: call Edge Function with fallback to direct fetch (handles CORS cases)
+async function callAdminDelete(userId) {
+  if (!userId) throw new Error('Missing user_id');
+
+  // Try the supabase-js invoke first
+  try {
+    const { data, error } = await supa.functions.invoke(ADMIN_DELETE_FN, {
+      body: { user_id: userId }
+    });
+    if (error || data?.error) {
+      throw new Error(error?.message || data?.error || 'Function returned an error');
+    }
+    return data;
+  } catch (e) {
+    // Fallback to direct fetch with current session token
+    const { data: sessData } = await supa.auth.getSession();
+    const token = sessData?.session?.access_token;
+    if (!token) throw new Error('No session token available');
+
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/${ADMIN_DELETE_FN}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'apikey': SUPABASE_ANON
+      },
+      body: JSON.stringify({ user_id: userId })
+    });
+    const json = await resp.json().catch(() => ({}));
+    if (!resp.ok || json?.error) {
+      throw new Error(json?.error || `HTTP ${resp.status}`);
+    }
+    return json;
+  }
+}
+
 /* ================= Config ================= */
 const PRODUCT_BUCKET = "ProductFiles";
 const NEWS_BUCKET    = "NewsFiles";
@@ -357,7 +396,7 @@ async function checkAdmin(){
   return true;
 }
 
-  async function showHistoryIfOrdersExist(){
+async function showHistoryIfOrdersExist(){
   try{
     const { count, error } = await supa
       .from('orders')
@@ -562,18 +601,37 @@ async function loadDrawerApplication(userId){
   }
 }
 
-/* Delete user (Edge Function) */
-dwDeleteUser.onclick = async ()=>{
+/* Delete user (Edge Function) — uses callAdminDelete helper */
+dwDeleteUser.onclick = async () => {
   if (!DRAWER_USER_ID) return;
-  if (!confirm('Delete this user and related data?')) return;
-  try{
-    const { data, error } = await supa.functions.invoke('admin-delete-user', { body: { user_id: DRAWER_USER_ID }});
-    if (error) throw error;
+
+  const confirmMsg = 'Delete this user and ALL related data? This cannot be undone.';
+  if (!confirm(confirmMsg)) return;
+
+  const { data: { session } } = await supa.auth.getSession();
+  if (!session?.user?.email) {
+    toast('You are not signed in.', true);
+    return;
+  }
+
+  const btn = dwDeleteUser;
+  const originalLabel = btn.innerText;
+  btn.disabled = true;
+  btn.innerText = 'Deleting…';
+
+  try {
+    await callAdminDelete(DRAWER_USER_ID);
     toast('User deleted');
     drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
     await loadUsers();
-  }catch(e){
-    toast(e?.message || String(e) || 'Delete failed', true);
+  } catch (e) {
+    const msg = (e?.message || String(e) || 'Delete failed');
+    toast(msg, true);
+    console.error('Delete user failed:', e);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = originalLabel;
   }
 };
 
@@ -747,15 +805,14 @@ const apReq  = document.getElementById('apReq');
 const apCreate=document.getElementById('apCreate');
 const apMsg  = document.getElementById('apMsg');
 
-// === Pricing + Variants (Add form) ===
-// (these exist only if you added the HTML blocks in the Add new product card)
+// Optional pricing + variants (if you add those inputs in the HTML)
 const apPPV   = document.getElementById('apPPV');
 const apPVm10 = document.getElementById('apPVm10');
-const apPVp10 = document.getElementById('apPVp10');
+the_apPVp10 = document.getElementById ? document.getElementById('apPVp10') : null; // guard older HTML
 const apVariantsBox = document.getElementById('apVariants');
 const apVariantAdd  = document.getElementById('apVariantAdd');
 
-let AP_VARIANTS = []; // temp variants while adding a product
+let AP_VARIANTS = [];
 function renderApVariants(){
   if (!apVariantsBox) return;
   apVariantsBox.innerHTML = (AP_VARIANTS.length ? AP_VARIANTS.map((v, idx) => `
@@ -892,12 +949,10 @@ apCreate.onclick = async ()=>{
   const available = apAvail.value === 'true';
   const requires_verification = apReq.value === 'true';
 
-  // base prices (optional fields — default 0 if not present)
   const price_ppv        = Number(apPPV?.value   || 0);
   const price_pv_minus10 = Number(apPVm10?.value || 0);
-  const price_pv_plus10  = Number(apPVp10?.value || 0);
+  const price_pv_plus10  = Number(the_apPVp10?.value || 0);
 
-  // variants (only if the add-form UI exists)
   const variants = (apVariantsBox ? AP_VARIANTS : []).filter(v => String(v.name||'').trim()).map(v => ({
     name: v.name.trim(),
     price_ppv: Number(v.price_ppv||0),
@@ -934,11 +989,10 @@ apCreate.onclick = async ()=>{
   apMsg.textContent = "Created.";
   toast('Product created');
 
-  // reset fields
   apName.value=''; apSku.value=''; apDesc.value=''; apQty.value='0'; apImg.value=''; apPdf.value=''; apAvail.value='true'; apReq.value='false';
   if (apPPV)   apPPV.value='0';
   if (apPVm10) apPVm10.value='0';
-  if (apPVp10) apPVp10.value='0';
+  if (the_apPVp10) the_apPVp10.value='0';
   AP_VARIANTS = []; renderApVariants();
 
   apCreate.disabled=false;
@@ -950,7 +1004,6 @@ prodList.addEventListener('click', async (e)=>{
   const card = e.target.closest('.card[data-sku]'); if (!card) return;
   const sku = card.dataset.sku;
 
-  // SAVE product with prices + variants
   if (e.target.matches('button[data-action="save"]')){
     const qtyEl  = card.querySelector('input[data-field="stock_qty"]');
     const avaEl  = card.querySelector('select[data-field="available"]');
@@ -987,7 +1040,6 @@ prodList.addEventListener('click', async (e)=>{
     toast('Saved'); await loadProducts();
   }
 
-  // DELETE product
   if (e.target.matches('button[data-action="delete"]')){
     if (!confirm(`Delete product ${sku}? This cannot be undone.`)) return;
     const { error } = await supa.from('products').delete().eq('sku', sku);
@@ -995,7 +1047,6 @@ prodList.addEventListener('click', async (e)=>{
     toast('Deleted'); await loadProducts();
   }
 
-  // ADD variant row (UI only; click Save to persist)
   if (e.target.matches('button[data-action="add-variant"]')){
     const vbox = card.querySelector('[data-variants]');
     if (!vbox) return;
@@ -1021,7 +1072,6 @@ prodList.addEventListener('click', async (e)=>{
     vbox.appendChild(row);
   }
 
-  // REMOVE a variant row (UI only; click Save to persist)
   if (e.target.closest('button[data-variant-del]')){
     const r = e.target.closest('[data-variant]');
     r?.remove();
@@ -1463,7 +1513,6 @@ function subscribeRealtime(){
       })
       .subscribe();
 
-    // ⬇️ Add this block
     supa.channel('rt_orders')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => {
         const btn = document.getElementById('historyBtn');
@@ -1480,7 +1529,6 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   if (!ok) return;
   ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
 
-  // ⬇️ Add this:
   await showHistoryIfOrdersExist();
 
   await Promise.all([ loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice() ]);
