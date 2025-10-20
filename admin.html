@@ -750,50 +750,90 @@ document.getElementById('dwSaveVpa').onclick = async ()=>{
 };
 
 /* =======================================================================
-   CART MANAGEMENT
+   CART MANAGEMENT (Drawer)
+   - Supports add / upsert, edit qty, remove
+   - Tolerates SKUs that no longer exist in products (left join)
+   - Shows simple totals
 ======================================================================= */
-dwReloadCart.onclick = ()=> loadDrawerCart();
-dwCartAdd.onclick = async ()=>{
+
+dwReloadCart.onclick = () => loadDrawerCart();
+
+dwCartAdd.onclick = async () => {
   if (!DRAWER_USER_ID) return;
-  const sku = (dwCartSku.value||'').trim();
-  const qty = Math.max(1, Number(dwCartQty.value||1)|0);
-  if (!sku){ dwCartMsg.textContent='Enter SKU'; return; }
-  dwCartMsg.textContent='Saving…';
+
+  const sku = (dwCartSku.value || '').trim();
+  const qty = Math.max(1, Number(dwCartQty.value || 1) | 0);
+
+  if (!sku) {
+    dwCartMsg.textContent = 'Enter SKU';
+    return;
+  }
+  if (!Number.isFinite(qty) || qty <= 0) {
+    dwCartMsg.textContent = 'Quantity must be a positive number';
+    return;
+  }
+
+  dwCartMsg.textContent = 'Saving…';
   const { error } = await supa.from('cart_items').upsert(
     { user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty },
     { onConflict: 'user_id,product_sku' }
   );
-  if (error){ dwCartMsg.textContent = error.message; return; }
-  dwCartMsg.textContent='Saved';
-  dwCartSku.value=''; dwCartQty.value='1';
+
+  if (error) { dwCartMsg.textContent = error.message; return; }
+
+  dwCartMsg.textContent = 'Saved';
+  dwCartSku.value = '';
+  dwCartQty.value = '1';
   await loadDrawerCart();
+  await loadUsers(); // keep Users list stats in sync
 };
 
-async function loadDrawerCart(){
+async function loadDrawerCart() {
   dwCartBox.textContent = 'Loading…';
+
+  // NOTE: no "!inner" so it behaves like LEFT JOIN if FK exists; still tolerates missing product row
   const { data, error } = await supa
     .from('cart_items')
     .select(`
       user_id, product_sku, quantity,
-      products:products!inner(name, stock_qty)
+      products:products(name, stock_qty)
     `)
     .eq('user_id', DRAWER_USER_ID)
-    .order('product_sku', { ascending:true });
+    .order('product_sku', { ascending: true });
 
-  if (error){ dwCartBox.textContent = error.message; return; }
-  const rows = data || [];
-  if (!rows.length){ dwCartBox.innerHTML = '<div class="muted">Cart is empty.</div>'; return; }
+  if (error) { dwCartBox.textContent = error.message; return; }
+
+  const rows = Array.isArray(data) ? data : [];
+  if (!rows.length) {
+    dwCartBox.innerHTML = '<div class="muted">Cart is empty.</div>';
+    return;
+  }
+
+  // quick totals
+  const totalQty = rows.reduce((n, r) => n + (Number(r.quantity) || 0), 0);
 
   dwCartBox.innerHTML = `
     <table>
-      <thead><tr><th>SKU</th><th>Name</th><th>Qty</th><th>Stock</th><th>Actions</th></tr></thead>
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Name</th>
+          <th>Qty</th>
+          <th>Stock</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
       <tbody>
-        ${rows.map(r=>`
-          <tr data-sku="${r.product_sku}">
-            <td><a class="link" href="Products.html#${encodeURIComponent(r.product_sku)}" target="_blank" rel="noopener">${r.product_sku}</a></td>
-            <td>${escapeHtml(r.products?.name || '')}</td>
-            <td><input class="qty-edit" type="number" min="0" value="${Number(r.quantity||0)}"></td>
-            <td class="muted mini">${Number(r.products?.stock_qty||0)}</td>
+        ${rows.map(r => `
+          <tr data-sku="${escapeHtml(r.product_sku)}">
+            <td>
+              <a class="link" href="Products.html#${encodeURIComponent(r.product_sku)}" target="_blank" rel="noopener">
+                ${escapeHtml(r.product_sku)}
+              </a>
+            </td>
+            <td>${escapeHtml(r.products?.name || '(not in catalog)')}</td>
+            <td><input class="qty-edit" type="number" min="0" value="${Number(r.quantity || 0)}"></td>
+            <td class="muted mini">${Number(r.products?.stock_qty ?? 0)}</td>
             <td class="row">
               <button class="btn small" data-cart="save">Save</button>
               <button class="btn danger small" data-cart="delete">Remove</button>
@@ -802,29 +842,58 @@ async function loadDrawerCart(){
         `).join('')}
       </tbody>
     </table>
+    <div class="muted mini" style="margin-top:6px">Total items in cart: <strong>${totalQty}</strong></div>
   `;
 
-  dwCartBox.querySelectorAll('button[data-cart="save"]').forEach(b=>{
-    b.onclick = async ()=>{
-      const tr = b.closest('tr'); const sku = tr.dataset.sku;
-      const qty = Math.max(0, Number(tr.querySelector('input').value||0)|0);
-      if (qty===0){
-        const { error } = await supa.from('cart_items').delete().eq('user_id', DRAWER_USER_ID).eq('product_sku', sku);
-        if (error) return toast(error.message,true);
-        toast('Item removed'); await loadDrawerCart(); await loadUsers();
+  // save (upsert or delete if qty=0)
+  dwCartBox.querySelectorAll('button[data-cart="save"]').forEach(b => {
+    b.onclick = async () => {
+      const tr = b.closest('tr');
+      const sku = tr?.dataset?.sku || '';
+      const qtyEl = tr?.querySelector('input');
+      const qty = Math.max(0, Number(qtyEl?.value || 0) | 0);
+
+      if (!sku) return;
+
+      if (qty === 0) {
+        const { error } = await supa.from('cart_items')
+          .delete()
+          .eq('user_id', DRAWER_USER_ID)
+          .eq('product_sku', sku);
+        if (error) { toast(error.message, true); return; }
+        toast('Item removed');
+        await loadDrawerCart();
+        await loadUsers();
         return;
       }
-      const { error } = await supa.from('cart_items').upsert({ user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty }, { onConflict:'user_id,product_sku' });
-      if (error) return toast(error.message,true);
-      toast('Saved'); await loadDrawerCart(); await loadUsers();
+
+      const { error } = await supa.from('cart_items').upsert(
+        { user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty },
+        { onConflict: 'user_id,product_sku' }
+      );
+      if (error) { toast(error.message, true); return; }
+      toast('Saved');
+      await loadDrawerCart();
+      await loadUsers();
     };
   });
-  dwCartBox.querySelectorAll('button[data-cart="delete"]').forEach(b=>{
-    b.onclick = async ()=>{
-      const tr = b.closest('tr'); const sku = tr.dataset.sku;
-      const { error } = await supa.from('cart_items').delete().eq('user_id', DRAWER_USER_ID).eq('product_sku', sku);
-      if (error) return toast(error.message,true);
-      toast('Removed'); await loadDrawerCart(); await loadUsers();
+
+  // delete
+  dwCartBox.querySelectorAll('button[data-cart="delete"]').forEach(b => {
+    b.onclick = async () => {
+      const tr = b.closest('tr');
+      const sku = tr?.dataset?.sku || '';
+      if (!sku) return;
+
+      const { error } = await supa.from('cart_items')
+        .delete()
+        .eq('user_id', DRAWER_USER_ID)
+        .eq('product_sku', sku);
+
+      if (error) { toast(error.message, true); return; }
+      toast('Removed');
+      await loadDrawerCart();
+      await loadUsers();
     };
   });
 }
