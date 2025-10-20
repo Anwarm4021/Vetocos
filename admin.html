@@ -421,11 +421,15 @@ async function checkAdmin(){
 }
 
 async function showHistoryIfOrdersExist(){
-  // Always show; counting may fail due to RLS
-  const btn = document.getElementById('historyBtn');
-  if (btn) btn.style.display = 'inline-block';
-}
+  try{
+    const { count, error } = await supa
+      .from('orders')
+      .select('id', { count: 'exact', head: true });
 
+    if (!error && (count || 0) > 0) {
+      const btn = document.getElementById('historyBtn');
+      if (btn) btn.style.display = 'inline-block';
+    }
   }catch(_){}
 }
 
