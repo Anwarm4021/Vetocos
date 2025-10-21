@@ -35,6 +35,7 @@
     .hidden{display:none}
     .address{white-space:pre-wrap}
     .hint{font-size:.85rem;color:#9fb0d6}
+    .stack{display:flex;flex-direction:column;gap:6px}
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
            border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
   </style>
@@ -119,35 +120,41 @@ const STR = {
       login_admin:"Login as Admin",logout:"Logout",search_placeholder:"Search name / email / order #",method:"Method",
       all:"All",collect:"Collect",delivery:"Delivery",status:"Status",pending:"pending",paid:"paid",shipped:"shipped",
       completed:"completed",cancelled:"cancelled",delayed:"delayed",from:"From",to:"To",refresh:"Refresh",loading:"Loading…",
-      order:"#",customer:"Customer",email:"Email",created:"Created",total:"Total",items:"Items",method_col:"Method",
-      pay_col:"Payment",address:"Address",delivery_status:"Delivery status",delay_until:"Delay until",delay_note:"Delay note",
+      order:"#",customer:"Customer",email:"Email",created:"Created",total:"Total",items:"Items",qty_short:"Qty",
+      method_col:"Method",pay_col:"Payment",address:"Address",
+      delivery_status:"Delivery status",delay_until:"Delay until",delay_note:"Delay note",notify:"Notify user",
+      note_to_user:"Note to user (notification body)",notif_title:"Notification title",
       view_items:"View items",hide_items:"Hide items",delete:"Delete",deleting:"Deleting…",deleted:"Deleted",
-      save:"Save",saving:"Saving…",saved:"Saved", phone:"Phone",
+      save:"Save",saving:"Saving…",saved:"Saved",
       confirm_delete:"Delete this order and its items? This cannot be undone.",
-      notify:"Notify user", notify_title:"Order update from VetoCos",
-      feature_hint:"Tip: address is built from country + address1/2 + city + postal."},
+      feature_hint:"Tip: address is built from country + address1/2 + city + postal."
+  },
   fr:{title:"Historique des achats",back_admin:"Retour à l’Admin",language:"Langue",checking_session:"Vérification de session…",
       login_admin:"Se connecter (Admin)",logout:"Se déconnecter",search_placeholder:"Rech. nom / email / n° commande",method:"Méthode",
       all:"Toutes",collect:"Retrait",delivery:"Livraison",status:"Statut",pending:"en attente",paid:"payée",shipped:"expédiée",
       completed:"terminée",cancelled:"annulée",delayed:"reportée",from:"Du",to:"Au",refresh:"Rafraîchir",loading:"Chargement…",
-      order:"N°",customer:"Client",email:"Email",created:"Créée",total:"Total",items:"Articles",method_col:"Méthode",
-      pay_col:"Paiement",address:"Adresse",delivery_status:"Statut livraison",delay_until:"Report jusqu’au",delay_note:"Note de retard",
+      order:"N°",customer:"Client",email:"Email",created:"Créée",total:"Total",items:"Articles",qty_short:"Qté",
+      method_col:"Méthode",pay_col:"Paiement",address:"Adresse",
+      delivery_status:"Statut livraison",delay_until:"Report jusqu’au",delay_note:"Note de retard",notify:"Notifier l’utilisateur",
+      note_to_user:"Note à l’utilisateur (notification)",notif_title:"Titre de la notification",
       view_items:"Voir articles",hide_items:"Masquer",delete:"Supprimer",deleting:"Suppression…",deleted:"Supprimée",
-      save:"Enregistrer",saving:"Enregistrement…",saved:"Enregistré", phone:"Téléphone",
+      save:"Enregistrer",saving:"Enregistrement…",saved:"Enregistré",
       confirm_delete:"Supprimer cette commande et ses articles ? Action irréversible.",
-      notify:"Notifier l’utilisateur", notify_title:"Mise à jour de commande (VetoCos)",
-      feature_hint:"Astuce : l’adresse = pays + adresse 1/2 + ville + code postal."},
+      feature_hint:"Astuce : l’adresse = pays + adresse1/2 + ville + code postal."
+  },
   ar:{title:"سجل المشتريات",back_admin:"العودة للوحة التحكم",language:"اللغة",checking_session:"جارٍ فحص الجلسة…",
-      login_admin:"دخول كمدير",logout:"تسجيل خروج",search_placeholder:"بحث اسم / بريد / رقم الطلب",method:"الطريقة",
-      all:"الكل",collect:"استلام",delivery:"توصيل",status:"الحالة",pending:"قيد الانتظار",paid:"مدفوع",shipped:"تم الشحن",
-      completed:"مكتمل",cancelled:"ملغي",delayed:"مؤجل",from:"من",to:"إلى",refresh:"تحديث",loading:"جارٍ التحميل…",
-      order:"الطلب",customer:"العميل",email:"البريد",created:"أُنشئ",total:"الإجمالي",items:"العناصر",method_col:"الطريقة",
-      pay_col:"الدفع",address:"العنوان",delivery_status:"حالة التوصيل",delay_until:"مؤجل حتى",delay_note:"ملاحظة التأجيل",
+      login_admin:"تسجيل دخول كمدير",logout:"تسجيل خروج",search_placeholder:"بحث اسم / بريد / رقم الطلب",method:"الطريقة",
+      all:"الكل",collect:"استلام",delivery:"تسليم",status:"الحالة",pending:"قيد الانتظار",paid:"مدفوع",shipped:"تم الشحن",
+      completed:"مكتمل",cancelled:"ملغي",delayed:"مؤجّل",from:"من",to:"إلى",refresh:"تحديث",loading:"جارٍ التحميل…",
+      order:"الطلب",customer:"العميل",email:"البريد",created:"أُنشئ",total:"الإجمالي",items:"العناصر",qty_short:"الكمية",
+      method_col:"الطريقة",pay_col:"الدفع",address:"العنوان",
+      delivery_status:"حالة التوصيل",delay_until:"مؤجل حتى",delay_note:"ملاحظة التأجيل",notify:"إشعار المستخدم",
+      note_to_user:"ملاحظة للمستخدم (نص الإشعار)",notif_title:"عنوان الإشعار",
       view_items:"عرض العناصر",hide_items:"إخفاء العناصر",delete:"حذف",deleting:"جارٍ الحذف…",deleted:"تم الحذف",
-      save:"حفظ",saving:"جارٍ الحفظ…",saved:"تم الحفظ", phone:"الهاتف",
+      save:"حفظ",saving:"جارٍ الحفظ…",saved:"تم الحفظ",
       confirm_delete:"حذف هذا الطلب وعناصره؟ لا يمكن التراجع.",
-      notify:"إشعار المستخدم", notify_title:"تحديث الطلب من VetoCos",
-      feature_hint:"تلميح: العنوان = الدولة + العنوان 1/2 + المدينة + الرمز البريدي."}
+      feature_hint:"تلميح: العنوان = الدولة + السطر1/2 + المدينة + الرمز البريدي."
+  }
 };
 function applyLang(lang){
   document.documentElement.setAttribute('data-lang', lang);
@@ -168,7 +175,7 @@ function initLang(){
 
 /* ---------- Toast ---------- */
 const toastEl = document.getElementById("toast");
-function toast(msg){ toastEl.textContent = msg; toastEl.style.display="block"; clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.style.display="none",2000); }
+function toast(msg){ toastEl.textContent = msg; toastEl.style.display="block"; clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.style.display="none",2200); }
 
 /* ---------- Auth ---------- */
 const authMsg  = document.getElementById("authMsg");
@@ -190,9 +197,9 @@ async function checkAdmin(){
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove('hidden');
 
-  const email = String(session.user.email||'').toLowerCase();
-  if (ADMIN_EMAILS.includes(email)) return true;
+  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
 
+  // fallback via profiles.is_admin
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){ location.replace('index.html'); return false; }
   return true;
@@ -246,17 +253,18 @@ async function load(){
   const { data: orders, error } = await supa
     .from('orders')
     .select(`
-      id,user_id,created_at,status,delay_until,delay_note,
+      id,user_id,created_at,status,
       full_name,email,phone_number,
       delivery_method,payment_method,
-      country,address_line1,address_line2,city,postal_code
+      country,address_line1,address_line2,city,postal_code,
+      delay_until, delay_note
     `)
     .order('created_at', { ascending:false })
     .limit(1000);
 
   if (error){ msg.textContent = error.message; return; }
 
-  // profiles (optional fallback for name)
+  // profiles (optional – we already have email/name from orders)
   const userIds = [...new Set((orders||[]).map(o=>o.user_id).filter(Boolean))];
   let profilesById = {};
   if (userIds.length){
@@ -287,49 +295,61 @@ async function fetchItems(orderId){
   return data || [];
 }
 
-async function notifyUser(o, newStatus, delayUntil, delayNote){
-  // best-effort; ignore error so admin flow isn’t blocked
-  const title = STR[localStorage.getItem('lang')||'en'].notify_title;
-  const parts = [];
-  if (newStatus) parts.push(`Status: ${newStatus}`);
-  if (delayUntil) parts.push(`Delay until: ${delayUntil}`);
-  if (delayNote) parts.push(`Note: ${delayNote}`);
-  const body = `Order ${displayOrderNumber(o)} updated.\n` + parts.join('\n');
-
-  await supa.from('notifications').insert({
-    user_id: o.user_id,
-    type: 'order',
-    order_id: o.id,
-    title,
-    body
-  });
+/* NOTIFICATIONS: insert for a user (admin only via RLS policy) */
+async function notifyUser({ user_id, order_id, title, body, type='order' }){
+  // all strings (UUIDs kept as strings)
+  const row = { user_id, order_id, title: title?.trim() || 'Order update', body: body?.trim() || '', type };
+  const { error } = await supa.from('notifications').insert(row);
+  if (error) throw error;
 }
 
-/* Save status / delay fields */
-async function saveOrder(orderId, patch, notifyChecked){
+/* Save status/delay/note (UUID-safe) */
+async function saveOrder(orderId){
   const L = localStorage.getItem('lang')||'en';
   const btn = document.querySelector(`button[data-save="${orderId}"]`);
   const old = btn ? btn.innerText : '';
-  if (btn){ btn.disabled = true; btn.innerText = STR[L].saving; }
+  const tr  = document.querySelector(`tr[data-order="${orderId}"]`);
+  const stSel = tr?.querySelector(`select[data-st="${orderId}"]`);
+  const delayDateEl = tr?.querySelector(`input[data-delay="${orderId}"]`);
+  const noteEl = tr?.querySelector(`textarea[data-note="${orderId}"]`);
+  const notifyChk = tr?.querySelector(`input[data-notify="${orderId}"]`);
+  const nTitleEl = tr?.querySelector(`input[data-ntitle="${orderId}"]`);
 
+  const status = stSel?.value || 'pending';
+  const delayRaw = (delayDateEl?.value || '').trim();
+  const delay_until = delayRaw ? new Date(delayRaw+'T00:00:00Z').toISOString() : null; // ISO or null
+  const delay_note = (noteEl?.value || '').trim() || null;
+
+  if (btn){ btn.disabled = true; btn.innerText = STR[L].saving; }
   try{
-    const { error } = await supa.from('orders').update(patch).eq('id', orderId);
+    const { error } = await supa.from('orders').update({ status, delay_until, delay_note }).eq('id', orderId);
     if (error) throw error;
 
-    // Make a best-effort notification
-    if (notifyChecked){
-      const order = ORDERS.find(x=>x.id===orderId);
-      await notifyUser(
-        order,
-        patch.status ?? order.status,
-        patch.delay_until ?? order.delay_until,
-        patch.delay_note ?? order.delay_note
-      );
+    // If "Notify user" checked -> create notification
+    if (notifyChk?.checked) {
+      const order = ORDERS.find(o=>o.id===orderId);
+      const title = (nTitleEl?.value || `Update on your order ${displayOrderNumber(order||{})}`).trim();
+      const pieces = [];
+      pieces.push(`Status: ${status}`);
+      if (delay_until) pieces.push(`Delay until: ${new Date(delay_until).toLocaleDateString()}`);
+      if (delay_note) pieces.push(delay_note);
+      const body = pieces.join('\n');
+
+      await notifyUser({
+        user_id: order?.user_id,
+        order_id: orderId,
+        title,
+        body,
+        type: 'order'
+      });
     }
 
     toast(STR[L].saved);
   }catch(e){ alert(e?.message || String(e)); }
-  finally{ if (btn){ btn.disabled=false; btn.innerText = old || STR[L].save; } }
+  finally{
+    if (btn){ btn.disabled=false; btn.innerText = old || STR[L].save; }
+    await load();
+  }
 }
 
 async function deleteOrder(orderId){
@@ -384,22 +404,21 @@ function render(){
           <th>${t.order}</th>
           <th>${t.customer}</th>
           <th>${t.email}</th>
-          <th>${t.phone}</th>
+          <th>Phone</th>
           <th>${t.created}</th>
           <th>${t.status}</th>
-          <th>${t.delay_until}</th>
-          <th>${t.delay_note}</th>
           <th>${t.items}</th>
           <th>${t.total}</th>
           <th>${t.method_col}</th>
           <th>${t.pay_col}</th>
           <th>${t.address}</th>
-          <th style="min-width:190px"></th>
+          <th style="min-width:320px">Admin controls</th>
         </tr>
       </thead>
       <tbody>
         ${rows.map(o=>{
-          const delayDate = o.delay_until ? new Date(o.delay_until).toISOString().slice(0,10) : '';
+          const delayVal = o.delay_until ? new Date(o.delay_until).toISOString().slice(0,10) : '';
+          const titleDefault = `Update on your order ${displayOrderNumber(o)}`;
           return `<tr data-order="${o.id}">
             <td><strong>${displayOrderNumber(o)}</strong></td>
             <td>${escapeHtml(o.display_name||'(no name)')}</td>
@@ -416,8 +435,6 @@ function render(){
                 <option value="delayed" ${o.status==='delayed'?'selected':''}>delayed</option>
               </select>
             </td>
-            <td><input type="date" value="${delayDate}" data-delay-date="${o.id}"></td>
-            <td><textarea data-delay-note="${o.id}" placeholder="${t.delay_note}">${escapeHtml(o.delay_note||'')}</textarea></td>
             <td>
               <button class="btn small" data-items="toggle">${t.view_items}</button>
               <div class="mini" data-items-box style="display:none; margin-top:6px">…</div>
@@ -426,13 +443,18 @@ function render(){
             <td class="mini">${fmtMethod(o.delivery_method)}</td>
             <td class="mini">${fmtPay(o.payment_method)}</td>
             <td class="mini address">${escapeHtml(buildAddress(o))}</td>
-            <td style="text-align:right">
-              <label class="mini" style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-                <input type="checkbox" data-notify="${o.id}" checked/> ${t.notify}
-              </label>
-              <div class="row" style="justify-content:flex-end">
-                <button class="btn small" data-save="${o.id}">${t.save}</button>
-                <button class="btn danger small" data-del="${o.id}">${t.delete}</button>
+            <td>
+              <div class="stack">
+                <div class="row">
+                  <label>${t.delay_until}<br><input type="date" data-delay="${o.id}" value="${delayVal}"></label>
+                  <label style="flex:1">${t.notify}<br><input type="checkbox" data-notify="${o.id}"></label>
+                </div>
+                <label>${t.delay_note}<br><textarea data-note="${o.id}" placeholder="${t.delay_note}">${escapeHtml(o.delay_note||'')}</textarea></label>
+                <label>${t.notif_title}<br><input type="text" data-ntitle="${o.id}" value="${escapeHtml(titleDefault)}"></label>
+                <div class="row" style="justify-content:flex-end">
+                  <button class="btn small" data-save="${o.id}">${t.save}</button>
+                  <button class="btn danger small" data-del="${o.id}">${t.delete}</button>
+                </div>
               </div>
             </td>
           </tr>`;
@@ -456,7 +478,7 @@ function render(){
         return;
       }
       box.textContent = tNow.loading;
-      const orderId = tr.getAttribute('data-order');
+      const orderId = tr.getAttribute('data-order'); // UUID string
       const items = await fetchItems(orderId);
       if (!items.length){ box.textContent = '-'; box.setAttribute('data-loaded','1'); box.style.display='block'; btn.innerText = tNow.hide_items; totCell.textContent = '0.00'; return; }
 
@@ -465,7 +487,7 @@ function render(){
 
       box.innerHTML = `
         <table class="mini" style="width:100%">
-          <thead><tr><th>SKU</th><th>${tNow.items}</th><th>${tNow.qty_short||'Qty'}</th><th>${tNow.total}</th></tr></thead>
+          <thead><tr><th>SKU</th><th>${tNow.items}</th><th>${tNow.qty_short}</th><th>${tNow.total}</th></tr></thead>
           <tbody>
             ${items.map(it=>`<tr>
               <td>${escapeHtml(it.product_sku||'')}</td>
@@ -482,24 +504,17 @@ function render(){
     };
   });
 
-  // save (status + delay fields + optional notify)
+  // SAVE (keep UUID as string)
   list.querySelectorAll('button[data-save]').forEach(btn=>{
     btn.onclick = async ()=>{
-      const id = Number(btn.getAttribute('data-save'));
-      const st = list.querySelector(`select[data-st="${id}"]`)?.value;
-      const delayDate = list.querySelector(`input[data-delay-date="${id}"]`)?.value || null;
-      const delayNote = list.querySelector(`textarea[data-delay-note="${id}"]`)?.value || null;
-      const notifyChecked = !!list.querySelector(`input[data-notify="${id}"]`)?.checked;
-
-      const patch = { status: st, delay_until: delayDate || null, delay_note: delayNote || null };
-      await saveOrder(id, patch, notifyChecked);
-      await load();
+      const id = btn.getAttribute('data-save');   // UUID string (no Number(...))
+      await saveOrder(id);
     };
   });
 
-  // delete
+  // DELETE (keep UUID as string)
   list.querySelectorAll('button[data-del]').forEach(btn=>{
-    btn.onclick = ()=> deleteOrder(Number(btn.getAttribute('data-del')));
+    btn.onclick = ()=> deleteOrder(btn.getAttribute('data-del'));
   });
 }
 
@@ -522,7 +537,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
   await load();
 
-  // realtime
+  // realtime (optional)
   try{
     supa.channel('rt_orders')
       .on('postgres_changes', { event: '*', schema:'public', table:'orders' }, ()=> load())
