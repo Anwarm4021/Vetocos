@@ -34,7 +34,7 @@
     .mini{font-size:.88rem}
     .hidden{display:none}
     .address{white-space:pre-wrap}
-    .hint{font-size:.85rem;color:#9fb0d6}
+    .subbox{margin-top:8px;padding:8px;border:1px dashed rgba(141,158,199,.25);border-radius:10px}
     .stack{display:flex;flex-direction:column;gap:6px}
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
            border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
@@ -45,61 +45,52 @@
 <main>
   <div class="card toolbar">
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <h1 data-i18n="title">Purchase History</h1>
-      <a class="btn small" href="admin.html" data-i18n="back_admin">Back to Admin</a>
-    </div>
-    <div class="lang">
-      <label class="mini muted" for="langSel" data-i18n="language">Language</label>
-      <select id="langSel">
-        <option value="en">English</option>
-        <option value="fr">Français</option>
-        <option value="ar">العربية</option>
-      </select>
+      <h1>Purchase History</h1>
+      <a class="btn small" href="admin.html">Back to Admin</a>
     </div>
   </div>
 
   <!-- Auth -->
   <div class="card" id="authGate">
-    <div id="authMsg" class="muted" data-i18n="checking_session">Checking session…</div>
+    <div id="authMsg" class="muted">Checking session…</div>
     <div style="margin-top:10px;display:flex;gap:8px">
-      <button id="loginBtn" class="btn hidden" data-i18n="login_admin">Login as Admin</button>
-      <button id="logoutBtn" class="btn hidden" data-i18n="logout">Logout</button>
+      <button id="loginBtn" class="btn hidden">Login as Admin</button>
+      <button id="logoutBtn" class="btn hidden">Logout</button>
     </div>
   </div>
 
   <!-- Filters -->
   <div class="card hidden" id="filtersWrap">
     <div class="row">
-      <input id="q" class="search" placeholder="Search name / email / order #" data-i18n-ph="search_placeholder">
-      <label><span data-i18n="method">Method</span>
+      <input id="q" class="search" placeholder="Search name / email / order #">
+      <label>Method
         <select id="method">
-          <option value="" data-i18n="all">All</option>
-          <option value="collect" data-i18n="collect">Collect</option>
-          <option value="delivery" data-i18n="delivery">Delivery</option>
+          <option value="">All</option>
+          <option value="collect">Collect</option>
+          <option value="delivery">Delivery</option>
         </select>
       </label>
-      <label><span data-i18n="status">Status</span>
+      <label>Status
         <select id="status">
-          <option value="" data-i18n="all">All</option>
-          <option value="pending" data-i18n="pending">pending</option>
-          <option value="paid" data-i18n="paid">paid</option>
-          <option value="shipped" data-i18n="shipped">shipped</option>
-          <option value="completed" data-i18n="completed">completed</option>
-          <option value="cancelled" data-i18n="cancelled">cancelled</option>
-          <option value="delayed" data-i18n="delayed">delayed</option>
+          <option value="">All</option>
+          <option value="pending">pending</option>
+          <option value="paid">paid</option>
+          <option value="shipped">shipped</option>
+          <option value="completed">completed</option>
+          <option value="cancelled">cancelled</option>
+          <option value="delayed">delayed</option>
         </select>
       </label>
-      <label><span data-i18n="from">From</span> <input id="from" type="date"></label>
-      <label><span data-i18n="to">To</span> <input id="to" type="date"></label>
-      <button id="refresh" class="btn small" data-i18n="refresh">Refresh</button>
+      <label>From <input id="from" type="date"></label>
+      <label>To <input id="to" type="date"></label>
+      <button id="refresh" class="btn small">Refresh</button>
     </div>
   </div>
 
   <!-- List -->
   <div class="card hidden" id="listWrap">
-    <div id="msg" class="muted" data-i18n="loading">Loading…</div>
+    <div id="msg" class="muted">Loading…</div>
     <div id="list"></div>
-    <div id="featureHint" class="hint hidden"></div>
   </div>
 </main>
 
@@ -112,66 +103,7 @@ const supa = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
-const ADMIN_EMAILS = ["anwar.moumenjamai19@gmail.com","info@vetocos.com"];
-
-/* ---------- i18n ---------- */
-const STR = {
-  en:{title:"Purchase History",back_admin:"Back to Admin",language:"Language",checking_session:"Checking session…",
-      login_admin:"Login as Admin",logout:"Logout",search_placeholder:"Search name / email / order #",method:"Method",
-      all:"All",collect:"Collect",delivery:"Delivery",status:"Status",pending:"pending",paid:"paid",shipped:"shipped",
-      completed:"completed",cancelled:"cancelled",delayed:"delayed",from:"From",to:"To",refresh:"Refresh",loading:"Loading…",
-      order:"#",customer:"Customer",email:"Email",created:"Created",total:"Total",items:"Items",qty_short:"Qty",
-      method_col:"Method",pay_col:"Payment",address:"Address",
-      delivery_status:"Delivery status",delay_until:"Delay until",delay_note:"Delay note",notify:"Notify user",
-      note_to_user:"Note to user (notification body)",notif_title:"Notification title",
-      view_items:"View items",hide_items:"Hide items",delete:"Delete",deleting:"Deleting…",deleted:"Deleted",
-      save:"Save",saving:"Saving…",saved:"Saved",
-      confirm_delete:"Delete this order and its items? This cannot be undone.",
-      feature_hint:"Tip: address is built from country + address1/2 + city + postal."
-  },
-  fr:{title:"Historique des achats",back_admin:"Retour à l’Admin",language:"Langue",checking_session:"Vérification de session…",
-      login_admin:"Se connecter (Admin)",logout:"Se déconnecter",search_placeholder:"Rech. nom / email / n° commande",method:"Méthode",
-      all:"Toutes",collect:"Retrait",delivery:"Livraison",status:"Statut",pending:"en attente",paid:"payée",shipped:"expédiée",
-      completed:"terminée",cancelled:"annulée",delayed:"reportée",from:"Du",to:"Au",refresh:"Rafraîchir",loading:"Chargement…",
-      order:"N°",customer:"Client",email:"Email",created:"Créée",total:"Total",items:"Articles",qty_short:"Qté",
-      method_col:"Méthode",pay_col:"Paiement",address:"Adresse",
-      delivery_status:"Statut livraison",delay_until:"Report jusqu’au",delay_note:"Note de retard",notify:"Notifier l’utilisateur",
-      note_to_user:"Note à l’utilisateur (notification)",notif_title:"Titre de la notification",
-      view_items:"Voir articles",hide_items:"Masquer",delete:"Supprimer",deleting:"Suppression…",deleted:"Supprimée",
-      save:"Enregistrer",saving:"Enregistrement…",saved:"Enregistré",
-      confirm_delete:"Supprimer cette commande et ses articles ? Action irréversible.",
-      feature_hint:"Astuce : l’adresse = pays + adresse1/2 + ville + code postal."
-  },
-  ar:{title:"سجل المشتريات",back_admin:"العودة للوحة التحكم",language:"اللغة",checking_session:"جارٍ فحص الجلسة…",
-      login_admin:"تسجيل دخول كمدير",logout:"تسجيل خروج",search_placeholder:"بحث اسم / بريد / رقم الطلب",method:"الطريقة",
-      all:"الكل",collect:"استلام",delivery:"تسليم",status:"الحالة",pending:"قيد الانتظار",paid:"مدفوع",shipped:"تم الشحن",
-      completed:"مكتمل",cancelled:"ملغي",delayed:"مؤجّل",from:"من",to:"إلى",refresh:"تحديث",loading:"جارٍ التحميل…",
-      order:"الطلب",customer:"العميل",email:"البريد",created:"أُنشئ",total:"الإجمالي",items:"العناصر",qty_short:"الكمية",
-      method_col:"الطريقة",pay_col:"الدفع",address:"العنوان",
-      delivery_status:"حالة التوصيل",delay_until:"مؤجل حتى",delay_note:"ملاحظة التأجيل",notify:"إشعار المستخدم",
-      note_to_user:"ملاحظة للمستخدم (نص الإشعار)",notif_title:"عنوان الإشعار",
-      view_items:"عرض العناصر",hide_items:"إخفاء العناصر",delete:"حذف",deleting:"جارٍ الحذف…",deleted:"تم الحذف",
-      save:"حفظ",saving:"جارٍ الحفظ…",saved:"تم الحفظ",
-      confirm_delete:"حذف هذا الطلب وعناصره؟ لا يمكن التراجع.",
-      feature_hint:"تلميح: العنوان = الدولة + السطر1/2 + المدينة + الرمز البريدي."
-  }
-};
-function applyLang(lang){
-  document.documentElement.setAttribute('data-lang', lang);
-  document.documentElement.dir = (lang==='ar')?'rtl':'ltr';
-  document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const k = el.getAttribute('data-i18n'); if(STR[lang]?.[k]) el.innerText = STR[lang][k];
-  });
-  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
-    const k = el.getAttribute('data-i18n-ph'); if(STR[lang]?.[k]) el.setAttribute('placeholder', STR[lang][k]);
-  });
-}
-function initLang(){
-  const sel = document.getElementById('langSel');
-  const saved = localStorage.getItem('lang') || 'en';
-  sel.value = saved; applyLang(saved);
-  sel.addEventListener('change', ()=>{ const v=sel.value; localStorage.setItem('lang', v); applyLang(v); render(); });
-}
+const ADMIN_EMAILS = ["anwar.moumenjamai19@gmail.com","info@vetocos.com"].map(e=>e.toLowerCase());
 
 /* ---------- Toast ---------- */
 const toastEl = document.getElementById("toast");
@@ -190,16 +122,16 @@ loginBtn.onclick = () => {
 logoutBtn.onclick = async () => { try{ await supa.auth.signOut(); }catch{} location.href='index.html'; };
 
 async function checkAdmin(){
-  const lang = localStorage.getItem('lang')||'en';
-  authMsg.textContent = STR[lang].checking_session;
+  authMsg.textContent = "Checking session…";
   const { data:{ session } } = await supa.auth.getSession();
   if (!session?.user){ authMsg.textContent = "Not signed in."; loginBtn.classList.remove('hidden'); return false; }
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove('hidden');
 
-  if (ADMIN_EMAILS.includes(String(session.user.email||'').toLowerCase())) return true;
+  const em = String(session.user.email||'').toLowerCase();
+  if (ADMIN_EMAILS.includes(em)) return true;
 
-  // fallback via profiles.is_admin
+  // fallback DB flag
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){ location.replace('index.html'); return false; }
   return true;
@@ -226,7 +158,7 @@ function normalizeMethod(v){
   return s || '';
 }
 function fmtMethod(v){
-  return normalizeMethod(v)==='collect' ? STR[localStorage.getItem('lang')||'en'].collect : STR[localStorage.getItem('lang')||'en'].delivery;
+  return normalizeMethod(v)==='collect' ? 'Collect' : 'Delivery';
 }
 function fmtPay(m){
   const s = String(m||'').toLowerCase();
@@ -243,12 +175,31 @@ function buildAddress(o){
   ].filter(Boolean);
   return rows.length ? rows.join('\n') : '—';
 }
+function esc(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+function toUuidOrNull(v){
+  const s = String(v||'').trim();
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s) ? s : null;
+}
+
+/* RPC: safe notification */
+async function sendNotificationToUser({ userId, title, body, orderId=null, type='order', extra={} }){
+  const order_uuid = toUuidOrNull(orderId);
+  const { data, error } = await supa.rpc('notify_user', {
+    p_user_id: userId,
+    p_title:   title,
+    p_body:    body,
+    p_order_id: order_uuid,
+    p_type:    type,
+    p_extra:   extra
+  });
+  if (error) throw error;
+  return data;
+}
 
 /* Orders + profiles */
 async function load(){
   const msg = document.getElementById('msg');
-  const L = localStorage.getItem('lang')||'en';
-  msg.textContent = STR[L].loading;
+  msg.textContent = "Loading…";
 
   const { data: orders, error } = await supa
     .from('orders')
@@ -264,7 +215,7 @@ async function load(){
 
   if (error){ msg.textContent = error.message; return; }
 
-  // profiles (optional – we already have email/name from orders)
+  // profiles (optional)
   const userIds = [...new Set((orders||[]).map(o=>o.user_id).filter(Boolean))];
   let profilesById = {};
   if (userIds.length){
@@ -295,69 +246,85 @@ async function fetchItems(orderId){
   return data || [];
 }
 
-/* NOTIFICATIONS: insert for a user (admin only via RLS policy) */
-async function notifyUser({ user_id, order_id, title, body, type='order' }){
-  // all strings (UUIDs kept as strings)
-  const row = { user_id, order_id, title: title?.trim() || 'Order update', body: body?.trim() || '', type };
-  const { error } = await supa.from('notifications').insert(row);
-  if (error) throw error;
-}
-
-/* Save status/delay/note (UUID-safe) */
-async function saveOrder(orderId){
-  const L = localStorage.getItem('lang')||'en';
-  const btn = document.querySelector(`button[data-save="${orderId}"]`);
+/* Save order changes + notify */
+async function saveOrder(order){
+  const btn = document.querySelector(`button[data-save="${order.id}"]`);
   const old = btn ? btn.innerText : '';
-  const tr  = document.querySelector(`tr[data-order="${orderId}"]`);
-  const stSel = tr?.querySelector(`select[data-st="${orderId}"]`);
-  const delayDateEl = tr?.querySelector(`input[data-delay="${orderId}"]`);
-  const noteEl = tr?.querySelector(`textarea[data-note="${orderId}"]`);
-  const notifyChk = tr?.querySelector(`input[data-notify="${orderId}"]`);
-  const nTitleEl = tr?.querySelector(`input[data-ntitle="${orderId}"]`);
-
-  const status = stSel?.value || 'pending';
-  const delayRaw = (delayDateEl?.value || '').trim();
-  const delay_until = delayRaw ? new Date(delayRaw+'T00:00:00Z').toISOString() : null; // ISO or null
-  const delay_note = (noteEl?.value || '').trim() || null;
-
-  if (btn){ btn.disabled = true; btn.innerText = STR[L].saving; }
+  if (btn){ btn.disabled = true; btn.innerText = 'Saving…'; }
   try{
-    const { error } = await supa.from('orders').update({ status, delay_until, delay_note }).eq('id', orderId);
+    // collect latest values from row
+    const row = document.querySelector(`tr[data-order="${order.id}"]`);
+    const newStatus = row.querySelector(`select[data-st="${order.id}"]`)?.value || order.status;
+    const delayUntil = row.querySelector(`input[data-du="${order.id}"]`)?.value || null;
+    const delayNote  = row.querySelector(`textarea[data-dn="${order.id}"]`)?.value || null;
+
+    // Update DB
+    const patch = { status: newStatus, delay_until: delayUntil || null, delay_note: delayNote || null };
+    const { error } = await supa.from('orders').update(patch).eq('id', order.id);
     if (error) throw error;
 
-    // If "Notify user" checked -> create notification
-    if (notifyChk?.checked) {
-      const order = ORDERS.find(o=>o.id===orderId);
-      const title = (nTitleEl?.value || `Update on your order ${displayOrderNumber(order||{})}`).trim();
-      const pieces = [];
-      pieces.push(`Status: ${status}`);
-      if (delay_until) pieces.push(`Delay until: ${new Date(delay_until).toLocaleDateString()}`);
-      if (delay_note) pieces.push(delay_note);
-      const body = pieces.join('\n');
+    // Compose notification text
+    let title = `Order ${displayOrderNumber(order)} updated`;
+    let body  = `Status: ${newStatus}`;
+    let extra = { kind: 'status', status: newStatus };
 
-      await notifyUser({
-        user_id: order?.user_id,
-        order_id: orderId,
-        title,
-        body,
-        type: 'order'
-      });
+    if (newStatus === 'delayed' || delayUntil || delayNote) {
+      title = `Order ${displayOrderNumber(order)} delayed`;
+      body = `Your order is delayed${delayUntil ? ' until '+delayUntil : ''}.` + (delayNote ? ` Note: ${delayNote}` : '');
+      extra = { kind: 'delay', status: newStatus, delay_until: delayUntil || null, note: delayNote || '' };
     }
 
-    toast(STR[L].saved);
-  }catch(e){ alert(e?.message || String(e)); }
-  finally{
-    if (btn){ btn.disabled=false; btn.innerText = old || STR[L].save; }
+    // Notify user (via RPC; RLS-safe)
+    await sendNotificationToUser({
+      userId: order.user_id,
+      title,
+      body,
+      orderId: order.id,
+      type: 'order',
+      extra
+    });
+
+    toast('Saved');
     await load();
+  }catch(e){
+    alert(e?.message || String(e));
+  }finally{
+    if (btn){ btn.disabled=false; btn.innerText = old || 'Save'; }
   }
 }
 
+/* Send custom admin note */
+async function sendCustomNote(order){
+  const ta = document.querySelector(`textarea[data-note="${order.id}"]`);
+  const btn = document.querySelector(`button[data-send="${order.id}"]`);
+  if (!ta) return;
+  const text = (ta.value || '').trim();
+  if (!text){ toast('Write a note first.'); return; }
+  const old = btn.innerText; btn.disabled = true; btn.innerText = 'Sending…';
+  try{
+    await sendNotificationToUser({
+      userId: order.user_id,
+      title: 'Message from VetoCos',
+      body: text,
+      orderId: order.id,
+      type: 'message',
+      extra: { source: 'admin' }
+    });
+    ta.value = '';
+    toast('Sent');
+  }catch(e){
+    alert(e?.message || String(e));
+  }finally{
+    btn.disabled = false; btn.innerText = old || 'Send';
+  }
+}
+
+/* Delete order */
 async function deleteOrder(orderId){
-  const L = localStorage.getItem('lang')||'en';
-  if (!confirm(STR[L].confirm_delete)) return;
+  if (!confirm('Delete this order and its items? This cannot be undone.')) return;
   const delBtn = document.querySelector(`button[data-del="${orderId}"]`);
   const old = delBtn ? delBtn.innerText : '';
-  if (delBtn){ delBtn.disabled = true; delBtn.innerText = STR[L].deleting; }
+  if (delBtn){ delBtn.disabled = true; delBtn.innerText = 'Deleting…'; }
   try{
     const delItems = await supa.from('order_items').delete().eq('order_id', orderId);
     if (delItems.error) throw delItems.error;
@@ -365,15 +332,13 @@ async function deleteOrder(orderId){
     if (delOrder.error) throw delOrder.error;
     ORDERS = ORDERS.filter(o=>o.id!==orderId);
     render();
-    toast(STR[L].deleted);
+    toast('Deleted');
   }catch(e){ alert(e?.message || String(e)); }
-  finally{ if (delBtn){ delBtn.disabled=false; delBtn.innerText = old || STR[L].delete; } }
+  finally{ if (delBtn){ delBtn.disabled=false; delBtn.innerText = old || 'Delete'; } }
 }
 
 function render(){
   const list = document.getElementById('list');
-  const lang = localStorage.getItem('lang')||'en';
-  const t = STR[lang];
 
   const q = (qEl.value||'').toLowerCase().trim();
   const meth = methodEl.value; // 'collect' | 'delivery' | ''
@@ -393,7 +358,7 @@ function render(){
   });
 
   if (!rows.length){
-    list.innerHTML = `<div class="muted">${t.loading}</div>`;
+    list.innerHTML = `<div class="muted">No orders.</div>`;
     return;
   }
 
@@ -401,29 +366,29 @@ function render(){
     <table>
       <thead>
         <tr>
-          <th>${t.order}</th>
-          <th>${t.customer}</th>
-          <th>${t.email}</th>
+          <th>#</th>
+          <th>Customer</th>
+          <th>Email</th>
           <th>Phone</th>
-          <th>${t.created}</th>
-          <th>${t.status}</th>
-          <th>${t.items}</th>
-          <th>${t.total}</th>
-          <th>${t.method_col}</th>
-          <th>${t.pay_col}</th>
-          <th>${t.address}</th>
-          <th style="min-width:320px">Admin controls</th>
+          <th>Created</th>
+          <th>Status</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Method</th>
+          <th>Payment</th>
+          <th>Address</th>
+          <th style="min-width:220px"></th>
         </tr>
       </thead>
       <tbody>
         ${rows.map(o=>{
-          const delayVal = o.delay_until ? new Date(o.delay_until).toISOString().slice(0,10) : '';
-          const titleDefault = `Update on your order ${displayOrderNumber(o)}`;
+          const du = o.delay_until ? String(o.delay_until).slice(0,10) : '';
+          const dn = o.delay_note || '';
           return `<tr data-order="${o.id}">
             <td><strong>${displayOrderNumber(o)}</strong></td>
-            <td>${escapeHtml(o.display_name||'(no name)')}</td>
-            <td>${escapeHtml(o.email||'')}</td>
-            <td>${escapeHtml(o.phone_number||'')}</td>
+            <td>${esc(o.display_name||'(no name)')}</td>
+            <td>${esc(o.email||'')}</td>
+            <td>${esc(o.phone_number||'')}</td>
             <td class="mini">${new Date(o.created_at).toLocaleString()}</td>
             <td>
               <select data-st="${o.id}">
@@ -434,28 +399,34 @@ function render(){
                 <option value="cancelled" ${o.status==='cancelled'?'selected':''}>cancelled</option>
                 <option value="delayed" ${o.status==='delayed'?'selected':''}>delayed</option>
               </select>
+
+              <div class="subbox stack">
+                <div class="row" style="gap:6px;align-items:flex-end">
+                  <label>Delay until<br><input type="date" data-du="${o.id}" value="${du}"></label>
+                  <div style="flex:1">
+                    <label>Delay note<br><textarea data-dn="${o.id}" placeholder="Optional explanation…">${esc(dn)}</textarea></label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="subbox stack">
+                <label>Send note to user (optional)<br>
+                  <textarea data-note="${o.id}" placeholder="Write a short message…"></textarea>
+                </label>
+                <button class="btn small" data-send="${o.id}">Send</button>
+              </div>
             </td>
             <td>
-              <button class="btn small" data-items="toggle">${t.view_items}</button>
+              <button class="btn small" data-items="toggle">View items</button>
               <div class="mini" data-items-box style="display:none; margin-top:6px">…</div>
             </td>
             <td class="mini" data-total="${o.id}">—</td>
             <td class="mini">${fmtMethod(o.delivery_method)}</td>
             <td class="mini">${fmtPay(o.payment_method)}</td>
-            <td class="mini address">${escapeHtml(buildAddress(o))}</td>
-            <td>
-              <div class="stack">
-                <div class="row">
-                  <label>${t.delay_until}<br><input type="date" data-delay="${o.id}" value="${delayVal}"></label>
-                  <label style="flex:1">${t.notify}<br><input type="checkbox" data-notify="${o.id}"></label>
-                </div>
-                <label>${t.delay_note}<br><textarea data-note="${o.id}" placeholder="${t.delay_note}">${escapeHtml(o.delay_note||'')}</textarea></label>
-                <label>${t.notif_title}<br><input type="text" data-ntitle="${o.id}" value="${escapeHtml(titleDefault)}"></label>
-                <div class="row" style="justify-content:flex-end">
-                  <button class="btn small" data-save="${o.id}">${t.save}</button>
-                  <button class="btn danger small" data-del="${o.id}">${t.delete}</button>
-                </div>
-              </div>
+            <td class="mini address">${esc(buildAddress(o))}</td>
+            <td style="text-align:right;">
+              <button class="btn small" data-save="${o.id}">Save</button>
+              <button class="btn danger small" data-del="${o.id}">Delete</button>
             </td>
           </tr>`;
         }).join('')}
@@ -469,29 +440,25 @@ function render(){
       const tr = btn.closest('tr');
       const box = tr.querySelector('[data-items-box]');
       const totCell = tr.querySelector('[data-total]');
-      const tNow = STR[localStorage.getItem('lang')||'en'];
-
       if (box.getAttribute('data-loaded')==='1'){
         const open = box.style.display!=='none';
         box.style.display = open ? 'none' : 'block';
-        btn.innerText = open ? tNow.view_items : tNow.hide_items;
+        btn.innerText = open ? 'View items' : 'Hide items';
         return;
       }
-      box.textContent = tNow.loading;
-      const orderId = tr.getAttribute('data-order'); // UUID string
+      box.textContent = 'Loading…';
+      const orderId = tr.getAttribute('data-order');
       const items = await fetchItems(orderId);
-      if (!items.length){ box.textContent = '-'; box.setAttribute('data-loaded','1'); box.style.display='block'; btn.innerText = tNow.hide_items; totCell.textContent = '0.00'; return; }
-
+      if (!items.length){ box.textContent = '-'; box.setAttribute('data-loaded','1'); box.style.display='block'; btn.innerText = 'Hide items'; totCell.textContent = '0.00'; return; }
       const total = items.reduce((s,it)=> s + Number(it.quantity||0)*Number(it.unit_price||0), 0);
       totCell.textContent = total.toFixed(2);
-
       box.innerHTML = `
         <table class="mini" style="width:100%">
-          <thead><tr><th>SKU</th><th>${tNow.items}</th><th>${tNow.qty_short}</th><th>${tNow.total}</th></tr></thead>
+          <thead><tr><th>SKU</th><th>Item</th><th>Qty</th><th>Total</th></tr></thead>
           <tbody>
             ${items.map(it=>`<tr>
-              <td>${escapeHtml(it.product_sku||'')}</td>
-              <td>${escapeHtml(it.product_name||'')}</td>
+              <td>${esc(it.product_sku||'')}</td>
+              <td>${esc(it.product_name||'')}</td>
               <td>${Number(it.quantity||0)}</td>
               <td>${(Number(it.unit_price||0)*Number(it.quantity||0)).toFixed(2)}</td>
             </tr>`).join('')}
@@ -500,30 +467,36 @@ function render(){
       `;
       box.setAttribute('data-loaded','1');
       box.style.display='block';
-      btn.innerText = tNow.hide_items;
+      btn.innerText = 'Hide items';
     };
   });
 
-  // SAVE (keep UUID as string)
+  // save
   list.querySelectorAll('button[data-save]').forEach(btn=>{
     btn.onclick = async ()=>{
-      const id = btn.getAttribute('data-save');   // UUID string (no Number(...))
-      await saveOrder(id);
+      const id = btn.getAttribute('data-save');
+      const order = ORDERS.find(o=>String(o.id)===String(id));
+      if (order) await saveOrder(order);
     };
   });
 
-  // DELETE (keep UUID as string)
+  // delete
   list.querySelectorAll('button[data-del]').forEach(btn=>{
     btn.onclick = ()=> deleteOrder(btn.getAttribute('data-del'));
   });
-}
 
-/* ---------- Utils ---------- */
-function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+  // send custom note
+  list.querySelectorAll('button[data-send]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const id = btn.getAttribute('data-send');
+      const order = ORDERS.find(o=>String(o.id)===String(id));
+      if (order) sendCustomNote(order);
+    };
+  });
+}
 
 /* ---------- Boot ---------- */
 document.addEventListener('DOMContentLoaded', async ()=>{
-  initLang();
   const ok = await checkAdmin();
   if (!ok) return;
   document.getElementById('filtersWrap').classList.remove('hidden');
