@@ -22,6 +22,9 @@ header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdr
 .contact-btn,#lang-switch,.btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer}
 #lang-switch{background:rgba(255,255,255,.04);min-width:120px}
 
+/* Notification badge */
+.badge-dot{display:none;position:absolute;top:-6px;right:-6px;background:#ff5964;border-radius:999px;padding:2px 7px;font-size:12px;color:#fff}
+
 /* Content */
 main{margin:28px 0}
 .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
@@ -75,6 +78,13 @@ body.rtl th, body.rtl td{text-align:inherit}
       <a class="btn" href="index.html" data-i18n="nav.home">Home</a>
       <a class="btn" href="Products.html" data-i18n="nav.products">Products</a>
       <a class="btn" href="cart.html" data-i18n="nav.cart">Cart</a>
+
+      <!-- NEW: Notifications link + badge -->
+      <a class="btn" href="notification.html" style="position:relative">
+        Notifications
+        <span id="notifBadge" class="badge-dot">0</span>
+      </a>
+
       <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
       <select id="lang-switch" aria-label="Language">
         <option value="en">English</option>
@@ -241,7 +251,7 @@ body.rtl th, body.rtl td{text-align:inherit}
 </div>
 
 <script>
-/* ===== i18n (minimal set + your existing keys) ===== */
+/* ===== i18n ===== */
 const I18N = {
   en: {
     "nav.home":"Home","nav.products":"Products","nav.cart":"Cart","nav.contact":"Contact",
@@ -308,7 +318,7 @@ function openContact(){ contactModal.classList.add('open'); contactModal.setAttr
 function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
 function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
 function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
-[contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+[contactModal,policyModal].forEach(m=>m&&addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
 
 const toAddress='info@vetocos.com';
 function sendMailto(e){
@@ -352,6 +362,23 @@ const firstNameEl  = document.getElementById('firstName');
 const lastNameEl   = document.getElementById('lastName');
 const saveProfileBtn = document.getElementById('saveProfileBtn');
 const profSaveMsg  = document.getElementById('profSaveMsg');
+const notifBadge   = document.getElementById('notifBadge');
+
+/* Notifications badge helpers */
+async function refreshNotifBadge(userId){
+  const { count, error } = await supa
+    .from('notifications')
+    .select('id', { head:true, count:'exact' })
+    .eq('user_id', userId)
+    .is('read_at', null);
+  if (error) return;
+  if ((count||0) > 0){
+    notifBadge.style.display = 'inline-block';
+    notifBadge.textContent = String(count);
+  } else {
+    notifBadge.style.display = 'none';
+  }
+}
 
 /* ===== Boot ===== */
 (async ()=>{
@@ -362,7 +389,17 @@ const profSaveMsg  = document.getElementById('profSaveMsg');
     return;
   }
 
-  /* -------- Profile: load / create / prefill -------- */
+  /* Realtime badge updates */
+  try{
+    await refreshNotifBadge(user.id);
+    supa.channel('rt_notifications_' + user.id)
+      .on('postgres_changes', { event:'*', schema:'public', table:'notifications', filter:`user_id=eq.${user.id}` }, async ()=>{
+        await refreshNotifBadge(user.id);
+      })
+      .subscribe();
+  }catch(_){}
+
+  /* Profile load/seed */
   try {
     let { data: p } = await supa
       .from('profiles')
@@ -370,36 +407,26 @@ const profSaveMsg  = document.getElementById('profSaveMsg');
       .eq('id', user.id)
       .maybeSingle();
 
-    // Ensure a row exists
     if (!p) {
       const seed = { id: user.id, email: user.email || null, first_name: null, last_name: null, can_purchase: false };
       await supa.from('profiles').insert(seed);
       ({ data: p } = await supa.from('profiles').select('id,first_name,last_name,email,can_purchase').eq('id', user.id).maybeSingle());
     }
 
-    // Build display name with smart fallback (based on email local-part)
     const fullFromProfile = [p?.first_name, p?.last_name].filter(Boolean).join(' ');
-    const fallbackFromEmail = (user.email || '')
-      .split('@')[0]
-      .replace(/[._-]+/g, ' ')
-      .replace(/\b\w/g, m => m.toUpperCase());
+    const fallbackFromEmail = (user.email || '').split('@')[0].replace(/[._-]+/g, ' ').replace(/\b\w/g, m => m.toUpperCase());
     const displayName = fullFromProfile || fallbackFromEmail || t('profile.noName');
 
-    const badge = p?.can_purchase
-      ? `<span class="badge ok">${t('profile.approved')}</span>`
-      : `<span class="badge bad">${t('profile.needs')}</span>`;
-
+    const badge = p?.can_purchase ? `<span class="badge ok">${t('profile.approved')}</span>` : `<span class="badge bad">${t('profile.needs')}</span>`;
     profLine.innerHTML = `<strong>${esc(displayName)}</strong> · ${esc(p?.email || user.email || '')} · ${badge}`;
 
-    // Prefill inputs
     if (firstNameEl) firstNameEl.value = p?.first_name || '';
     if (lastNameEl)  lastNameEl.value  = p?.last_name  || '';
-
   } catch(e){
     profLine.textContent = 'Profile load error.';
   }
 
-  /* -------- Save profile (first/last name) -------- */
+  /* Save profile */
   saveProfileBtn?.addEventListener('click', async ()=>{
     try{
       profSaveMsg.textContent = 'Saving…';
@@ -417,10 +444,7 @@ const profSaveMsg  = document.getElementById('profSaveMsg');
         .eq('id', (await supa.auth.getUser()).data.user.id)
         .maybeSingle();
 
-      const badge = p2?.can_purchase
-        ? `<span class="badge ok">${t('profile.approved')}</span>`
-        : `<span class="badge bad">${t('profile.needs')}</span>`;
-
+      const badge = p2?.can_purchase ? `<span class="badge ok">${t('profile.approved')}</span>` : `<span class="badge bad">${t('profile.needs')}</span>`;
       profLine.innerHTML = `<strong>${esc(full)}</strong> · ${esc(p2?.email || (await supa.auth.getUser()).data.user.email || '')} · ${badge}`;
 
       profSaveMsg.textContent = 'Saved.';
@@ -430,13 +454,9 @@ const profSaveMsg  = document.getElementById('profSaveMsg');
     }
   });
 
-  /* -------- Saved cart -------- */
+  /* Saved cart */
   try {
-    const { data: row } = await supa.from('carts')
-      .select('items, updated_at')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
+    const { data: row } = await supa.from('carts').select('items, updated_at').eq('user_id', user.id).maybeSingle();
     const items = Array.isArray(row?.items) ? row.items : [];
     const msg  = document.getElementById('cartMsg');
     const list = document.getElementById('cartList');
@@ -459,7 +479,7 @@ const profSaveMsg  = document.getElementById('profSaveMsg');
     document.getElementById('cartMsg').textContent = 'Could not load cart.';
   }
 
-  /* -------- Orders -------- */
+  /* Orders */
   try {
     const { data: orders, error } = await supa
       .from('orders')
