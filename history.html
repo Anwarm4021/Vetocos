@@ -34,9 +34,9 @@
     .mini{font-size:.88rem}
     .hidden{display:none}
     .address{white-space:pre-wrap}
+    .hint{font-size:.85rem;color:#9fb0d6}
     #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
            border-radius:12px;padding:10px 14px;color:#fff;max-width:60vw;display:none;z-index:9999}
-    .hint{font-size:.85rem;color:#9fb0d6}
   </style>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
@@ -85,6 +85,7 @@
           <option value="shipped" data-i18n="shipped">shipped</option>
           <option value="completed" data-i18n="completed">completed</option>
           <option value="cancelled" data-i18n="cancelled">cancelled</option>
+          <option value="delayed" data-i18n="delayed">delayed</option>
         </select>
       </label>
       <label><span data-i18n="from">From</span> <input id="from" type="date"></label>
@@ -110,40 +111,43 @@ const supa = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
-const ADMIN_EMAILS = ["anwar.moumenjamai19@gmail.com"];
+const ADMIN_EMAILS = ["anwar.moumenjamai19@gmail.com","info@vetocos.com"];
 
 /* ---------- i18n ---------- */
 const STR = {
   en:{title:"Purchase History",back_admin:"Back to Admin",language:"Language",checking_session:"Checking session…",
       login_admin:"Login as Admin",logout:"Logout",search_placeholder:"Search name / email / order #",method:"Method",
       all:"All",collect:"Collect",delivery:"Delivery",status:"Status",pending:"pending",paid:"paid",shipped:"shipped",
-      completed:"completed",cancelled:"cancelled",from:"From",to:"To",refresh:"Refresh",loading:"Loading…",
+      completed:"completed",cancelled:"cancelled",delayed:"delayed",from:"From",to:"To",refresh:"Refresh",loading:"Loading…",
       order:"#",customer:"Customer",email:"Email",created:"Created",total:"Total",items:"Items",method_col:"Method",
       pay_col:"Payment",address:"Address",delivery_status:"Delivery status",delay_until:"Delay until",delay_note:"Delay note",
       view_items:"View items",hide_items:"Hide items",delete:"Delete",deleting:"Deleting…",deleted:"Deleted",
-      save:"Save",saving:"Saving…",saved:"Saved",
+      save:"Save",saving:"Saving…",saved:"Saved", phone:"Phone",
       confirm_delete:"Delete this order and its items? This cannot be undone.",
-      feature_hint:"Tip: address is built from country + address1/2 + city + postal. Make sure these columns exist in public.orders."},
+      notify:"Notify user", notify_title:"Order update from VetoCos",
+      feature_hint:"Tip: address is built from country + address1/2 + city + postal."},
   fr:{title:"Historique des achats",back_admin:"Retour à l’Admin",language:"Langue",checking_session:"Vérification de session…",
       login_admin:"Se connecter (Admin)",logout:"Se déconnecter",search_placeholder:"Rech. nom / email / n° commande",method:"Méthode",
       all:"Toutes",collect:"Retrait",delivery:"Livraison",status:"Statut",pending:"en attente",paid:"payée",shipped:"expédiée",
-      completed:"terminée",cancelled:"annulée",from:"Du",to:"Au",refresh:"Rafraîchir",loading:"Chargement…",
+      completed:"terminée",cancelled:"annulée",delayed:"reportée",from:"Du",to:"Au",refresh:"Rafraîchir",loading:"Chargement…",
       order:"N°",customer:"Client",email:"Email",created:"Créée",total:"Total",items:"Articles",method_col:"Méthode",
       pay_col:"Paiement",address:"Adresse",delivery_status:"Statut livraison",delay_until:"Report jusqu’au",delay_note:"Note de retard",
       view_items:"Voir articles",hide_items:"Masquer",delete:"Supprimer",deleting:"Suppression…",deleted:"Supprimée",
-      save:"Enregistrer",saving:"Enregistrement…",saved:"Enregistré",
+      save:"Enregistrer",saving:"Enregistrement…",saved:"Enregistré", phone:"Téléphone",
       confirm_delete:"Supprimer cette commande et ses articles ? Action irréversible.",
-      feature_hint:"Astuce : l’adresse est composée de pays + adresse 1/2 + ville + code postal."},
+      notify:"Notifier l’utilisateur", notify_title:"Mise à jour de commande (VetoCos)",
+      feature_hint:"Astuce : l’adresse = pays + adresse 1/2 + ville + code postal."},
   ar:{title:"سجل المشتريات",back_admin:"العودة للوحة التحكم",language:"اللغة",checking_session:"جارٍ فحص الجلسة…",
-      login_admin:"تسجيل دخول كمدير",logout:"تسجيل خروج",search_placeholder:"بحث اسم / بريد / رقم الطلب",method:"الطريقة",
-      all:"الكل",collect:"استلام",delivery:"تسليم",status:"الحالة",pending:"قيد الانتظار",paid:"مدفوع",shipped:"تم الشحن",
-      completed:"مكتمل",cancelled:"ملغي",from:"من",to:"إلى",refresh:"تحديث",loading:"جارٍ التحميل…",
+      login_admin:"دخول كمدير",logout:"تسجيل خروج",search_placeholder:"بحث اسم / بريد / رقم الطلب",method:"الطريقة",
+      all:"الكل",collect:"استلام",delivery:"توصيل",status:"الحالة",pending:"قيد الانتظار",paid:"مدفوع",shipped:"تم الشحن",
+      completed:"مكتمل",cancelled:"ملغي",delayed:"مؤجل",from:"من",to:"إلى",refresh:"تحديث",loading:"جارٍ التحميل…",
       order:"الطلب",customer:"العميل",email:"البريد",created:"أُنشئ",total:"الإجمالي",items:"العناصر",method_col:"الطريقة",
       pay_col:"الدفع",address:"العنوان",delivery_status:"حالة التوصيل",delay_until:"مؤجل حتى",delay_note:"ملاحظة التأجيل",
       view_items:"عرض العناصر",hide_items:"إخفاء العناصر",delete:"حذف",deleting:"جارٍ الحذف…",deleted:"تم الحذف",
-      save:"حفظ",saving:"جارٍ الحفظ…",saved:"تم الحفظ",
+      save:"حفظ",saving:"جارٍ الحفظ…",saved:"تم الحفظ", phone:"الهاتف",
       confirm_delete:"حذف هذا الطلب وعناصره؟ لا يمكن التراجع.",
-      feature_hint:"تلميح: العنوان مُركّب من الدولة + السطر 1/2 + المدينة + الرمز البريدي."}
+      notify:"إشعار المستخدم", notify_title:"تحديث الطلب من VetoCos",
+      feature_hint:"تلميح: العنوان = الدولة + العنوان 1/2 + المدينة + الرمز البريدي."}
 };
 function applyLang(lang){
   document.documentElement.setAttribute('data-lang', lang);
@@ -185,7 +189,10 @@ async function checkAdmin(){
   if (!session?.user){ authMsg.textContent = "Not signed in."; loginBtn.classList.remove('hidden'); return false; }
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove('hidden');
-  if (["anwar.moumenjamai19@gmail.com","info@vetocos.com"].includes(String(session.user.email||'').toLowerCase())) return true;
+
+  const email = String(session.user.email||'').toLowerCase();
+  if (ADMIN_EMAILS.includes(email)) return true;
+
   const { data: prof } = await supa.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle();
   if (!prof?.is_admin){ location.replace('index.html'); return false; }
   return true;
@@ -239,7 +246,7 @@ async function load(){
   const { data: orders, error } = await supa
     .from('orders')
     .select(`
-      id,user_id,created_at,status,
+      id,user_id,created_at,status,delay_until,delay_note,
       full_name,email,phone_number,
       delivery_method,payment_method,
       country,address_line1,address_line2,city,postal_code
@@ -249,7 +256,7 @@ async function load(){
 
   if (error){ msg.textContent = error.message; return; }
 
-  // profiles (optional – we already have email/phone from orders)
+  // profiles (optional fallback for name)
   const userIds = [...new Set((orders||[]).map(o=>o.user_id).filter(Boolean))];
   let profilesById = {};
   if (userIds.length){
@@ -262,7 +269,6 @@ async function load(){
 
   ORDERS = (orders||[]).map(o=>{
     const prof = profilesById[o.user_id] || null;
-    // prefer explicit full_name from order, fallback to profile
     const profName = [prof?.first_name, prof?.last_name].filter(Boolean).join(' ').trim();
     return { ...o, display_name: (o.full_name || profName || '(no name)') };
   });
@@ -281,15 +287,46 @@ async function fetchItems(orderId){
   return data || [];
 }
 
-/* Save basic status (you can extend for delay controls later) */
-async function saveOrder(orderId, patch){
+async function notifyUser(o, newStatus, delayUntil, delayNote){
+  // best-effort; ignore error so admin flow isn’t blocked
+  const title = STR[localStorage.getItem('lang')||'en'].notify_title;
+  const parts = [];
+  if (newStatus) parts.push(`Status: ${newStatus}`);
+  if (delayUntil) parts.push(`Delay until: ${delayUntil}`);
+  if (delayNote) parts.push(`Note: ${delayNote}`);
+  const body = `Order ${displayOrderNumber(o)} updated.\n` + parts.join('\n');
+
+  await supa.from('notifications').insert({
+    user_id: o.user_id,
+    type: 'order',
+    order_id: o.id,
+    title,
+    body
+  });
+}
+
+/* Save status / delay fields */
+async function saveOrder(orderId, patch, notifyChecked){
   const L = localStorage.getItem('lang')||'en';
   const btn = document.querySelector(`button[data-save="${orderId}"]`);
   const old = btn ? btn.innerText : '';
   if (btn){ btn.disabled = true; btn.innerText = STR[L].saving; }
+
   try{
     const { error } = await supa.from('orders').update(patch).eq('id', orderId);
     if (error) throw error;
+
+    // Make a best-effort notification
+    if (notifyChecked){
+      const order = ORDERS.find(x=>x.id===orderId);
+      await notifyUser(
+        order,
+        patch.status ?? order.status,
+        patch.delay_until ?? order.delay_until,
+        patch.delay_note ?? order.delay_note
+      );
+    }
+
     toast(STR[L].saved);
   }catch(e){ alert(e?.message || String(e)); }
   finally{ if (btn){ btn.disabled=false; btn.innerText = old || STR[L].save; } }
@@ -347,19 +384,22 @@ function render(){
           <th>${t.order}</th>
           <th>${t.customer}</th>
           <th>${t.email}</th>
-          <th>Phone</th>
+          <th>${t.phone}</th>
           <th>${t.created}</th>
           <th>${t.status}</th>
+          <th>${t.delay_until}</th>
+          <th>${t.delay_note}</th>
           <th>${t.items}</th>
           <th>${t.total}</th>
           <th>${t.method_col}</th>
           <th>${t.pay_col}</th>
           <th>${t.address}</th>
-          <th></th>
+          <th style="min-width:190px"></th>
         </tr>
       </thead>
       <tbody>
         ${rows.map(o=>{
+          const delayDate = o.delay_until ? new Date(o.delay_until).toISOString().slice(0,10) : '';
           return `<tr data-order="${o.id}">
             <td><strong>${displayOrderNumber(o)}</strong></td>
             <td>${escapeHtml(o.display_name||'(no name)')}</td>
@@ -373,8 +413,11 @@ function render(){
                 <option value="shipped" ${o.status==='shipped'?'selected':''}>shipped</option>
                 <option value="completed" ${o.status==='completed'?'selected':''}>completed</option>
                 <option value="cancelled" ${o.status==='cancelled'?'selected':''}>cancelled</option>
+                <option value="delayed" ${o.status==='delayed'?'selected':''}>delayed</option>
               </select>
             </td>
+            <td><input type="date" value="${delayDate}" data-delay-date="${o.id}"></td>
+            <td><textarea data-delay-note="${o.id}" placeholder="${t.delay_note}">${escapeHtml(o.delay_note||'')}</textarea></td>
             <td>
               <button class="btn small" data-items="toggle">${t.view_items}</button>
               <div class="mini" data-items-box style="display:none; margin-top:6px">…</div>
@@ -383,9 +426,14 @@ function render(){
             <td class="mini">${fmtMethod(o.delivery_method)}</td>
             <td class="mini">${fmtPay(o.payment_method)}</td>
             <td class="mini address">${escapeHtml(buildAddress(o))}</td>
-            <td style="text-align:right; min-width:160px">
-              <button class="btn small" data-save="${o.id}">${t.save}</button>
-              <button class="btn danger small" data-del="${o.id}">${t.delete}</button>
+            <td style="text-align:right">
+              <label class="mini" style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                <input type="checkbox" data-notify="${o.id}" checked/> ${t.notify}
+              </label>
+              <div class="row" style="justify-content:flex-end">
+                <button class="btn small" data-save="${o.id}">${t.save}</button>
+                <button class="btn danger small" data-del="${o.id}">${t.delete}</button>
+              </div>
             </td>
           </tr>`;
         }).join('')}
@@ -434,19 +482,24 @@ function render(){
     };
   });
 
-  // save status
+  // save (status + delay fields + optional notify)
   list.querySelectorAll('button[data-save]').forEach(btn=>{
     btn.onclick = async ()=>{
-      const id = btn.getAttribute('data-save');
+      const id = Number(btn.getAttribute('data-save'));
       const st = list.querySelector(`select[data-st="${id}"]`)?.value;
-      await saveOrder(id, { status: st });
+      const delayDate = list.querySelector(`input[data-delay-date="${id}"]`)?.value || null;
+      const delayNote = list.querySelector(`textarea[data-delay-note="${id}"]`)?.value || null;
+      const notifyChecked = !!list.querySelector(`input[data-notify="${id}"]`)?.checked;
+
+      const patch = { status: st, delay_until: delayDate || null, delay_note: delayNote || null };
+      await saveOrder(id, patch, notifyChecked);
       await load();
     };
   });
 
   // delete
   list.querySelectorAll('button[data-del]').forEach(btn=>{
-    btn.onclick = ()=> deleteOrder(btn.getAttribute('data-del'));
+    btn.onclick = ()=> deleteOrder(Number(btn.getAttribute('data-del')));
   });
 }
 
@@ -469,7 +522,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
   await load();
 
-  // realtime (optional)
+  // realtime
   try{
     supa.channel('rt_orders')
       .on('postgres_changes', { event: '*', schema:'public', table:'orders' }, ()=> load())
