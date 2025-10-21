@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>VetoCos | Notifications</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:14px}
+    body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text)}
+    main{max-width:900px;margin:30px auto;padding:0 16px}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:14px;margin-bottom:12px}
+    .row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:#fff;cursor:pointer}
+    .muted{color:var(--muted)}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);margin-right:6px}
+    .mini{font-size:.9rem}
+  </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<main>
+  <div class="row" style="margin-bottom:10px">
+    <h1 style="margin:0">Notifications</h1>
+    <div class="row">
+      <a class="btn" href="account.html">Back to Account</a>
+      <button id="markAll" class="btn">Mark all as read</button>
+    </div>
+  </div>
+
+  <div id="msg" class="muted">Loading…</div>
+  <div id="list"></div>
+</main>
+
+<script>
+const supa = supabase.createClient(
+  "https://qdepgviimbcdlozjpbhm.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+  { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
+);
+
+const msgEl = document.getElementById('msg');
+const listEl = document.getElementById('list');
+
+async function load(){
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user){ location.href = 'login.html?redirect=' + encodeURIComponent('notification.html'); return; }
+  const { data, error } = await supa
+    .from('notifications')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending:false })
+    .limit(500);
+  if (error){ msgEl.textContent = error.message; return; }
+  msgEl.textContent = data?.length ? '' : 'No notifications.';
+  listEl.innerHTML = (data||[]).map(n=>{
+    const unread = !n.read_at;
+    const t = new Date(n.created_at).toLocaleString();
+    const order = n.order_id ? ` · <span class="mini">Order: ${n.order_id}</span>` : '';
+    return `<div class="card" data-id="${n.id}">
+      <div class="row">
+        <div>
+          <span class="pill">${n.type||'general'}</span>
+          <strong>${n.title||''}</strong>${order}
+          <div class="mini muted">${t}</div>
+          ${n.body ? `<div style="margin-top:6px">${escapeHtml(n.body)}</div>` : ''}
+        </div>
+        <div>
+          ${unread ? `<button class="btn" data-read="${n.id}">Mark read</button>` : '<span class="muted mini">Read</span>'}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  wire();
+}
+
+function wire(){
+  document.querySelectorAll('button[data-read]').forEach(b=>{
+    b.onclick = async ()=>{
+      const id = b.getAttribute('data-read');
+      const { error } = await supa
+        .from('notifications')
+        .update({ read_at: new Date().toISOString() })
+        .eq('id', id);
+      if (!error) load();
+    };
+  });
+}
+
+document.getElementById('markAll').onclick = async ()=>{
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user) return;
+  await supa
+    .from('notifications')
+    .update({ read_at: new Date().toISOString() })
+    .eq('user_id', user.id)
+    .is('read_at', null);
+  load();
+};
+
+function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+document.addEventListener('DOMContentLoaded', async ()=>{
+  await load();
+  try{
+    const { data:{ user } } = await supa.auth.getUser();
+    if (user){
+      supa.channel('rt_notifications_' + user.id)
+        .on('postgres_changes', { event:'*', schema:'public', table:'notifications', filter:`user_id=eq.${user.id}` }, ()=> load())
+        .subscribe();
+    }
+  }catch(_){}
+});
+</script>
+</body>
+</html>
