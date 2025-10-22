@@ -382,47 +382,28 @@ const I18N = {
 // Apply translation to text and placeholders
 let CUR_LANG = 'en';
 function t(key){ return I18N[CUR_LANG]?.[key] ?? I18N.en[key] ?? key; }
-<script>
-// ... keep I18N and t() as-is
-
 function applyI18N(){
   document.documentElement.lang = CUR_LANG;
-
-  // Translate elements' visible text WITHOUT blowing away their children
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const key = el.getAttribute('data-i18n');
-    const value = t(key);
-
-    if (!el) return;
-
-    if (el.children.length === 0) {
-      // no child elements → safe to replace all text
-      el.textContent = value;
-      return;
-    }
-
-    // has child elements (e.g., <label>Text <input/></label>)
-    // -> update ONLY the first text node
-    let textNode = null;
-    for (const node of el.childNodes) {
-      if (node.nodeType === Node.TEXT_NODE) { textNode = node; break; }
-    }
-    if (textNode) {
-      // keep a trailing space so the next inline element doesn't butt up
-      textNode.textContent = value + ' ';
-    } else {
-      // if there is no text node yet, insert one at the start
-      el.insertBefore(document.createTextNode(value + ' '), el.firstChild);
-    }
+    if (key) el.innerText = t(key);
   });
-
-  // Translate placeholders
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
     const key = el.getAttribute('data-i18n-ph');
-    el.setAttribute('placeholder', t(key));
+    if (key) el.setAttribute('placeholder', t(key));
   });
 }
-</script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  const sel = document.getElementById('langSel');
+  CUR_LANG = (localStorage.getItem('v_lang') || 'en');
+  sel.value = CUR_LANG;
+  sel.addEventListener('change', ()=>{
+    CUR_LANG = sel.value || 'en';
+    localStorage.setItem('v_lang', CUR_LANG);
+    applyI18N();
+  });
+  applyI18N();
+});
 
 /* ================= Edge Function config (DELETE USER) ================= */
 const ADMIN_DELETE_FN = 'super-endpoint'; // your deployed function name
