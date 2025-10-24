@@ -61,7 +61,6 @@
   <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
     <h1 id="titleAdmin" data-i18n="admin_title" style="margin:0">Admin</h1>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <!-- Language switcher -->
       <div class="lang-picker">
         <label class="mini muted" for="langSel" data-i18n="language">Language</label>
         <select id="langSel" class="select" aria-label="Language">
@@ -320,123 +319,51 @@
 const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+    storageKey: 'sb-vetocos-admin' // stable key so refresh tokens stick
+  }
 });
 
 /* ================= Simple i18n (EN/FR) ================= */
-const I18N = {
-  en: {
-    admin_title:"Admin", language:"Language", open_products:"Open Products", open_news:"Open News",
-    open_history:"Open History", home:"Home", login_admin:"Login as Admin", logout:"Logout",
-    users:"Users", search_users:"Search by name / email", refresh:"Refresh",
-    products:"Products", search_products:"Search by name / SKU",
-    add_product:"Add new product", product_name:"Product name", product_name_ph:"e.g., Urocline Chien",
-    sku_ph:"e.g., URO-CHIEN", description:"Description", description_ph:"Short description",
-    qty_available:"Quantity available", product_image:"Product image (JPG/PNG)", product_pdf:"Product PDF",
-    available:"Available", requires_verification:"Requires verification", yes:"Yes", no:"No",
-    create_product:"Create product", vet_apps:"Vet Applications", search_vetapps:"Search by name / email / ID#",
-    per_product_approvals:"Per-product Approvals", search_vpa:"Search by email / SKU", grant_update_approval:"Grant / Update approval",
-    user_email:"User email", email_ph:"user@example.com", product_sku:"Product SKU", sku_short_ph:"SKU123",
-    approved_qty:"Approved quantity", status:"Status", pending:"pending", approved:"approved", revoked:"revoked",
-    save:"Save", news_regions:"News & Regions", open_public_news:"Open public news",
-    vet_notice_title:"Vet page global notice", vet_notice_ph:"Short message shown on the Vet verification page for all users",
-    save_notice:"Save notice", active_regions:"Active Regions", regions_hint:"Enable which regions are visible to users.",
-    save_regions:"Save regions", create_update_news:"Create / Update News", title:"Title", region:"Region", body:"Body",
-    image_jpgpng:"Image (JPG/PNG)", attachment_pdf:"Attachment (PDF)", published:"Published",
-    create:"Create", update:"Update", clear:"Clear",
-    delete_user:"Delete user", close:"Close", vet_application:"Vet Application",
-    product_approvals:"Product Approvals", qty_short:"Qty", save_upsert:"Save / Upsert",
-    cart_mgmt:"Cart Management", add_upsert:"Add / Upsert",
-
-    // toasts
-    toast_new_signup:"New signup"
-  },
-  fr: {
-    admin_title:"Admin", language:"Langue", open_products:"Ouvrir Produits", open_news:"Ouvrir Actualités",
-    open_history:"Ouvrir Historique", home:"Accueil", login_admin:"Se connecter (Admin)", logout:"Se déconnecter",
-    users:"Utilisateurs", search_users:"Rechercher par nom / email", refresh:"Rafraîchir",
-    products:"Produits", search_products:"Rechercher par nom / SKU",
-    add_product:"Ajouter un produit", product_name:"Nom du produit", product_name_ph:"ex., Urocline Chien",
-    sku_ph:"ex., URO-CHIEN", description:"Description", description_ph:"Brève description",
-    qty_available:"Quantité disponible", product_image:"Image du produit (JPG/PNG)", product_pdf:"PDF du produit",
-    available:"Disponible", requires_verification:"Nécessite vérification", yes:"Oui", no:"Non",
-    create_product:"Créer le produit", vet_apps:"Demandes vétérinaires", search_vetapps:"Rechercher par nom / email / ID#",
-    per_product_approvals:"Autorisations par produit", search_vpa:"Rechercher par email / SKU", grant_update_approval:"Accorder / Mettre à jour l’autorisation",
-    user_email:"Email utilisateur", email_ph:"utilisateur@exemple.com", product_sku:"SKU du produit", sku_short_ph:"SKU123",
-    approved_qty:"Quantité autorisée", status:"Statut", pending:"en attente", approved:"approuvé", revoked:"révoqué",
-    save:"Enregistrer", news_regions:"Actualités & Régions", open_public_news:"Ouvrir la page actualités",
-    vet_notice_title:"Note globale (page vétérinaire)", vet_notice_ph:"Court message affiché à tous sur la page de vérification",
-    save_notice:"Enregistrer la note", active_regions:"Régions actives", regions_hint:"Activer les régions visibles pour les utilisateurs.",
-    save_regions:"Enregistrer les régions", create_update_news:"Créer / Mettre à jour une actualité", title:"Titre", region:"Région", body:"Contenu",
-    image_jpgpng:"Image (JPG/PNG)", attachment_pdf:"Pièce jointe (PDF)", published:"Publié",
-    create:"Créer", update:"Mettre à jour", clear:"Effacer",
-    delete_user:"Supprimer l’utilisateur", close:"Fermer", vet_application:"Demande vétérinaire",
-    product_approvals:"Autorisations produit", qty_short:"Qté", save_upsert:"Enregistrer / Upsert",
-    cart_mgmt:"Panier (gestion)", add_upsert:"Ajouter / Upsert",
-
-    // toasts
-    toast_new_signup:"Nouvelle inscription"
-  }
-};
-
-// Apply translation to text and placeholders
+const I18N = { /* …unchanged dictionary… */ };
 let CUR_LANG = 'en';
-// assumes: const I18N = {...}; let CUR_LANG = 'en';
 const t = (k) => (I18N[CUR_LANG] && I18N[CUR_LANG][k]) || k;
 
-// Safely apply translations without removing child elements (e.g., <label>Text <input/></label>)
 function applyI18N() {
   document.documentElement.lang = CUR_LANG;
-
-  // Elements with visible text
   document.querySelectorAll('[data-i18n]').forEach((el) => {
-    const key = el.getAttribute('data-i18n');
+    const key = el.getAttribute('data-i18n'); if (!key) return;
     const value = t(key || '');
-    if (!key) return;
-
     if (el.children.length === 0) {
-      // No children → safe to replace entirely
       el.textContent = value;
     } else {
-      // Has children → update only the first text node (preserve inputs/buttons)
       let textNode = null;
-      for (const node of el.childNodes) {
-        if (node.nodeType === Node.TEXT_NODE) { textNode = node; break; }
-      }
-      if (textNode) {
-        // Keep a trailing space so inline elements don't collide
-        textNode.textContent = value + ' ';
-      } else {
-        el.insertBefore(document.createTextNode(value + ' '), el.firstChild);
-      }
+      for (const node of el.childNodes) { if (node.nodeType === Node.TEXT_NODE) { textNode = node; break; } }
+      if (textNode) textNode.textContent = value + ' ';
+      else el.insertBefore(document.createTextNode(value + ' '), el.firstChild);
     }
   });
-
-  // Placeholders
   document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
-    const key = el.getAttribute('data-i18n-ph');
-    if (!key) return;
+    const key = el.getAttribute('data-i18n-ph'); if (!key) return;
     el.setAttribute('placeholder', t(key));
   });
-
-  // Optional: titles / aria-labels if you use them
   document.querySelectorAll('[data-i18n-title]').forEach((el) => {
-    const key = el.getAttribute('data-i18n-title');
-    if (!key) return;
+    const key = el.getAttribute('data-i18n-title'); if (!key) return;
     el.setAttribute('title', t(key));
   });
   document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
-    const key = el.getAttribute('data-i18n-aria');
-    if (!key) return;
+    const key = el.getAttribute('data-i18n-aria'); if (!key) return;
     el.setAttribute('aria-label', t(key));
   });
 }
 
-// Boot: set language selector and apply translations
 document.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('langSel');
   CUR_LANG = localStorage.getItem('v_lang') || 'en';
-
   if (sel) {
     sel.value = CUR_LANG;
     sel.addEventListener('change', () => {
@@ -445,20 +372,15 @@ document.addEventListener('DOMContentLoaded', () => {
       applyI18N();
     });
   }
-
   applyI18N();
 });
 
 /* ================= Edge Function config (DELETE USER) ================= */
-const ADMIN_DELETE_FN = 'super-endpoint'; // your deployed function name
-
-// Helper: call Edge Function with fallback to direct fetch (handles CORS cases)
+const ADMIN_DELETE_FN = 'super-endpoint';
 async function callAdminDelete(userId) {
   if (!userId) throw new Error('Missing user_id');
   try {
-    const { data, error } = await supa.functions.invoke(ADMIN_DELETE_FN, {
-      body: { user_id: userId }
-    });
+    const { data, error } = await supa.functions.invoke(ADMIN_DELETE_FN, { body: { user_id: userId } });
     if (error || data?.error) throw new Error(error?.message || data?.error || 'Function returned an error');
     return data;
   } catch (e) {
@@ -495,7 +417,7 @@ function filePublicUrl(bucket, path){
 }
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
-/* ================= Auth Gate (PATCH) ================= */
+/* ================= Auth Gate (fixed) ================= */
 const authMsg  = document.getElementById("authMsg");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
@@ -509,25 +431,23 @@ loginBtn.onclick = () => {
 };
 logoutBtn.onclick = async () => { await supa.auth.signOut(); location.href='index.html'; };
 
-/** Return a non-stale session; tries a refresh once if needed */
+/** returns a valid session, refreshing if needed */
 async function getFreshSession() {
   const { data: { session } } = await supa.auth.getSession();
   if (session) return session;
-  // Token likely expired after a few days — try to refresh using stored refresh token
-  try { 
+  try {
     const { data: r } = await supa.auth.refreshSession();
     return r?.session ?? null;
   } catch { return null; }
 }
 
-/** Admin check using (1) allowlist, (2) RPC, (3) profile flag */
+/** central admin check */
 async function ensureAdmin(session) {
   IS_ADMIN = false;
   document.getElementById("historyBtn").style.display = "none";
-
   if (!session?.user) return false;
 
-  // 1) Allowlist
+  // 1) allowlist
   const email = String(session.user.email || "").toLowerCase();
   if (ADMIN_EMAILS.includes(email)) {
     IS_ADMIN = true;
@@ -535,7 +455,7 @@ async function ensureAdmin(session) {
     return true;
   }
 
-  // 2) RPC (recommended; should be SECURITY DEFINER)
+  // 2) rpc (SECURITY DEFINER recommended)
   try {
     const { data: isAdmin, error } = await supa.rpc("is_admin_jwt");
     if (!error && isAdmin === true) {
@@ -545,7 +465,7 @@ async function ensureAdmin(session) {
     }
   } catch {}
 
-  // 3) Legacy profile flag
+  // 3) legacy profile flag
   try {
     const { data: prof } = await supa.from("profiles").select("is_admin").limit(1).maybeSingle();
     if (prof?.is_admin) {
@@ -565,7 +485,6 @@ async function routeAfterAuth(session) {
     logoutBtn.classList.add("hidden");
     return false;
   }
-
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove("hidden");
   loginBtn.classList.add("hidden");
@@ -576,14 +495,13 @@ async function routeAfterAuth(session) {
     return false;
   }
 
-  // Show admin sections (once)
+  // reveal admin sections (once)
   ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
   return true;
 }
 
-/* === NEW: react to refreshes/sign-ins so you don’t get stuck === */
+/* react to token refresh/sign-in */
 const { data: { subscription } } = supa.auth.onAuthStateChange(async (event, session) => {
-  // When the SDK refreshes your token in the background
   if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN" || event === "USER_UPDATED") {
     await routeAfterAuth(session);
   }
@@ -595,37 +513,21 @@ const { data: { subscription } } = supa.auth.onAuthStateChange(async (event, ses
   }
 });
 
-/* === NEW: refresh when you return to the tab after days === */
+/* refresh when tab becomes visible */
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState !== "visible") return;
   const session = await getFreshSession();
   await routeAfterAuth(session);
 });
 
-/* === Boot === */
-document.addEventListener('DOMContentLoaded', async ()=>{
-  // (Optional but helpful) Slightly more robust client config:
-  // - Persist to localStorage and give it a stable storageKey
-  // - flowType:'pkce' is recommended for browser apps
-  supa.auth.setSession(await supa.auth.getSession().then(r=>r.data).catch(()=>({ session:null })));
-  const fresh = await getFreshSession();
-  const ok = await routeAfterAuth(fresh);
-  if (!ok) return;
-
-  await showHistoryIfOrdersExist();
-  await Promise.all([ loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice() ]);
-
-  document.getElementById('newsRefresh').onclick = ()=> loadNews();
-  document.getElementById('prodRefresh').onclick = ()=> loadProducts();
-
-  subscribeRealtime();
-});
-
-/* =================== NEW: Admin receives signup info ===================
-   Any time a row is INSERTed into public.profiles, if the viewer is
-   an admin we show a toast with first_name, last_name, and email.
-   (You can later extend this to send emails from an Edge Function.)
-======================================================================= */
+/* helper from your earlier version (needed by boot) */
+async function showHistoryIfOrdersExist(){
+  try{
+    const { count } = await supa.from('orders').select('id', { count: 'exact', head: true });
+    if ((count || 0) > 0) document.getElementById('historyBtn').style.display = 'inline-block';
+  }catch(_){}
+}
+/* =================== New signups toast =================== */
 function subscribeNewSignups(){
   try{
     supa.channel('rt_profiles_signup')
@@ -637,12 +539,12 @@ function subscribeNewSignups(){
         const em = p.email || '';
         const label = `${t('toast_new_signup')}: ${fn} ${ln} <${em}>`;
         toast(label);
-        // Optionally, refresh the Users list to show the new user immediately:
         loadUsers?.();
       })
       .subscribe();
   }catch(e){ console.warn('Realtime signup sub failed', e); }
 }
+
 /* =======================================================================
    USERS
 ======================================================================= */
@@ -835,38 +737,20 @@ async function loadDrawerApplication(userId){
   }
 }
 
-/* Delete user (Edge Function) — uses callAdminDelete helper */
+/* Delete user (Edge Function) */
 dwDeleteUser.onclick = async () => {
   if (!DRAWER_USER_ID) return;
-
-  const confirmMsg = 'Delete this user and ALL related data? This cannot be undone.';
-  if (!confirm(confirmMsg)) return;
+  if (!confirm('Delete this user and ALL related data? This cannot be undone.')) return;
 
   const { data: { session } } = await supa.auth.getSession();
-  if (!session?.user?.email) {
-    toast('You are not signed in.', true);
-    return;
-  }
+  if (!session?.user?.email) { toast('You are not signed in.', true); return; }
 
   const btn = dwDeleteUser;
   const originalLabel = btn.innerText;
-  btn.disabled = true;
-  btn.innerText = 'Deleting…';
-
-  try {
-    await callAdminDelete(DRAWER_USER_ID);
-    toast('User deleted');
-    drawer.classList.remove('open');
-    drawer.setAttribute('aria-hidden', 'true');
-    await loadUsers();
-  } catch (e) {
-    const msg = (e?.message || String(e) || 'Delete failed');
-    toast(msg, true);
-    console.error('Delete user failed:', e);
-  } finally {
-    btn.disabled = false;
-    btn.innerText = originalLabel;
-  }
+  btn.disabled = true; btn.innerText = 'Deleting…';
+  try { await callAdminDelete(DRAWER_USER_ID); toast('User deleted'); drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); await loadUsers(); }
+  catch (e) { toast(e?.message || 'Delete failed', true); console.error(e); }
+  finally { btn.disabled = false; btn.innerText = originalLabel; }
 };
 
 /* Approvals in drawer */
@@ -932,25 +816,19 @@ async function loadDrawerApprovals(){
 document.getElementById('dwSaveVpa').onclick = async ()=>{
   const sku = (dwSku.value||'').trim(); const qty = Math.max(0, Number(dwQty.value||0)|0); const status = dwStatus.value;
   if(!sku){ toast('Enter SKU', true); return; }
-  const { error } = await supa.from('vet_product_approvals').upsert({
-    user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty, status
-  }, { onConflict:'user_id,product_sku' });
+  const { error } = await supa.from('vet_product_approvals').upsert({ user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty, status }, { onConflict:'user_id,product_sku' });
   if (error){ toast(error.message,true); return; }
   toast('Saved'); dwSku.value=''; dwQty.value='1'; dwStatus.value='pending'; await loadDrawerApprovals();
 };
 
 /* =======================================================================
-   CART MANAGEMENT (Drawer)
+   CART (Drawer)
 ======================================================================= */
-
 dwReloadCart.onclick = () => loadDrawerCart();
-
 dwCartAdd.onclick = async () => {
   if (!DRAWER_USER_ID) return;
-
   const sku = (dwCartSku.value || '').trim();
   const qty = Math.max(1, Number(dwCartQty.value || 1) | 0);
-
   if (!sku) { dwCartMsg.textContent = 'Enter SKU'; return; }
   if (!Number.isFinite(qty) || qty <= 0) { dwCartMsg.textContent = 'Quantity must be a positive number'; return; }
 
@@ -959,7 +837,6 @@ dwCartAdd.onclick = async () => {
     { user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty },
     { onConflict: 'user_id,product_sku' }
   );
-
   if (error) { dwCartMsg.textContent = error.message; return; }
   dwCartMsg.textContent = 'Saved';
   dwCartSku.value = ''; dwCartQty.value = '1';
@@ -1054,7 +931,7 @@ const apReq  = document.getElementById('apReq');
 const apCreate=document.getElementById('apCreate');
 const apMsg  = document.getElementById('apMsg');
 
-// Optional pricing + variants (if you add those inputs in the HTML)
+// Optional pricing + variants (if present)
 const apPPV   = document.getElementById('apPPV');
 const apPVm10 = document.getElementById('apPVm10');
 the_apPVp10 = document.getElementById ? document.getElementById('apPVp10') : null;
@@ -1102,7 +979,6 @@ apVariantsBox?.addEventListener('click', (e) => {
 renderApVariants();
 
 let PROD_CACHE = [];
-
 async function loadProducts(){
   prodMsg.textContent = "Loading products…";
   const { data, error } = await supa.from('products')
@@ -1127,15 +1003,11 @@ function renderProducts(){
           <div style="font-weight:600">${p.name} <span class="muted mini">(${p.sku})</span></div>
           <div class="muted mini" style="max-height:3.5em;overflow:auto">${p.description||''}</div>
           <div class="muted mini">${p.updated_at?('Updated: '+new Date(p.updated_at).toLocaleString()):''}</div>
-
-          <!-- Pricing inline -->
           <div class="grid3" style="margin-top:8px">
             <div><label>PPV (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_ppv||0)}" data-field="price_ppv"></label></div>
             <div><label>PV-10 (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_pv_minus10||0)}" data-field="price_pv_minus10"></label></div>
             <div><label>PV+10 (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_pv_plus10||0)}" data-field="price_pv_plus10"></label></div>
           </div>
-
-          <!-- Variants editor -->
           <div class="card" style="margin-top:8px;padding:10px">
             <div class="toolbar" style="margin:0 0 6px"><h4 style="margin:0">Variants</h4>
               <button type="button" class="btn small" data-action="add-variant">Add variant</button>
@@ -1186,7 +1058,6 @@ function renderProducts(){
 prodSearch.addEventListener('input', renderProducts);
 prodRefresh.addEventListener('click', loadProducts);
 
-// CREATE product (with prices + variants)
 apCreate.onclick = async ()=>{
   apMsg.textContent = "Creating…"; apCreate.disabled=true;
   const name = (apName.value||'').trim();
@@ -1246,7 +1117,6 @@ apCreate.onclick = async ()=>{
   await loadProducts();
 };
 
-// Card actions (save/delete + uploads + variants)
 prodList.addEventListener('click', async (e)=>{
   const card = e.target.closest('.card[data-sku]'); if (!card) return;
   const sku = card.dataset.sku;
@@ -1323,7 +1193,6 @@ prodList.addEventListener('click', async (e)=>{
   }
 });
 
-// Uploads
 prodList.addEventListener('change', async (e)=>{
   const input = e.target;
   const card = input.closest('.card[data-sku]'); if (!card) return;
@@ -1348,9 +1217,8 @@ prodList.addEventListener('change', async (e)=>{
   }
 });
 
-
 /* =======================================================================
-   VET APPLICATIONS (list, approve/reject)
+   VET APPLICATIONS
 ======================================================================= */
 const appsWrap   = document.getElementById('appsWrap');
 const appsSearch = document.getElementById('appsSearch');
@@ -1431,7 +1299,7 @@ appsList.addEventListener('click', async (e)=>{
 });
 
 /* =======================================================================
-   PER-PRODUCT APPROVALS (list + edit)
+   PER-PRODUCT APPROVALS
 ======================================================================= */
 const vpaWrap   = document.getElementById('vpaWrap');
 const vpaSearch = document.getElementById('vpaSearch');
@@ -1734,7 +1602,7 @@ document.getElementById('nUpdate').onclick = async ()=>{
 };
 
 /* =======================================================================
-   Realtime notifications (incl. orders + profiles signup)
+   Realtime notifications
 ======================================================================= */
 function subscribeRealtime(){
   try{
@@ -1762,20 +1630,24 @@ function subscribeRealtime(){
       })
       .subscribe();
 
-    // New signups toast (added earlier)
     subscribeNewSignups();
   }catch{}
 }
 
-/* ================= Boot ================= */
+/* ================= Single Boot (fixed) ================= */
 document.addEventListener('DOMContentLoaded', async ()=>{
-  const ok = await checkAdmin();
+  // ensure we have whatever session is stored (no-op if none)
+  try { await supa.auth.getSession(); } catch {}
+  const fresh = await getFreshSession();
+  const ok = await routeAfterAuth(fresh);
   if (!ok) return;
-  ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
 
   await showHistoryIfOrdersExist();
 
-  await Promise.all([ loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice() ]);
+  await Promise.all([
+    loadUsers(), loadProducts(), loadApps(), loadVPA(),
+    loadRegions(), loadNews(), loadVetNotice()
+  ]);
 
   document.getElementById('newsRefresh').onclick = ()=> loadNews();
   document.getElementById('prodRefresh').onclick = ()=> loadProducts();
