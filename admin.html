@@ -495,7 +495,7 @@ function filePublicUrl(bucket, path){
 }
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
-/* ================= Auth Gate ================= */
+/* ================= Auth Gate (PATCH) ================= */
 const authMsg  = document.getElementById("authMsg");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
@@ -509,30 +509,38 @@ loginBtn.onclick = () => {
 };
 logoutBtn.onclick = async () => { await supa.auth.signOut(); location.href='index.html'; };
 
-async function checkAdmin() {
-  authMsg.textContent = "Checking session…";
+/** Return a non-stale session; tries a refresh once if needed */
+async function getFreshSession() {
   const { data: { session } } = await supa.auth.getSession();
-  if (!session?.user) {
-    authMsg.textContent = "Not signed in.";
-    loginBtn.classList.remove("hidden");
-    return false;
-  }
-  authMsg.textContent = `Signed in as ${session.user.email}`;
-  logoutBtn.classList.remove("hidden");
+  if (session) return session;
+  // Token likely expired after a few days — try to refresh using stored refresh token
+  try { 
+    const { data: r } = await supa.auth.refreshSession();
+    return r?.session ?? null;
+  } catch { return null; }
+}
 
-  // 1) Email allowlist
-  if (ADMIN_EMAILS.includes(String(session.user.email || "").toLowerCase())) {
-    document.getElementById("historyBtn").style.display = "inline-block";
+/** Admin check using (1) allowlist, (2) RPC, (3) profile flag */
+async function ensureAdmin(session) {
+  IS_ADMIN = false;
+  document.getElementById("historyBtn").style.display = "none";
+
+  if (!session?.user) return false;
+
+  // 1) Allowlist
+  const email = String(session.user.email || "").toLowerCase();
+  if (ADMIN_EMAILS.includes(email)) {
     IS_ADMIN = true;
+    document.getElementById("historyBtn").style.display = "inline-block";
     return true;
   }
 
-  // 2) DB RPC (recommended)
+  // 2) RPC (recommended; should be SECURITY DEFINER)
   try {
-    const { data: isAdmin } = await supa.rpc("is_admin_jwt");
-    if (isAdmin === true) {
-      document.getElementById("historyBtn").style.display = "inline-block";
+    const { data: isAdmin, error } = await supa.rpc("is_admin_jwt");
+    if (!error && isAdmin === true) {
       IS_ADMIN = true;
+      document.getElementById("historyBtn").style.display = "inline-block";
       return true;
     }
   } catch {}
@@ -541,22 +549,77 @@ async function checkAdmin() {
   try {
     const { data: prof } = await supa.from("profiles").select("is_admin").limit(1).maybeSingle();
     if (prof?.is_admin) {
-      document.getElementById("historyBtn").style.display = "inline-block";
       IS_ADMIN = true;
+      document.getElementById("historyBtn").style.display = "inline-block";
       return true;
     }
   } catch {}
 
-  authMsg.textContent = "You are signed in but not an admin.";
   return false;
 }
 
-async function showHistoryIfOrdersExist(){
-  try{
-    const { count } = await supa.from('orders').select('id', { count: 'exact', head: true });
-    if ((count || 0) > 0) document.getElementById('historyBtn').style.display = 'inline-block';
-  }catch(_){}
+async function routeAfterAuth(session) {
+  if (!session?.user) {
+    authMsg.textContent = "Not signed in.";
+    loginBtn.classList.remove("hidden");
+    logoutBtn.classList.add("hidden");
+    return false;
+  }
+
+  authMsg.textContent = `Signed in as ${session.user.email}`;
+  logoutBtn.classList.remove("hidden");
+  loginBtn.classList.add("hidden");
+
+  const ok = await ensureAdmin(session);
+  if (!ok) {
+    authMsg.textContent = "You are signed in but not an admin.";
+    return false;
+  }
+
+  // Show admin sections (once)
+  ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
+  return true;
 }
+
+/* === NEW: react to refreshes/sign-ins so you don’t get stuck === */
+const { data: { subscription } } = supa.auth.onAuthStateChange(async (event, session) => {
+  // When the SDK refreshes your token in the background
+  if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN" || event === "USER_UPDATED") {
+    await routeAfterAuth(session);
+  }
+  if (event === "SIGNED_OUT") {
+    IS_ADMIN = false;
+    authMsg.textContent = "Not signed in.";
+    loginBtn.classList.remove("hidden");
+    logoutBtn.classList.add("hidden");
+  }
+});
+
+/* === NEW: refresh when you return to the tab after days === */
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState !== "visible") return;
+  const session = await getFreshSession();
+  await routeAfterAuth(session);
+});
+
+/* === Boot === */
+document.addEventListener('DOMContentLoaded', async ()=>{
+  // (Optional but helpful) Slightly more robust client config:
+  // - Persist to localStorage and give it a stable storageKey
+  // - flowType:'pkce' is recommended for browser apps
+  supa.auth.setSession(await supa.auth.getSession().then(r=>r.data).catch(()=>({ session:null })));
+  const fresh = await getFreshSession();
+  const ok = await routeAfterAuth(fresh);
+  if (!ok) return;
+
+  await showHistoryIfOrdersExist();
+  await Promise.all([ loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice() ]);
+
+  document.getElementById('newsRefresh').onclick = ()=> loadNews();
+  document.getElementById('prodRefresh').onclick = ()=> loadProducts();
+
+  subscribeRealtime();
+});
 
 /* =================== NEW: Admin receives signup info ===================
    Any time a row is INSERTed into public.profiles, if the viewer is
