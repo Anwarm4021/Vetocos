@@ -61,6 +61,7 @@
   <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
     <h1 id="titleAdmin" data-i18n="admin_title" style="margin:0">Admin</h1>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <!-- Language switcher -->
       <div class="lang-picker">
         <label class="mini muted" for="langSel" data-i18n="language">Language</label>
         <select id="langSel" class="select" aria-label="Language">
@@ -319,25 +320,68 @@
 const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce',
-    storageKey: 'sb-vetocos-admin' // stable key so refresh tokens stick
-  }
+  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
 });
 
 /* ================= Simple i18n (EN/FR) ================= */
-const I18N = { /* …unchanged dictionary… */ };
-let CUR_LANG = 'en';
+const I18N = {
+  en: {
+    admin_title:"Admin", language:"Language", open_products:"Open Products", open_news:"Open News",
+    open_history:"Open History", home:"Home", login_admin:"Login as Admin", logout:"Logout",
+    users:"Users", search_users:"Search by name / email", refresh:"Refresh",
+    products:"Products", search_products:"Search by name / SKU",
+    add_product:"Add new product", product_name:"Product name", product_name_ph:"e.g., Urocline Chien",
+    sku_ph:"e.g., URO-CHIEN", description:"Description", description_ph:"Short description",
+    qty_available:"Quantity available", product_image:"Product image (JPG/PNG)", product_pdf:"Product PDF",
+    available:"Available", requires_verification:"Requires verification", yes:"Yes", no:"No",
+    create_product:"Create product", vet_apps:"Vet Applications", search_vetapps:"Search by name / email / ID#",
+    per_product_approvals:"Per-product Approvals", search_vpa:"Search by email / SKU", grant_update_approval:"Grant / Update approval",
+    user_email:"User email", email_ph:"user@example.com", product_sku:"Product SKU", sku_short_ph:"SKU123",
+    approved_qty:"Approved quantity", status:"Status", pending:"pending", approved:"approved", revoked:"revoked",
+    save:"Save", news_regions:"News & Regions", open_public_news:"Open public news",
+    vet_notice_title:"Vet page global notice", vet_notice_ph:"Short message shown on the Vet verification page for all users",
+    save_notice:"Save notice", active_regions:"Active Regions", regions_hint:"Enable which regions are visible to users.",
+    save_regions:"Save regions", create_update_news:"Create / Update News", title:"Title", region:"Region", body:"Body",
+    image_jpgpng:"Image (JPG/PNG)", attachment_pdf:"Attachment (PDF)", published:"Published",
+    create:"Create", update:"Update", clear:"Clear",
+    delete_user:"Delete user", close:"Close", vet_application:"Vet Application",
+    product_approvals:"Product Approvals", qty_short:"Qty", save_upsert:"Save / Upsert",
+    cart_mgmt:"Cart Management", add_upsert:"Add / Upsert",
+    toast_new_signup:"New signup"
+  },
+  fr: {
+    admin_title:"Admin", language:"Langue", open_products:"Ouvrir Produits", open_news:"Ouvrir Actualités",
+    open_history:"Ouvrir Historique", home:"Accueil", login_admin:"Se connecter (Admin)", logout:"Se déconnecter",
+    users:"Utilisateurs", search_users:"Rechercher par nom / email", refresh:"Rafraîchir",
+    products:"Produits", search_products:"Rechercher par nom / SKU",
+    add_product:"Ajouter un produit", product_name:"Nom du produit", product_name_ph:"ex., Urocline Chien",
+    sku_ph:"ex., URO-CHIEN", description:"Description", description_ph:"Brève description",
+    qty_available:"Quantité disponible", product_image:"Image du produit (JPG/PNG)", product_pdf:"PDF du produit",
+    available:"Disponible", requires_verification:"Nécessite vérification", yes:"Oui", no:"Non",
+    create_product:"Créer le produit", vet_apps:"Demandes vétérinaires", search_vetapps:"Rechercher par nom / email / ID#",
+    per_product_approvals:"Autorisations par produit", search_vpa:"Rechercher par email / SKU", grant_update_approval:"Accorder / Mettre à jour l’autorisation",
+    user_email:"Email utilisateur", email_ph:"utilisateur@exemple.com", product_sku:"SKU du produit", sku_short_ph:"SKU123",
+    approved_qty:"Quantité autorisée", status:"Statut", pending:"en attente", approved:"approuvé", revoked:"révoqué",
+    save:"Enregistrer", news_regions:"Actualités & Régions", open_public_news:"Ouvrir la page actualités",
+    vet_notice_title:"Note globale (page vétérinaire)", vet_notice_ph:"Court message affiché à tous sur la page de vérification",
+    save_notice:"Enregistrer la note", active_regions:"Régions actives", regions_hint:"Activer les régions visibles pour les utilisateurs.",
+    save_regions:"Enregistrer les régions", create_update_news:"Créer / Mettre à jour une actualité", title:"Titre", region:"Région", body:"Contenu",
+    image_jpgpng:"Image (JPG/PNG)", attachment_pdf:"Pièce jointe (PDF)", published:"Publié",
+    create:"Créer", update:"Mettre à jour", clear:"Effacer",
+    delete_user:"Supprimer l’utilisateur", close:"Fermer", vet_application:"Demande vétérinaire",
+    product_approvals:"Autorisations produit", qty_short:"Qté", save_upsert:"Enregistrer / Upsert",
+    cart_mgmt:"Panier (gestion)", add_upsert:"Ajouter / Upsert",
+    toast_new_signup:"Nouvelle inscription"
+  }
+};
+let CUR_LANG = localStorage.getItem('v_lang') || 'en';
 const t = (k) => (I18N[CUR_LANG] && I18N[CUR_LANG][k]) || k;
 
 function applyI18N() {
   document.documentElement.lang = CUR_LANG;
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     const key = el.getAttribute('data-i18n'); if (!key) return;
-    const value = t(key || '');
+    const value = t(key);
     if (el.children.length === 0) {
       el.textContent = value;
     } else {
@@ -351,19 +395,9 @@ function applyI18N() {
     const key = el.getAttribute('data-i18n-ph'); if (!key) return;
     el.setAttribute('placeholder', t(key));
   });
-  document.querySelectorAll('[data-i18n-title]').forEach((el) => {
-    const key = el.getAttribute('data-i18n-title'); if (!key) return;
-    el.setAttribute('title', t(key));
-  });
-  document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
-    const key = el.getAttribute('data-i18n-aria'); if (!key) return;
-    el.setAttribute('aria-label', t(key));
-  });
 }
-
 document.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('langSel');
-  CUR_LANG = localStorage.getItem('v_lang') || 'en';
   if (sel) {
     sel.value = CUR_LANG;
     sel.addEventListener('change', () => {
@@ -375,36 +409,12 @@ document.addEventListener('DOMContentLoaded', () => {
   applyI18N();
 });
 
-/* ================= Edge Function config (DELETE USER) ================= */
-const ADMIN_DELETE_FN = 'super-endpoint';
-async function callAdminDelete(userId) {
-  if (!userId) throw new Error('Missing user_id');
-  try {
-    const { data, error } = await supa.functions.invoke(ADMIN_DELETE_FN, { body: { user_id: userId } });
-    if (error || data?.error) throw new Error(error?.message || data?.error || 'Function returned an error');
-    return data;
-  } catch (e) {
-    const { data: sessData } = await supa.auth.getSession();
-    const token = sessData?.session?.access_token;
-    if (!token) throw new Error('No session token available');
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/${ADMIN_DELETE_FN}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON },
-      body: JSON.stringify({ user_id: userId })
-    });
-    const json = await resp.json().catch(() => ({}));
-    if (!resp.ok || json?.error) throw new Error(json?.error || `HTTP ${resp.status}`);
-    return json;
-  }
-}
-
-/* ================= Config ================= */
+/* ================= Config & helpers ================= */
 const PRODUCT_BUCKET = "ProductFiles";
 const NEWS_BUCKET    = "NewsFiles";
 const DOCS_BUCKET    = "Documents";
 const ADMIN_EMAILS   = ["anwar.moumenjamai19@gmail.com"].map(e=>e.toLowerCase());
 
-/* ================= Helpers/UI ================= */
 const toastEl  = document.getElementById("toast");
 function toast(msg, isErr=false){
   toastEl.textContent = msg;
@@ -417,7 +427,7 @@ function filePublicUrl(bucket, path){
 }
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
-/* ================= Auth Gate (fixed) ================= */
+/* ================= Auth Gate & Admin Check ================= */
 const authMsg  = document.getElementById("authMsg");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
@@ -431,31 +441,26 @@ loginBtn.onclick = () => {
 };
 logoutBtn.onclick = async () => { await supa.auth.signOut(); location.href='index.html'; };
 
-/** returns a valid session, refreshing if needed */
 async function getFreshSession() {
   const { data: { session } } = await supa.auth.getSession();
   if (session) return session;
-  try {
+  try { 
     const { data: r } = await supa.auth.refreshSession();
     return r?.session ?? null;
   } catch { return null; }
 }
 
-/** central admin check */
 async function ensureAdmin(session) {
   IS_ADMIN = false;
   document.getElementById("historyBtn").style.display = "none";
   if (!session?.user) return false;
 
-  // 1) allowlist
   const email = String(session.user.email || "").toLowerCase();
   if (ADMIN_EMAILS.includes(email)) {
     IS_ADMIN = true;
     document.getElementById("historyBtn").style.display = "inline-block";
     return true;
   }
-
-  // 2) rpc (SECURITY DEFINER recommended)
   try {
     const { data: isAdmin, error } = await supa.rpc("is_admin_jwt");
     if (!error && isAdmin === true) {
@@ -464,8 +469,6 @@ async function ensureAdmin(session) {
       return true;
     }
   } catch {}
-
-  // 3) legacy profile flag
   try {
     const { data: prof } = await supa.from("profiles").select("is_admin").limit(1).maybeSingle();
     if (prof?.is_admin) {
@@ -474,7 +477,6 @@ async function ensureAdmin(session) {
       return true;
     }
   } catch {}
-
   return false;
 }
 
@@ -494,14 +496,12 @@ async function routeAfterAuth(session) {
     authMsg.textContent = "You are signed in but not an admin.";
     return false;
   }
-
-  // reveal admin sections (once)
   ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
   return true;
 }
 
-/* react to token refresh/sign-in */
-const { data: { subscription } } = supa.auth.onAuthStateChange(async (event, session) => {
+/* React to auth changes / tab return */
+supa.auth.onAuthStateChange(async (event, session) => {
   if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN" || event === "USER_UPDATED") {
     await routeAfterAuth(session);
   }
@@ -512,50 +512,74 @@ const { data: { subscription } } = supa.auth.onAuthStateChange(async (event, ses
     logoutBtn.classList.add("hidden");
   }
 });
-
-/* refresh when tab becomes visible */
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState !== "visible") return;
   const session = await getFreshSession();
   await routeAfterAuth(session);
 });
 
-/* helper from your earlier version (needed by boot) */
+<script>
+/* ================= Edge Function config (DELETE USER) ================= */
+const ADMIN_DELETE_FN = 'super-endpoint';
+
+/** Invoke Edge Function (with signed fetch fallback) */
+async function callAdminDelete(userId) {
+  if (!userId) throw new Error('Missing user_id');
+  try {
+    const { data, error } = await supa.functions.invoke(ADMIN_DELETE_FN, { body: { user_id: userId } });
+    if (error || data?.error) throw new Error(error?.message || data?.error || 'Function error');
+    return data;
+  } catch (e) {
+    const { data: sessData } = await supa.auth.getSession();
+    const token = sessData?.session?.access_token;
+    if (!token) throw new Error('No session token available');
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/${ADMIN_DELETE_FN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ user_id: userId })
+    });
+    const json = await resp.json().catch(()=>({}));
+    if (!resp.ok || json?.error) throw new Error(json?.error || `HTTP ${resp.status}`);
+    return json;
+  }
+}
+
+/* ================= Utilities used across modules ================= */
+function byId(id){ return document.getElementById(id); }
+
+/* Reveal History button only if orders exist */
 async function showHistoryIfOrdersExist(){
   try{
-    const { count } = await supa.from('orders').select('id', { count: 'exact', head: true });
-    if ((count || 0) > 0) document.getElementById('historyBtn').style.display = 'inline-block';
-  }catch(_){}
+    const { count, error } = await supa.from('orders').select('id', { count:'exact', head:true });
+    if (!error && (count||0) > 0) byId('historyBtn').style.display = 'inline-block';
+  }catch{}
 }
-/* =================== New signups toast =================== */
+
+/* Signup toasts for admins */
 function subscribeNewSignups(){
   try{
     supa.channel('rt_profiles_signup')
       .on('postgres_changes', { event:'INSERT', schema:'public', table:'profiles' }, payload=>{
         if (!IS_ADMIN) return;
         const p = payload?.new || {};
-        const fn = p.first_name || '';
-        const ln = p.last_name || '';
-        const em = p.email || '';
-        const label = `${t('toast_new_signup')}: ${fn} ${ln} <${em}>`;
+        const label = `${t('toast_new_signup')}: ${(p.first_name||'')} ${(p.last_name||'')} <${p.email||''}>`;
         toast(label);
         loadUsers?.();
       })
       .subscribe();
-  }catch(e){ console.warn('Realtime signup sub failed', e); }
+  }catch{}
 }
 
 /* =======================================================================
    USERS
 ======================================================================= */
-const usersWrap   = document.getElementById('usersWrap');
-const usersSearch = document.getElementById('usersSearch');
-const usersRefresh= document.getElementById('usersRefresh');
-const usersMsg    = document.getElementById('usersMsg');
-const usersList   = document.getElementById('usersList');
+const usersSearch = byId('usersSearch');
+const usersRefresh= byId('usersRefresh');
+const usersMsg    = byId('usersMsg');
+const usersList   = byId('usersList');
 
-usersSearch.addEventListener('input', renderUsers);
-usersRefresh.addEventListener('click', loadUsers);
+usersSearch?.addEventListener('input', renderUsers);
+usersRefresh?.addEventListener('click', loadUsers);
 
 let USERS_CACHE = [];
 async function loadUsers(){
@@ -576,36 +600,38 @@ async function loadUsers(){
     .from('vet_product_approvals')
     .select('user_id,status,product_sku,quantity');
 
-  const { data: cartCounts } = await supa
+  const { data: cartRows } = await supa
     .from('cart_items')
     .select('user_id, quantity');
 
-  const latestAppByUser = {};
-  (apps||[]).forEach(a=>{ if(!latestAppByUser[a.user_id]) latestAppByUser[a.user_id]=a; });
+  const latestApp = {};
+  (apps||[]).forEach(a=>{ if(!latestApp[a.user_id]) latestApp[a.user_id]=a; });
 
-  const pendingCounts = {};
+  const approvalStats = {};
   (vpa||[]).forEach(r=>{
-    if(!pendingCounts[r.user_id]) pendingCounts[r.user_id]={pending:0,total:0};
-    pendingCounts[r.user_id].total++;
-    if(r.status==='pending') pendingCounts[r.user_id].pending++;
+    if(!approvalStats[r.user_id]) approvalStats[r.user_id]={pending:0,total:0};
+    approvalStats[r.user_id].total++;
+    if(r.status==='pending') approvalStats[r.user_id].pending++;
   });
 
-  const cartCountByUser = {};
-  (cartCounts||[]).forEach(c=>{
-    cartCountByUser[c.user_id] = (cartCountByUser[c.user_id]||0) + Number(c.quantity||0);
+  const cartQty = {};
+  (cartRows||[]).forEach(c=>{
+    cartQty[c.user_id] = (cartQty[c.user_id]||0) + Number(c.quantity||0);
   });
 
-  USERS_CACHE = (profs||[]).map(p=>{
-    const app = latestAppByUser[p.id]||null;
-    const pc  = pendingCounts[p.id]||{pending:0,total:0};
-    const cc  = cartCountByUser[p.id]||0;
-    return { ...p, latest_app: app, approvals_stats: pc, cart_qty: cc };
-  });
+  USERS_CACHE = (profs||[]).map(p=>({
+    ...p,
+    latest_app: latestApp[p.id]||null,
+    approvals_stats: approvalStats[p.id]||{ pending:0,total:0 },
+    cart_qty: cartQty[p.id]||0
+  }));
+
   usersMsg.textContent = '';
   renderUsers();
 }
+
 function renderUsers(){
-  const q = (usersSearch.value||'').toLowerCase().trim();
+  const q = (usersSearch?.value||'').toLowerCase().trim();
   const rows = USERS_CACHE.filter(u=>{
     const name = [u.first_name||'',u.last_name||''].join(' ').toLowerCase();
     const em   = (u.email||'').toLowerCase();
@@ -631,32 +657,32 @@ function renderUsers(){
   }).join('') || '<div class="muted">No users found.</div>';
   usersList.innerHTML = rows;
 
-  usersList.querySelectorAll('button[data-full]').forEach(b=>{
+  usersList.querySelectorAll('button[data-full]')?.forEach(b=>{
     b.onclick = ()=> openDrawer(b.dataset.full);
   });
 }
 
-/* Drawer */
-const drawer  = document.getElementById('drawer');
-const dwClose = document.getElementById('dwClose');
-const dwDeleteUser = document.getElementById('dwDeleteUser');
-const dwName  = document.getElementById('dwName');
-const dwEmail = document.getElementById('dwEmail');
-const dwAppBox= document.getElementById('dwAppBox');
-const dwVPABox= document.getElementById('dwVPABox');
-const dwReloadApprovals = document.getElementById('dwReloadApprovals');
-const dwSku   = document.getElementById('dwSku');
-const dwQty   = document.getElementById('dwQty');
-const dwStatus= document.getElementById('dwStatus');
-const dwSaveVpa = document.getElementById('dwSaveVpa');
-
-/* CART drawer refs */
-const dwCartBox = document.getElementById('dwCartBox');
-const dwReloadCart = document.getElementById('dwReloadCart');
-const dwCartSku = document.getElementById('dwCartSku');
-const dwCartQty = document.getElementById('dwCartQty');
-const dwCartAdd = document.getElementById('dwCartAdd');
-const dwCartMsg = document.getElementById('dwCartMsg');
+/* =======================================================================
+   DRAWER (approvals + cart + delete)
+======================================================================= */
+const drawer  = byId('drawer');
+const dwClose = byId('dwClose');
+const dwDeleteUser = byId('dwDeleteUser');
+const dwName  = byId('dwName');
+const dwEmail = byId('dwEmail');
+const dwAppBox= byId('dwAppBox');
+const dwVPABox= byId('dwVPABox');
+const dwReloadApprovals = byId('dwReloadApprovals');
+const dwSku   = byId('dwSku');
+const dwQty   = byId('dwQty');
+const dwStatus= byId('dwStatus');
+const dwSaveVpa = byId('dwSaveVpa');
+const dwCartBox = byId('dwCartBox');
+const dwReloadCart = byId('dwReloadCart');
+const dwCartSku = byId('dwCartSku');
+const dwCartQty = byId('dwCartQty');
+const dwCartAdd = byId('dwCartAdd');
+const dwCartMsg = byId('dwCartMsg');
 
 let DRAWER_USER_ID = null;
 dwClose.onclick = ()=>{ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); };
@@ -704,7 +730,6 @@ async function loadDrawerApplication(userId){
         <button class="btn danger small" data-appact="reject">Reject</button>
       </div>
       <div class="mini muted" style="margin-bottom:8px">ID: ${escapeHtml(app.identity_number || '-')}${fileLink}</div>
-
       <label style="display:block;margin:8px 0 6px">Admin note to user</label>
       <textarea id="dwAdminNote" placeholder="Write a short note the user will see on their vet page…">${escapeHtml(adminNote)}</textarea>
       <div class="row" style="margin-top:8px">
@@ -724,37 +749,41 @@ async function loadDrawerApplication(userId){
       toast('Application rejected'); await loadDrawerApplication(userId);
     };
 
-    const saveBtn = document.getElementById('dwSaveNote');
-    const noteMsg = document.getElementById('dwNoteMsg');
-    const noteEl  = document.getElementById('dwAdminNote');
+    const saveBtn = byId('dwSaveNote');
+    const noteMsg = byId('dwNoteMsg');
+    const noteEl  = byId('dwAdminNote');
     saveBtn.onclick = async ()=>{
       noteMsg.textContent = 'Saving…';
       const { error } = await supa.from('vet_applications').update({ admin_note: noteEl.value || null }).eq('id', app.id);
       if (error){ noteMsg.textContent = error.message; return; }
-      noteMsg.textContent = 'Saved.';
-      toast('Note saved');
+      noteMsg.textContent = 'Saved.'; toast('Note saved');
     };
   }
 }
 
-/* Delete user (Edge Function) */
 dwDeleteUser.onclick = async () => {
   if (!DRAWER_USER_ID) return;
-  if (!confirm('Delete this user and ALL related data? This cannot be undone.')) return;
+  const confirmMsg = 'Delete this user and ALL related data? This cannot be undone.';
+  if (!confirm(confirmMsg)) return;
 
   const { data: { session } } = await supa.auth.getSession();
   if (!session?.user?.email) { toast('You are not signed in.', true); return; }
 
   const btn = dwDeleteUser;
-  const originalLabel = btn.innerText;
-  btn.disabled = true; btn.innerText = 'Deleting…';
-  try { await callAdminDelete(DRAWER_USER_ID); toast('User deleted'); drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); await loadUsers(); }
-  catch (e) { toast(e?.message || 'Delete failed', true); console.error(e); }
-  finally { btn.disabled = false; btn.innerText = originalLabel; }
+  const original = btn.innerText; btn.disabled = true; btn.innerText = 'Deleting…';
+  try {
+    await callAdminDelete(DRAWER_USER_ID);
+    toast('User deleted');
+    drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true');
+    await loadUsers();
+  } catch (e) {
+    toast(e?.message || 'Delete failed', true);
+  } finally {
+    btn.disabled = false; btn.innerText = original;
+  }
 };
 
-/* Approvals in drawer */
-document.getElementById('dwReloadApprovals').onclick = ()=> loadDrawerApprovals();
+dwReloadApprovals.onclick = ()=> loadDrawerApprovals();
 async function loadDrawerApprovals(){
   dwVPABox.textContent = 'Loading…';
   const { data: rows, error } = await supa
@@ -813,17 +842,17 @@ async function loadDrawerApprovals(){
     };
   });
 }
-document.getElementById('dwSaveVpa').onclick = async ()=>{
+dwSaveVpa.onclick = async ()=>{
   const sku = (dwSku.value||'').trim(); const qty = Math.max(0, Number(dwQty.value||0)|0); const status = dwStatus.value;
   if(!sku){ toast('Enter SKU', true); return; }
-  const { error } = await supa.from('vet_product_approvals').upsert({ user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty, status }, { onConflict:'user_id,product_sku' });
+  const { error } = await supa.from('vet_product_approvals').upsert({
+    user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty, status
+  }, { onConflict:'user_id,product_sku' });
   if (error){ toast(error.message,true); return; }
   toast('Saved'); dwSku.value=''; dwQty.value='1'; dwStatus.value='pending'; await loadDrawerApprovals();
 };
 
-/* =======================================================================
-   CART (Drawer)
-======================================================================= */
+/* CART drawer */
 dwReloadCart.onclick = () => loadDrawerCart();
 dwCartAdd.onclick = async () => {
   if (!DRAWER_USER_ID) return;
@@ -842,7 +871,6 @@ dwCartAdd.onclick = async () => {
   dwCartSku.value = ''; dwCartQty.value = '1';
   await loadDrawerCart(); await loadUsers();
 };
-
 async function loadDrawerCart() {
   dwCartBox.textContent = 'Loading…';
   const { data, error } = await supa
@@ -890,7 +918,6 @@ async function loadDrawerCart() {
         if (error) { toast(error.message, true); return; }
         toast('Item removed'); await loadDrawerCart(); await loadUsers(); return;
       }
-
       const { error } = await supa.from('cart_items').upsert(
         { user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty },
         { onConflict: 'user_id,product_sku' }
@@ -914,29 +941,27 @@ async function loadDrawerCart() {
 /* =======================================================================
    PRODUCTS
 ======================================================================= */
-const prodWrap    = document.getElementById('prodWrap');
-const prodSearch  = document.getElementById('prodSearch');
-const prodRefresh = document.getElementById('prodRefresh');
-const prodMsg     = document.getElementById('prodMsg');
-const prodList    = document.getElementById('prodList');
+const prodSearch  = byId('prodSearch');
+const prodRefresh = byId('prodRefresh');
+const prodMsg     = byId('prodMsg');
+const prodList    = byId('prodList');
 
-const apName = document.getElementById('apName');
-const apSku  = document.getElementById('apSku');
-const apDesc = document.getElementById('apDesc');
-const apQty  = document.getElementById('apQty');
-const apImg  = document.getElementById('apImg');
-const apPdf  = document.getElementById('apPdf');
-const apAvail= document.getElementById('apAvail');
-const apReq  = document.getElementById('apReq');
-const apCreate=document.getElementById('apCreate');
-const apMsg  = document.getElementById('apMsg');
+const apName = byId('apName');
+const apSku  = byId('apSku');
+const apDesc = byId('apDesc');
+const apQty  = byId('apQty');
+const apImg  = byId('apImg');
+const apPdf  = byId('apPdf');
+const apAvail= byId('apAvail');
+const apReq  = byId('apReq');
+const apCreate=byId('apCreate');
+const apMsg  = byId('apMsg');
 
-// Optional pricing + variants (if present)
-const apPPV   = document.getElementById('apPPV');
-const apPVm10 = document.getElementById('apPVm10');
-the_apPVp10 = document.getElementById ? document.getElementById('apPVp10') : null;
-const apVariantsBox = document.getElementById('apVariants');
-const apVariantAdd  = document.getElementById('apVariantAdd');
+const apPPV   = byId('apPPV');          // optional
+const apPVm10 = byId('apPVm10');        // optional
+const the_apPVp10 = byId('apPVp10');    // optional
+const apVariantsBox = byId('apVariants'); // optional
+const apVariantAdd  = byId('apVariantAdd'); // optional
 
 let AP_VARIANTS = [];
 function renderApVariants(){
@@ -988,9 +1013,8 @@ async function loadProducts(){
   PROD_CACHE = data || [];
   renderProducts(); prodMsg.textContent = "";
 }
-
 function renderProducts(){
-  const q = (prodSearch.value||'').toLowerCase().trim();
+  const q = (prodSearch?.value||'').toLowerCase().trim();
   const rows = PROD_CACHE.filter(p=>{
     if (!q) return true;
     return (p.sku||'').toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q);
@@ -1003,11 +1027,13 @@ function renderProducts(){
           <div style="font-weight:600">${p.name} <span class="muted mini">(${p.sku})</span></div>
           <div class="muted mini" style="max-height:3.5em;overflow:auto">${p.description||''}</div>
           <div class="muted mini">${p.updated_at?('Updated: '+new Date(p.updated_at).toLocaleString()):''}</div>
+
           <div class="grid3" style="margin-top:8px">
             <div><label>PPV (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_ppv||0)}" data-field="price_ppv"></label></div>
             <div><label>PV-10 (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_pv_minus10||0)}" data-field="price_pv_minus10"></label></div>
             <div><label>PV+10 (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_pv_plus10||0)}" data-field="price_pv_plus10"></label></div>
           </div>
+
           <div class="card" style="margin-top:8px;padding:10px">
             <div class="toolbar" style="margin:0 0 6px"><h4 style="margin:0">Variants</h4>
               <button type="button" class="btn small" data-action="add-variant">Add variant</button>
@@ -1055,8 +1081,8 @@ function renderProducts(){
   }).join('');
   prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
 }
-prodSearch.addEventListener('input', renderProducts);
-prodRefresh.addEventListener('click', loadProducts);
+prodSearch?.addEventListener('input', renderProducts);
+prodRefresh?.addEventListener('click', loadProducts);
 
 apCreate.onclick = async ()=>{
   apMsg.textContent = "Creating…"; apCreate.disabled=true;
@@ -1197,6 +1223,7 @@ prodList.addEventListener('change', async (e)=>{
   const input = e.target;
   const card = input.closest('.card[data-sku]'); if (!card) return;
   const sku = card.dataset.sku;
+
   if (input.dataset.action === 'upload-img'){
     const f = input.files[0]; if(!f) return;
     if (!['image/jpeg','image/png'].includes(f.type)){ toast('Image must be JPG/PNG', true); input.value=''; return; }
@@ -1220,14 +1247,13 @@ prodList.addEventListener('change', async (e)=>{
 /* =======================================================================
    VET APPLICATIONS
 ======================================================================= */
-const appsWrap   = document.getElementById('appsWrap');
-const appsSearch = document.getElementById('appsSearch');
-const appsRefresh= document.getElementById('appsRefresh');
-const appsMsg    = document.getElementById('appsMsg');
-const appsList   = document.getElementById('appsList');
+const appsSearch = byId('appsSearch');
+const appsRefresh= byId('appsRefresh');
+const appsMsg    = byId('appsMsg');
+const appsList   = byId('appsList');
 
-appsSearch.addEventListener('input', renderApps);
-appsRefresh.addEventListener('click', loadApps);
+appsSearch?.addEventListener('input', renderApps);
+appsRefresh?.addEventListener('click', loadApps);
 
 let APP_CACHE = [];
 async function loadApps(){
@@ -1242,7 +1268,7 @@ async function loadApps(){
   renderApps();
 }
 function renderApps(){
-  const q = (appsSearch.value||'').toLowerCase().trim();
+  const q = (appsSearch?.value||'').toLowerCase().trim();
   appsList.innerHTML = (APP_CACHE.filter(a=>{
     const name = [(a.profiles?.first_name||''),(a.profiles?.last_name||'')].join(' ').toLowerCase();
     const email= (a.profiles?.email||'').toLowerCase();
@@ -1276,11 +1302,10 @@ function renderApps(){
     </div>`;
   }).join('')) || '<div class="muted">No applications.</div>';
 
-  appsList.querySelectorAll('button[data-full]').forEach(b=>{
+  appsList.querySelectorAll('button[data-full]')?.forEach(b=>{
     b.onclick = ()=> openDrawer(b.dataset.full);
   });
 }
-
 appsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const card = b.closest('[data-app]'); const appId = card.dataset.app;
@@ -1289,34 +1314,31 @@ appsList.addEventListener('click', async (e)=>{
   if(action==='approve'){
     const { error } = await supa.from('vet_applications').update({ status:'approved' }).eq('id', appId);
     if (error) return toast(error.message, true);
-    toast('Application approved'); await loadApps();
+    toast('Application approved'); await loadApps(); await loadUsers();
   }
   if(action==='reject'){
     const { error } = await supa.from('vet_applications').update({ status:'rejected' }).eq('id', appId);
     if (error) return toast(error.message, true);
-    toast('Application rejected'); await loadApps();
+    toast('Application rejected'); await loadApps(); await loadUsers();
   }
 });
 
 /* =======================================================================
    PER-PRODUCT APPROVALS
 ======================================================================= */
-const vpaWrap   = document.getElementById('vpaWrap');
-const vpaSearch = document.getElementById('vpaSearch');
-const vpaRefresh= document.getElementById('vpaRefresh');
-const vpaMsg    = document.getElementById('vpaMsg');
-const vpaMsg2   = document.getElementById('vpaMsg2');
-const vpaList   = document.getElementById('vpaList');
-const vpaEmail  = document.getElementById('vpaEmail');
-const vpaSku    = document.getElementById('vpaSku');
-const vpaQty    = document.getElementById('vpaQty');
-const vpaStatus = document.getElementById('vpaStatus');
-const vpaUpsert = document.getElementById('vpaUpsert');
+const vpaSearch = byId('vpaSearch');
+const vpaRefresh= byId('vpaRefresh');
+const vpaMsg    = byId('vpaMsg');
+const vpaMsg2   = byId('vpaMsg2');
+const vpaList   = byId('vpaList');
+const vpaEmail  = byId('vpaEmail');
+const vpaSku    = byId('vpaSku');
+const vpaQty    = byId('vpaQty');
+const vpaStatus = byId('vpaStatus');
+const vpaUpsert = byId('vpaUpsert');
 
-let VPA_CACHE = [];
-
-vpaSearch.addEventListener('input', renderVPA);
-vpaRefresh.addEventListener('click', loadVPA);
+vpaSearch?.addEventListener('input', renderVPA);
+vpaRefresh?.addEventListener('click', loadVPA);
 
 vpaUpsert.onclick = async ()=>{
   vpaMsg.textContent = 'Saving…';
@@ -1336,6 +1358,7 @@ vpaUpsert.onclick = async ()=>{
   await loadVPA();
 };
 
+let VPA_CACHE = [];
 async function loadVPA(){
   vpaMsg2.textContent='Loading…';
   const { data, error } = await supa
@@ -1348,7 +1371,7 @@ async function loadVPA(){
   vpaMsg2.textContent=''; renderVPA();
 }
 function renderVPA(){
-  const q = (vpaSearch.value||'').toLowerCase().trim();
+  const q = (vpaSearch?.value||'').toLowerCase().trim();
   const orderScore = s => s==='pending'?0 : s==='approved'?1 : 2;
 
   const rows = (VPA_CACHE||[])
@@ -1386,7 +1409,7 @@ function renderVPA(){
     }).join('');
 
   vpaList.innerHTML = rows || '<div class="muted">No approvals.</div>';
-  vpaList.querySelectorAll('button[data-full]').forEach(b=>{
+  vpaList.querySelectorAll('button[data-full]')?.forEach(b=>{
     b.onclick = ()=> openDrawer(b.dataset.full);
   });
 }
@@ -1413,29 +1436,28 @@ vpaList.addEventListener('click', async (e)=>{
 /* =======================================================================
    NEWS + REGIONS + VET NOTICE
 ======================================================================= */
-const newsWrap   = document.getElementById('newsWrap');
-const newsMsg    = document.getElementById('newsMsg');
-const newsList   = document.getElementById('newsList');
-const newsRefresh= document.getElementById('newsRefresh');
+const newsMsg    = byId('newsMsg');
+const newsList   = byId('newsList');
+const newsRefresh= byId('newsRefresh');
 
-const nId   = document.getElementById('nId');
-const nTitle= document.getElementById('nTitle');
-const nBody = document.getElementById('nBody');
-const nRegion=document.getElementById('nRegion');
-const nImg  = document.getElementById('nImg');
-const nFile = document.getElementById('nFile');
-const nPub  = document.getElementById('nPub');
-const nCreate=document.getElementById('nCreate');
-const nUpdate=document.getElementById('nUpdate');
-const nClear =document.getElementById('nClear');
-const nMsg   = document.getElementById('nMsg');
+const nId   = byId('nId');
+const nTitle= byId('nTitle');
+const nBody = byId('nBody');
+const nRegion=byId('nRegion');
+const nImg  = byId('nImg');
+const nFile = byId('nFile');
+const nPub  = byId('nPub');
+const nCreate=byId('nCreate');
+const nUpdate=byId('nUpdate');
+const nClear =byId('nClear');
+const nMsg   = byId('nMsg');
 
-const regionToggles = document.getElementById('regionToggles');
-const saveRegions   = document.getElementById('saveRegions');
-const regMsg        = document.getElementById('regMsg');
+const regionToggles = byId('regionToggles');
+const saveRegions   = byId('saveRegions');
+const regMsg        = byId('regMsg');
 
-const vetNoticeEl = document.getElementById('vetNotice');
-const vetNoticeMsg= document.getElementById('vetNoticeMsg');
+const vetNoticeEl = byId('vetNotice');
+const vetNoticeMsg= byId('vetNoticeMsg');
 
 async function loadVetNotice(){
   try{
@@ -1443,7 +1465,7 @@ async function loadVetNotice(){
     vetNoticeEl.value = (typeof data?.value === 'string') ? data.value : '';
   }catch{}
 }
-document.getElementById('saveVetNotice').onclick = async ()=>{
+byId('saveVetNotice').onclick = async ()=>{
   vetNoticeMsg.textContent='Saving…';
   const val = vetNoticeEl.value || '';
   const { error } = await supa.from('site_settings').upsert({ key:'vet_notice', value: val }, { onConflict:'key' });
@@ -1504,7 +1526,6 @@ async function loadNews(){
   }).join('');
   newsMsg.textContent = rows.length ? "" : "No news yet.";
 }
-
 newsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const { action, id } = b.dataset;
@@ -1527,15 +1548,13 @@ newsList.addEventListener('click', async (e)=>{
     toast('Deleted'); await loadNews(); clearNewsForm();
   }
 });
-
 function clearNewsForm(){
   nId.value=""; nTitle.value=""; nBody.value=""; nRegion.value="Global"; nPub.value='true';
   nImg.value=""; nFile.value="";
   nCreate.disabled=false; nUpdate.disabled=true; nMsg.textContent="";
 }
-document.getElementById('nClear').onclick = clearNewsForm;
-
-document.getElementById('nCreate').onclick = async ()=>{
+byId('nClear').onclick = clearNewsForm;
+byId('nCreate').onclick = async ()=>{
   nMsg.textContent = "Creating…"; nCreate.disabled=true;
   let image_path=null, file_path=null;
   const i = nImg.files[0]||null, f = nFile.files[0]||null;
@@ -1567,8 +1586,7 @@ document.getElementById('nCreate').onclick = async ()=>{
   if (error){ nMsg.textContent = error.message; nCreate.disabled=false; return; }
   nMsg.textContent = "Created."; toast('News created'); clearNewsForm(); await loadNews();
 };
-
-document.getElementById('nUpdate').onclick = async ()=>{
+byId('nUpdate').onclick = async ()=>{
   const id = nId.value; if(!id) return;
   nMsg.textContent = "Updating…"; nUpdate.disabled=true;
   let image_path=null, file_path=null;
@@ -1602,7 +1620,7 @@ document.getElementById('nUpdate').onclick = async ()=>{
 };
 
 /* =======================================================================
-   Realtime notifications
+   REALTIME
 ======================================================================= */
 function subscribeRealtime(){
   try{
@@ -1624,8 +1642,7 @@ function subscribeRealtime(){
 
     supa.channel('rt_orders')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => {
-        const btn = document.getElementById('historyBtn');
-        if (btn) btn.style.display = 'inline-block';
+        byId('historyBtn').style.display = 'inline-block';
         toast('New order placed');
       })
       .subscribe();
@@ -1634,26 +1651,25 @@ function subscribeRealtime(){
   }catch{}
 }
 
-/* ================= Single Boot (fixed) ================= */
+/* =======================================================================
+   BOOT (single entry point)
+======================================================================= */
 document.addEventListener('DOMContentLoaded', async ()=>{
-  // ensure we have whatever session is stored (no-op if none)
-  try { await supa.auth.getSession(); } catch {}
   const fresh = await getFreshSession();
   const ok = await routeAfterAuth(fresh);
   if (!ok) return;
 
   await showHistoryIfOrdersExist();
-
   await Promise.all([
-    loadUsers(), loadProducts(), loadApps(), loadVPA(),
-    loadRegions(), loadNews(), loadVetNotice()
+    loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice()
   ]);
 
-  document.getElementById('newsRefresh').onclick = ()=> loadNews();
-  document.getElementById('prodRefresh').onclick = ()=> loadProducts();
+  newsRefresh.onclick = ()=> loadNews();
+  prodRefresh.onclick = ()=> loadProducts();
 
   subscribeRealtime();
 });
+  
 </script>
 </body>
 </html>
