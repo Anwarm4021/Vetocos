@@ -347,6 +347,8 @@ const I18N = {
     delete_user:"Delete user", close:"Close", vet_application:"Vet Application",
     product_approvals:"Product Approvals", qty_short:"Qty", save_upsert:"Save / Upsert",
     cart_mgmt:"Cart Management", add_upsert:"Add / Upsert",
+
+    // toasts
     toast_new_signup:"New signup"
   },
   fr: {
@@ -371,33 +373,70 @@ const I18N = {
     delete_user:"Supprimer l’utilisateur", close:"Fermer", vet_application:"Demande vétérinaire",
     product_approvals:"Autorisations produit", qty_short:"Qté", save_upsert:"Enregistrer / Upsert",
     cart_mgmt:"Panier (gestion)", add_upsert:"Ajouter / Upsert",
+
+    // toasts
     toast_new_signup:"Nouvelle inscription"
   }
 };
-let CUR_LANG = localStorage.getItem('v_lang') || 'en';
+
+// Apply translation to text and placeholders
+let CUR_LANG = 'en';
+// assumes: const I18N = {...}; let CUR_LANG = 'en';
 const t = (k) => (I18N[CUR_LANG] && I18N[CUR_LANG][k]) || k;
 
+// Safely apply translations without removing child elements (e.g., <label>Text <input/></label>)
 function applyI18N() {
   document.documentElement.lang = CUR_LANG;
+
+  // Elements with visible text
   document.querySelectorAll('[data-i18n]').forEach((el) => {
-    const key = el.getAttribute('data-i18n'); if (!key) return;
-    const value = t(key);
+    const key = el.getAttribute('data-i18n');
+    const value = t(key || '');
+    if (!key) return;
+
     if (el.children.length === 0) {
+      // No children → safe to replace entirely
       el.textContent = value;
     } else {
+      // Has children → update only the first text node (preserve inputs/buttons)
       let textNode = null;
-      for (const node of el.childNodes) { if (node.nodeType === Node.TEXT_NODE) { textNode = node; break; } }
-      if (textNode) textNode.textContent = value + ' ';
-      else el.insertBefore(document.createTextNode(value + ' '), el.firstChild);
+      for (const node of el.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE) { textNode = node; break; }
+      }
+      if (textNode) {
+        // Keep a trailing space so inline elements don't collide
+        textNode.textContent = value + ' ';
+      } else {
+        el.insertBefore(document.createTextNode(value + ' '), el.firstChild);
+      }
     }
   });
+
+  // Placeholders
   document.querySelectorAll('[data-i18n-ph]').forEach((el) => {
-    const key = el.getAttribute('data-i18n-ph'); if (!key) return;
+    const key = el.getAttribute('data-i18n-ph');
+    if (!key) return;
     el.setAttribute('placeholder', t(key));
   });
+
+  // Optional: titles / aria-labels if you use them
+  document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+    const key = el.getAttribute('data-i18n-title');
+    if (!key) return;
+    el.setAttribute('title', t(key));
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+    const key = el.getAttribute('data-i18n-aria');
+    if (!key) return;
+    el.setAttribute('aria-label', t(key));
+  });
 }
+
+// Boot: set language selector and apply translations
 document.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('langSel');
+  CUR_LANG = localStorage.getItem('v_lang') || 'en';
+
   if (sel) {
     sel.value = CUR_LANG;
     sel.addEventListener('change', () => {
@@ -406,15 +445,44 @@ document.addEventListener('DOMContentLoaded', () => {
       applyI18N();
     });
   }
+
   applyI18N();
 });
 
-/* ================= Config & helpers ================= */
+/* ================= Edge Function config (DELETE USER) ================= */
+const ADMIN_DELETE_FN = 'super-endpoint'; // your deployed function name
+
+// Helper: call Edge Function with fallback to direct fetch (handles CORS cases)
+async function callAdminDelete(userId) {
+  if (!userId) throw new Error('Missing user_id');
+  try {
+    const { data, error } = await supa.functions.invoke(ADMIN_DELETE_FN, {
+      body: { user_id: userId }
+    });
+    if (error || data?.error) throw new Error(error?.message || data?.error || 'Function returned an error');
+    return data;
+  } catch (e) {
+    const { data: sessData } = await supa.auth.getSession();
+    const token = sessData?.session?.access_token;
+    if (!token) throw new Error('No session token available');
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/${ADMIN_DELETE_FN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ user_id: userId })
+    });
+    const json = await resp.json().catch(() => ({}));
+    if (!resp.ok || json?.error) throw new Error(json?.error || `HTTP ${resp.status}`);
+    return json;
+  }
+}
+
+/* ================= Config ================= */
 const PRODUCT_BUCKET = "ProductFiles";
 const NEWS_BUCKET    = "NewsFiles";
 const DOCS_BUCKET    = "Documents";
 const ADMIN_EMAILS   = ["anwar.moumenjamai19@gmail.com"].map(e=>e.toLowerCase());
 
+/* ================= Helpers/UI ================= */
 const toastEl  = document.getElementById("toast");
 function toast(msg, isErr=false){
   toastEl.textContent = msg;
@@ -427,7 +495,7 @@ function filePublicUrl(bucket, path){
 }
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
-/* ================= Auth Gate & Admin Check ================= */
+/* ================= Auth Gate (PATCH) ================= */
 const authMsg  = document.getElementById("authMsg");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn= document.getElementById("logoutBtn");
@@ -441,26 +509,33 @@ loginBtn.onclick = () => {
 };
 logoutBtn.onclick = async () => { await supa.auth.signOut(); location.href='index.html'; };
 
+/** Return a non-stale session; tries a refresh once if needed */
 async function getFreshSession() {
   const { data: { session } } = await supa.auth.getSession();
   if (session) return session;
+  // Token likely expired after a few days — try to refresh using stored refresh token
   try { 
     const { data: r } = await supa.auth.refreshSession();
     return r?.session ?? null;
   } catch { return null; }
 }
 
+/** Admin check using (1) allowlist, (2) RPC, (3) profile flag */
 async function ensureAdmin(session) {
   IS_ADMIN = false;
   document.getElementById("historyBtn").style.display = "none";
+
   if (!session?.user) return false;
 
+  // 1) Allowlist
   const email = String(session.user.email || "").toLowerCase();
   if (ADMIN_EMAILS.includes(email)) {
     IS_ADMIN = true;
     document.getElementById("historyBtn").style.display = "inline-block";
     return true;
   }
+
+  // 2) RPC (recommended; should be SECURITY DEFINER)
   try {
     const { data: isAdmin, error } = await supa.rpc("is_admin_jwt");
     if (!error && isAdmin === true) {
@@ -469,6 +544,8 @@ async function ensureAdmin(session) {
       return true;
     }
   } catch {}
+
+  // 3) Legacy profile flag
   try {
     const { data: prof } = await supa.from("profiles").select("is_admin").limit(1).maybeSingle();
     if (prof?.is_admin) {
@@ -477,6 +554,7 @@ async function ensureAdmin(session) {
       return true;
     }
   } catch {}
+
   return false;
 }
 
@@ -487,6 +565,7 @@ async function routeAfterAuth(session) {
     logoutBtn.classList.add("hidden");
     return false;
   }
+
   authMsg.textContent = `Signed in as ${session.user.email}`;
   logoutBtn.classList.remove("hidden");
   loginBtn.classList.add("hidden");
@@ -496,12 +575,15 @@ async function routeAfterAuth(session) {
     authMsg.textContent = "You are signed in but not an admin.";
     return false;
   }
+
+  // Show admin sections (once)
   ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
   return true;
 }
 
-/* React to auth changes / tab return */
-supa.auth.onAuthStateChange(async (event, session) => {
+/* === NEW: react to refreshes/sign-ins so you don’t get stuck === */
+const { data: { subscription } } = supa.auth.onAuthStateChange(async (event, session) => {
+  // When the SDK refreshes your token in the background
   if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN" || event === "USER_UPDATED") {
     await routeAfterAuth(session);
   }
@@ -512,74 +594,66 @@ supa.auth.onAuthStateChange(async (event, session) => {
     logoutBtn.classList.add("hidden");
   }
 });
+
+/* === NEW: refresh when you return to the tab after days === */
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState !== "visible") return;
   const session = await getFreshSession();
   await routeAfterAuth(session);
 });
 
-<script>
-/* ================= Edge Function config (DELETE USER) ================= */
-const ADMIN_DELETE_FN = 'super-endpoint';
+/* === Boot === */
+document.addEventListener('DOMContentLoaded', async ()=>{
+  // (Optional but helpful) Slightly more robust client config:
+  // - Persist to localStorage and give it a stable storageKey
+  // - flowType:'pkce' is recommended for browser apps
+  supa.auth.setSession(await supa.auth.getSession().then(r=>r.data).catch(()=>({ session:null })));
+  const fresh = await getFreshSession();
+  const ok = await routeAfterAuth(fresh);
+  if (!ok) return;
 
-/** Invoke Edge Function (with signed fetch fallback) */
-async function callAdminDelete(userId) {
-  if (!userId) throw new Error('Missing user_id');
-  try {
-    const { data, error } = await supa.functions.invoke(ADMIN_DELETE_FN, { body: { user_id: userId } });
-    if (error || data?.error) throw new Error(error?.message || data?.error || 'Function error');
-    return data;
-  } catch (e) {
-    const { data: sessData } = await supa.auth.getSession();
-    const token = sessData?.session?.access_token;
-    if (!token) throw new Error('No session token available');
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/${ADMIN_DELETE_FN}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON },
-      body: JSON.stringify({ user_id: userId })
-    });
-    const json = await resp.json().catch(()=>({}));
-    if (!resp.ok || json?.error) throw new Error(json?.error || `HTTP ${resp.status}`);
-    return json;
-  }
-}
+  await showHistoryIfOrdersExist();
+  await Promise.all([ loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice() ]);
 
-/* ================= Utilities used across modules ================= */
-function byId(id){ return document.getElementById(id); }
+  document.getElementById('newsRefresh').onclick = ()=> loadNews();
+  document.getElementById('prodRefresh').onclick = ()=> loadProducts();
 
-/* Reveal History button only if orders exist */
-async function showHistoryIfOrdersExist(){
-  try{
-    const { count, error } = await supa.from('orders').select('id', { count:'exact', head:true });
-    if (!error && (count||0) > 0) byId('historyBtn').style.display = 'inline-block';
-  }catch{}
-}
+  subscribeRealtime();
+});
 
-/* Signup toasts for admins */
+/* =================== NEW: Admin receives signup info ===================
+   Any time a row is INSERTed into public.profiles, if the viewer is
+   an admin we show a toast with first_name, last_name, and email.
+   (You can later extend this to send emails from an Edge Function.)
+======================================================================= */
 function subscribeNewSignups(){
   try{
     supa.channel('rt_profiles_signup')
       .on('postgres_changes', { event:'INSERT', schema:'public', table:'profiles' }, payload=>{
         if (!IS_ADMIN) return;
         const p = payload?.new || {};
-        const label = `${t('toast_new_signup')}: ${(p.first_name||'')} ${(p.last_name||'')} <${p.email||''}>`;
+        const fn = p.first_name || '';
+        const ln = p.last_name || '';
+        const em = p.email || '';
+        const label = `${t('toast_new_signup')}: ${fn} ${ln} <${em}>`;
         toast(label);
+        // Optionally, refresh the Users list to show the new user immediately:
         loadUsers?.();
       })
       .subscribe();
-  }catch{}
+  }catch(e){ console.warn('Realtime signup sub failed', e); }
 }
-
 /* =======================================================================
    USERS
 ======================================================================= */
-const usersSearch = byId('usersSearch');
-const usersRefresh= byId('usersRefresh');
-const usersMsg    = byId('usersMsg');
-const usersList   = byId('usersList');
+const usersWrap   = document.getElementById('usersWrap');
+const usersSearch = document.getElementById('usersSearch');
+const usersRefresh= document.getElementById('usersRefresh');
+const usersMsg    = document.getElementById('usersMsg');
+const usersList   = document.getElementById('usersList');
 
-usersSearch?.addEventListener('input', renderUsers);
-usersRefresh?.addEventListener('click', loadUsers);
+usersSearch.addEventListener('input', renderUsers);
+usersRefresh.addEventListener('click', loadUsers);
 
 let USERS_CACHE = [];
 async function loadUsers(){
@@ -600,38 +674,36 @@ async function loadUsers(){
     .from('vet_product_approvals')
     .select('user_id,status,product_sku,quantity');
 
-  const { data: cartRows } = await supa
+  const { data: cartCounts } = await supa
     .from('cart_items')
     .select('user_id, quantity');
 
-  const latestApp = {};
-  (apps||[]).forEach(a=>{ if(!latestApp[a.user_id]) latestApp[a.user_id]=a; });
+  const latestAppByUser = {};
+  (apps||[]).forEach(a=>{ if(!latestAppByUser[a.user_id]) latestAppByUser[a.user_id]=a; });
 
-  const approvalStats = {};
+  const pendingCounts = {};
   (vpa||[]).forEach(r=>{
-    if(!approvalStats[r.user_id]) approvalStats[r.user_id]={pending:0,total:0};
-    approvalStats[r.user_id].total++;
-    if(r.status==='pending') approvalStats[r.user_id].pending++;
+    if(!pendingCounts[r.user_id]) pendingCounts[r.user_id]={pending:0,total:0};
+    pendingCounts[r.user_id].total++;
+    if(r.status==='pending') pendingCounts[r.user_id].pending++;
   });
 
-  const cartQty = {};
-  (cartRows||[]).forEach(c=>{
-    cartQty[c.user_id] = (cartQty[c.user_id]||0) + Number(c.quantity||0);
+  const cartCountByUser = {};
+  (cartCounts||[]).forEach(c=>{
+    cartCountByUser[c.user_id] = (cartCountByUser[c.user_id]||0) + Number(c.quantity||0);
   });
 
-  USERS_CACHE = (profs||[]).map(p=>({
-    ...p,
-    latest_app: latestApp[p.id]||null,
-    approvals_stats: approvalStats[p.id]||{ pending:0,total:0 },
-    cart_qty: cartQty[p.id]||0
-  }));
-
+  USERS_CACHE = (profs||[]).map(p=>{
+    const app = latestAppByUser[p.id]||null;
+    const pc  = pendingCounts[p.id]||{pending:0,total:0};
+    const cc  = cartCountByUser[p.id]||0;
+    return { ...p, latest_app: app, approvals_stats: pc, cart_qty: cc };
+  });
   usersMsg.textContent = '';
   renderUsers();
 }
-
 function renderUsers(){
-  const q = (usersSearch?.value||'').toLowerCase().trim();
+  const q = (usersSearch.value||'').toLowerCase().trim();
   const rows = USERS_CACHE.filter(u=>{
     const name = [u.first_name||'',u.last_name||''].join(' ').toLowerCase();
     const em   = (u.email||'').toLowerCase();
@@ -657,32 +729,32 @@ function renderUsers(){
   }).join('') || '<div class="muted">No users found.</div>';
   usersList.innerHTML = rows;
 
-  usersList.querySelectorAll('button[data-full]')?.forEach(b=>{
+  usersList.querySelectorAll('button[data-full]').forEach(b=>{
     b.onclick = ()=> openDrawer(b.dataset.full);
   });
 }
 
-/* =======================================================================
-   DRAWER (approvals + cart + delete)
-======================================================================= */
-const drawer  = byId('drawer');
-const dwClose = byId('dwClose');
-const dwDeleteUser = byId('dwDeleteUser');
-const dwName  = byId('dwName');
-const dwEmail = byId('dwEmail');
-const dwAppBox= byId('dwAppBox');
-const dwVPABox= byId('dwVPABox');
-const dwReloadApprovals = byId('dwReloadApprovals');
-const dwSku   = byId('dwSku');
-const dwQty   = byId('dwQty');
-const dwStatus= byId('dwStatus');
-const dwSaveVpa = byId('dwSaveVpa');
-const dwCartBox = byId('dwCartBox');
-const dwReloadCart = byId('dwReloadCart');
-const dwCartSku = byId('dwCartSku');
-const dwCartQty = byId('dwCartQty');
-const dwCartAdd = byId('dwCartAdd');
-const dwCartMsg = byId('dwCartMsg');
+/* Drawer */
+const drawer  = document.getElementById('drawer');
+const dwClose = document.getElementById('dwClose');
+const dwDeleteUser = document.getElementById('dwDeleteUser');
+const dwName  = document.getElementById('dwName');
+const dwEmail = document.getElementById('dwEmail');
+const dwAppBox= document.getElementById('dwAppBox');
+const dwVPABox= document.getElementById('dwVPABox');
+const dwReloadApprovals = document.getElementById('dwReloadApprovals');
+const dwSku   = document.getElementById('dwSku');
+const dwQty   = document.getElementById('dwQty');
+const dwStatus= document.getElementById('dwStatus');
+const dwSaveVpa = document.getElementById('dwSaveVpa');
+
+/* CART drawer refs */
+const dwCartBox = document.getElementById('dwCartBox');
+const dwReloadCart = document.getElementById('dwReloadCart');
+const dwCartSku = document.getElementById('dwCartSku');
+const dwCartQty = document.getElementById('dwCartQty');
+const dwCartAdd = document.getElementById('dwCartAdd');
+const dwCartMsg = document.getElementById('dwCartMsg');
 
 let DRAWER_USER_ID = null;
 dwClose.onclick = ()=>{ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); };
@@ -730,6 +802,7 @@ async function loadDrawerApplication(userId){
         <button class="btn danger small" data-appact="reject">Reject</button>
       </div>
       <div class="mini muted" style="margin-bottom:8px">ID: ${escapeHtml(app.identity_number || '-')}${fileLink}</div>
+
       <label style="display:block;margin:8px 0 6px">Admin note to user</label>
       <textarea id="dwAdminNote" placeholder="Write a short note the user will see on their vet page…">${escapeHtml(adminNote)}</textarea>
       <div class="row" style="margin-top:8px">
@@ -749,41 +822,55 @@ async function loadDrawerApplication(userId){
       toast('Application rejected'); await loadDrawerApplication(userId);
     };
 
-    const saveBtn = byId('dwSaveNote');
-    const noteMsg = byId('dwNoteMsg');
-    const noteEl  = byId('dwAdminNote');
+    const saveBtn = document.getElementById('dwSaveNote');
+    const noteMsg = document.getElementById('dwNoteMsg');
+    const noteEl  = document.getElementById('dwAdminNote');
     saveBtn.onclick = async ()=>{
       noteMsg.textContent = 'Saving…';
       const { error } = await supa.from('vet_applications').update({ admin_note: noteEl.value || null }).eq('id', app.id);
       if (error){ noteMsg.textContent = error.message; return; }
-      noteMsg.textContent = 'Saved.'; toast('Note saved');
+      noteMsg.textContent = 'Saved.';
+      toast('Note saved');
     };
   }
 }
 
+/* Delete user (Edge Function) — uses callAdminDelete helper */
 dwDeleteUser.onclick = async () => {
   if (!DRAWER_USER_ID) return;
+
   const confirmMsg = 'Delete this user and ALL related data? This cannot be undone.';
   if (!confirm(confirmMsg)) return;
 
   const { data: { session } } = await supa.auth.getSession();
-  if (!session?.user?.email) { toast('You are not signed in.', true); return; }
+  if (!session?.user?.email) {
+    toast('You are not signed in.', true);
+    return;
+  }
 
   const btn = dwDeleteUser;
-  const original = btn.innerText; btn.disabled = true; btn.innerText = 'Deleting…';
+  const originalLabel = btn.innerText;
+  btn.disabled = true;
+  btn.innerText = 'Deleting…';
+
   try {
     await callAdminDelete(DRAWER_USER_ID);
     toast('User deleted');
-    drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true');
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
     await loadUsers();
   } catch (e) {
-    toast(e?.message || 'Delete failed', true);
+    const msg = (e?.message || String(e) || 'Delete failed');
+    toast(msg, true);
+    console.error('Delete user failed:', e);
   } finally {
-    btn.disabled = false; btn.innerText = original;
+    btn.disabled = false;
+    btn.innerText = originalLabel;
   }
 };
 
-dwReloadApprovals.onclick = ()=> loadDrawerApprovals();
+/* Approvals in drawer */
+document.getElementById('dwReloadApprovals').onclick = ()=> loadDrawerApprovals();
 async function loadDrawerApprovals(){
   dwVPABox.textContent = 'Loading…';
   const { data: rows, error } = await supa
@@ -842,7 +929,7 @@ async function loadDrawerApprovals(){
     };
   });
 }
-dwSaveVpa.onclick = async ()=>{
+document.getElementById('dwSaveVpa').onclick = async ()=>{
   const sku = (dwSku.value||'').trim(); const qty = Math.max(0, Number(dwQty.value||0)|0); const status = dwStatus.value;
   if(!sku){ toast('Enter SKU', true); return; }
   const { error } = await supa.from('vet_product_approvals').upsert({
@@ -852,12 +939,18 @@ dwSaveVpa.onclick = async ()=>{
   toast('Saved'); dwSku.value=''; dwQty.value='1'; dwStatus.value='pending'; await loadDrawerApprovals();
 };
 
-/* CART drawer */
+/* =======================================================================
+   CART MANAGEMENT (Drawer)
+======================================================================= */
+
 dwReloadCart.onclick = () => loadDrawerCart();
+
 dwCartAdd.onclick = async () => {
   if (!DRAWER_USER_ID) return;
+
   const sku = (dwCartSku.value || '').trim();
   const qty = Math.max(1, Number(dwCartQty.value || 1) | 0);
+
   if (!sku) { dwCartMsg.textContent = 'Enter SKU'; return; }
   if (!Number.isFinite(qty) || qty <= 0) { dwCartMsg.textContent = 'Quantity must be a positive number'; return; }
 
@@ -866,11 +959,13 @@ dwCartAdd.onclick = async () => {
     { user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty },
     { onConflict: 'user_id,product_sku' }
   );
+
   if (error) { dwCartMsg.textContent = error.message; return; }
   dwCartMsg.textContent = 'Saved';
   dwCartSku.value = ''; dwCartQty.value = '1';
   await loadDrawerCart(); await loadUsers();
 };
+
 async function loadDrawerCart() {
   dwCartBox.textContent = 'Loading…';
   const { data, error } = await supa
@@ -918,6 +1013,7 @@ async function loadDrawerCart() {
         if (error) { toast(error.message, true); return; }
         toast('Item removed'); await loadDrawerCart(); await loadUsers(); return;
       }
+
       const { error } = await supa.from('cart_items').upsert(
         { user_id: DRAWER_USER_ID, product_sku: sku, quantity: qty },
         { onConflict: 'user_id,product_sku' }
@@ -941,27 +1037,29 @@ async function loadDrawerCart() {
 /* =======================================================================
    PRODUCTS
 ======================================================================= */
-const prodSearch  = byId('prodSearch');
-const prodRefresh = byId('prodRefresh');
-const prodMsg     = byId('prodMsg');
-const prodList    = byId('prodList');
+const prodWrap    = document.getElementById('prodWrap');
+const prodSearch  = document.getElementById('prodSearch');
+const prodRefresh = document.getElementById('prodRefresh');
+const prodMsg     = document.getElementById('prodMsg');
+const prodList    = document.getElementById('prodList');
 
-const apName = byId('apName');
-const apSku  = byId('apSku');
-const apDesc = byId('apDesc');
-const apQty  = byId('apQty');
-const apImg  = byId('apImg');
-const apPdf  = byId('apPdf');
-const apAvail= byId('apAvail');
-const apReq  = byId('apReq');
-const apCreate=byId('apCreate');
-const apMsg  = byId('apMsg');
+const apName = document.getElementById('apName');
+const apSku  = document.getElementById('apSku');
+const apDesc = document.getElementById('apDesc');
+const apQty  = document.getElementById('apQty');
+const apImg  = document.getElementById('apImg');
+const apPdf  = document.getElementById('apPdf');
+const apAvail= document.getElementById('apAvail');
+const apReq  = document.getElementById('apReq');
+const apCreate=document.getElementById('apCreate');
+const apMsg  = document.getElementById('apMsg');
 
-const apPPV   = byId('apPPV');          // optional
-const apPVm10 = byId('apPVm10');        // optional
-const the_apPVp10 = byId('apPVp10');    // optional
-const apVariantsBox = byId('apVariants'); // optional
-const apVariantAdd  = byId('apVariantAdd'); // optional
+// Optional pricing + variants (if you add those inputs in the HTML)
+const apPPV   = document.getElementById('apPPV');
+const apPVm10 = document.getElementById('apPVm10');
+the_apPVp10 = document.getElementById ? document.getElementById('apPVp10') : null;
+const apVariantsBox = document.getElementById('apVariants');
+const apVariantAdd  = document.getElementById('apVariantAdd');
 
 let AP_VARIANTS = [];
 function renderApVariants(){
@@ -1004,6 +1102,7 @@ apVariantsBox?.addEventListener('click', (e) => {
 renderApVariants();
 
 let PROD_CACHE = [];
+
 async function loadProducts(){
   prodMsg.textContent = "Loading products…";
   const { data, error } = await supa.from('products')
@@ -1013,8 +1112,9 @@ async function loadProducts(){
   PROD_CACHE = data || [];
   renderProducts(); prodMsg.textContent = "";
 }
+
 function renderProducts(){
-  const q = (prodSearch?.value||'').toLowerCase().trim();
+  const q = (prodSearch.value||'').toLowerCase().trim();
   const rows = PROD_CACHE.filter(p=>{
     if (!q) return true;
     return (p.sku||'').toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q);
@@ -1028,12 +1128,14 @@ function renderProducts(){
           <div class="muted mini" style="max-height:3.5em;overflow:auto">${p.description||''}</div>
           <div class="muted mini">${p.updated_at?('Updated: '+new Date(p.updated_at).toLocaleString()):''}</div>
 
+          <!-- Pricing inline -->
           <div class="grid3" style="margin-top:8px">
             <div><label>PPV (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_ppv||0)}" data-field="price_ppv"></label></div>
             <div><label>PV-10 (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_pv_minus10||0)}" data-field="price_pv_minus10"></label></div>
             <div><label>PV+10 (€)<br><input class="qty-edit" type="number" step="0.01" min="0" value="${Number(p.price_pv_plus10||0)}" data-field="price_pv_plus10"></label></div>
           </div>
 
+          <!-- Variants editor -->
           <div class="card" style="margin-top:8px;padding:10px">
             <div class="toolbar" style="margin:0 0 6px"><h4 style="margin:0">Variants</h4>
               <button type="button" class="btn small" data-action="add-variant">Add variant</button>
@@ -1081,9 +1183,10 @@ function renderProducts(){
   }).join('');
   prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
 }
-prodSearch?.addEventListener('input', renderProducts);
-prodRefresh?.addEventListener('click', loadProducts);
+prodSearch.addEventListener('input', renderProducts);
+prodRefresh.addEventListener('click', loadProducts);
 
+// CREATE product (with prices + variants)
 apCreate.onclick = async ()=>{
   apMsg.textContent = "Creating…"; apCreate.disabled=true;
   const name = (apName.value||'').trim();
@@ -1143,6 +1246,7 @@ apCreate.onclick = async ()=>{
   await loadProducts();
 };
 
+// Card actions (save/delete + uploads + variants)
 prodList.addEventListener('click', async (e)=>{
   const card = e.target.closest('.card[data-sku]'); if (!card) return;
   const sku = card.dataset.sku;
@@ -1219,11 +1323,11 @@ prodList.addEventListener('click', async (e)=>{
   }
 });
 
+// Uploads
 prodList.addEventListener('change', async (e)=>{
   const input = e.target;
   const card = input.closest('.card[data-sku]'); if (!card) return;
   const sku = card.dataset.sku;
-
   if (input.dataset.action === 'upload-img'){
     const f = input.files[0]; if(!f) return;
     if (!['image/jpeg','image/png'].includes(f.type)){ toast('Image must be JPG/PNG', true); input.value=''; return; }
@@ -1244,16 +1348,18 @@ prodList.addEventListener('change', async (e)=>{
   }
 });
 
-/* =======================================================================
-   VET APPLICATIONS
-======================================================================= */
-const appsSearch = byId('appsSearch');
-const appsRefresh= byId('appsRefresh');
-const appsMsg    = byId('appsMsg');
-const appsList   = byId('appsList');
 
-appsSearch?.addEventListener('input', renderApps);
-appsRefresh?.addEventListener('click', loadApps);
+/* =======================================================================
+   VET APPLICATIONS (list, approve/reject)
+======================================================================= */
+const appsWrap   = document.getElementById('appsWrap');
+const appsSearch = document.getElementById('appsSearch');
+const appsRefresh= document.getElementById('appsRefresh');
+const appsMsg    = document.getElementById('appsMsg');
+const appsList   = document.getElementById('appsList');
+
+appsSearch.addEventListener('input', renderApps);
+appsRefresh.addEventListener('click', loadApps);
 
 let APP_CACHE = [];
 async function loadApps(){
@@ -1268,7 +1374,7 @@ async function loadApps(){
   renderApps();
 }
 function renderApps(){
-  const q = (appsSearch?.value||'').toLowerCase().trim();
+  const q = (appsSearch.value||'').toLowerCase().trim();
   appsList.innerHTML = (APP_CACHE.filter(a=>{
     const name = [(a.profiles?.first_name||''),(a.profiles?.last_name||'')].join(' ').toLowerCase();
     const email= (a.profiles?.email||'').toLowerCase();
@@ -1302,10 +1408,11 @@ function renderApps(){
     </div>`;
   }).join('')) || '<div class="muted">No applications.</div>';
 
-  appsList.querySelectorAll('button[data-full]')?.forEach(b=>{
+  appsList.querySelectorAll('button[data-full]').forEach(b=>{
     b.onclick = ()=> openDrawer(b.dataset.full);
   });
 }
+
 appsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const card = b.closest('[data-app]'); const appId = card.dataset.app;
@@ -1314,31 +1421,34 @@ appsList.addEventListener('click', async (e)=>{
   if(action==='approve'){
     const { error } = await supa.from('vet_applications').update({ status:'approved' }).eq('id', appId);
     if (error) return toast(error.message, true);
-    toast('Application approved'); await loadApps(); await loadUsers();
+    toast('Application approved'); await loadApps();
   }
   if(action==='reject'){
     const { error } = await supa.from('vet_applications').update({ status:'rejected' }).eq('id', appId);
     if (error) return toast(error.message, true);
-    toast('Application rejected'); await loadApps(); await loadUsers();
+    toast('Application rejected'); await loadApps();
   }
 });
 
 /* =======================================================================
-   PER-PRODUCT APPROVALS
+   PER-PRODUCT APPROVALS (list + edit)
 ======================================================================= */
-const vpaSearch = byId('vpaSearch');
-const vpaRefresh= byId('vpaRefresh');
-const vpaMsg    = byId('vpaMsg');
-const vpaMsg2   = byId('vpaMsg2');
-const vpaList   = byId('vpaList');
-const vpaEmail  = byId('vpaEmail');
-const vpaSku    = byId('vpaSku');
-const vpaQty    = byId('vpaQty');
-const vpaStatus = byId('vpaStatus');
-const vpaUpsert = byId('vpaUpsert');
+const vpaWrap   = document.getElementById('vpaWrap');
+const vpaSearch = document.getElementById('vpaSearch');
+const vpaRefresh= document.getElementById('vpaRefresh');
+const vpaMsg    = document.getElementById('vpaMsg');
+const vpaMsg2   = document.getElementById('vpaMsg2');
+const vpaList   = document.getElementById('vpaList');
+const vpaEmail  = document.getElementById('vpaEmail');
+const vpaSku    = document.getElementById('vpaSku');
+const vpaQty    = document.getElementById('vpaQty');
+const vpaStatus = document.getElementById('vpaStatus');
+const vpaUpsert = document.getElementById('vpaUpsert');
 
-vpaSearch?.addEventListener('input', renderVPA);
-vpaRefresh?.addEventListener('click', loadVPA);
+let VPA_CACHE = [];
+
+vpaSearch.addEventListener('input', renderVPA);
+vpaRefresh.addEventListener('click', loadVPA);
 
 vpaUpsert.onclick = async ()=>{
   vpaMsg.textContent = 'Saving…';
@@ -1358,7 +1468,6 @@ vpaUpsert.onclick = async ()=>{
   await loadVPA();
 };
 
-let VPA_CACHE = [];
 async function loadVPA(){
   vpaMsg2.textContent='Loading…';
   const { data, error } = await supa
@@ -1371,7 +1480,7 @@ async function loadVPA(){
   vpaMsg2.textContent=''; renderVPA();
 }
 function renderVPA(){
-  const q = (vpaSearch?.value||'').toLowerCase().trim();
+  const q = (vpaSearch.value||'').toLowerCase().trim();
   const orderScore = s => s==='pending'?0 : s==='approved'?1 : 2;
 
   const rows = (VPA_CACHE||[])
@@ -1409,7 +1518,7 @@ function renderVPA(){
     }).join('');
 
   vpaList.innerHTML = rows || '<div class="muted">No approvals.</div>';
-  vpaList.querySelectorAll('button[data-full]')?.forEach(b=>{
+  vpaList.querySelectorAll('button[data-full]').forEach(b=>{
     b.onclick = ()=> openDrawer(b.dataset.full);
   });
 }
@@ -1436,28 +1545,29 @@ vpaList.addEventListener('click', async (e)=>{
 /* =======================================================================
    NEWS + REGIONS + VET NOTICE
 ======================================================================= */
-const newsMsg    = byId('newsMsg');
-const newsList   = byId('newsList');
-const newsRefresh= byId('newsRefresh');
+const newsWrap   = document.getElementById('newsWrap');
+const newsMsg    = document.getElementById('newsMsg');
+const newsList   = document.getElementById('newsList');
+const newsRefresh= document.getElementById('newsRefresh');
 
-const nId   = byId('nId');
-const nTitle= byId('nTitle');
-const nBody = byId('nBody');
-const nRegion=byId('nRegion');
-const nImg  = byId('nImg');
-const nFile = byId('nFile');
-const nPub  = byId('nPub');
-const nCreate=byId('nCreate');
-const nUpdate=byId('nUpdate');
-const nClear =byId('nClear');
-const nMsg   = byId('nMsg');
+const nId   = document.getElementById('nId');
+const nTitle= document.getElementById('nTitle');
+const nBody = document.getElementById('nBody');
+const nRegion=document.getElementById('nRegion');
+const nImg  = document.getElementById('nImg');
+const nFile = document.getElementById('nFile');
+const nPub  = document.getElementById('nPub');
+const nCreate=document.getElementById('nCreate');
+const nUpdate=document.getElementById('nUpdate');
+const nClear =document.getElementById('nClear');
+const nMsg   = document.getElementById('nMsg');
 
-const regionToggles = byId('regionToggles');
-const saveRegions   = byId('saveRegions');
-const regMsg        = byId('regMsg');
+const regionToggles = document.getElementById('regionToggles');
+const saveRegions   = document.getElementById('saveRegions');
+const regMsg        = document.getElementById('regMsg');
 
-const vetNoticeEl = byId('vetNotice');
-const vetNoticeMsg= byId('vetNoticeMsg');
+const vetNoticeEl = document.getElementById('vetNotice');
+const vetNoticeMsg= document.getElementById('vetNoticeMsg');
 
 async function loadVetNotice(){
   try{
@@ -1465,7 +1575,7 @@ async function loadVetNotice(){
     vetNoticeEl.value = (typeof data?.value === 'string') ? data.value : '';
   }catch{}
 }
-byId('saveVetNotice').onclick = async ()=>{
+document.getElementById('saveVetNotice').onclick = async ()=>{
   vetNoticeMsg.textContent='Saving…';
   const val = vetNoticeEl.value || '';
   const { error } = await supa.from('site_settings').upsert({ key:'vet_notice', value: val }, { onConflict:'key' });
@@ -1526,6 +1636,7 @@ async function loadNews(){
   }).join('');
   newsMsg.textContent = rows.length ? "" : "No news yet.";
 }
+
 newsList.addEventListener('click', async (e)=>{
   const b = e.target.closest('button[data-action]'); if(!b) return;
   const { action, id } = b.dataset;
@@ -1548,13 +1659,15 @@ newsList.addEventListener('click', async (e)=>{
     toast('Deleted'); await loadNews(); clearNewsForm();
   }
 });
+
 function clearNewsForm(){
   nId.value=""; nTitle.value=""; nBody.value=""; nRegion.value="Global"; nPub.value='true';
   nImg.value=""; nFile.value="";
   nCreate.disabled=false; nUpdate.disabled=true; nMsg.textContent="";
 }
-byId('nClear').onclick = clearNewsForm;
-byId('nCreate').onclick = async ()=>{
+document.getElementById('nClear').onclick = clearNewsForm;
+
+document.getElementById('nCreate').onclick = async ()=>{
   nMsg.textContent = "Creating…"; nCreate.disabled=true;
   let image_path=null, file_path=null;
   const i = nImg.files[0]||null, f = nFile.files[0]||null;
@@ -1586,7 +1699,8 @@ byId('nCreate').onclick = async ()=>{
   if (error){ nMsg.textContent = error.message; nCreate.disabled=false; return; }
   nMsg.textContent = "Created."; toast('News created'); clearNewsForm(); await loadNews();
 };
-byId('nUpdate').onclick = async ()=>{
+
+document.getElementById('nUpdate').onclick = async ()=>{
   const id = nId.value; if(!id) return;
   nMsg.textContent = "Updating…"; nUpdate.disabled=true;
   let image_path=null, file_path=null;
@@ -1620,7 +1734,7 @@ byId('nUpdate').onclick = async ()=>{
 };
 
 /* =======================================================================
-   REALTIME
+   Realtime notifications (incl. orders + profiles signup)
 ======================================================================= */
 function subscribeRealtime(){
   try{
@@ -1642,43 +1756,32 @@ function subscribeRealtime(){
 
     supa.channel('rt_orders')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, () => {
-        byId('historyBtn').style.display = 'inline-block';
+        const btn = document.getElementById('historyBtn');
+        if (btn) btn.style.display = 'inline-block';
         toast('New order placed');
       })
       .subscribe();
 
+    // New signups toast (added earlier)
     subscribeNewSignups();
   }catch{}
 }
 
-/* =======================================================================
-   BOOT (single entry point)
-======================================================================= */
-/* ================= Boot (final) ================= */
-document.addEventListener('DOMContentLoaded', async () => {
-  // Try to get a fresh session (handles “come back after a few days”)
-  const fresh = await getFreshSession();
-  const ok = await routeAfterAuth(fresh);
+/* ================= Boot ================= */
+document.addEventListener('DOMContentLoaded', async ()=>{
+  const ok = await checkAdmin();
   if (!ok) return;
+  ["usersWrap","prodWrap","appsWrap","vpaWrap","newsWrap"].forEach(id=>document.getElementById(id).classList.remove('hidden'));
 
-  // Now that we know you’re admin, show sections and load data
   await showHistoryIfOrdersExist();
-  await Promise.all([
-    loadUsers(),
-    loadProducts(),
-    loadApps(),
-    loadVPA(),
-    loadRegions(),
-    loadNews(),
-    loadVetNotice()
-  ]);
 
-  document.getElementById('newsRefresh').onclick = () => loadNews();
-  document.getElementById('prodRefresh').onclick = () => loadProducts();
+  await Promise.all([ loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice() ]);
+
+  document.getElementById('newsRefresh').onclick = ()=> loadNews();
+  document.getElementById('prodRefresh').onclick = ()=> loadProducts();
 
   subscribeRealtime();
 });
-  
 </script>
 </body>
 </html>
