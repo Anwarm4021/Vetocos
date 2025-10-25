@@ -1654,18 +1654,27 @@ function subscribeRealtime(){
 /* =======================================================================
    BOOT (single entry point)
 ======================================================================= */
-document.addEventListener('DOMContentLoaded', async ()=>{
+/* ================= Boot (final) ================= */
+document.addEventListener('DOMContentLoaded', async () => {
+  // Try to get a fresh session (handles “come back after a few days”)
   const fresh = await getFreshSession();
   const ok = await routeAfterAuth(fresh);
   if (!ok) return;
 
+  // Now that we know you’re admin, show sections and load data
   await showHistoryIfOrdersExist();
   await Promise.all([
-    loadUsers(), loadProducts(), loadApps(), loadVPA(), loadRegions(), loadNews(), loadVetNotice()
+    loadUsers(),
+    loadProducts(),
+    loadApps(),
+    loadVPA(),
+    loadRegions(),
+    loadNews(),
+    loadVetNotice()
   ]);
 
-  newsRefresh.onclick = ()=> loadNews();
-  prodRefresh.onclick = ()=> loadProducts();
+  document.getElementById('newsRefresh').onclick = () => loadNews();
+  document.getElementById('prodRefresh').onclick = () => loadProducts();
 
   subscribeRealtime();
 });
