@@ -297,6 +297,7 @@
     function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
     function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
     [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ closeContact(); closePolicy(); } });
 
     const toAddress='info@vetocos.com';
     function sendMailto(e){
@@ -346,11 +347,15 @@
     // sku -> { sku, name?, stock_qty, available, price_ppv, price_pv_minus10, price_pv_plus10, currency? }
     let PRODUCTS = Object.create(null);
 
+    function normalizeSku(s){ return String(s||'').trim().toLowerCase(); }
+
     function getLocalBundle() {
       try {
         const items = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
         const updated_at = localStorage.getItem(CART_UPDATED_KEY) || null;
-        return { items: Array.isArray(items) ? items : [], updated_at };
+        // normalize SKUs on read
+        const norm = (Array.isArray(items)?items:[]).map(it=>({ sku:normalizeSku(it.sku), name:String(it.name||it.sku||''), qty:Number(it.qty||0) }));
+        return { items: norm.filter(x=>x.sku && x.qty>0), updated_at };
       } catch {
         return { items: [], updated_at: null };
       }
@@ -359,9 +364,11 @@
       const stamp = updatedAt || new Date().toISOString();
       const cleaned = (items || [])
         .filter(it => it && it.sku && Number(it.qty) > 0)
-        .map(it => ({ sku:String(it.sku), name:String(it.name || it.sku), qty:Number(it.qty) }));
+        .map(it => ({ sku:normalizeSku(it.sku), name:String(it.name || it.sku), qty:Number(it.qty) }));
       localStorage.setItem(CART_KEY, JSON.stringify(cleaned));
       localStorage.setItem(CART_UPDATED_KEY, stamp);
+      // notify other tabs
+      try { localStorage.setItem('cart_ping', String(Date.now())); } catch {}
     }
     function readCart(){ return getLocalBundle().items; }
     async function writeCart(items){
@@ -375,8 +382,8 @@
 
     function overlayBySku(baseArr, incomingArr){
       const map = {};
-      (baseArr || []).forEach(it => { if (it?.sku) map[it.sku] = { ...it, qty:Number(it.qty||0) }; });
-      (incomingArr || []).forEach(it => { if (it?.sku) map[it.sku] = { ...map[it.sku], ...it, qty:Number(it.qty||0) }; });
+      (baseArr || []).forEach(it => { const k=normalizeSku(it.sku); if (k) map[k] = { ...it, sku:k, qty:Number(it.qty||0) }; });
+      (incomingArr || []).forEach(it => { const k=normalizeSku(it.sku); if (k) map[k] = { ...map[k], ...it, sku:k, qty:Number(it.qty||0) }; });
       return Object.values(map).filter(x => x.qty > 0);
     }
 
@@ -385,7 +392,7 @@
 
     /* ======================= Stock helpers ======================= */
     function getMaxForSKU(sku){
-      const p = PRODUCTS[sku] || {};
+      const p = PRODUCTS[normalizeSku(sku)] || {};
       if (p.available === false) return 0;
       if (typeof p.stock_qty === 'number' && p.stock_qty >= 0) return p.stock_qty;
       return Infinity;
@@ -394,13 +401,13 @@
       return (items||[]).map(it=>{
         const max = getMaxForSKU(it.sku);
         const newQty = Math.max(0, Math.min(Number(it.qty||0), Number.isFinite(max)?max:it.qty));
-        return { ...it, qty:newQty };
+        return { ...it, sku:normalizeSku(it.sku), qty:newQty };
       }).filter(x=>x.qty>0);
     }
 
     /* ======================= Load products (with prices) ======================= */
     async function loadProductsForCart(){
-      const skus = [...new Set(readCart().map(x=>x.sku))];
+      const skus = [...new Set(readCart().map(x=>normalizeSku(x.sku)))];
       if (!skus.length){ PRODUCTS = {}; return; }
       const { data, error } = await supa
         .from('products')
@@ -409,12 +416,14 @@
 
       if (!error && Array.isArray(data)){
         PRODUCTS = {};
-        data.forEach(p => { PRODUCTS[p.sku] = p; });
+        data.forEach(p => { PRODUCTS[normalizeSku(p.sku)] = p; });
+      } else {
+        console.warn('Product load error', error?.message);
       }
 
       // Fill missing names and clamp immediately
-      const nameMap = Object.fromEntries((data||[]).map(p => [p.sku, p.name]));
-      const withNames = readCart().map(i => ({ ...i, name: i.name || nameMap[i.sku] || i.sku }));
+      const nameMap = Object.fromEntries((data||[]).map(p => [normalizeSku(p.sku), p.name]));
+      const withNames = readCart().map(i => ({ ...i, sku:normalizeSku(i.sku), name: i.name || nameMap[normalizeSku(i.sku)] || i.sku }));
       await writeCart(withNames);
     }
 
@@ -428,11 +437,12 @@
     }
 
     function computeItemPrice(item){
-      const p = PRODUCTS[item.sku] || {};
+      const p = PRODUCTS[normalizeSku(item.sku)];
       if (!p) return null;
       const tier = priceForQtyRow(p, item.qty);
-      if (!tier || !tier.unit) return null;
-      const unit = tier.unit;
+      // allow 0.00 prices; just guard NaN
+      if (!tier || Number.isNaN(tier.unit)) return null;
+      const unit = Number(tier.unit);
       const line = unit * Number(item.qty||0);
       return { unit, line, cur:tier.cur, label:tier.label };
     }
@@ -541,41 +551,42 @@
         return;
       }
 
-      const missing = cart.some(it => !(it.sku in PRODUCTS));
+      const missing = cart.some(it => !(normalizeSku(it.sku) in PRODUCTS));
       if (missing) await loadProductsForCart();
 
       const current = readCart();
       const lineInfos = current.map(it=>{
         const p = computeItemPrice(it);
-        return { sku:it.sku, qty:Number(it.qty||0), name:it.name||it.sku, price:p };
+        return { sku:normalizeSku(it.sku), qty:Number(it.qty||0), name:it.name||it.sku, price:p };
       });
 
       const rows = current.map(item => {
-        const max = getMaxForSKU(item.sku);
+        const sku = normalizeSku(item.sku);
+        const max = getMaxForSKU(sku);
         const qty = Number(item.qty || 0);
         const plusDisabled = !(max === Infinity || qty < max);
         const minusDisabled = qty <= 1;
         const badge = badgeHTML(max, qty);
 
-        const priceInfo = lineInfos.find(x=>x.sku===item.sku)?.price;
-        const unitHTML = priceInfo ? `${(priceInfo.cur||DEFAULT_CURRENCY)} ${priceInfo.unit.toFixed(2)} <span class="note">(${priceInfo.label})</span>` : '-';
-        const lineHTML = priceInfo ? `${(priceInfo.cur||DEFAULT_CURRENCY)} ${priceInfo.line.toFixed(2)}` : '-';
+        const priceInfo = lineInfos.find(x=>x.sku===sku)?.price;
+        const unitHTML = priceInfo ? `${(priceInfo.cur||DEFAULT_CURRENCY)} ${Number(priceInfo.unit||0).toFixed(2)} <span class="note">(${priceInfo.label})</span>` : '-';
+        const lineHTML = priceInfo ? `${(priceInfo.cur||DEFAULT_CURRENCY)} ${Number(priceInfo.line||0).toFixed(2)}` : '-';
 
         return `
           <tr>
             <td class="namecell">
-              <strong>${escapeHtml(item.name || item.sku)}</strong>
-              <span class="note">${escapeHtml(item.sku)}</span>
+              <strong>${escapeHtml(item.name || sku)}</strong>
+              <span class="note">${escapeHtml(sku)}</span>
               <span>${badge}</span>
             </td>
             <td>
-              <button class="qty-btn" aria-label="Decrease ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', -1)" ${minusDisabled?'disabled':''}>-</button>
+              <button class="qty-btn" aria-label="Decrease ${escapeAttr(item.name||sku)} quantity" onclick="changeQty('${escapeAttr(sku)}', -1)" ${minusDisabled?'disabled':''}>-</button>
               ${qty}
-              <button class="qty-btn" aria-label="Increase ${escapeAttr(item.name||item.sku)} quantity" onclick="changeQty('${escapeAttr(item.sku)}', 1)" ${plusDisabled?'disabled':''}>+</button>
+              <button class="qty-btn" aria-label="Increase ${escapeAttr(item.name||sku)} quantity" onclick="changeQty('${escapeAttr(sku)}', 1)" ${plusDisabled?'disabled':''}>+</button>
             </td>
             <td>${unitHTML}</td>
             <td>${lineHTML}</td>
-            <td><button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)" onclick="removeItem('${escapeAttr(item.sku)}')">${t('cart.remove')}</button></td>
+            <td><button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)" onclick="removeItem('${escapeAttr(sku)}')">${t('cart.remove')}</button></td>
           </tr>
         `;
       }).join("");
@@ -586,7 +597,7 @@
 
       const grouped = currencyGroups(totals);
       const totalsHTML = Object.keys(grouped).length
-        ? Object.entries(grouped).map(([cur,amt])=>`${cur} ${amt.toFixed(2)}`).join(' · ')
+        ? Object.entries(grouped).map(([cur,amt])=>`${cur} ${Number(amt||0).toFixed(2)}`).join(' · ')
         : '-';
 
       box.innerHTML = `
@@ -614,11 +625,12 @@
 
     /* ======================= Cart ops ======================= */
     async function changeQty(sku, delta) {
+      const k = normalizeSku(sku);
       const cart = readCart();
-      const i = cart.findIndex(x => x.sku === sku);
+      const i = cart.findIndex(x => normalizeSku(x.sku) === k);
       if (i === -1) return;
 
-      const max = getMaxForSKU(sku);
+      const max = getMaxForSKU(k);
 
       if (delta > 0) {
         if (!Number.isFinite(max) ? false : (max <= 0)) return;
@@ -636,7 +648,10 @@
       await writeCart(cart);
     }
 
-    async function removeItem(sku) { await writeCart(readCart().filter(x => x.sku !== sku)); }
+    async function removeItem(sku) { 
+      const k = normalizeSku(sku);
+      await writeCart(readCart().filter(x => normalizeSku(x.sku) !== k)); 
+    }
     async function clearCart() { await writeCart([]); }
 
     /* ======================= Proceed flow ======================= */
@@ -717,6 +732,13 @@
     supa.auth.onAuthStateChange((_event, session) => {
       if (session?.user) { syncCartFromDB(); renderOrders(); }
       else { renderOrders(); }
+    });
+
+    // Live update if another tab/page modifies 'cart'
+    window.addEventListener('storage', (e)=>{
+      if (e.key === 'cart' || e.key === 'cart_ping') {
+        renderCart();
+      }
     });
   </script>
 </body>
