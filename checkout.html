@@ -5,6 +5,8 @@
   <title>VetoCos | Checkout</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Checkout — VetoCos complementary feed for dogs & cats.">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -117,8 +119,7 @@
         "checkout.items":"Articles","checkout.total":"Total estimé","checkout.place":"Passer la commande","checkout.note":"Remarque : certains produits peuvent nécessiter une vérification vétérinaire ou une approbation.",
         "cart.empty":"Votre panier est vide.","status.ok":"OK","status.unavailable":"Indisponible","status.only":"Plus que __N__ en stock",
         "issues.approval":"Certains articles nécessitent une approbation.","issues.stock":"Certains articles sont en rupture ou indisponibles.",
-        "place.none":"Aucun article éligible pour le moment.","place.okPartial":"Commande passée partiellement.","place.okAll":"Commande passée.",
-        "contact.title":"Nous contacter","contact.close":"Fermer","price.unit":"Prix unitaire","price.line":"Total ligne","price.hidden.sign":"Connectez-vous pour voir les prix","price.mixed":"*Totaux par devise"
+        "place.none":"Aucun article éligible pour le moment.","place.okPartial":"Commande passée partiellement.","place.okAll":"Commande passée.","contact.title":"Nous contacter","contact.close":"Fermer","price.unit":"Prix unitaire","price.line":"Total ligne","price.hidden.sign":"Connectez-vous pour voir les prix","price.mixed":"*Totaux par devise"
       },
       es:{ "nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"En el mundo","nav.news":"Noticias","nav.contact":"Contacto",
         "nav.account":"Ajustes de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar","footer.tag":"Alimento complementario para animales de compañía",
@@ -138,8 +139,7 @@
         "checkout.summary":"الملخص","checkout.items":"العناصر","checkout.total":"الإجمالي التقديري","checkout.place":"إرسال الطلب",
         "checkout.note":"قد تتطلب بعض المنتجات تحققًا بيطريًا أو موافقة.","cart.empty":"سلة التسوق فارغة.","status.ok":"حسنًا","status.unavailable":"غير متوفر",
         "status.only":"متبقٍ __N__ فقط","issues.approval":"بعض العناصر تتطلب موافقة.","issues.stock":"بعض العناصر غير متوفرة.",
-        "place.none":"لا توجد عناصر مؤهلة بعد.","place.okPartial":"تم تقديم الطلب جزئيًا.","place.okAll":"تم تقديم الطلب.",
-        "contact.title":"اتصل بنا","contact.close":"إغلاق","price.unit":"سعر الوحدة","price.line":"إجمالي السطر","price.hidden.sign":"سجّل الدخول لعرض الأسعار","price.mixed":"*الإجماليات حسب العملة"
+        "place.none":"لا توجد عناصر مؤهلة بعد.","place.okPartial":"تم تقديم الطلب جزئيًا.","place.okAll":"تم تقديم الطلب.","contact.title":"اتصل بنا","contact.close":"إغلاق","price.unit":"سعر الوحدة","price.line":"إجمالي السطر","price.hidden.sign":"سجّل الدخول لعرض الأسعار","price.mixed":"*الإجماليات حسب العملة"
       }
     };
     function t(key){
@@ -155,6 +155,12 @@
         document.querySelectorAll("[data-i18n]").forEach(el=>{
           const k = el.getAttribute("data-i18n");
           if (dict[k] != null) el.innerHTML = dict[k];
+        });
+        // NEW: translate attributes (placeholder, title, aria-label, etc.)
+        document.querySelectorAll("[data-i18n-attr]").forEach(el=>{
+          const attr = el.getAttribute("data-i18n-attr");
+          const k = el.getAttribute("data-i18n");
+          if (attr && k && dict[k] != null) el.setAttribute(attr, dict[k]);
         });
         const html=document.documentElement; html.lang=lang;
         if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
@@ -194,7 +200,7 @@
       <button class="contact-btn" id="signUpBtn" type="button" data-i18n="auth.signup">Sign up</button>
 
       <div class="acct" id="acctBlock" style="display:none">
-        <button class="contact-btn" id="accountBtn" type="button">
+        <button class="contact-btn" id="accountBtn" type="button" aria-haspopup="true" aria-expanded="false">
           <span class="avatar" aria-hidden="true"></span>
           <span id="helloName" class="muted" style="font-size:.9rem"></span>
         </button>
@@ -228,7 +234,7 @@
     <section class="card">
       <h2 data-i18n="checkout.cartTitle">Your Cart</h2>
       <div id="cartBox" class="muted" data-i18n="ui.loading">Loading…</div>
-      <div id="issuesBox" class="notice small" style="display:none"></div>
+      <div id="issuesBox" class="notice small" style="display:none" aria-live="polite"></div>
       <div class="row" style="margin-top:10px">
         <a class="badge" href="Products.html" data-i18n="checkout.continue">← Continue shopping</a>
         <span class="muted small" id="userInfo"></span>
@@ -299,7 +305,7 @@
             </div>
             <div class="field">
               <label for="phone" data-i18n="form.phone">Phone (optional)</label>
-              <input id="phone" name="phone" class="input" inputmode="tel" pattern="^[0-9+() -]{6,}$"
+              <input id="phone" name="phone" class="input" inputmode="tel" autocomplete="tel" pattern="^[0-9+() -]{6,}$"
                      data-i18n="form.phonePH" data-i18n-attr="placeholder" placeholder="+212 537742213">
               <span class="hint" data-i18n="form.phoneHint">Digits, spaces and +() - allowed</span>
             </div>
@@ -386,6 +392,8 @@
   function closeContact(){ document.getElementById('contactModal').classList.remove('open'); }
   function openPolicy(){ document.getElementById('policyModal').classList.add('open'); }
   function closePolicy(){ document.getElementById('policyModal').classList.remove('open'); }
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ closeContact(); closePolicy(); }});
+
   const toAddress='info@vetocos.com';
   function sendMailto(e){
     e.preventDefault();
@@ -452,9 +460,13 @@ if (signUpBtn) signUpBtn.addEventListener('click', ()=>{ location.href='signup.h
 
 if (accountBtn) accountBtn.addEventListener('click', ()=>{
   const open = accountMenu.classList.toggle('open');
+  accountBtn.setAttribute('aria-expanded', open ? 'true' : 'false'); // a11y
   accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
   if (open){
-    const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
+    const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){
+      accountMenu.classList.remove('open'); accountBtn.setAttribute('aria-expanded','false');
+      accountMenu.setAttribute('aria-hidden','true'); document.removeEventListener('click', onDoc);
+    }};
     setTimeout(()=>document.addEventListener('click', onDoc),0);
   }
 });
@@ -551,6 +563,9 @@ function computeItemPrice(it){
 }
 function groupTotals(lines){ const out={}; lines.forEach(x=>{ out[x.cur]=(out[x.cur]||0)+x.amount; }); return out; }
 
+// Escape helper to prevent XSS when injecting dynamic text
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
 function renderCart(){
   if(!CART.length){
     cartBox.innerHTML = `<div class="muted" data-i18n="cart.empty">${t("cart.empty")}</div>`;
@@ -575,19 +590,19 @@ function renderCart(){
     const price = computeItemPrice(it);
     let unitHTML='—', lineHTML='—';
     if (price?.hidden){
-      unitHTML = `<span class="muted small">${price.message}</span>`;
+      unitHTML = `<span class="muted small">${esc(price.message)}</span>`;
       lineHTML = '—';
     } else if (price){
-      unitHTML = `${price.cur} ${price.unit.toFixed(2)} <span class="muted small">(${price.label})</span>`;
-      lineHTML = `${price.cur} ${price.line.toFixed(2)}`;
+      unitHTML = `${esc(price.cur)} ${Number(price.unit||0).toFixed(2)} <span class="muted small">(${esc(price.label)})</span>`;
+      lineHTML = `${esc(price.cur)} ${Number(price.line||0).toFixed(2)}`;
     }
 
     return `<tr>
       <td style="max-width:380px">
-        <strong>${it.name||sku}</strong>
-        <div class="muted small">${t("ui.sku")}${sku}</div>
+        <strong>${esc(it.name||sku)}</strong>
+        <div class="muted small">${t("ui.sku")}${esc(sku)}</div>
       </td>
-      <td>${qty}</td>
+      <td>${Number(qty||0)}</td>
       <td>${unitHTML}</td>
       <td>${lineHTML}</td>
       <td>${ok}</td>
@@ -615,7 +630,7 @@ function renderCart(){
     sumTotal.textContent = (!IS_LOGGED_IN ? t('price.hidden.sign') : '—');
   } else {
     const grouped = groupTotals(totals);
-    const txt = Object.entries(grouped).map(([cur,amt])=>`${cur} ${amt.toFixed(2)}`).join(' · ');
+    const txt = Object.entries(grouped).map(([cur,amt])=>`${esc(cur)} ${Number(amt||0).toFixed(2)}`).join(' · ');
     sumTotal.textContent = txt + (Object.keys(grouped).length>1?`  (${t('price.mixed')})`:``);
   }
 }
@@ -658,7 +673,7 @@ function renderIssues(ineligible, issues){
   if (!ineligible.length && !issues.length){ issuesBox.style.display='none'; issuesBox.innerHTML=''; return; }
   const list = [
     ...issues.map(x=>`<li>${x}</li>`),
-    ...ineligible.map(x=>`<li><strong>${x.sku}</strong>: ${x.reason}</li>`)
+    ...ineligible.map(x=>`<li><strong>${esc(x.sku)}</strong>: ${esc(x.reason)}</li>`)
   ];
   issuesBox.innerHTML = `<ul style="margin:0;padding-left:18px">${list.join('')}</ul>`;
   issuesBox.style.display='block';
@@ -708,9 +723,9 @@ async function loadProfile(){
   const ui = document.getElementById('userInfo'); if (ui) ui.textContent = label;
 
   let isAdmin=false;
-  try{ isAdmin = !!(await supa.from('profiles').select('is_admin').eq('id', user.id).maybeSingle()).data?.is_admin; }catch(_){}
+  try{ isAdmin = !!(await supa.from('profiles').select('is_admin').eq('id', user.id).maybeSingle()).data?.is_admin; }catch(_){ }
   if (helloName) helloName.textContent = full || (user.email||'');
-  if (accountHeader) accountHeader.innerHTML = `<div><strong>${full||user.email||''}</strong><div class="muted">${user.email||''}</div></div>`;
+  if (accountHeader) accountHeader.innerHTML = `<div><strong>${esc(full||user.email||'')}</strong><div class="muted">${esc(user.email||'')}</div></div>`;
   if (adminBtn) adminBtn.style.display = (isAdmin || (user.email && SUPER_ADMINS.includes(user.email))) ? 'inline-block' : 'none';
 }
 
@@ -747,60 +762,7 @@ async function loadApprovalsForCart(){
   });
 }
 
-/* ====== NEW: consume approvals ONLY after a successful order placement ====== */
-async function consumeApprovalsForOrder(eligibleItems){
-  if (CAN_PURCHASE) return; // global purchase permission: nothing to consume
-
-  const need = {};
-  eligibleItems.forEach(it=>{
-    const qty = Number(it.qty||0);
-    if (!qty) return;
-    need[it.sku] = (need[it.sku]||0) + qty;
-  });
-
-  for (const [sku, toUse] of Object.entries(need)){
-    let remaining = toUse;
-
-    const { data: rows, error } = await supa
-      .from('vet_product_approvals')
-      .select('id,quantity')
-      .eq('user_id', USER.id)
-      .eq('product_sku', sku)
-      .eq('status','approved')
-      .order('created_at', { ascending:true });
-
-    if (error){ console.warn('Approval fetch error for', sku, error.message); continue; }
-
-    for (const row of (rows||[])){
-      if (remaining <= 0) break;
-      const have = Number(row.quantity||0);
-      if (have <= 0) continue;
-
-      if (have > remaining){
-        const { error: upErr } = await supa
-          .from('vet_product_approvals')
-          .update({ quantity: have - remaining })
-          .eq('id', row.id);
-        if (upErr) console.warn('Approval update error (partial) for', sku, upErr.message);
-        remaining = 0;
-        break;
-      } else {
-        const { error: delErr } = await supa
-          .from('vet_product_approvals')
-          .delete()
-          .eq('id', row.id);
-        if (delErr) console.warn('Approval delete error for', sku, delErr.message);
-        remaining -= have;
-      }
-    }
-
-    if (remaining > 0){
-      console.warn(`Approval shortfall after consume for ${sku}: ${remaining}`);
-    }
-  }
-}
-
-/* ======== placeOrder() with approval consumption ======== */
+/* ====== Secure checkout via Edge Function ====== */
 async function placeOrder(){
   try{
     await loadProductsForCart();
@@ -815,69 +777,32 @@ async function placeOrder(){
       return;
     }
 
-    const { data:{ user } } = await supa.auth.getUser();
-    if (!user) { location.href='login.html?redirect='+encodeURIComponent('checkout.html'); return; }
+    const { data:{ session } } = await supa.auth.getSession();
+    if (!session?.access_token){ location.href='login.html?redirect='+encodeURIComponent('checkout.html'); return; }
 
-    // Calculate prices for eligible items
-    const lines = eligibleItems.map(it=>{
-      const p = computeItemPrice(it);
-      return (p && !p.hidden) ? {
-        sku: it.sku, name: it.name||it.sku,
-        qty: Number(it.qty||0), unit: p.unit, line: p.line, currency: p.cur, tier: p.label
-      } : null;
-    }).filter(Boolean);
-
-    // Group totals by currency
-    const totals = {}; lines.forEach(l => { totals[l.currency] = (totals[l.currency]||0) + l.line; });
-
-    // Insert order
-    const email = user.email || PROFILE?.email || null;
-    const basePayload = {
-      user_id: user.id, email, status:'pending',
-      total_qty: eligibleItems.reduce((n,x)=>n+Number(x.qty||0),0),
-      total_amount: Object.keys(totals).length===1 ? Object.values(totals)[0] : null
-    };
-
-    let { data: orderRow, error: orderErr } = await supa.from('orders').insert([basePayload]).select('id').single();
-    if (orderErr){ msgEl.textContent = orderErr.message || 'Failed to create order.'; return; }
-    const order_id = orderRow.id;
-
-    // Insert order items
-    const itemsPayload = eligibleItems.map(it=>{
-      const p = computeItemPrice(it) || {};
-      return {
-        order_id,
-        product_sku: it.sku,
-        product_name: it.name || it.sku,
-        quantity: Number(it.qty||0),
-        unit_price: (p && !p.hidden) ? p.unit : null,
-        currency: (p && !p.hidden) ? p.cur : null,
-        price_tier: (p && !p.hidden) ? p.label : null,
-        line_total: (p && !p.hidden) ? p.line : null
-      };
+    // Call secure Edge Function (create this function in Supabase: functions/v1/checkout)
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/checkout`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ items: eligibleItems })
     });
-    const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
-    if (itemsErr){ msgEl.textContent = itemsErr.message || 'Failed to add items.'; return; }
+    const out = await resp.json().catch(()=>({}));
+    if (!resp.ok){ msgEl.textContent = out?.message || 'Order failed.'; return; }
 
-    /* ✅ Consume approvals ONLY NOW (order + items successful) */
-    await consumeApprovalsForOrder(eligibleItems);
+    const { order_id, lines, totals } = out;
 
-    /* (Optional) keep the local APPROVALS cache in sync to avoid UI flicker */
-    eligibleItems.forEach(it=>{
-      if (CAN_PURCHASE) return;
-      const cur = Number(APPROVALS[it.sku]||0);
-      APPROVALS[it.sku] = Math.max(0, cur - Number(it.qty||0));
-    });
-
-    // Remove eligible SKUs from cart
+    // Remove purchased items from local cart
     const remaining = readCart().filter(x => !eligibleItems.some(e => e.sku===x.sku));
     writeCart(remaining);
     CART = remaining;
     renderCart();
 
     // Pass along for payment page
-    localStorage.setItem('checkout_lines', JSON.stringify(lines));
-    localStorage.setItem('checkout_totals', JSON.stringify(totals));
+    localStorage.setItem('checkout_lines', JSON.stringify(lines||[]));
+    localStorage.setItem('checkout_totals', JSON.stringify(totals||{}));
     location.assign(`order-pay.html?order=${encodeURIComponent(order_id)}`);
   }catch(e){
     console.error(e);
@@ -908,10 +833,16 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   try{
     await refreshHeader();
 
-    // Adopt cart from URL once
+    // Adopt cart from URL once (with validation)
     const qs=new URLSearchParams(location.search); const raw=qs.get('cart');
     if (raw){
-      try{ const incoming = JSON.parse(decodeURIComponent(raw)); if (Array.isArray(incoming)) writeCart(incoming); }catch(_){}
+      try{
+        const incoming = JSON.parse(decodeURIComponent(raw));
+        const clean = Array.isArray(incoming) ? incoming
+          .filter(x => x && typeof x.sku==='string' && x.sku.length<=64 && Number(x.qty)>0 && Number(x.qty)<=999)
+          .map(x => ({ sku:x.sku, qty:Number(x.qty), name: typeof x.name==='string' ? x.name.slice(0,120) : undefined }))) : [];
+        if (clean.length) writeCart(clean);
+      }catch(_){ }
       finally{ qs.delete('cart'); history.replaceState({}, '', location.pathname + (qs.toString()?('?'+qs.toString()):'')); }
     }
 
