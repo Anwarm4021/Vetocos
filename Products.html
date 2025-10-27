@@ -366,98 +366,13 @@
 
   <!-- i18n + helpers + product rendering -->
   <script>
-/* SAFER I18N (won’t crash if dicts are missing) */
+/* SAFER I18N */
 window.I18N = window.I18N || {
-  en: {
-    "ui.loading":"Loading…",
-    "nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact",
-    "auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification",
-    "orders.myOrders":"My orders","nav.account":"Account settings","nav.cart":"Cart","nav.checkout":"Checkout",
-    "footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact",
-    "hero.badge":"Complementary feed — not medicine",
-    "products.title":"Our Product Range",
-    "products.lead":"Explore our selection designed to support urinary, liver, mobility, renal, and overall well-being.",
-    "grid.available":"Available","grid.unavailable":"Unavailable",
-    "grid.instock":" in stock","grid.out":"Out of stock",
-    "grid.add":"Add to Cart","grid.buy":"Buy Now","grid.more":"More details","grid.signin":"Sign in to buy",
-    "pd.title":"Product details","pd.form":"Form","pd.size":"Pack size","pd.ingr":"Key ingredients","pd.use":"Feeding guidance",
-    "pd.variant":"Variant","pd.quantity":"Qty","pd.price":"Price",
-    "pd.pdf":"Download PDF","pd.full":"View full page",
-    "pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U",
-    "pd.signInToSeePrice":"Sign in to see price","pd.vetOnly":"Verify vet status to see price",
-    "pd.variantMissing":"No variants","pd.notAvailable":"Not available",
-    "pd.editPrices":"Edit prices","pd.save":"Save","pd.cancel":"Cancel",
-    "pd.note":"Complementary feed — not a medicine. Always follow your vet’s advice.",
-    "ui.sku":"SKU: "
-  },
-  fr: {
-    "ui.loading":"Chargement…",
-    "nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact",
-    "auth.login":"Se connecter","auth.signup":"Créer un compte","auth.logout":"Se déconnecter","auth.vetVerify":"Vérification vétérinaire",
-    "orders.myOrders":"Mes commandes","nav.account":"Paramètres du compte","nav.cart":"Panier","nav.checkout":"Commander",
-    "footer.tag":"Aliment complémentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
-    "hero.badge":"Aliment complémentaire — pas un médicament",
-    "products.title":"Notre gamme de produits",
-    "products.lead":"Découvrez notre sélection pour soutenir l’appareil urinaire, le foie, la mobilité, la fonction rénale et le bien-être général.",
-    "grid.available":"Disponible","grid.unavailable":"Indisponible",
-    "grid.instock":" en stock","grid.out":"Rupture de stock",
-    "grid.add":"Ajouter au panier","grid.buy":"Acheter maintenant","grid.more":"Plus de détails","grid.signin":"Connectez-vous pour acheter",
-    "pd.title":"Détails du produit","pd.form":"Forme","pd.size":"Conditionnement","pd.ingr":"Ingrédients clés","pd.use":"Conseils d’utilisation",
-    "pd.variant":"Variante","pd.quantity":"Qté","pd.price":"Prix",
-    "pd.pdf":"Télécharger le PDF","pd.full":"Voir la fiche",
-    "pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U",
-    "pd.signInToSeePrice":"Connectez-vous pour voir le prix","pd.vetOnly":"Vérifiez le statut vétérinaire pour voir le prix",
-    "pd.variantMissing":"Aucune variante","pd.notAvailable":"Non disponible",
-    "pd.editPrices":"Modifier les prix","pd.save":"Enregistrer","pd.cancel":"Annuler",
-    "pd.note":"Aliment complémentaire — pas un médicament. Suivez toujours l’avis de votre vétérinaire.",
-    "ui.sku":"SKU : "
-  },
-  es: {
-    "ui.loading":"Cargando…",
-    "nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"Mundo","nav.news":"Noticias","nav.contact":"Contacto",
-    "auth.login":"Iniciar sesión","auth.signup":"Registrarse","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria",
-    "orders.myOrders":"Mis pedidos","nav.account":"Configuración de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar",
-    "footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
-    "hero.badge":"Alimento complementario — no medicamento",
-    "products.title":"Nuestra gama de productos",
-    "products.lead":"Explore nuestra selección para apoyar el sistema urinario, el hígado, la movilidad, la función renal y el bienestar general.",
-    "grid.available":"Disponible","grid.unavailable":"No disponible",
-    "grid.instock":" en stock","grid.out":"Agotado",
-    "grid.add":"Añadir al carrito","grid.buy":"Comprar ahora","grid.more":"Más detalles","grid.signin":"Inicia sesión para comprar",
-    "pd.title":"Detalles del producto","pd.form":"Forma","pd.size":"Tamaño del paquete","pd.ingr":"Ingredientes clave","pd.use":"Guía de uso",
-    "pd.variant":"Variante","pd.quantity":"Cant.","pd.price":"Precio",
-    "pd.pdf":"Descargar PDF","pd.full":"Ver página completa",
-    "pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U",
-    "pd.signInToSeePrice":"Inicia sesión para ver el precio","pd.vetOnly":"Verifica el estado veterinario para ver el precio",
-    "pd.variantMissing":"Sin variantes","pd.notAvailable":"No disponible",
-    "pd.editPrices":"Editar precios","pd.save":"Guardar","pd.cancel":"Cancelar",
-    "pd.note":"Alimento complementario — no es un medicamento. Sigue siempre el consejo de tu veterinario.",
-    "ui.sku":"SKU: "
-  },
-  ar: {
-    "ui.loading":"جارٍ التحميل…",
-    "nav.home":"الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا",
-    "auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"توثيق الطبيب البيطري",
-    "orders.myOrders":"طلباتي","nav.account":"إعدادات الحساب","nav.cart":"السلة","nav.checkout":"الدفع",
-    "footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
-    "hero.badge":"غذاء تكميلي — ليس دواءً",
-    "products.title":"مجموعة منتجاتنا",
-    "products.lead":"استكشف مجموعتنا لدعم المسالك البولية والكبد والحركة والكلية والصحة العامة.",
-    "grid.available":"متوفر","grid.unavailable":"غير متوفر",
-    "grid.instock":" متوفر بالمخزون","grid.out":"غير متوفر",
-    "grid.add":"أضف إلى السلة","grid.buy":"اشترِ الآن","grid.more":"مزيد من التفاصيل","grid.signin":"سجّل الدخول للشراء",
-    "pd.title":"تفاصيل المنتج","pd.form":"الشكل","pd.size":"حجم العبوة","pd.ingr":"المكونات الرئيسية","pd.use":"إرشادات التغذية",
-    "pd.variant":"النوع","pd.quantity":"الكمية","pd.price":"السعر",
-    "pd.pdf":"تحميل PDF","pd.full":"عرض الصفحة كاملة",
-    "pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U",
-    "pd.signInToSeePrice":"سجّل الدخول لعرض السعر","pd.vetOnly":"تحقق من صفتك البيطرية لعرض السعر",
-    "pd.variantMissing":"لا توجد أنواع","pd.notAvailable":"غير متاح",
-    "pd.editPrices":"تعديل الأسعار","pd.save":"حفظ","pd.cancel":"إلغاء",
-    "pd.note":"غذاء تكميلي — ليس دواءً. اتبع دائمًا نصيحة الطبيب البيطري.",
-    "ui.sku":"SKU: "
-  }
+  en: {"ui.loading":"Loading…","nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact","auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification","orders.myOrders":"My orders","nav.account":"Account settings","nav.cart":"Cart","nav.checkout":"Checkout","footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact","hero.badge":"Complementary feed — not medicine","products.title":"Our Product Range","products.lead":"Explore our selection designed to support urinary, liver, mobility, renal, and overall well-being.","grid.available":"Available","grid.unavailable":"Unavailable","grid.instock":" in stock","grid.out":"Out of stock","grid.add":"Add to Cart","grid.buy":"Buy Now","grid.more":"More details","grid.signin":"Sign in to buy","pd.title":"Product details","pd.form":"Form","pd.size":"Pack size","pd.ingr":"Key ingredients","pd.use":"Feeding guidance","pd.variant":"Variant","pd.quantity":"Qty","pd.price":"Price","pd.pdf":"Download PDF","pd.full":"View full page","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Sign in to see price","pd.vetOnly":"Verify vet status to see price","pd.variantMissing":"No variants","pd.notAvailable":"Not available","pd.editPrices":"Edit prices","pd.save":"Save","pd.cancel":"Cancel","pd.note":"Complementary feed — not a medicine. Always follow your vet’s advice.","ui.sku":"SKU: "},
+  fr: {"ui.loading":"Chargement…","nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact","auth.login":"Se connecter","auth.signup":"Créer un compte","auth.logout":"Se déconnecter","auth.vetVerify":"Vérification vétérinaire","orders.myOrders":"Mes commandes","nav.account":"Paramètres du compte","nav.cart":"Panier","nav.checkout":"Commander","footer.tag":"Aliment complémentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact","hero.badge":"Aliment complémentaire — pas un médicament","products.title":"Notre gamme de produits","products.lead":"Découvrez notre sélection pour soutenir l’appareil urinaire, le foie, la mobilité, la fonction rénale et le bien-être général.","grid.available":"Disponible","grid.unavailable":"Indisponible","grid.instock":" en stock","grid.out":"Rupture de stock","grid.add":"Ajouter au panier","grid.buy":"Acheter maintenant","grid.more":"Plus de détails","grid.signin":"Connectez-vous pour acheter","pd.title":"Détails du produit","pd.form":"Forme","pd.size":"Conditionnement","pd.ingr":"Ingrédients clés","pd.use":"Conseils d’utilisation","pd.variant":"Variante","pd.quantity":"Qté","pd.price":"Prix","pd.pdf":"Télécharger le PDF","pd.full":"Voir la fiche","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Connectez-vous pour voir le prix","pd.vetOnly":"Vérifiez le statut vétérinaire pour voir le prix","pd.variantMissing":"Aucune variante","pd.notAvailable":"Non disponible","pd.editPrices":"Modifier les prix","pd.save":"Enregistrer","pd.cancel":"Annuler","pd.note":"Aliment complémentaire — pas un médicament. Suivez toujours l’avis de votre vétérinaire.","ui.sku":"SKU : "},
+  es: {"ui.loading":"Cargando…","nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"Mundo","nav.news":"Noticias","nav.contact":"Contacto","auth.login":"Iniciar sesión","auth.signup":"Registrarse","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria","orders.myOrders":"Mis pedidos","nav.account":"Configuración de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar","footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto","hero.badge":"Alimento complementario — no medicamento","products.title":"Nuestra gama de productos","products.lead":"Explore nuestra selección para apoyar el sistema urinario, el hígado, la movilidad, la función renal y el bienestar general.","grid.available":"Disponible","grid.unavailable":"No disponible","grid.instock":" en stock","grid.out":"Agotado","grid.add":"Añadir al carrito","grid.buy":"Comprar ahora","grid.more":"Más detalles","grid.signin":"Inicia sesión para comprar","pd.title":"Detalles del producto","pd.form":"Forma","pd.size":"Tamaño del paquete","pd.ingr":"Ingredientes clave","pd.use":"Guía de uso","pd.variant":"Variante","pd.quantity":"Cant.","pd.price":"Precio","pd.pdf":"Descargar PDF","pd.full":"Ver página completa","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Inicia sesión para ver el precio","pd.vetOnly":"Verifica el estado veterinario para ver el precio","pd.variantMissing":"Sin variantes","pd.notAvailable":"No disponible","pd.editPrices":"Editar precios","pd.save":"Guardar","pd.cancel":"Cancelar","pd.note":"Alimento complementario — no es un medicamento. Sigue siempre el consejo de tu veterinario.","ui.sku":"SKU: "},
+  ar: {"ui.loading":"جارٍ التحميل…","nav.home":"الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا","auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"توثيق الطبيب البيطري","orders.myOrders":"طلباتي","nav.account":"إعدادات الحساب","nav.cart":"السلة","nav.checkout":"الدفع","footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا","hero.badge":"غذاء تكميلي — ليس دواءً","products.title":"مجموعة منتجاتنا","products.lead":"استكشف مجموعتنا لدعم المسالك البولية والكبد والحركة والكلية والصحة العامة.","grid.available":"متوفر","grid.unavailable":"غير متوفر","grid.instock":" متوفر بالمخزون","grid.out":"غير متوفر","grid.add":"أضف إلى السلة","grid.buy":"اشترِ الآن","grid.more":"مزيد من التفاصيل","grid.signin":"سجّل الدخول للشراء","pd.title":"تفاصيل المنتج","pd.form":"الشكل","pd.size":"حجم العبوة","pd.ingr":"المكونات الرئيسية","pd.use":"إرشادات التغذية","pd.variant":"النوع","pd.quantity":"الكمية","pd.price":"السعر","pd.pdf":"تحميل PDF","pd.full":"عرض الصفحة كاملة","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"سجّل الدخول لعرض السعر","pd.vetOnly":"تحقق من صفتك البيطرية لعرض السعر","pd.variantMissing":"لا توجد أنواع","pd.notAvailable":"غير متاح","pd.editPrices":"تعديل الأسعار","pd.save":"حفظ","pd.cancel":"إلغاء","pd.note":"غذاء تكميلي — ليس دواءً. اتبع دائمًا نصيحة الطبيب البيطري.","ui.sku":"SKU: "}
 };
-
 function t(key){
   try{
     const lang = localStorage.getItem("lang") || "en";
@@ -465,8 +380,6 @@ function t(key){
     return (dict?.[key] ?? key);
   }catch(_){ return key; }
 }
-
-/* Apply language to static text AND flip RTL when needed */
 function applyLang(lang){
   const dict = window.I18N?.[lang] || window.I18N?.en || {};
   document.querySelectorAll("[data-i18n]").forEach(el=>{
@@ -522,11 +435,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     sel.value = initial;
     sel.addEventListener("change", async e => {
       applyLang(e.target.value);
-      // live refresh UI: grid, header bits, and open modal (if any)
       await renderProducts();
       await refreshHeader();
       if (document.getElementById('productDetailsModal')?.classList.contains('open')) {
-        // rebuild current PD with same SKU/selection if open
         const code = (typeof CURRENT_SKU === 'string') ? CURRENT_SKU : null;
         if (code) openPD(code, document.getElementById('pdVariantSel')?.value || null);
       }
@@ -640,6 +551,32 @@ document.addEventListener('DOMContentLoaded', ()=>{
       return "https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/" + PRODUCT_BUCKET + "/" + encodeURI(p);
     }
 
+    /* ---------- NEW: image fallback helpers ---------- */
+    function slugifyName(name=''){
+      return String(name).trim().toLowerCase()
+        .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    }
+    function nextSrcOnError(img){
+      const left = (img.dataset.candidates || '').split('|').filter(Boolean);
+      const next = left.shift();
+      img.dataset.candidates = left.join('|');
+      img.src = next || 'images/placeholder.png';
+    }
+    function imageCandidates(spec){
+      const out = [];
+      if (spec.image_path) out.push(filePublicUrl(spec.image_path));
+      if (spec.image_url)  out.push(spec.image_url);
+      const sku = (spec.sku || '').toLowerCase();
+      const nm  = slugifyName(spec.name || '');
+      ['/images/'+sku+'.jpg','/images/'+sku+'.png',
+       '/images/'+nm +'.jpg','/images/'+nm +'.png'
+      ].forEach(u => out.push(u));
+      if (spec.image) out.push(spec.image);
+      out.push('images/placeholder.png');
+      return Array.from(new Set(out.filter(Boolean)));
+    }
+    /* ----------------------------------------------- */
+
     /* Fallback catalog */
     const FALLBACK = {
       "URO-CHIEN": { name:"Urocline Chien", image:"images/Product1.jpg", category:"Urinary care", form:"Chewable tablets", size:"30 comp.", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", page:"Product1.html", pdf:"pdf/Product1.pdf" },
@@ -701,16 +638,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     /* Product Details modal refs */
     let pdModal=null,pdImg=null,pdName=null,pdCat=null,pdForm=null,pdSize=null,pdIngr=null,pdUse=null,pdSku=null,pdAdd=null,pdBuy=null,pdPdf=null,pdPage=null,pdDesc=null;
-
-    /* Added refs */
     let pdVariantSel=null, pdQtyInp=null, pdPriceBox=null, pdPriceNote=null, pdAdminBox=null, pdEditBtn=null, pdAdminForm=null;
 
     let CURRENT_SKU = null;
-    let CURRENT_VARIANTS = []; // for modal
+    let CURRENT_VARIANTS = [];
     let PRODUCT_CACHE = {};
 
-    /* Card variants cache */
-    const VARIANTS_CACHE = {}; // { sku: [{...variant, _uiLabel}] }
+    const VARIANTS_CACHE = {};
 
     function ensurePDRefs(){
       if (pdModal) return;
@@ -770,12 +704,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
           pdAdminForm.style.display = pdAdminForm.style.display === 'none' ? 'block' : 'none';
         });
       }
-
       if (pdAdminForm){
         pdAdminForm.addEventListener('submit', async (e)=>{
           e.preventDefault();
-
-          // collect edited values from the form
           const edited = [...pdAdminForm.querySelectorAll('.admin-grid')].map(row=>{
             const code = row.getAttribute('data-vid');
             const src  = CURRENT_VARIANTS.find(v=> (v.variant_code||'') === code) || {};
@@ -784,7 +715,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
               return (v === '' || v == null) ? null : Number(v);
             };
             return {
-              // canonical JSON we store in products.variants
               code,
               name: src.label || src._uiLabel || code,
               price_ppv:        num('price_ppv'),
@@ -796,22 +726,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
           });
 
           try{
-            // persist to products.variants for CURRENT_SKU
             const { error } = await supa.from('products')
               .update({ variants: edited })
               .eq('sku', CURRENT_SKU);
-
             if (error) throw error;
 
-            // refresh local state + UI
             PRODUCT_CACHE[CURRENT_SKU] = PRODUCT_CACHE[CURRENT_SKU] || {};
             PRODUCT_CACHE[CURRENT_SKU].variants = edited;
 
-            await loadVariants(CURRENT_SKU);   // re-read into CURRENT_VARIANTS
-            buildAdminForm();                  // rebuild editor
-            buildVariantSelector();            // rebuild selector
-            updatePriceUI();                   // recompute price
-
+            await loadVariants(CURRENT_SKU);
+            buildAdminForm();
+            buildVariantSelector();
+            updatePriceUI();
             alert(t('pd.save'));
           }catch(err){
             alert('Error: ' + (err?.message || String(err)));
@@ -828,18 +754,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
     function priceForQty(variant, qty){
       if (!variant) return null;
       const q = Math.max(1, Number(qty||1));
-
-      // Support both old table keys and new Admin JSON keys
       const ppv   = (variant.ppv ?? variant.price_ppv);
       const pv_m  = (variant.pv_minus_10u ?? variant.price_pv_minus10);
       const pv_p  = (variant.pv_plus_10u  ?? variant.price_pv_plus10);
       const cur   = variant.currency || 'MAD';
-
       if (q === 1)  return { label: t('pd.ppv'),   value: ppv,  currency: cur };
       if (q >= 10)  return { label: t('pd.pv10p'), value: pv_p, currency: cur };
-      return { label: t('pd.pv10m'), value: pv_m,  currency: cur };
+      return         { label: t('pd.pv10m'), value: pv_m,  currency: cur };
     }
-
     function updatePriceUI(){
       const variant = currentVariant();
       const qty = Math.max(1, Number(pdQtyInp.value||1));
@@ -862,8 +784,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     async function loadVariants(sku){
       const prod = PRODUCT_CACHE[sku] || {};
       let list = Array.isArray(prod.variants) ? prod.variants : [];
-
-      // If no variants JSON, create a single default variant from base prices
       if (!list.length){
         const fallback = {
           variant_code: 'default',
@@ -877,25 +797,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
         CURRENT_VARIANTS = [fallback];
         return CURRENT_VARIANTS;
       }
-
-      // Normalize admin JSON -> UI structure
       CURRENT_VARIANTS = list.map((v, i) => {
         const code = String(v.code ?? v.variant_code ?? v.name ?? `v${i}`);
         return {
           variant_code: code,
           _uiLabel: prettyVariantLabel(sku, code, v.name || v.label || ''),
           label: v.name || v.label || '',
-          // accept either new JSON keys or old names if present
           price_ppv:        (v.price_ppv        ?? v.ppv        ?? null) * 1 || (v.price_ppv===0||v.ppv===0 ? 0 : null),
           price_pv_minus10: (v.price_pv_minus10 ?? v.pv_minus_10u ?? null) * 1 || (v.price_pv_minus10===0||v.pv_minus_10u===0 ? 0 : null),
           price_pv_plus10:  (v.price_pv_plus10  ?? v.pv_plus_10u  ?? null) * 1 || (v.price_pv_plus10===0||v.pv_plus_10u===0 ? 0 : null),
           currency: v.currency || 'MAD'
         };
       });
-
       return CURRENT_VARIANTS;
     }
-
     function buildVariantSelector(preselectCode=null){
       if (!pdVariantSel) return;
       if (!CURRENT_VARIANTS.length){
@@ -910,11 +825,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
         ? preselectCode
         : CURRENT_VARIANTS[0].variant_code;
     }
-
     function buildAdminForm(){
       if (!pdAdminBox) return;
-
-      // show/hide admin panel
       pdAdminBox.style.display = IS_ADMIN ? 'block' : 'none';
       if (!IS_ADMIN) return;
 
@@ -925,34 +837,28 @@ document.addEventListener('DOMContentLoaded', ()=>{
         pdAdminForm.innerHTML = `<div class="muted">${t('pd.variantMissing')}</div>`;
         return;
       }
-
       pdAdminForm.innerHTML = rows.map((v, i)=>`
         <div class="admin-grid" data-vid="${v.variant_code || `v${i}`}">
           <div>
             <label class="muted">${t('pd.variant')}</label>
             <input class="input" value="${(v._uiLabel || v.label || v.variant_code || '')}" disabled>
           </div>
-
           <div>
             <label class="muted">${t('pd.ppv')}</label>
             <input name="price_ppv" class="input" type="number" step="0.01" value="${(v.price_ppv ?? v.ppv ?? '')}">
           </div>
-
           <div>
             <label class="muted">${t('pd.pv10m')}</label>
             <input name="price_pv_minus10" class="input" type="number" step="0.01" value="${(v.price_pv_minus10 ?? v.pv_minus_10u ?? '')}">
           </div>
-
           <div>
             <label class="muted">${t('pd.pv10p')}</label>
             <input name="price_pv_plus10" class="input" type="number" step="0.01" value="${(v.price_pv_plus10 ?? v.pv_plus_10u ?? '')}">
           </div>
-
           <div>
             <label class="muted">Currency</label>
             <input name="currency" class="input" value="${(v.currency || 'MAD')}">
           </div>
-
           <div>
             <label class="muted">Active</label><br>
             <input name="active" type="checkbox" ${(v.active !== false) ? 'checked' : ''}>
@@ -982,10 +888,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
       pdDesc.textContent = spec.description || '';
       pdSku.textContent = t("ui.sku") + sku;
 
-      const imgUrl = spec.image_path ? filePublicUrl(spec.image_path) : (spec.image || '');
-      pdImg.src = imgUrl || ''; pdImg.alt = spec.name || sku;
-
-      const lang = localStorage.getItem('lang') || 'en'; // for link texts already handled by data-i18n
+      /* ---------- NEW: modal image with fallback chain ---------- */
+      const cands = imageCandidates(spec);
+      pdImg.alt = spec.name || sku;
+      pdImg.style.visibility = 'hidden';
+      pdImg.onload = () => { pdImg.style.visibility = 'visible'; };
+      pdImg.onerror = () => nextSrcOnError(pdImg);
+      pdImg.setAttribute('data-candidates', cands.slice(1).join('|'));
+      pdImg.src = cands[0];
+      /* ---------------------------------------------------------- */
 
       pdPdf.textContent = t("pd.pdf");
       pdPdf.href = (spec.pdf_path ? filePublicUrl(spec.pdf_path) : (spec.pdf || '#')) || '#';
@@ -1020,7 +931,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       let rows = [];
       const { data, error } = await supa
         .from('products')
-        .select('sku,name,description,stock_qty,available,image_path,pdf_path,sort_order,updated_at,price_ppv,price_pv_minus10,price_pv_plus10,variants')
+        .select('sku,name,description,stock_qty,available,image_path,image_url,pdf_path,sort_order,updated_at,price_ppv,price_pv_minus10,price_pv_plus10,variants')
         .order('sort_order', { ascending:true, nullsFirst:false })
         .order('name', { ascending:true });
       if (!error && Array.isArray(data)) rows = data;
@@ -1040,6 +951,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
           stock_qty: Number(r.stock_qty||0),
           available: !!r.available,
           image_path: r.image_path || null,
+          image_url:  r.image_url  || null,   // NEW
           pdf_path: r.pdf_path || null,
           category: f.category || '',
           form: f.form || '',
@@ -1049,7 +961,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
           image: f.image || '',
           page: f.page || '',
           pdf: f.pdf || '',
-          // base prices (used to build default variant if none)
           price_ppv: r.price_ppv ?? null,
           price_pv_minus10: r.price_pv_minus10 ?? null,
           price_pv_plus10: r.price_pv_plus10 ?? null,
@@ -1061,11 +972,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     /* Card variants helpers */
     async function getVariantsForSku(sku){
-      // read from products.variants JSON written by Admin
       const prod = PRODUCT_CACHE[sku] || {};
       const list = Array.isArray(prod.variants) ? prod.variants : [];
-
-      // If no variants JSON, create a single “Default” variant from base prices
       if (!list.length) {
         const label = 'Default';
         return VARIANTS_CACHE[sku] = [{
@@ -1076,10 +984,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
           price_pv_minus10: prod.price_pv_minus10 ?? null,
           price_pv_plus10: prod.price_pv_plus10 ?? null,
           currency: 'MAD'
-        }];
+        }]);
       }
-
-      // Normalize Admin JSON variants -> UI structure
       const normalized = list.map((v, i) => ({
         variant_code: (v.code || v.variant_code || v.name || `v${i}`).toString(),
         _uiLabel: prettyVariantLabel(sku, (v.code||v.variant_code||v.name||'').toString(), v.name || v.label || ''),
@@ -1089,7 +995,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
         price_pv_plus10: Number(v.price_pv_plus10 ?? 0) || null,
         currency: v.currency || 'MAD'
       }));
-
       VARIANTS_CACHE[sku] = normalized;
       return normalized;
     }
@@ -1113,7 +1018,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
       for (const r of rows){
         const p = PRODUCT_CACHE[r.sku];
-        const imgUrl = r.image_path ? filePublicUrl(r.image_path) : (p.image || '');
+
+        /* ---------- NEW: grid card image with fallback chain ---------- */
+        const cands = imageCandidates(p);
+        const imgTag = `
+          <img alt="${p.name}"
+               style="width:100%;height:170px;object-fit:cover;visibility:hidden"
+               onload="this.style.visibility='visible'"
+               onerror="nextSrcOnError(this)"
+               src="${cands[0]}"
+               data-candidates="${cands.slice(1).join('|')}">`;
+        /* -------------------------------------------------------------- */
+
         const isAvail = p.available && (p.stock_qty > 0);
         const statusHtml = isAvail ? `<span class="status ok">${t("grid.available")}</span>`
                                    : `<span class="status bad">${t("grid.unavailable")}</span>`;
@@ -1141,16 +1057,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
           <button class="btn ghost more-btn" type="button">${t("grid.more")}</button>
         `;
 
-        card.innerHTML =
-          `<img src="${imgUrl}" alt="${p.name}">` +
-          `<div class="px">` +
-            `<h4>${p.name}</h4>` +
-            `<div class="p-meta">${statusHtml}<span>•</span>${qtyHtml}</div>` +
-            variantRowHtml +
-            `<div class="actions">${IS_LOGGED_IN ? actionsLoggedIn : actionsLoggedOut}</div>` +
-          `</div>`;
+        card.innerHTML = imgTag +
+          `<div class="px">
+            <h4>${p.name}</h4>
+            <div class="p-meta">${statusHtml}<span>•</span>${qtyHtml}</div>
+            ${variantRowHtml}
+            <div class="actions">${IS_LOGGED_IN ? actionsLoggedIn : actionsLoggedOut}</div>
+          </div>`;
 
-        // Populate the card's variant select asynchronously
         const selectEl = card.querySelector('.card-variant');
         getVariantsForSku(r.sku).then(list=>{
           if (!list.length){
@@ -1162,7 +1076,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
           }
         });
 
-        // Buttons behavior: use card's selected variant; open PD with preselect
         card.querySelector('.add-btn')?.addEventListener('click', (ev)=>{
           ev.stopPropagation();
           const chosen = selectEl?.value || null;
@@ -1192,8 +1105,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       await refreshHeader();
       await renderProducts();
       updateCartBadge();
-
-      // Make sure the i18n note line uses the dict value:
       const noteEl = document.querySelector('[data-i18n="pd.note"]');
       if (noteEl) noteEl.textContent = t('pd.note');
     });
