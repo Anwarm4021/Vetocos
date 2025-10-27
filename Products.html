@@ -578,40 +578,49 @@ document.addEventListener('DOMContentLoaded', ()=>{
     let IS_ADMIN = false;
     let IS_VET = false;
 
-    async function refreshHeader(){
-      const { data:{ session } } = await supa.auth.getSession();
-      if (!session?.user){
-        IS_LOGGED_IN = false; IS_ADMIN = false; IS_VET = false;
-        if (signInBtn) signInBtn.style.display = 'inline-block';
-        if (signUpBtn) signUpBtn.style.display = 'inline-block';
-        if (acctBlock) acctBlock.style.display = 'none';
-        if (adminBtn) adminBtn.style.display  = 'none';
-        if (cartLink) cartLink.style.display  = 'none';
-        return;
-      }
-      IS_LOGGED_IN = true;
+async function refreshHeader(){
+  const { data:{ session } } = await supa.auth.getSession();
+  if (!session?.user){
+    IS_LOGGED_IN = false; IS_ADMIN = false; IS_VET = false;
+    if (signInBtn) signInBtn.style.display = 'inline-block';
+    if (signUpBtn) signUpBtn.style.display = 'inline-block';
+    if (acctBlock) acctBlock.style.display = 'none';
+    if (adminBtn) adminBtn.style.display  = 'none';
+    if (cartLink) cartLink.style.display  = 'none';
+    return;
+  }
+  IS_LOGGED_IN = true;
 
-      let display = session.user.email || '';
-      IS_ADMIN = false; IS_VET = false;
-      try{
-        const { data: p } = await supa.from('profiles')
-          .select('first_name,last_name,is_admin,is_vet_verified').eq('id', session.user.id).maybeSingle();
-        const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
-        if (full) display = full;
-        IS_ADMIN = !!p?.is_admin || (session.user.email && SUPER_ADMINS.includes(session.user.email));
-        IS_VET = !!p?.is_vet_verified;
-      }catch(_){}
+  let display = session.user.email || '';
+  IS_ADMIN = false; IS_VET = false;
 
-      if (helloName) helloName.textContent = display;
-      if (accountHeader) accountHeader.innerHTML = `<div><strong>${display}</strong><div class="muted">${session.user.email || ''}</div></div>`;
+  try{
+    // Prefer RPC to avoid RLS surprises
+    const { data: isVetRPC } = await supa.rpc('is_vet_verified_jwt');
+    IS_VET = !!isVetRPC;
 
-      if (signInBtn) signInBtn.style.display = 'none';
-      if (signUpBtn) signUpBtn.style.display = 'none';
-      if (acctBlock) acctBlock.style.display = 'inline-flex';
-      if (cartLink) cartLink.style.display  = 'inline-flex';
+    // (optional) also fetch name & is_admin from profiles if your RLS allows it
+    const { data: p } = await supa.from('profiles')
+      .select('first_name,last_name,is_admin')
+      .eq('id', session.user.id)
+      .maybeSingle();
 
-      if (adminBtn) adminBtn.style.display = IS_ADMIN ? 'inline-block' : 'none';
-    }
+    const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
+    if (full) display = full;
+    IS_ADMIN = !!p?.is_admin || (session.user.email && SUPER_ADMINS.includes(session.user.email));
+  }catch(_){ /* fallback stays */ }
+
+  if (helloName) helloName.textContent = display;
+  if (accountHeader) accountHeader.innerHTML =
+    `<div><strong>${display}</strong><div class="muted">${session.user.email || ''}</div></div>`;
+
+  if (signInBtn) signInBtn.style.display = 'none';
+  if (signUpBtn) signUpBtn.style.display = 'none';
+  if (acctBlock) acctBlock.style.display = 'inline-flex';
+  if (cartLink) cartLink.style.display  = 'inline-flex';
+
+  if (adminBtn) adminBtn.style.display = IS_ADMIN ? 'inline-block' : 'none';
+}
 
     /* Cart helpers */
     function readCart(){ try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; } }
@@ -1259,3 +1268,4 @@ document.addEventListener('DOMContentLoaded', ()=>{
   </div>
 </body>
 </html>
+
