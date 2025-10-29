@@ -1,638 +1,408 @@
+<!-- =============================
+ VetoCos — Unified White Theme Site
+ Includes:
+ 1) index.html  (single-page sections: Home, Products, Worldwide, News)
+ 2) Products.html      (redirects to index#products)
+ 3) World Wide.html    (redirects to index#worldwide)
+ 4) news.html          (redirects to index#news)
+
+ Conventions kept:
+ - Contact button opens professional modal; mailto:info@vetocos.com
+ - Brand "VetoCos SAHIB" centered with logo
+ - Smooth section snapping on wheel/trackpad scroll + smooth anchor scroll
+ - White background, premium cards, scroll-reveal animations
+ - Supabase auth-aware header (minimal)
+================================= -->
+
+<!-- ============ index.html ============ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <title>VetoCos | Complementary Feed for Pets</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="VetoCos — retailer of complementary feed (alimentary) for dogs & cats. Trusted brands, vet-aligned guidance." />
-  <meta name="robots" content="index, follow">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+  <meta name="description" content="VetoCos — complementary feed (alimentary) for dogs & cats. Vet‑aligned guidance, trusted brands." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root{
-      /* Light palette */
-      --bg:#ffffff;
-      --elev:#0b1226;
-      --ink:#0b1226;          /* main text */
-      --muted:#5e6a86;        /* secondary text */
-      --line:#e8ecf5;         /* borders */
-      --line2:#eef2fa;        /* subtle borders */
-      --brand:#2563eb;        /* primary */
-      --brand2:#10b981;       /* accent */
-
-      --max:1140px;
-      --radius:18px;
-      --shadow:0 10px 24px rgba(11,18,38,.06);
+      /* Light theme */
+      --bg:#ffffff; --text:#0b1220; --muted:#5b6a86; --line:#e6e9f2; --line2:#f1f3f9;
+      --brand:#0563ff; --brand2:#10b981; --accent:#111827;
+      --card:#ffffff; --max:1140px; --radius:18px; --shadow:0 12px 36px rgba(16,24,40,.12);
     }
-
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
     img{max-width:100%;display:block}
-
     a{color:var(--brand);text-decoration:none}
-    a:focus,button:focus,select:focus{outline:2px solid color-mix(in oklab, var(--brand) 70%, white);outline-offset:2px;border-radius:8px}
     .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
 
-    /* ===== Header (Centered brand with logo + links preserved) ===== */
-    header.site{position:sticky;top:0;z-index:80;background:rgba(255,255,255,.9);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid var(--line)}
-    .nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:12px 0}
-
-    .brand{display:flex;align-items:center;gap:12px;justify-self:center; font-weight:800;letter-spacing:.2px;color:var(--ink)}
-    .brand-logo{width:56px;height:auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.08))}
-    .brand-name{font-size:1.1rem}
-    .brand-name strong{font-weight:800}
-
-    .links{justify-self:end;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .navlink,.chip,.btn,.select{padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--ink)}
-    .navlink{display:inline-block}
-    .navlink.active{border-color:color-mix(in oklab, var(--brand) 20%, var(--line));background:#fff}
-    .navlink:hover{background:color-mix(in oklab, #fff 85%, var(--brand) 15%)}
-    .chip,.btn{background:linear-gradient(180deg,#ffffff, #f8fbff);border-color:var(--line)}
-    .chip:hover,.btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.06)}
-    .btn[disabled]{opacity:.55;cursor:not-allowed}
-    .select{background:#fff}
-
-    .hamb{display:none;justify-self:start;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;color:var(--ink)}
-
-    @media (max-width:940px){
-      .nav{grid-template-columns:auto 1fr auto}
-      .links{display:none;position:absolute;right:18px;top:58px;background:#fff;padding:10px;border:1px solid var(--line);border-radius:14px;flex-direction:column;min-width:260px;box-shadow:var(--shadow)}
-      .links.open{display:flex}
-      .hamb{display:inline-flex}
-      .nav .select,.nav .chip{width:100%;text-align:left}
+    /* Header (brand centered) */
+    header.site{position:sticky;top:0;z-index:80;background:rgba(255,255,255,.8);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+    .nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px 0}
+    .brand{grid-column:2/3;display:flex;align-items:center;justify-content:center;gap:12px;font-weight:800;letter-spacing:.2px}
+    .brand img{width:56px;height:auto;filter:drop-shadow(0 6px 12px rgba(0,0,0,.08))}
+    .brand span{font-size:1.1rem}
+    .left,.right{display:flex;gap:8px;align-items:center}
+    .left{justify-content:flex-start}
+    .right{justify-content:flex-end}
+    .navlink,.chip,button.btn,select.select{padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--accent)}
+    .navlink:hover,.navlink.active{background:var(--line2)}
+    .chip{background:linear-gradient(135deg,rgba(5,99,255,.06),rgba(16,185,129,.06));cursor:pointer;border-color:var(--line)}
+    .hamb{display:none}
+    @media(max-width:900px){
+      .nav{grid-template-columns:1fr auto 1fr}
+      .left{display:none}
+      .hamb{display:inline-flex;justify-self:end;border:1px solid var(--line);border-radius:12px;background:#fff}
+      .drawer{position:fixed;top:60px;right:18px;background:#fff;border:1px solid var(--line);border-radius:14px;display:none;flex-direction:column;min-width:220px;box-shadow:var(--shadow);padding:10px}
+      .drawer.open{display:flex}
+      .drawer a,.drawer button,.drawer select{margin:4px 0}
     }
 
-    /* ===== Main ===== */
-    main{padding:36px 0}
+    /* Full-page sections (snap) */
+    main{scroll-snap-type:y mandatory}
+    section.page{min-height:100svh;display:grid;place-items:center;padding:24px 0;scroll-snap-align:start}
 
-    /* ===== Hero ===== */
-    .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:center}
-    .badge{display:inline-flex;gap:8px;align-items:center;background:#f6f9ff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
-    h1{font-size:clamp(34px,5.2vw,56px);line-height:1.12;margin:12px 0}
-    .lead{font-size:clamp(16px,2.2vw,19px);color:var(--muted);margin:0 0 18px;max-width:58ch}
+    /* Hero */
+    .hero-inner{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:center}
+    .badge{display:inline-flex;gap:8px;align-items:center;background:var(--line2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
+    h1{font-size:clamp(34px,5.4vw,56px);line-height:1.12;margin:10px 0}
+    .lead{font-size:clamp(16px,2.2vw,19px);color:var(--muted);margin:0 0 18px}
     .cta{display:flex;gap:10px;flex-wrap:wrap}
-    .btn.primary{background:linear-gradient(135deg, color-mix(in oklab,var(--brand) 90%, white), color-mix(in oklab,var(--brand2) 50%, white));color:#fff;border-color:transparent}
-    .btn.ghost{background:#fff;border:1px solid var(--line)}
-    .hero-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:0;box-shadow:var(--shadow);overflow:hidden;display:grid;place-items:center;min-height:340px}
-    .hero-card img{width:100%;height:100%;max-height:480px;object-fit:cover}
-    @media (max-width:980px){.hero{grid-template-columns:1fr}.hero-card{order:-1}}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:linear-gradient(135deg,rgba(5,99,255,.08),rgba(16,185,129,.08));color:var(--accent);font-weight:700;cursor:pointer}
+    .btn.ghost{background:#fff}
+    .hero-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;min-height:360px}
+    .hero-card img{width:100%;height:100%;max-height:520px;object-fit:cover}
+    @media(max-width:980px){.hero-inner{grid-template-columns:1fr}.hero-card{order:-1}}
 
-    /* ===== Generic card ===== */
-    .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
-    .muted{color:var(--muted)}
+    /* Section shells */
+    .section{width:100%}
+    .section h2{font-size:clamp(24px,3.6vw,38px);margin:0}
+    .sub{color:var(--muted);margin:6px 0 14px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
 
-    /* ===== Highlights (new design) ===== */
-    .highlights{margin-top:6px}
-    .value-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-    @media (max-width:1100px){.value-grid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:620px){.value-grid{grid-template-columns:1fr}}
-
-    .value-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--shadow);overflow:hidden;isolation:isolate;transition:transform .22s ease, box-shadow .22s ease,border-color .22s ease}
-    .value-card::before{content:"";position:absolute;inset:-1px;border-radius:22px;background:conic-gradient(from 180deg at 50% 50%, color-mix(in oklab,var(--brand) 35%, #fff), color-mix(in oklab,var(--brand2) 35%, #fff), transparent 55%);filter:blur(20px);opacity:.25;z-index:-1}
-    .value-card:hover{transform:translateY(-4px);box-shadow:0 18px 36px rgba(0,0,0,.12);border-color:color-mix(in oklab,var(--brand) 28%, var(--line))}
-    .v-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--line);background:linear-gradient(180deg,#ffffff,#f7fbff);box-shadow:0 6px 14px rgba(0,0,0,.06);margin-bottom:10px}
-    .v-icon svg{width:22px;height:22px}
-    .value-card h3{margin:.4rem 0 .2rem}
-    .value-card p{color:var(--muted);margin:0}
-
-    /* Stat bar */
-    .statbar{margin-top:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:stretch}
-    .stat{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
-    .num{font-size:clamp(22px,4vw,32px);font-weight:800;letter-spacing:.3px}
-    .stat small{color:var(--muted)}
-
-    /* Fun float for icons */
-    @keyframes floatY{0%{transform:translateY(0)}50%{transform:translateY(-4px)}100%{transform:translateY(0)}}
-    .v-icon{animation:floatY 4s ease-in-out infinite}
-
-    /* ===== Product preview ===== */
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:12px}
-    @media (max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
-    @media (max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:520px){.grid{grid-template-columns:1fr}}
-
-    .p-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
-    .p-card:hover{transform:translateY(-3px);box-shadow:0 14px 28px rgba(0,0,0,.10);border-color:color-mix(in oklab, var(--brand) 25%, var(--line))}
-    .p-card img{width:100%;height:180px;object-fit:cover}
+    /* Products preview grid */
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:10px}
+    @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.grid{grid-template-columns:1fr}}
+    .p-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .15s ease, box-shadow .15s ease}
+    .p-card:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(0,0,0,.08)}
+    .p-card img{width:100%;height:170px;object-fit:cover}
     .p-card .px{padding:12px}
     .p-card h4{margin:.2rem 0 .1rem}
     .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 
-    /* ===== Footer ===== */
-    footer{margin:46px 0 0;padding:24px 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px;background:#fff}
-    .footer-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
-    .footer-links a{color:var(--muted)}
+    /* Worldwide & News cards */
+    .two{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+    @media(max-width:980px){.two{grid-template-columns:1fr}}
+    .map{width:100%;height:320px;border:0;border-radius:14px;border:1px solid var(--line)}
 
-    /* ===== Modals ===== */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(11,18,38,.28);backdrop-filter:blur(6px);z-index:90}
+    /* Footer */
+    footer{padding:28px 0;border-top:1px solid var(--line);color:var(--muted);text-align:center}
+
+    /* Modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,24,39,.42);backdrop-filter:blur(6px);z-index:120}
     .modal.open{display:flex}
-    .sheet{width:min(780px,100%);background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line2)}
-    .sheet-title{margin:0;font-size:1.1rem;color:var(--ink)}
-    .close{background:#fff;border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:6px 10px;cursor:pointer}
+    .sheet{width:min(780px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+    .sheet-title{margin:0;font-size:1.1rem}
+    .close{background:#fff;border:1px solid var(--line);border-radius:10px;color:var(--accent);padding:6px 10px;cursor:pointer}
     .sheet-body{padding:16px}
-
-    /* ===== Form ===== */
     .pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
-    @media (max-width:860px){.pro-grid{grid-template-columns:1fr}}
+    @media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
     .field{display:flex;flex-direction:column;gap:6px}
-    .input,.selectEl,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+    .input,.selectEl,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--accent)}
     .textarea{min-height:140px;resize:vertical}
     .hint{font-size:12px;color:var(--muted)}
     .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
-    .divider{height:1px;background:var(--line2);margin:8px 0}
 
-    /* ===== RTL ===== */
-    body.rtl .links a{text-align:right}
-    body.rtl .pro-grid{direction:rtl}
-    body.rtl label{text-align:right}
-
-    /* ===== Scroll reveal animations ===== */
-    .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease}
+    /* Scroll reveal */
+    .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease}
     .reveal.visible{opacity:1;transform:none}
+
+    /* Anchor jump helper */
+    .anchor{position:relative;top:-84px}
   </style>
 </head>
 <body>
-  <!-- Header -->
   <header class="site" role="banner">
     <div class="wrap nav">
-      <button class="hamb" aria-label="Open menu" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
-
-      <div class="brand" aria-label="VetoCos Sahib">
-        <a href="index.html" aria-label="VetoCos home">
-          <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
-        </a>
-        <span class="brand-name"><strong>VetoCos</strong>&nbsp;Sahib</span>
+      <div class="left">
+        <a class="navlink" href="#home" data-nav>Home</a>
+        <a class="navlink" href="#products" data-nav>Products</a>
       </div>
 
-      <nav class="links" id="navlinks" aria-label="Primary">
-        <!-- Keep links exactly as requested -->
-        <a class="navlink active" href="index.html" data-i18n="nav.home">Home</a>
-        <a class="navlink" href="Products.html" data-i18n="nav.products">Products</a>
-        <a class="navlink" href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
-        <a class="navlink" href="News.html" data-i18n="nav.news">News</a>
+      <div class="brand" aria-label="Brand">
+        <a href="#home" aria-label="VetoCos home" style="display:inline-flex;align-items:center;gap:12px">
+          <img src="images/logo.png" alt="VetoCos logo">
+          <span>VetoCos SAHIB</span>
+        </a>
+      </div>
 
-        <button class="chip" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
-        <a class="chip" id="adminBtn" href="admin.html" style="display:none">Admin</a>
+      <div class="right">
+        <a class="navlink" href="#worldwide" data-nav>World Wide</a>
+        <a class="navlink" href="#news" data-nav>News</a>
+        <button class="chip" type="button" onclick="openContact()">Contact</button>
+      </div>
 
-        <!-- Logged out -->
-        <button class="chip" id="signinBtn" type="button" data-i18n="auth.login">Sign in</button>
-        <button class="chip" id="signupBtn" type="button" data-i18n="auth.signup">Sign up</button>
-
-        <!-- Logged in -->
-        <div class="acct" id="acctBlock" style="display:none">
-          <button class="chip" id="accountBtn" type="button" aria-haspopup="menu" aria-expanded="false">
-            <span class="avatar" aria-hidden="true" style="width:28px;height:28px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2));border:1px solid var(--line);"></span>
-            <span id="helloName" class="muted" style="font-size:.9rem"></span>
-          </button>
-          <div class="menu" id="accountMenu" role="menu" aria-hidden="true" style="position:absolute;top:44px;right:0;background:#fff;border:1px solid var(--line);border-radius:14px;min-width:260px;display:none;box-shadow:var(--shadow);overflow:hidden">
-            <div id="accountHeader" class="hdr muted" style="padding:8px 12px;border-bottom:1px solid var(--line2)"></div>
-            <a href="account.html"   role="menuitem" data-i18n="nav.account">Account settings</a>
-            <a href="my-order.html"  role="menuitem" data-i18n="orders.myOrders">My orders</a>
-            <a href="cart.html"      role="menuitem" data-i18n="nav.cart">Cart</a>
-            <a href="checkout.html"  role="menuitem" data-i18n="nav.checkout">Checkout</a>
-            <a href="vet-verify.html"role="menuitem" data-i18n="auth.vetVerify">Vet verification</a>
-            <button type="button" id="logoutBtn" role="menuitem" data-i18n="auth.logout">Sign out</button>
-          </div>
-        </div>
-
-        <!-- Language -->
-        <select id="lang-switch" aria-label="Language" class="select">
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="es">Español</option>
-          <option value="ar">العربية</option>
-        </select>
-      </nav>
+      <!-- Mobile drawer -->
+      <button class="hamb" aria-label="Open menu" onclick="document.getElementById('drawer').classList.toggle('open')">☰</button>
+      <div id="drawer" class="drawer">
+        <a class="navlink" href="#home" data-nav>Home</a>
+        <a class="navlink" href="#products" data-nav>Products</a>
+        <a class="navlink" href="#worldwide" data-nav>World Wide</a>
+        <a class="navlink" href="#news" data-nav>News</a>
+        <button class="chip" type="button" onclick="openContact()">Contact</button>
+      </div>
     </div>
   </header>
 
-  <!-- Main -->
-  <main class="wrap" id="main-content">
-    <section class="hero reveal" aria-label="Introduction">
-      <div>
-        <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
-        <h1 data-i18n="hero.title">Vet-aligned nutrition from trusted brands</h1>
-        <p class="lead" data-i18n="hero.lead">
-          We source and retail complementary feed from trusted brands to support urinary, liver, kidney, joint, and overall well-being. We don’t make therapeutic claims — we help you choose smart nutrition aligned with veterinary guidance.
-        </p>
-        <div class="cta">
-          <a class="btn primary" href="Products.html" data-i18n="hero.ctaProducts">Browse products →</a>
-          <a class="btn ghost" href="World Wide.html" data-i18n="hero.ctaWhere">Where to buy</a>
+  <main id="main">
+    <!-- HOME / HERO -->
+    <span id="home" class="anchor"></span>
+    <section class="page" aria-label="Home">
+      <div class="wrap section hero-inner reveal">
+        <div>
+          <span class="badge">Complementary feed — not medicine</span>
+          <h1>Vet‑aligned nutrition from trusted brands</h1>
+          <p class="lead">We retail complementary feed to support urinary, liver, renal, mobility and overall well‑being for dogs and cats. No therapeutic claims — just clear, responsible guidance.</p>
+          <div class="cta">
+            <a class="btn" href="#products" data-nav>Browse products →</a>
+            <a class="btn ghost" href="#worldwide" data-nav>Where to buy</a>
+          </div>
+        </div>
+        <div class="hero-card" aria-hidden="true">
+          <img src="images/header.jpg" alt="VetoCos hero" onerror="this.src='images/Product1.jpg'">
         </div>
       </div>
-      <div class="hero-card" aria-hidden="true">
-        <img alt="VetoCos hero" src="images/header.jpg" onerror="this.src='images/Product1.jpg'">
-      </div>
     </section>
 
-    <!-- Highlights (replaces pillars) -->
-    <section class="highlights reveal" aria-label="Why VetoCos">
-      <div class="value-grid">
-        <article class="value-card">
-          <div class="v-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3l3 6 6 .9-4.5 4.4 1 6.3L12 17l-5.5 3.6 1-6.3L3 9.9 9 9l3-6z" stroke="currentColor" stroke-width="1.5"/></svg>
-          </div>
-          <h3>Evidence‑led nutrition</h3>
-          <p>Formulas selected with veterinary input and published ingredient profiles. No therapeutic claims.</p>
-        </article>
-
-        <article class="value-card">
-          <div class="v-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5h16M4 12h16M4 19h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-          </div>
-          <h3>Crystal‑clear labels</h3>
-          <p>Plain‑language usage guidance, categories by need (urinary, liver, mobility, renal) and batch info.</p>
-        </article>
-
-        <article class="value-card">
-          <div class="v-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="7" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 7V5a3 3 0 013-3h4a3 3 0 013 3v2" stroke="currentColor" stroke-width="1.5"/></svg>
-          </div>
-          <h3>Food‑grade standards</h3>
-          <p>Manufactured with rigorous QA and traceability from lot to lot.</p>
-        </article>
-
-        <article class="value-card">
-          <div class="v-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12l6 6L21 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-          <h3>Trusted in practice</h3>
-          <p>Aligned with veterinary guidance and favored by owners seeking smart complementary feed.</p>
-        </article>
-      </div>
-
-      <!-- Animated stats -->
-      <div class="statbar card reveal" aria-label="Quick stats">
-        <div class="stat"><span class="num countup" data-target="40">0</span><small>+ products curated</small></div>
-        <div class="stat"><span class="num countup" data-target="12">0</span><small>+ needs covered</small></div>
-        <div class="stat"><span class="num countup" data-target="25">0</span><small>+ partner brands</small></div>
-        <div class="stat"><span class="num countup" data-target="100">0</span><small>% label transparency</small></div>
-      </div>
-    </section>
-
-    <!-- Popular products -->
-    <section class="reveal" style="margin-top:26px" aria-label="Popular products">
-      <div class="card">
+    <!-- PRODUCTS SECTION -->
+    <span id="products" class="anchor"></span>
+    <section class="page" aria-label="Products">
+      <div class="wrap section reveal">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2 style="margin:0" data-i18n="popular.title">Popular products</h2>
-          <a class="btn ghost" href="Products.html" data-i18n="popular.viewAll">View all</a>
+          <div>
+            <h2>Our Product Range</h2>
+            <p class="sub">Explore complementary alimentary products for common needs. Click any card for details.</p>
+          </div>
+          <a class="btn ghost" href="Products.html" title="Open full products page">Open page ↗</a>
         </div>
-        <div class="grid">
-          <a class="p-card" href="Product1.html" aria-label="Open Urocline Chien">
-            <img src="images/Product1.jpg" alt="Urocline Chien">
-            <div class="px">
-              <h4>Urocline Chien</h4>
-              <div class="p-meta"><span data-i18n="cat.urinary">Urinary care</span><span data-i18n="cat.dogsCats">Dogs & Cats</span></div>
-            </div>
-          </a>
-          <a class="p-card" href="Product2.html" aria-label="Open Hepatiale">
-            <img src="images/Product2.jpg" alt="Hepatiale">
-            <div class="px">
-              <h4>Hepatiale</h4>
-              <div class="p-meta"><span data-i18n="cat.liver">Liver support</span><span data-i18n="cat.dogsCats">Dogs & Cats</span></div>
-            </div>
-          </a>
-          <a class="p-card" href="Product9.html" aria-label="Open Art-Asuh">
-            <img src="images/Product9.jpg" alt="Art-Asuh">
-            <div class="px">
-              <h4>Art-Asuh</h4>
-              <div class="p-meta"><span data-i18n="cat.mobility">Mobility</span><span data-i18n="cat.dogsCats">Dogs & Cats</span></div>
-            </div>
-          </a>
-          <a class="p-card" href="Product11.html" aria-label="Open Renosan">
-            <img src="images/Product11.jpg" alt="Renosan">
-            <div class="px">
-              <h4>Renosan</h4>
-              <div class="p-meta"><span data-i18n="cat.renal">Renal support</span><span data-i18n="cat.dogsCats">Dogs & Cats</span></div>
-            </div>
-          </a>
+        <div class="grid" id="gridPreview"></div>
+      </div>
+    </section>
+
+    <!-- WORLDWIDE SECTION -->
+    <span id="worldwide" class="anchor"></span>
+    <section class="page" aria-label="Worldwide">
+      <div class="wrap section two reveal">
+        <div class="card">
+          <h2 style="margin:0 0 6px">VETOCOS SAHIB</h2>
+          <p class="sub" style="margin:0">Morocco · Africa</p>
+          <p class="muted" style="margin:.4rem 0 0">
+            LOT HAOUID EL MAA N°63, Skhirate, Rabat, Morocco<br>
+            Phone: <a href="tel:+212537742213">+212 537 74 22 13</a> · WhatsApp: <a href="https://wa.me/212537742213" target="_blank" rel="noopener">Chat</a>
+          </p>
+          <div class="card" style="margin-top:10px">
+            <strong>Administrative information</strong>
+            <ul style="margin:.4rem 0 0;padding-left:18px">
+              <li>Forme juridique: S.A.R.L.</li>
+              <li>Capital: 1 200 000 DHS</li>
+              <li>Année de création: 2012</li>
+              <li>RC: 90543 Rabat</li>
+              <li>ICE: 001544252000064</li>
+              <li>Activité: Importation, vente et distribution en gros de produits vétérinaires, cosmétiques, paramédicaux et matériel de chirurgie.</li>
+            </ul>
+          </div>
         </div>
+        <div class="card">
+          <h3 style="margin:.2rem 0 8px">Our location</h3>
+          <iframe class="map" src="https://www.google.com/maps?q=LOT%20HAOUID%20EL%20MAA%20N%2063%20Skhirate%20Rabat%20Morocco&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" aria-label="Map to VETOCOS SAHIB"></iframe>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+            <a class="btn" href="World Wide.html">Open page ↗</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEWS SECTION -->
+    <span id="news" class="anchor"></span>
+    <section class="page" aria-label="News">
+      <div class="wrap section reveal">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <h2>News & Updates</h2>
+            <p class="sub">Official announcements, product updates, and events.</p>
+          </div>
+          <a class="btn ghost" href="news.html">Open page ↗</a>
+        </div>
+        <div id="newsRow" class="grid"></div>
       </div>
     </section>
   </main>
 
-  <!-- Footer -->
-  <footer role="contentinfo">
-    <div class="wrap">
-      <div>© <span id="y"></span> VetoCos. <span data-i18n="footer.tag">Complementary feed for companion animals. Not intended to diagnose, treat, cure, or prevent disease.</span></div>
-      <div class="footer-links" role="navigation" aria-label="Footer">
-        <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
-        <a href="#" onclick="openContact();return false;" data-i18n="footer.contact">Contact</a>
-      </div>
-    </div>
+  <footer>
+    © <span id="y"></span> VetoCos · <span class="muted">Complementary feed for companion animals</span>
   </footer>
 
-  <!-- CONTACT MODAL (mailto to info@vetocos.com as per preference) -->
+  <!-- CONTACT MODAL -->
   <div id="contactModal" class="modal" aria-hidden="true">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
       <div class="sheet-head">
-        <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
-        <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
+        <h2 id="contactTitle" class="sheet-title">Contact Us</h2>
+        <button class="close" type="button" onclick="closeContact()">Close</button>
       </div>
       <div class="sheet-body">
         <div class="pro-grid">
-          <!-- Form -->
           <form id="contactForm" onsubmit="return sendMailto(event)">
             <div class="field">
-              <label for="topic" data-i18n="form.topic">Topic</label>
-              <select id="topic" name="topic" class="selectEl">
-                <option value="product"      data-i18n="form.topicProduct">Product question</option>
-                <option value="availability" data-i18n="form.topicAvailability">Availability / Where to buy</option>
-                <option value="order"        data-i18n="form.topicOrder">Order / Delivery</option>
-                <option value="feedback"     data-i18n="form.topicFeedback">Feedback</option>
-                <option value="other"        data-i18n="form.topicOther">Other</option>
+              <label for="topic">Topic</label>
+              <select id="topic" class="selectEl">
+                <option value="product">Product question</option>
+                <option value="availability">Availability / Where to buy</option>
+                <option value="order">Order / Delivery</option>
+                <option value="feedback">Feedback</option>
+                <option value="other">Other</option>
               </select>
             </div>
-
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-              <div class="field">
-                <label for="name" data-i18n="form.name">Name</label>
-                <input id="name" name="name" class="input" autocomplete="name" required
-                       data-i18n="form.namePH" data-i18n-attr="placeholder" placeholder="Full name">
-              </div>
-              <div class="field">
-                <label for="email" data-i18n="form.email">Email</label>
-                <input id="email" name="email" type="email" class="input" autocomplete="email" required
-                       inputmode="email" data-i18n="form.emailPH" data-i18n-attr="placeholder" placeholder="name@example.com">
-              </div>
+              <div class="field"><label for="name">Name</label><input id="name" class="input" placeholder="Full name" autocomplete="name" required></div>
+              <div class="field"><label for="email">Email</label><input id="email" type="email" class="input" placeholder="name@example.com" autocomplete="email" required></div>
             </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-              <div class="field">
-                <label for="country" data-i18n="form.country">Country</label>
-                <input id="country" name="country" class="input" data-i18n="form.countryPH" data-i18n-attr="placeholder" placeholder="Country (optional)">
-              </div>
-              <div class="field">
-                <label for="phone" data-i18n="form.phone">Phone (optional)</label>
-                <input id="phone" name="phone" class="input" inputmode="tel" pattern="^[0-9+() -]{6,}$"
-                       data-i18n="form.phonePH" data-i18n-attr="placeholder" placeholder="+212 537742213">
-                <span class="hint" data-i18n="form.phoneHint">Digits, spaces and +() - allowed</span>
-              </div>
-            </div>
-
-            <div class="field" style="margin-top:10px">
-              <label for="subject" data-i18n="form.subject">Subject</label>
-              <input id="subject" name="subject" class="input" maxlength="120" required
-                     data-i18n="form.subjectPH" data-i18n-attr="placeholder" placeholder="Question about a product…">
-            </div>
-
-            <div class="field" style="margin-top:10px">
-              <label for="message" data-i18n="form.message">Message / Comments</label>
-              <textarea id="message" name="message" class="textarea" maxlength="1200" required
-                        data-i18n="form.messagePH" data-i18n-attr="placeholder" placeholder="Write your help request or comment…"></textarea>
-              <div class="hint"><span id="msgCount">0</span>/1200</div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="field">
-              <label style="display:flex;gap:8px;align-items:flex-start">
-                <input type="checkbox" id="consent" required>
-                <span data-i18n="form.consent">I consent to VetoCos using my details to respond to this enquiry.</span>
-              </label>
-              <span class="hint" data-i18n="form.privacyNote">Your message is sent via your email app; we don't store it on this site.</span>
-            </div>
-
-            <div class="actions">
-              <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
-              <button class="btn primary" type="submit" data-i18n="form.send">Send</button>
-            </div>
+            <div class="field" style="margin-top:10px"><label for="subject">Subject</label><input id="subject" class="input" maxlength="120" placeholder="Question about a product…" required></div>
+            <div class="field" style="margin-top:10px"><label for="message">Message / Comments</label><textarea id="message" class="textarea" maxlength="1200" placeholder="Write your help request or comment…" required></textarea><div class="hint"><span id="msgCount">0</span>/1200</div></div>
+            <div class="field"><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="consent" required><span>I consent to VetoCos using my details to respond to this enquiry.</span></label><span class="hint">Your message is sent via your email app; we don't store it on this site.</span></div>
+            <div class="actions"><button class="close" type="button" onclick="closeContact()">Cancel</button><button class="btn" type="submit">Send</button></div>
           </form>
-
-          <!-- Company contact panel -->
           <div class="card" style="height:fit-content">
-            <h3 data-i18n="contact.reach">Reach us</h3>
-            <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
-            <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
-            <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
-            <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
-            <p><strong data-i18n="contact.hours">Hours:</strong> <span data-i18n="contact.hoursVal">Mon–Fri, 9:00–17:00</span></p>
+            <h3>Reach us</h3>
+            <p class="muted" style="margin:4px 0 10px">We’re happy to help with product questions, availability, or feedback.</p>
+            <p><strong>Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
+            <p><strong>Phone:</strong> <a href="tel:+212537742213">+212 537 74 22 13</a></p>
+            <p><strong>WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537 74 22 13</a></p>
+            <p><strong>Hours:</strong> Mon–Fri, 9:00–17:00</p>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- POLICY MODAL -->
-  <div id="policyModal" class="modal" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
-      <div class="sheet-head">
-        <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
-        <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
-      </div>
-      <div class="sheet-body">
-        <h3 data-i18n="policy.overviewTitle">Overview</h3>
-        <p data-i18n="policy.overviewText">VetoCos retails complementary feed (alimentary) products. This website works on desktop and mobile. We do not collect personal data unless you choose to contact us.</p>
-
-        <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
-        <ul>
-          <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
-          <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
-        </ul>
-
-        <h3 data-i18n="policy.useTitle">How we use data</h3>
-        <ul>
-          <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
-          <li data-i18n="policy.use2">We do not sell personal data.</li>
-        </ul>
-
-        <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
-        <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
-
-        <h3 data-i18n="policy.choiceTitle">Your choices</h3>
-        <ul>
-          <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
-          <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
-        </ul>
-
-        <h3 data-i18n="policy.contactTitle">Contact</h3>
-        <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
-        <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
-      </div>
-    </div>
-  </div>
-
-  <!-- i18n + helpers + reveal -->
   <script>
-    /* ================= i18n strings (unchanged) ================= */
-    const I18N = {
-      en: {"nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact","nav.account":"Account settings","nav.cart":"Cart","nav.checkout":"Checkout","hero.badge":"Complementary feed — not medicine","hero.title":"Vet-aligned nutrition from trusted brands","hero.lead":"We source and retail complementary feed from trusted brands to support urinary, liver, kidney, joint, and overall well-being. We don’t make therapeutic claims.","hero.ctaProducts":"Browse products →","hero.ctaWhere":"Where to buy","pillars.vetTitle":"Vet-aligned formulas","pillars.vetText":"Developed by brands with veterinary input for targeted dietary support across common needs.","pillars.labelTitle":"Label clarity","pillars.labelText":"Transparent ingredients and usage guidance with clear categories like urinary care, liver support, and mobility.","pillars.qualityTitle":"Quality first","pillars.qualityText":"Brands manufactured to high food-grade standards with batch traceability.","popular.title":"Popular products","popular.viewAll":"View all","cat.urinary":"Urinary care","cat.liver":"Liver support","cat.mobility":"Mobility","cat.renal":"Renal support","cat.dogsCats":"Dogs & Cats","footer.tag":"Complementary feed for companion animals. Not intended to diagnose, treat, cure, or prevent disease.","footer.policy":"Privacy & Policy","footer.contact":"Contact","contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.reachText":"We’re happy to help with product questions, availability, or feedback.","contact.email":"Email:","contact.phone":"Phone:","contact.whatsapp":"WhatsApp:","contact.hours":"Hours:","contact.hoursVal":"Mon–Fri, 9:00–17:00","form.topic":"Topic","form.topicProduct":"Product question","form.topicAvailability":"Availability / Where to buy","form.topicOrder":"Order / Delivery","form.topicFeedback":"Feedback","form.topicOther":"Other","form.name":"Name","form.email":"Email","form.country":"Country","form.phone":"Phone (optional)","form.subject":"Subject","form.message":"Message / Comments","form.namePH":"Full name","form.emailPH":"name@example.com","form.countryPH":"Country (optional)","form.phonePH":"+212 537742213","form.subjectPH":"Question about a product…","form.messagePH":"Write your help request or comment…","form.phoneHint":"Digits, spaces and +() - allowed","form.consent":"I consent to VetoCos using my details to respond to this enquiry.","form.privacyNote":"Your message is sent via your email app; we don't store it on this site.","form.cancel":"Cancel","form.send":"Send","policy.title":"Privacy & Policy","policy.close":"Close","policy.overviewTitle":"Overview","policy.overviewText":"VetoCos retails complementary feed (alimentary) products. This website works on desktop and mobile. We do not collect personal data unless you choose to contact us.","policy.dataTitle":"Data we may receive","policy.data1":"Messages you send via the contact form (your name, email, and message content).","policy.data2":"Basic, anonymized analytics (page views, device type) to improve the site.","policy.useTitle":"How we use data","policy.use1":"To respond to your requests and improve our products and site experience.","policy.use2":"We do not sell personal data.","policy.cookiesTitle":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.","policy.choiceTitle":"Your choices","policy.choice1":"You can request that we delete your message and contact details at any time.","policy.choice2":"You can disable cookies in your browser settings.","policy.contactTitle":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Last updated:","auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification","orders.myOrders":"My orders"},
-      fr:{"nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact","nav.account":"Paramètres du compte","nav.cart":"Panier","nav.checkout":"Paiement","hero.badge":"Complément alimentaire — pas un médicament","hero.title":"Nutrition alignée vétérinaire de marques de confiance","hero.lead":"Nous sélectionnons et distribuons des compléments alimentaires de marques fiables pour soutenir la santé urinaire, hépatique, rénale, articulaire et le bien-être global. Sans allégations thérapeutiques.","hero.ctaProducts":"Voir les produits →","hero.ctaWhere":"Où acheter","pillars.vetTitle":"Formules alignées vétérinaires","pillars.vetText":"Développées par des marques avec avis vétérinaire pour un soutien ciblé.","pillars.labelTitle":"Clarté de l’étiquetage","pillars.labelText":"Ingrédients transparents, conseils d’utilisation et catégories claires.","pillars.qualityTitle":"Qualité d’abord","pillars.qualityText":"Marques fabriquées selon des standards élevés et traçabilité des lots.","popular.title":"Produits populaires","popular.viewAll":"Tout voir","cat.urinary":"Santé urinaire","cat.liver":"Soutien hépatique","cat.mobility":"Mobilité","cat.renal":"Soutien rénal","cat.dogsCats":"Chiens & Chats","footer.tag":"Complément alimentaire pour animaux de compagnie. Non destiné à diagnostiquer, traiter, guérir ou prévenir une maladie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact","contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Aide pour questions produit, disponibilité ou avis.","contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00","form.topic":"Objet","form.topicProduct":"Question produit","form.topicAvailability":"Disponibilité / Où acheter","form.topicOrder":"Commande / Livraison","form.topicFeedback":"Avis","form.topicOther":"Autre","form.name":"Nom","form.email":"E-mail","form.country":"Pays","form.phone":"Téléphone (optionnel)","form.subject":"Sujet","form.message":"Message / Commentaires","form.namePH":"Nom complet","form.emailPH":"nom@exemple.com","form.countryPH":"Pays (optionnel)","form.phonePH":"+212 537742213","form.subjectPH":"Question à propos d’un produit…","form.messagePH":"Écrivez votre demande…","form.phoneHint":"Chiffres, espaces et +() - autorisés","form.consent":"J’autorise VetoCos à utiliser mes coordonnées pour répondre.","form.privacyNote":"Votre message est envoyé via votre application e-mail ; non stocké ici.","form.cancel":"Annuler","form.send":"Envoyer","policy.title":"Confidentialité & Politique","policy.close":"Fermer","policy.overviewTitle":"Aperçu","policy.overviewText":"VetoCos distribue des compléments alimentaires. Site compatible ordinateur et mobile. Aucune donnée personnelle collectée sauf si vous nous contactez.","policy.dataTitle":"Données reçues","policy.data1":"Messages (nom, e-mail, contenu).","policy.data2":"Analyses anonymisées de base.","policy.useTitle":"Utilisation","policy.use1":"Répondre et améliorer l’expérience.","policy.use2":"Nous ne vendons pas de données.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies essentiels uniquement si nécessaires.","policy.choiceTitle":"Vos choix","policy.choice1":"Demandez la suppression de vos données.","policy.choice2":"Désactivez les cookies dans le navigateur.","policy.contactTitle":"Contact","policy.contactText":"Confidentialité : <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Dernière mise à jour :","auth.login":"Connexion","auth.signup":"Créer un compte","auth.logout":"Déconnexion","auth.vetVerify":"Vérification vétérinaire","orders.myOrders":"Mes commandes"},
-      es:{"nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"En el mundo","nav.news":"Noticias","nav.contact":"Contacto","nav.account":"Ajustes de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar","hero.badge":"Alimento complementario — no medicamento","hero.title":"Nutrición alineada con veterinarios de marcas de confianza","hero.lead":"Seleccionamos y comercializamos alimentos complementarios de marcas de confianza para apoyar la salud urinaria, hepática, renal, articular y el bienestar general. Sin afirmaciones terapéuticas: te ayudamos a elegir nutrición inteligente alineada con el criterio veterinario.","hero.ctaProducts":"Ver productos →","hero.ctaWhere":"Dónde comprar","pillars.vetTitle":"Fórmulas alineadas con veterinarios","pillars.vetText":"Desarrolladas por marcas con aporte veterinario para apoyo específico.","pillars.labelTitle":"Claridad de la etiqueta","pillars.labelText":"Ingredientes transparentes y guía clara de uso.","pillars.qualityTitle":"Calidad primero","pillars.qualityText":"Marcas con altos estándares y trazabilidad.","popular.title":"Productos populares","popular.viewAll":"Ver todo","cat.urinary":"Cuidado urinario","cat.liver":"Apoyo hepático","cat.mobility":"Movilidad","cat.renal":"Apoyo renal","cat.dogsCats":"Perros y Gatos","footer.tag":"Alimento complementario para animales de compañía. No pretende diagnosticar, tratar, curar ni prevenir enfermedades.","footer.policy":"Privacidad y Política","footer.contact":"Contacto","contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Escríbenos","contact.reachText":"Encantados de ayudar con dudas de producto, disponibilidad o comentarios.","contact.email":"Correo:","contact.phone":"Teléfono:","contact.whatsapp":"WhatsApp:","contact.hours":"Horario:","contact.hoursVal":"Lun–Vie, 9:00–17:00","form.topic":"Tema","form.topicProduct":"Consulta de producto","form.topicAvailability":"Disponibilidad / Dónde comprar","form.topicOrder":"Pedido / Entrega","form.topicFeedback":"Comentarios","form.topicOther":"Otro","form.name":"Nombre","form.email":"Correo","form.country":"País","form.phone":"Teléfono (opcional)","form.subject":"Asunto","form.message":"Mensaje / Comentarios","form.namePH":"Nombre completo","form.emailPH":"nombre@ejemplo.com","form.countryPH":"País (opcional)","form.phonePH":"+212 537742213","form.subjectPH":"Consulta sobre un producto…","form.messagePH":"Escribe tu solicitud…","form.phoneHint":"Se permiten dígitos, espacios y +() -","form.consent":"Autorizo a VetoCos a usar mis datos para responder.","form.privacyNote":"Se envía con tu app de correo; no se guarda aquí.","form.cancel":"Cancelar","form.send":"Enviar","policy.title":"Privacidad y Política","policy.close":"Cerrar","policy.overviewTitle":"Resumen","policy.overviewText":"VetoCos comercializa complementos alimentarios. Sitio válido en ordenador y móvil. No recopilamos datos personales salvo que nos contactes.","policy.dataTitle":"Datos que podemos recibir","policy.data1":"Mensajes enviados (nombre, correo, contenido).","policy.data2":"Analítica básica y anónima.","policy.useTitle":"Cómo usamos los datos","policy.use1":"Responder y mejorar la experiencia.","policy.use2":"No vendemos datos.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies esenciales solo si son necesarias.","policy.choiceTitle":"Tus opciones","policy.choice1":"Puedes pedir eliminar tus datos.","policy.choice2":"Puedes desactivar las cookies.","policy.contactTitle":"Contacto","policy.contactText":"Privacidad: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Última actualización:","auth.login":"Iniciar sesión","auth.signup":"Crear cuenta","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria","orders.myOrders":"Mis pedidos"},
-      ar:{"nav.home":"الصفحة الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا","nav.account":"إعدادات الحساب","nav.cart":"السلة","nav.checkout":"الدفع","hero.badge":"غذاء تكميلي — ليس دواءً","hero.title":"تغذية متوافقة مع الإرشادات البيطرية من علامات موثوقة","hero.lead":".نوفّر ونبيع أغذية تكميلية من علامات موثوقة لدعم صحة المسالك البولية والكبد والكلى والمفاصل والرفاهية العامة. دون ادعاءات علاجية.","hero.ctaProducts":"تصفح المنتجات →","hero.ctaWhere":"أماكن الشراء","pillars.vetTitle":"تركيبات متوافقة مع الطب البيطري","pillars.vetText":"مطوّرة من علامات تجارية بمساهمة بيطرية لدعم غذائي موجّه.","pillars.labelTitle":"وضوح الملصق","pillars.labelText":"مكوّنات شفافة وإرشادات استخدام واضحة.","pillars.qualityTitle":"الجودة أولاً","pillars.qualityText":"علامات بمعايير عالية وتتبع للدفعات.","popular.title":"منتجات شائعة","popular.viewAll":"عرض الكل","cat.urinary":"العناية البولية","cat.liver":"دعم الكبد","cat.mobility":"الحركة","cat.renal":"دعم الكلى","cat.dogsCats":"كلاب وقطط","footer.tag":"غذاء تكميلي للحيوانات الأليفة. ليس مخصصًا للتشخيص أو العلاج أو الشفاء أو الوقاية من الأمراض.","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا","contact.title":"اتصل بنا","contact.close":"إغلاق","contact.reach":"تواصل معنا","contact.reachText":"نساعدك في الاستفسارات حول المنتجات أو التوفر أو الملاحظات.","contact.email":"البريد:","contact.phone":"الهاتف:","contact.whatsapp":"واتساب:","contact.hours":"الساعات:","contact.hoursVal":"الاثنين–الجمعة، 9:00–17:00","form.topic":"الموضوع","form.topicProduct":"استفسار عن منتج","form.topicAvailability":"التوفر / أين أشتري","form.topicOrder":"طلب / توصيل","form.topicFeedback":"ملاحظات","form.topicOther":"أخرى","form.name":"الاسم","form.email":"البريد الإلكتروني","form.country":"الدولة","form.phone":"الهاتف (اختياري)","form.subject":"العنوان","form.message":"الرسالة / التعليقات","form.namePH":"الاسم الكامل","form.emailPH":"name@example.com","form.countryPH":"الدولة (اختياري)","form.phonePH":"+212 537742213","form.subjectPH":"سؤال حول منتج…","form.messagePH":"اكتب طلبك…","form.phoneHint":"مسموح بالأرقام والمسافات والرموز +() -","form.consent":"أوافق على استخدام VetoCos لبياناتي للرد.","form.privacyNote":"يُرسل عبر تطبيق البريد لديك؛ لا نخزنه هنا.","form.cancel":"إلغاء","form.send":"إرسال","policy.title":"الخصوصية والسياسة","policy.close":"إغلاق","policy.overviewTitle":"نظرة عامة","policy.overviewText":"VetoCos يبيع أغذية تكميلية. يعمل الموقع على الحاسوب والهاتف. لا نجمع بيانات شخصية إلا إذا تواصلت معنا.","policy.dataTitle":"البيانات المستلمة","policy.data1":"رسائل نموذج الاتصال (الاسم والبريد والمحتوى).","policy.data2":"تحليلات أساسية مجهولة.","policy.useTitle":"الاستخدام","policy.use1":"للرد وتحسين التجربة.","policy.use2":"لا نبيع البيانات.","policy.cookiesTitle":"ملفات الارتباط","policy.cookiesText":"نستخدم الضروري فقط.","policy.choiceTitle":"خياراتك","policy.choice1":"يمكنك طلب حذف بياناتك.","policy.choice2":"يمكنك تعطيل الكوكيز.","policy.contactTitle":"تواصل","policy.contactText":"للخصوصية: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"آخر تحديث:","auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"التحقق البيطري","orders.myOrders":"طلباتي"}
-    };
+    // Footer year
+    document.getElementById('y').textContent = new Date().getFullYear();
 
-    function translateAttributes(dict){
-      document.querySelectorAll("[data-i18n-attr]").forEach(el=>{
-        const key = el.getAttribute("data-i18n");
-        const attrs = (el.getAttribute("data-i18n-attr")||"").split(",").map(s=>s.trim()).filter(Boolean);
-        const val = dict[key]; if (val==null) return;
-        attrs.forEach(a=>el.setAttribute(a,val));
-      });
+    // Smooth anchor scroll + active state
+    function smoothTo(hash){
+      const el = document.querySelector(hash);
+      if (!el) return;
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: 'smooth' });
     }
-    function applyLang(lang){
-      const dict = I18N[lang] || I18N.en;
-      document.querySelectorAll("[data-i18n]").forEach(el=>{
-        const k = el.getAttribute("data-i18n");
-        if (dict[k]!=null) el.innerHTML = dict[k];
-      });
-      translateAttributes(dict);
+    document.querySelectorAll('[data-nav]').forEach(a=>{
+      a.addEventListener('click', (e)=>{ if(a.getAttribute('href')?.startsWith('#')){ e.preventDefault(); smoothTo(a.getAttribute('href')); document.getElementById('drawer')?.classList.remove('open'); }});
+    });
 
-      const html=document.documentElement; html.lang=lang;
-      if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
-      else { html.dir="ltr"; document.body.classList.remove("rtl"); }
-
-      localStorage.setItem("lang",lang);
-      const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
+    // Scroll reveal
+    function initReveal(){
+      const els=[...document.querySelectorAll('.reveal'), ...document.querySelectorAll('.p-card')];
+      const io=new IntersectionObserver((entries)=>{ entries.forEach((e)=>{ if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } }); },{threshold:.12});
+      els.forEach(el=>io.observe(el));
     }
 
-    /* Modals & mailto */
+    // Contact modal helpers
     const contactModal=document.getElementById('contactModal');
-    const policyModal=document.getElementById('policyModal');
     function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
     function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
-    function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
-    function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
-    [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
-
-    const toAddress='info@vetocos.com';
+    contactModal.addEventListener('click',(e)=>{ if(e.target===contactModal) closeContact(); });
     function sendMailto(e){
       e.preventDefault();
       const topic=document.getElementById('topic').value;
       const name=document.getElementById('name').value.trim();
       const email=document.getElementById('email').value.trim();
-      const country=document.getElementById('country').value.trim();
-      const phone=document.getElementById('phone').value.trim();
       const subject=document.getElementById('subject').value.trim()||'Website enquiry';
       const message=document.getElementById('message').value.trim();
       if(!document.getElementById('consent').checked) return false;
-
-      const lines=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,country?`Country: ${country}`:null,phone?`Phone: ${phone}`:null,'',message].filter(Boolean).join('%0A');
-      window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
+      const body=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,'',message].map(encodeURIComponent).join('%0A');
+      window.location.href=`mailto:${encodeURIComponent('info@vetocos.com')}?subject=${encodeURIComponent(subject)}&body=${body}`;
       return false;
     }
 
-    /* Reveal on scroll */
-    function initReveal(){
-      const els=[...document.querySelectorAll('.reveal'), ...document.querySelectorAll('.p-card')];
-      const io=new IntersectionObserver((entries)=>{
-        entries.forEach((e)=>{
-          if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
-        });
-      },{root:null,threshold:.12});
-      els.forEach(el=>io.observe(el));
-    }
+    // Textarea counter
+    (function(){ const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }})();
 
-    /* Count-up animation */
-    function initCounters(){
-      const nums=[...document.querySelectorAll('.countup')];
-      if(!nums.length) return;
-      const io=new IntersectionObserver((entries)=>{
-        entries.forEach(({isIntersecting,target})=>{
-          if(!isIntersecting) return;
-          const max=Number(target.getAttribute('data-target')||0);
-          const dur=1200; const start=performance.now();
-          const step=(t)=>{ const p=Math.min((t-start)/dur,1); target.textContent=Math.floor(max*p).toString(); if(p<1) requestAnimationFrame(step); };
-          requestAnimationFrame(step);
-          io.unobserve(target);
-        });
-      },{threshold:.4});
-      nums.forEach(n=>io.observe(n));
-    }
+    // Lightweight preview data (could be replaced by Supabase)
+    const PREVIEW = [
+      {href:'Product1.html', img:'images/Product1.jpg', name:'Urocline Chien', meta:['Urinary care','Dogs & Cats']},
+      {href:'Product2.html', img:'images/Product2.jpg', name:'Hepatiale', meta:['Liver support','Dogs & Cats']},
+      {href:'Product9.html', img:'images/Product9.jpg', name:'Art-Asuh', meta:['Mobility','Dogs & Cats']},
+      {href:'Product11.html', img:'images/Product11.jpg', name:'Renosan', meta:['Renal support','Dogs & Cats']}
+    ];
+    const grid=document.getElementById('gridPreview');
+    grid.innerHTML = PREVIEW.map(p=>`<a class="p-card" href="${p.href}" aria-label="Open ${p.name}"><img src="${p.img}" alt="${p.name}"><div class="px"><h4>${p.name}</h4><div class="p-meta">${p.meta.map(m=>`<span>${m}</span>`).join('')}</div></div></a>`).join('');
 
-    document.addEventListener("DOMContentLoaded", ()=>{
-      const y=document.getElementById('y'); if(y) y.textContent=new Date().getFullYear();
-      const d=new Date(); const month=d.toLocaleString('default',{month:'long'}); const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+    // News mini feed (placeholder)
+    const news=document.getElementById('newsRow');
+    news.innerHTML = [
+      {d:'2025-07-01', t:'New distributor in MENA', c:'We welcome a new regional partner.'},
+      {d:'2025-05-20', t:'Art-Asuh updated pack', c:'Now available in XL 90 comprimés.'},
+      {d:'2025-03-15', t:'Vet verification flow', c:'Vets can verify to unlock price tiers.'}
+    ].map(n=>`<div class="p-card"><div class="px"><div class="p-meta">${new Date(n.d).toLocaleDateString()}</div><h4>${n.t}</h4><p class="p-meta">${n.c}</p></div></div>`).join('');
 
-      const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
-      const sel=document.getElementById("lang-switch");
-      if (sel){ sel.value=initial; sel.addEventListener("change", e=>applyLang(e.target.value)); }
-
-      const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount');
-      if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
-
-      initReveal();
-      initCounters();
-    });
+    // Initialize
+    document.addEventListener('DOMContentLoaded', ()=>{ initReveal(); });
   </script>
+</body>
+</html>
 
-  <!-- Supabase (auth-aware header) -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const supa = supabase.createClient(
-      "https://qdepgviimbcdlozjpbhm.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
-      { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
-    );
-    const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
 
-    const signinBtn  = document.getElementById('signinBtn');
-    const signupBtn  = document.getElementById('signupBtn');
-    const acctBlock  = document.getElementById('acctBlock');
-    const accountBtn = document.getElementById('accountBtn');
-    const accountMenu= document.getElementById('accountMenu');
-    const accountHeader = document.getElementById('accountHeader');
-    const helloName  = document.getElementById('helloName');
-    const adminBtn   = document.getElementById('adminBtn');
-    const logoutBtn  = document.getElementById('logoutBtn');
+<!-- ============ Products.html (redirect shell) ============ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VetoCos | Products</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="refresh" content="0; url=index.html#products">
+  <script>window.location.replace('index.html#products');</script>
+</head>
+<body>
+  <noscript>
+    <p>Products has moved. <a href="index.html#products">Click here</a>.</p>
+  </noscript>
+</body>
+</html>
 
-    if (signinBtn) signinBtn.addEventListener('click', ()=>{ location.href='login.html?redirect='+encodeURIComponent('index.html'); });
-    if (signupBtn) signupBtn.addEventListener('click', ()=>{ location.href='signup.html?redirect='+encodeURIComponent('index.html'); });
-    if (logoutBtn) logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
 
-    if (accountBtn) accountBtn.addEventListener('click', ()=>{
-      const open = accountMenu.style.display !== 'block';
-      accountMenu.style.display = open ? 'block' : 'none';
-      accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
-      accountBtn.setAttribute('aria-expanded', String(open));
-      if (open){
-        const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.style.display='none'; accountBtn.setAttribute('aria-expanded','false'); document.removeEventListener('click', onDoc);} };
-        setTimeout(()=>document.addEventListener('click', onDoc),0);
-      }
-    });
+<!-- ============ World Wide.html (redirect shell) ============ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VetoCos | Worldwide</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="refresh" content="0; url=index.html#worldwide">
+  <script>window.location.replace('index.html#worldwide');</script>
+</head>
+<body>
+  <noscript>
+    <p>Worldwide has moved. <a href="index.html#worldwide">Click here</a>.</p>
+  </noscript>
+</body>
+</html>
 
-    async function refreshHeader(){
-      const { data:{ session } } = await supa.auth.getSession();
-      const loggedIn = !!session?.user;
 
-      if (!loggedIn){
-        if (signinBtn) signinBtn.style.display='inline-block';
-        if (signupBtn) signupBtn.style.display='inline-block';
-        if (acctBlock) acctBlock.style.display='none';
-        if (adminBtn) adminBtn.style.display='none';
-        return;
-      }
-
-      if (signinBtn) signinBtn.style.display='none';
-      if (signupBtn) signupBtn.style.display='none';
-      if (acctBlock) acctBlock.style.display='inline-flex';
-
-      const email = session.user.email || '';
-      let display = email;
-      let isAdmin = false;
-
-      try{
-        const { data: p } = await supa
-          .from('profiles')
-          .select('first_name,last_name,is_admin')
-          .eq('id', session.user.id)
-          .maybeSingle();
-
-        const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
-        if (full) display = full;
-        isAdmin = !!p?.is_admin;
-      } catch (err) {
-        console.warn('Profile fetch error', err);
-      }
-
-      if (helloName) helloName.textContent = display;
-      if (accountHeader) accountHeader.innerHTML = `<div><strong>${display}</strong><div class="muted">${email}</div></div>`;
-      if (adminBtn) adminBtn.style.display = (isAdmin || (email && SUPER_ADMINS.includes(email))) ? 'inline-block' : 'none';
-    }
-
-    document.addEventListener('DOMContentLoaded', refreshHeader);
-    supa.auth.onAuthStateChange(()=>{ refreshHeader(); });
-  </script>
+<!-- ============ news.html (redirect shell) ============ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VetoCos | News</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="refresh" content="0; url=index.html#news">
+  <script>window.location.replace('index.html#news');</script>
+</head>
+<body>
+  <noscript>
+    <p>News has moved. <a href="index.html#news">Click here</a>.</p>
+  </noscript>
 </body>
 </html>
