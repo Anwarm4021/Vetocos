@@ -1,253 +1,294 @@
-<!-- =============================
- VetoCos — Unified White Theme Site
- Includes:
- 1) index.html  (single-page sections: Home, Products, Worldwide, News)
- 2) Products.html      (redirects to index#products)
- 3) World Wide.html    (redirects to index#worldwide)
- 4) news.html          (redirects to index#news)
-
- Conventions kept:
- - Contact button opens professional modal; mailto:info@vetocos.com
- - Brand "VetoCos SAHIB" centered with logo
- - Smooth section snapping on wheel/trackpad scroll + smooth anchor scroll
- - White background, premium cards, scroll-reveal animations
- - Supabase auth-aware header (minimal)
-================================= -->
-
-<!-- ============ index.html ============ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>VetoCos | Complementary Feed for Pets</title>
+  <title>VetoCos SAHIB — Complementary Feed for Pets</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="VetoCos — complementary feed (alimentary) for dogs & cats. Vet‑aligned guidance, trusted brands." />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta name="description" content="VetoCos SAHIB — complementary feed (alimentary) for dogs & cats. Trusted brands, vet-aligned guidance." />
+  <meta name="robots" content="index, follow">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      /* Light theme */
-      --bg:#ffffff; --text:#0b1220; --muted:#5b6a86; --line:#e6e9f2; --line2:#f1f3f9;
-      --brand:#0563ff; --brand2:#10b981; --accent:#111827;
-      --card:#ffffff; --max:1140px; --radius:18px; --shadow:0 12px 36px rgba(16,24,40,.12);
+      --bg:#ffffff;
+      --text:#111318;
+      --muted:#5c6570;
+      --line:#e8ecf1;
+      --brand:#0ea5e9;   /* cyan-ish */
+      --brand2:#10b981;  /* green */
+      --max:1120px;
+      --radius:18px;
+      --shadow:0 12px 36px rgba(2,6,23,.08);
     }
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
     img{max-width:100%;display:block}
     a{color:var(--brand);text-decoration:none}
-    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+    :focus-visible{outline:3px solid color-mix(in oklab, var(--brand) 75%, white);outline-offset:2px;border-radius:10px}
 
-    /* Header (brand centered) */
-    header.site{position:sticky;top:0;z-index:80;background:rgba(255,255,255,.8);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-    .nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px 0}
-    .brand{grid-column:2/3;display:flex;align-items:center;justify-content:center;gap:12px;font-weight:800;letter-spacing:.2px}
-    .brand img{width:56px;height:auto;filter:drop-shadow(0 6px 12px rgba(0,0,0,.08))}
-    .brand span{font-size:1.1rem}
-    .left,.right{display:flex;gap:8px;align-items:center}
-    .left{justify-content:flex-start}
-    .right{justify-content:flex-end}
-    .navlink,.chip,button.btn,select.select{padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--accent)}
-    .navlink:hover,.navlink.active{background:var(--line2)}
-    .chip{background:linear-gradient(135deg,rgba(5,99,255,.06),rgba(16,185,129,.06));cursor:pointer;border-color:var(--line)}
-    .hamb{display:none}
-    @media(max-width:900px){
-      .nav{grid-template-columns:1fr auto 1fr}
-      .left{display:none}
-      .hamb{display:inline-flex;justify-self:end;border:1px solid var(--line);border-radius:12px;background:#fff}
-      .drawer{position:fixed;top:60px;right:18px;background:#fff;border:1px solid var(--line);border-radius:14px;display:none;flex-direction:column;min-width:220px;box-shadow:var(--shadow);padding:10px}
-      .drawer.open{display:flex}
-      .drawer a,.drawer button,.drawer select{margin:4px 0}
+    /* ----- Header (Centered brand) ----- */
+    header.site{
+      position:sticky; top:0; z-index:50;
+      background:#fff; border-bottom:1px solid var(--line);
+      backdrop-filter:saturate(1.2) blur(6px);
+    }
+    .nav{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:10px 18px}
+    .brand-center{display:flex;align-items:center;gap:10px;justify-self:center}
+    .brand-logo{width:56px; height:auto}
+    .brand-name{font-weight:800; letter-spacing:.2px}
+    .nav-left,.nav-right{display:flex;gap:10px;align-items:center;justify-content:flex-start}
+    .nav-right{justify-content:flex-end}
+    .navlink,.chip{
+      padding:8px 12px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--text)
+    }
+    .navlink:hover{background:#f6f8fb;border-color:var(--line)}
+    .chip{background:linear-gradient(135deg,#ebf8ff,#ecfdf5);border:1px solid var(--line);cursor:pointer}
+    .hamb{display:none;border:1px solid var(--line);padding:8px 10px;border-radius:12px;background:#f8fafc;cursor:pointer}
+    @media (max-width:900px){
+      .nav{grid-template-columns:auto 1fr auto}
+      .nav-left{display:none}
+      .nav-right{display:none}
+      .hamb{display:inline-block}
+      .drawer{position:fixed;inset:60px 0 auto 0;background:#fff;border-top:1px solid var(--line);box-shadow:var(--shadow);display:none}
+      .drawer.open{display:block}
+      .drawer .links{max-width:var(--max);margin:0 auto;padding:10px 18px;display:grid;gap:8px}
+      .drawer a,.drawer button{display:block;text-align:left}
     }
 
-    /* Full-page sections (snap) */
-    main{scroll-snap-type:y mandatory}
-    section.page{min-height:100svh;display:grid;place-items:center;padding:24px 0;scroll-snap-align:start}
-
-    /* Hero */
-    .hero-inner{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:center}
-    .badge{display:inline-flex;gap:8px;align-items:center;background:var(--line2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
-    h1{font-size:clamp(34px,5.4vw,56px);line-height:1.12;margin:10px 0}
-    .lead{font-size:clamp(16px,2.2vw,19px);color:var(--muted);margin:0 0 18px}
+    /* ----- Sections / layout ----- */
+    main{scroll-behavior:smooth}
+    section{max-width:var(--max);margin:0 auto;padding:48px 18px}
+    .hero{
+      display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:center;min-height:78vh
+    }
+    .badge{display:inline-flex;gap:8px;align-items:center;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#f8fafc;color:var(--muted);font-size:13px}
+    h1{font-size:clamp(32px,5vw,56px);line-height:1.12;margin:12px 0}
+    .lead{font-size:clamp(16px,2.1vw,20px);color:var(--muted);margin:0 0 18px}
     .cta{display:flex;gap:10px;flex-wrap:wrap}
-    .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:linear-gradient(135deg,rgba(5,99,255,.08),rgba(16,185,129,.08));color:var(--accent);font-weight:700;cursor:pointer}
-    .btn.ghost{background:#fff}
-    .hero-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;min-height:360px}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:linear-gradient(135deg,#ebf8ff,#ecfdf5);color:var(--text);font-weight:600}
+    .ghost{background:#fff}
+    .hero-card{border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;min-height:340px;display:grid;place-items:center}
     .hero-card img{width:100%;height:100%;max-height:520px;object-fit:cover}
-    @media(max-width:980px){.hero-inner{grid-template-columns:1fr}.hero-card{order:-1}}
 
-    /* Section shells */
-    .section{width:100%}
-    .section h2{font-size:clamp(24px,3.6vw,38px);margin:0}
-    .sub{color:var(--muted);margin:6px 0 14px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+    /* ----- Products preview ----- */
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    @media (max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+    @media (max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:520px){.grid{grid-template-columns:1fr}}
+    .card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);transition:transform .18s ease, box-shadow .18s ease}
+    .card:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(2,6,23,.1)}
+    .card img{width:100%;height:170px;object-fit:cover}
+    .px{padding:12px}
+    .px h4{margin:.25rem 0 .1rem}
+    .muted{color:var(--muted)}
 
-    /* Products preview grid */
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:10px}
-    @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:520px){.grid{grid-template-columns:1fr}}
-    .p-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .15s ease, box-shadow .15s ease}
-    .p-card:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(0,0,0,.08)}
-    .p-card img{width:100%;height:170px;object-fit:cover}
-    .p-card .px{padding:12px}
-    .p-card h4{margin:.2rem 0 .1rem}
-    .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+    /* ----- Worldwide block ----- */
+    .ww{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    @media (max-width:980px){.ww{grid-template-columns:1fr}}
+    .sheet{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px}
+    iframe.map{width:100%;height:320px;border:0;border-radius:12px;border:1px solid var(--line)}
 
-    /* Worldwide & News cards */
-    .two{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
-    @media(max-width:980px){.two{grid-template-columns:1fr}}
-    .map{width:100%;height:320px;border:0;border-radius:14px;border:1px solid var(--line)}
+    /* ----- News preview ----- */
+    .news-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    @media (max-width:1000px){.news-grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:680px){.news-grid{grid-template-columns:1fr}}
+    .news-card .thumb{width:100%;height:170px;object-fit:cover;background:#f6f8fb;border-bottom:1px solid var(--line)}
+    .news-card .title{margin:.2rem 0 .1rem}
 
-    /* Footer */
-    footer{padding:28px 0;border-top:1px solid var(--line);color:var(--muted);text-align:center}
+    /* ----- Footer ----- */
+    footer{margin:46px 0 0;padding:26px 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
 
-    /* Modal */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,24,39,.42);backdrop-filter:blur(6px);z-index:120}
+    /* ----- Modals ----- */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,24,39,.32);backdrop-filter:blur(6px);z-index:80}
     .modal.open{display:flex}
-    .sheet{width:min(780px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+    .sheet-modal{width:min(780px,100%);background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
     .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
     .sheet-title{margin:0;font-size:1.1rem}
-    .close{background:#fff;border:1px solid var(--line);border-radius:10px;color:var(--accent);padding:6px 10px;cursor:pointer}
+    .close{background:#fff;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
     .sheet-body{padding:16px}
     .pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
-    @media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
+    @media (max-width:860px){.pro-grid{grid-template-columns:1fr}}
     .field{display:flex;flex-direction:column;gap:6px}
-    .input,.selectEl,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--accent)}
+    .input,.selectEl,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text)}
     .textarea{min-height:140px;resize:vertical}
     .hint{font-size:12px;color:var(--muted)}
     .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+    .divider{height:1px;background:var(--line);margin:8px 0}
 
-    /* Scroll reveal */
-    .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease}
-    .reveal.visible{opacity:1;transform:none}
-
-    /* Anchor jump helper */
-    .anchor{position:relative;top:-84px}
+    /* ----- Scroll reveal animations ----- */
+    .reveal{opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease}
+    .reveal.in{opacity:1; transform:none}
   </style>
 </head>
 <body>
+  <!-- Sticky Header -->
   <header class="site" role="banner">
-    <div class="wrap nav">
-      <div class="left">
-        <a class="navlink" href="#home" data-nav>Home</a>
-        <a class="navlink" href="#products" data-nav>Products</a>
+    <div class="nav">
+      <button class="hamb" aria-label="Open menu" id="hamb">☰</button>
+
+      <div class="brand-center">
+        <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
+        <span class="brand-name">VetoCos SAHIB</span>
       </div>
 
-      <div class="brand" aria-label="Brand">
-        <a href="#home" aria-label="VetoCos home" style="display:inline-flex;align-items:center;gap:12px">
-          <img src="images/logo.png" alt="VetoCos logo">
-          <span>VetoCos SAHIB</span>
-        </a>
+      <div class="nav-left">
+        <a class="navlink" href="#home">Home</a>
+        <a class="navlink" href="#products">Products</a>
       </div>
-
-      <div class="right">
-        <a class="navlink" href="#worldwide" data-nav>World Wide</a>
-        <a class="navlink" href="#news" data-nav>News</a>
+      <div class="nav-right">
+        <a class="navlink" href="#worldwide">World Wide</a>
+        <a class="navlink" href="#news">News</a>
         <button class="chip" type="button" onclick="openContact()">Contact</button>
       </div>
-
-      <!-- Mobile drawer -->
-      <button class="hamb" aria-label="Open menu" onclick="document.getElementById('drawer').classList.toggle('open')">☰</button>
-      <div id="drawer" class="drawer">
-        <a class="navlink" href="#home" data-nav>Home</a>
-        <a class="navlink" href="#products" data-nav>Products</a>
-        <a class="navlink" href="#worldwide" data-nav>World Wide</a>
-        <a class="navlink" href="#news" data-nav>News</a>
-        <button class="chip" type="button" onclick="openContact()">Contact</button>
+    </div>
+    <!-- Mobile drawer -->
+    <div class="drawer" id="drawer" aria-hidden="true">
+      <div class="links">
+        <a href="#home" onclick="closeDrawer()">Home</a>
+        <a href="#products" onclick="closeDrawer()">Products</a>
+        <a href="#worldwide" onclick="closeDrawer()">World Wide</a>
+        <a href="#news" onclick="closeDrawer()">News</a>
+        <button class="chip" type="button" onclick="closeDrawer();openContact()">Contact</button>
       </div>
     </div>
   </header>
 
-  <main id="main">
-    <!-- HOME / HERO -->
-    <span id="home" class="anchor"></span>
-    <section class="page" aria-label="Home">
-      <div class="wrap section hero-inner reveal">
-        <div>
-          <span class="badge">Complementary feed — not medicine</span>
-          <h1>Vet‑aligned nutrition from trusted brands</h1>
-          <p class="lead">We retail complementary feed to support urinary, liver, renal, mobility and overall well‑being for dogs and cats. No therapeutic claims — just clear, responsible guidance.</p>
-          <div class="cta">
-            <a class="btn" href="#products" data-nav>Browse products →</a>
-            <a class="btn ghost" href="#worldwide" data-nav>Where to buy</a>
-          </div>
+  <main id="home">
+    <!-- HERO -->
+    <section class="hero reveal" aria-label="Intro">
+      <div>
+        <span class="badge">Complementary feed — not medicine</span>
+        <h1>Vet-aligned nutrition from trusted brands</h1>
+        <p class="lead">We retail complementary feed for dogs & cats, supporting urinary, liver, renal, mobility and overall well-being — aligned with veterinary guidance.</p>
+        <div class="cta">
+          <a class="btn" href="#products">Browse products →</a>
+          <a class="btn ghost" href="#worldwide">Where to buy</a>
         </div>
-        <div class="hero-card" aria-hidden="true">
-          <img src="images/header.jpg" alt="VetoCos hero" onerror="this.src='images/Product1.jpg'">
-        </div>
+      </div>
+      <div class="hero-card" aria-hidden="true">
+        <img alt="Happy pets with complementary feed" src="images/header.jpg" onerror="this.src='images/Product1.jpg'">
       </div>
     </section>
 
     <!-- PRODUCTS SECTION -->
-    <span id="products" class="anchor"></span>
-    <section class="page" aria-label="Products">
-      <div class="wrap section reveal">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <div>
-            <h2>Our Product Range</h2>
-            <p class="sub">Explore complementary alimentary products for common needs. Click any card for details.</p>
+    <section id="products" class="reveal" aria-label="Products">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <h2 style="margin:0">Popular products</h2>
+        <a class="btn ghost" href="Products.html">Open full products page</a>
+      </div>
+      <div class="grid" style="margin-top:12px">
+        <a class="card" href="Product1.html" aria-label="Open Urocline Chien">
+          <img src="images/Product1.jpg" alt="Urocline Chien">
+          <div class="px">
+            <h4>Urocline Chien</h4>
+            <p class="muted">Urinary care · Dogs & Cats</p>
           </div>
-          <a class="btn ghost" href="Products.html" title="Open full products page">Open page ↗</a>
-        </div>
-        <div class="grid" id="gridPreview"></div>
+        </a>
+        <a class="card" href="Product2.html" aria-label="Open Hepatiale">
+          <img src="images/Product2.jpg" alt="Hepatiale">
+          <div class="px">
+            <h4>Hepatiale</h4>
+            <p class="muted">Liver support · Dogs & Cats</p>
+          </div>
+        </a>
+        <a class="card" href="Product9.html" aria-label="Open Art-Asuh">
+          <img src="images/Product9.jpg" alt="Art-Asuh">
+          <div class="px">
+            <h4>Art-Asuh</h4>
+            <p class="muted">Mobility · Dogs & Cats</p>
+          </div>
+        </a>
+        <a class="card" href="Product11.html" aria-label="Open Renosan">
+          <img src="images/Product11.jpg" alt="Renosan">
+          <div class="px">
+            <h4>Renosan</h4>
+            <p class="muted">Renal support · Dogs & Cats</p>
+          </div>
+        </a>
       </div>
     </section>
 
     <!-- WORLDWIDE SECTION -->
-    <span id="worldwide" class="anchor"></span>
-    <section class="page" aria-label="Worldwide">
-      <div class="wrap section two reveal">
-        <div class="card">
-          <h2 style="margin:0 0 6px">VETOCOS SAHIB</h2>
-          <p class="sub" style="margin:0">Morocco · Africa</p>
+    <section id="worldwide" class="reveal" aria-label="Worldwide">
+      <h2 style="margin:0 0 10px">Worldwide presence</h2>
+      <div class="ww">
+        <div class="sheet">
+          <h3 style="margin:.2rem 0">VETOCOS SAHIB</h3>
           <p class="muted" style="margin:.4rem 0 0">
             LOT HAOUID EL MAA N°63, Skhirate, Rabat, Morocco<br>
             Phone: <a href="tel:+212537742213">+212 537 74 22 13</a> · WhatsApp: <a href="https://wa.me/212537742213" target="_blank" rel="noopener">Chat</a>
           </p>
-          <div class="card" style="margin-top:10px">
-            <strong>Administrative information</strong>
-            <ul style="margin:.4rem 0 0;padding-left:18px">
-              <li>Forme juridique: S.A.R.L.</li>
-              <li>Capital: 1 200 000 DHS</li>
-              <li>Année de création: 2012</li>
-              <li>RC: 90543 Rabat</li>
-              <li>ICE: 001544252000064</li>
-              <li>Activité: Importation, vente et distribution en gros de produits vétérinaires, cosmétiques, paramédicaux et matériel de chirurgie.</li>
-            </ul>
-          </div>
+          <div class="divider"></div>
+          <h4 style="margin:.2rem 0 6px">Administrative information</h4>
+          <ul style="margin:0;padding-left:18px">
+            <li>Forme juridique: S.A.R.L.</li>
+            <li>Capital: 1 200 000 DHS</li>
+            <li>Année de création: 2012</li>
+            <li>RC: 90543 Rabat</li>
+            <li>ICE: 001544252000064</li>
+            <li>Activité: Importation, vente et distribution en gros de produits vétérinaires, cosmétiques, paramédicaux et matériel de chirurgie.</li>
+          </ul>
         </div>
-        <div class="card">
-          <h3 style="margin:.2rem 0 8px">Our location</h3>
-          <iframe class="map" src="https://www.google.com/maps?q=LOT%20HAOUID%20EL%20MAA%20N%2063%20Skhirate%20Rabat%20Morocco&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" aria-label="Map to VETOCOS SAHIB"></iframe>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-            <a class="btn" href="World Wide.html">Open page ↗</a>
-          </div>
+        <div class="sheet">
+          <h4 style="margin:.2rem 0 8px">Our location</h4>
+          <iframe class="map"
+            src="https://www.google.com/maps?q=LOT%20HAOUID%20EL%20MAA%20N%2063%20Skhirate%20Rabat%20Morocco&output=embed"
+            loading="lazy" referrerpolicy="no-referrer-when-downgrade" aria-label="Map to VETOCOS SAHIB"></iframe>
         </div>
       </div>
     </section>
 
     <!-- NEWS SECTION -->
-    <span id="news" class="anchor"></span>
-    <section class="page" aria-label="News">
-      <div class="wrap section reveal">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <div>
-            <h2>News & Updates</h2>
-            <p class="sub">Official announcements, product updates, and events.</p>
+    <section id="news" class="reveal" aria-label="News">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <h2 style="margin:0">News & Updates</h2>
+        <a class="btn ghost" href="news.html">Open full news page</a>
+      </div>
+      <div class="news-grid" style="margin-top:12px">
+        <article class="card news-card">
+          <img class="thumb" src="images/news1.jpg" alt="News cover" onerror="this.style.display='none'">
+          <div class="px">
+            <div class="muted">2025-09-15 · Global</div>
+            <h3 class="title">New distribution channels</h3>
+            <p class="muted">We’re expanding availability via new partners. Details coming soon.</p>
           </div>
-          <a class="btn ghost" href="news.html">Open page ↗</a>
-        </div>
-        <div id="newsRow" class="grid"></div>
+        </article>
+        <article class="card news-card">
+          <img class="thumb" src="images/news2.jpg" alt="News cover" onerror="this.style.display='none'">
+          <div class="px">
+            <div class="muted">2025-06-01 · Morocco</div>
+            <h3 class="title">Seasonal guidance update</h3>
+            <p class="muted">Summer guidance for complementary feeding schedules.</p>
+          </div>
+        </article>
+        <article class="card news-card">
+          <div class="thumb" aria-hidden="true"></div>
+          <div class="px">
+            <div class="muted">2025-04-18 · Global</div>
+            <h3 class="title">Website refresh</h3>
+            <p class="muted">A lighter, faster experience with smoother navigation and accessibility.</p>
+          </div>
+        </article>
       </div>
     </section>
   </main>
 
-  <footer>
-    © <span id="y"></span> VetoCos · <span class="muted">Complementary feed for companion animals</span>
+  <!-- Footer -->
+  <footer role="contentinfo">
+    <div class="wrap">
+      <div>© <span id="y"></span> VetoCos SAHIB · Complementary feed for companion animals.</div>
+      <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap">
+        <a href="#" onclick="openPolicy();return false;">Privacy & Policy</a>
+        <a href="#" onclick="openContact();return false;">Contact</a>
+      </div>
+    </div>
   </footer>
 
-  <!-- CONTACT MODAL -->
+  <!-- CONTACT MODAL (professional, mailto) -->
   <div id="contactModal" class="modal" aria-hidden="true">
-    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="sheet-modal" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
       <div class="sheet-head">
         <h2 id="contactTitle" class="sheet-title">Contact Us</h2>
         <button class="close" type="button" onclick="closeContact()">Close</button>
@@ -257,7 +298,7 @@
           <form id="contactForm" onsubmit="return sendMailto(event)">
             <div class="field">
               <label for="topic">Topic</label>
-              <select id="topic" class="selectEl">
+              <select id="topic" name="topic" class="selectEl">
                 <option value="product">Product question</option>
                 <option value="availability">Availability / Where to buy</option>
                 <option value="order">Order / Delivery</option>
@@ -266,15 +307,39 @@
               </select>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-              <div class="field"><label for="name">Name</label><input id="name" class="input" placeholder="Full name" autocomplete="name" required></div>
-              <div class="field"><label for="email">Email</label><input id="email" type="email" class="input" placeholder="name@example.com" autocomplete="email" required></div>
+              <div class="field">
+                <label for="name">Name</label>
+                <input id="name" name="name" class="input" autocomplete="name" required placeholder="Full name">
+              </div>
+              <div class="field">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" class="input" autocomplete="email" required placeholder="name@example.com">
+              </div>
             </div>
-            <div class="field" style="margin-top:10px"><label for="subject">Subject</label><input id="subject" class="input" maxlength="120" placeholder="Question about a product…" required></div>
-            <div class="field" style="margin-top:10px"><label for="message">Message / Comments</label><textarea id="message" class="textarea" maxlength="1200" placeholder="Write your help request or comment…" required></textarea><div class="hint"><span id="msgCount">0</span>/1200</div></div>
-            <div class="field"><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="consent" required><span>I consent to VetoCos using my details to respond to this enquiry.</span></label><span class="hint">Your message is sent via your email app; we don't store it on this site.</span></div>
-            <div class="actions"><button class="close" type="button" onclick="closeContact()">Cancel</button><button class="btn" type="submit">Send</button></div>
+            <div class="field" style="margin-top:10px">
+              <label for="subject">Subject</label>
+              <input id="subject" name="subject" class="input" maxlength="120" required placeholder="Question about a product…">
+            </div>
+            <div class="field" style="margin-top:10px">
+              <label for="message">Message / Comments</label>
+              <textarea id="message" name="message" class="textarea" maxlength="1200" required placeholder="Write your help request or comment…"></textarea>
+              <div class="hint"><span id="msgCount">0</span>/1200</div>
+            </div>
+            <div class="divider"></div>
+            <div class="field">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="consent" required>
+                <span>I consent to VetoCos using my details to respond to this enquiry.</span>
+              </label>
+              <span class="hint">Your message is sent via your email app; we don't store it on this site.</span>
+            </div>
+            <div class="actions">
+              <button class="close" type="button" onclick="closeContact()">Cancel</button>
+              <button class="btn" type="submit">Send</button>
+            </div>
           </form>
-          <div class="card" style="height:fit-content">
+
+          <div class="sheet" style="height:fit-content">
             <h3>Reach us</h3>
             <p class="muted" style="margin:4px 0 10px">We’re happy to help with product questions, availability, or feedback.</p>
             <p><strong>Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
@@ -287,32 +352,54 @@
     </div>
   </div>
 
+  <!-- PRIVACY MODAL -->
+  <div id="policyModal" class="modal" aria-hidden="true">
+    <div class="sheet-modal" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+      <div class="sheet-head">
+        <h2 id="policyTitle" class="sheet-title">Privacy & Policy</h2>
+        <button class="close" type="button" onclick="closePolicy()">Close</button>
+      </div>
+      <div class="sheet-body">
+        <h3>Overview</h3>
+        <p>VetoCos retails complementary feed (alimentary) products. We do not collect personal data unless you choose to contact us.</p>
+        <h3>Data we may receive</h3>
+        <ul>
+          <li>Messages you send via the contact form (your name, email, and message content).</li>
+          <li>Basic, anonymized analytics to improve the site.</li>
+        </ul>
+        <h3>Your choices</h3>
+        <ul>
+          <li>You can request that we delete your message and contact details at any time.</li>
+          <li>You can disable cookies in your browser settings.</li>
+        </ul>
+        <p class="muted" style="margin-top:8px">Last updated: <span id="policyDate"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts (drawer, modals, reveal, helpers) -->
   <script>
-    // Footer year
+    // Year + policy date
     document.getElementById('y').textContent = new Date().getFullYear();
+    (function(){ const d=new Date(); const month=d.toLocaleString('default',{month:'long'}); const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear(); })();
 
-    // Smooth anchor scroll + active state
-    function smoothTo(hash){
-      const el = document.querySelector(hash);
-      if (!el) return;
-      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: 'smooth' });
-    }
-    document.querySelectorAll('[data-nav]').forEach(a=>{
-      a.addEventListener('click', (e)=>{ if(a.getAttribute('href')?.startsWith('#')){ e.preventDefault(); smoothTo(a.getAttribute('href')); document.getElementById('drawer')?.classList.remove('open'); }});
-    });
+    // Mobile drawer
+    const hamb = document.getElementById('hamb');
+    const drawer = document.getElementById('drawer');
+    hamb?.addEventListener('click', ()=>{ const open = drawer.classList.toggle('open'); drawer.setAttribute('aria-hidden', open?'false':'true'); });
+    function closeDrawer(){ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); } window.closeDrawer = closeDrawer;
 
-    // Scroll reveal
-    function initReveal(){
-      const els=[...document.querySelectorAll('.reveal'), ...document.querySelectorAll('.p-card')];
-      const io=new IntersectionObserver((entries)=>{ entries.forEach((e)=>{ if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } }); },{threshold:.12});
-      els.forEach(el=>io.observe(el));
-    }
-
-    // Contact modal helpers
+    // Contact / Policy modals
     const contactModal=document.getElementById('contactModal');
+    const policyModal=document.getElementById('policyModal');
     function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
     function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
-    contactModal.addEventListener('click',(e)=>{ if(e.target===contactModal) closeContact(); });
+    function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+    function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+    [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+
+    // Mailto send
+    const toAddress='info@vetocos.com';
     function sendMailto(e){
       e.preventDefault();
       const topic=document.getElementById('topic').value;
@@ -321,88 +408,20 @@
       const subject=document.getElementById('subject').value.trim()||'Website enquiry';
       const message=document.getElementById('message').value.trim();
       if(!document.getElementById('consent').checked) return false;
-      const body=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,'',message].map(encodeURIComponent).join('%0A');
-      window.location.href=`mailto:${encodeURIComponent('info@vetocos.com')}?subject=${encodeURIComponent(subject)}&body=${body}`;
+      const lines=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,'',message].map(encodeURIComponent).join('%0A');
+      window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
       return false;
     }
+    const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount');
+    if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
 
-    // Textarea counter
-    (function(){ const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }})();
-
-    // Lightweight preview data (could be replaced by Supabase)
-    const PREVIEW = [
-      {href:'Product1.html', img:'images/Product1.jpg', name:'Urocline Chien', meta:['Urinary care','Dogs & Cats']},
-      {href:'Product2.html', img:'images/Product2.jpg', name:'Hepatiale', meta:['Liver support','Dogs & Cats']},
-      {href:'Product9.html', img:'images/Product9.jpg', name:'Art-Asuh', meta:['Mobility','Dogs & Cats']},
-      {href:'Product11.html', img:'images/Product11.jpg', name:'Renosan', meta:['Renal support','Dogs & Cats']}
-    ];
-    const grid=document.getElementById('gridPreview');
-    grid.innerHTML = PREVIEW.map(p=>`<a class="p-card" href="${p.href}" aria-label="Open ${p.name}"><img src="${p.img}" alt="${p.name}"><div class="px"><h4>${p.name}</h4><div class="p-meta">${p.meta.map(m=>`<span>${m}</span>`).join('')}</div></div></a>`).join('');
-
-    // News mini feed (placeholder)
-    const news=document.getElementById('newsRow');
-    news.innerHTML = [
-      {d:'2025-07-01', t:'New distributor in MENA', c:'We welcome a new regional partner.'},
-      {d:'2025-05-20', t:'Art-Asuh updated pack', c:'Now available in XL 90 comprimés.'},
-      {d:'2025-03-15', t:'Vet verification flow', c:'Vets can verify to unlock price tiers.'}
-    ].map(n=>`<div class="p-card"><div class="px"><div class="p-meta">${new Date(n.d).toLocaleDateString()}</div><h4>${n.t}</h4><p class="p-meta">${n.c}</p></div></div>`).join('');
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', ()=>{ initReveal(); });
+    // Scroll reveal animation
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold:.12 });
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   </script>
-</body>
-</html>
-
-
-<!-- ============ Products.html (redirect shell) ============ -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>VetoCos | Products</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="refresh" content="0; url=index.html#products">
-  <script>window.location.replace('index.html#products');</script>
-</head>
-<body>
-  <noscript>
-    <p>Products has moved. <a href="index.html#products">Click here</a>.</p>
-  </noscript>
-</body>
-</html>
-
-
-<!-- ============ World Wide.html (redirect shell) ============ -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>VetoCos | Worldwide</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="refresh" content="0; url=index.html#worldwide">
-  <script>window.location.replace('index.html#worldwide');</script>
-</head>
-<body>
-  <noscript>
-    <p>Worldwide has moved. <a href="index.html#worldwide">Click here</a>.</p>
-  </noscript>
-</body>
-</html>
-
-
-<!-- ============ news.html (redirect shell) ============ -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>VetoCos | News</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="refresh" content="0; url=index.html#news">
-  <script>window.location.replace('index.html#news');</script>
-</head>
-<body>
-  <noscript>
-    <p>News has moved. <a href="index.html#news">Click here</a>.</p>
-  </noscript>
 </body>
 </html>
