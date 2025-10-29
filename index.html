@@ -10,148 +10,143 @@
 
   <style>
     :root{
-      /* Palette */
-      --bg:#0a0f1f;
-      --bg2:#111a3b;
-      --card:#101633;
-      --text:#f6f7fb;
-      --muted:#8ea0c8;
-      --line:rgba(142,160,200,.18);
-      --line2:rgba(142,160,200,.12);
-      --brand:#6dd5ff;
-      --brand2:#83f0a5;
+      /* Light palette */
+      --bg:#ffffff;
+      --elev:#0b1226;
+      --ink:#0b1226;          /* main text */
+      --muted:#5e6a86;        /* secondary text */
+      --line:#e8ecf5;         /* borders */
+      --line2:#eef2fa;        /* subtle borders */
+      --brand:#2563eb;        /* primary */
+      --brand2:#10b981;       /* accent */
 
-      /* Layout */
-      --max:1120px;
+      --max:1140px;
       --radius:18px;
-      --shadow:0 12px 36px rgba(0,0,0,.28);
+      --shadow:0 10px 24px rgba(11,18,38,.06);
     }
 
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:linear-gradient(135deg,var(--bg),var(--bg2));color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
     img{max-width:100%;display:block}
 
     a{color:var(--brand);text-decoration:none}
     a:focus,button:focus,select:focus{outline:2px solid color-mix(in oklab, var(--brand) 70%, white);outline-offset:2px;border-radius:8px}
     .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
 
-    /* Header */
-    header.site{position:sticky;top:0;z-index:60;background:rgba(10,15,31,.72);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-    .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.2px}
-    .brand-logo{width:54px;height:auto;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
-    .links{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .navlink,.chip,.btn,.select{
-      --bgChip:linear-gradient(135deg,rgba(109,213,255,.16),rgba(131,240,165,.12));
-      padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--text)
-    }
+    /* ===== Header (Centered brand with logo + links preserved) ===== */
+    header.site{position:sticky;top:0;z-index:80;background:rgba(255,255,255,.9);backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid var(--line)}
+    .nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:12px 0}
+
+    .brand{display:flex;align-items:center;gap:12px;justify-self:center; font-weight:800;letter-spacing:.2px;color:var(--ink)}
+    .brand-logo{width:56px;height:auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.08))}
+    .brand-name{font-size:1.1rem}
+    .brand-name strong{font-weight:800}
+
+    .links{justify-self:end;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .navlink,.chip,.btn,.select{padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--ink)}
     .navlink{display:inline-block}
-    .navlink:hover,.navlink.active{background:rgba(255,255,255,.04)}
-    .chip,.btn{background:var(--bgChip);cursor:pointer}
+    .navlink.active{border-color:color-mix(in oklab, var(--brand) 20%, var(--line));background:#fff}
+    .navlink:hover{background:color-mix(in oklab, #fff 85%, var(--brand) 15%)}
+    .chip,.btn{background:linear-gradient(180deg,#ffffff, #f8fbff);border-color:var(--line)}
+    .chip:hover,.btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.06)}
     .btn[disabled]{opacity:.55;cursor:not-allowed}
-    .select{background:rgba(255,255,255,.05)}
-    .hamb{display:none;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.04);cursor:pointer;color:var(--text)}
-    @media (max-width:900px){
-      .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid var(--line);border-radius:14px;flex-direction:column;min-width:260px;box-shadow:var(--shadow)}
+    .select{background:#fff}
+
+    .hamb{display:none;justify-self:start;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;color:var(--ink)}
+
+    @media (max-width:940px){
+      .nav{grid-template-columns:auto 1fr auto}
+      .links{display:none;position:absolute;right:18px;top:58px;background:#fff;padding:10px;border:1px solid var(--line);border-radius:14px;flex-direction:column;min-width:260px;box-shadow:var(--shadow)}
       .links.open{display:flex}
-      .hamb{display:block}
+      .hamb{display:inline-flex}
       .nav .select,.nav .chip{width:100%;text-align:left}
     }
 
-    /* Account menu */
-    .acct{position:relative;display:inline-flex;align-items:center;gap:8px}
-    .avatar{width:28px;height:28px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2));border:1px solid var(--line)}
-    .menu{position:absolute;top:44px;right:0;background:rgba(16,24,53,.98);border:1px solid var(--line);border-radius:14px;min-width:260px;display:none;box-shadow:var(--shadow);overflow:hidden}
-    .menu.open{display:block}
-    .menu a,.menu button{display:block;width:100%;text-align:left;padding:10px 12px;background:transparent;border:0;color:var(--text);cursor:pointer}
-    .menu a:hover,.menu button:hover{background:rgba(255,255,255,.06)}
-    .menu .muted{font-size:12px;color:var(--muted)}
-    .menu .hdr{padding:8px 12px;border-bottom:1px solid var(--line2)}
+    /* ===== Main ===== */
+    main{padding:36px 0}
 
-    /* Main */
-    main{padding:30px 0}
-
-    /* Hero */
-    .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:center}
-    .badge{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
-    h1{font-size:clamp(32px,5vw,52px);line-height:1.15;margin:12px 0}
+    /* ===== Hero ===== */
+    .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:center}
+    .badge{display:inline-flex;gap:8px;align-items:center;background:#f6f9ff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
+    h1{font-size:clamp(34px,5.2vw,56px);line-height:1.12;margin:12px 0}
     .lead{font-size:clamp(16px,2.2vw,19px);color:var(--muted);margin:0 0 18px;max-width:58ch}
     .cta{display:flex;gap:10px;flex-wrap:wrap}
-    .ghost{background:transparent;border:1px solid var(--line)}
-    .hero-card{
-      background:
-        radial-gradient(1000px 420px at 85% -20%, rgba(131,240,165,.16), transparent 40%),
-        var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:0;box-shadow:var(--shadow);overflow:hidden;display:grid;place-items:center;min-height:340px
-    }
+    .btn.primary{background:linear-gradient(135deg, color-mix(in oklab,var(--brand) 90%, white), color-mix(in oklab,var(--brand2) 50%, white));color:#fff;border-color:transparent}
+    .btn.ghost{background:#fff;border:1px solid var(--line)}
+    .hero-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:0;box-shadow:var(--shadow);overflow:hidden;display:grid;place-items:center;min-height:340px}
     .hero-card img{width:100%;height:100%;max-height:480px;object-fit:cover}
     @media (max-width:980px){.hero{grid-template-columns:1fr}.hero-card{order:-1}}
 
-    /* Section cards */
-    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+    /* ===== Generic card ===== */
+    .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
     .muted{color:var(--muted)}
 
-    /* Pillars */
-    .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+    /* ===== Pillars ===== */
+    .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}
     @media (max-width:980px){.pillars{grid-template-columns:1fr}}
 
-    /* Product preview */
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:10px}
+    /* ===== Product preview ===== */
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:12px}
     @media (max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
     @media (max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
     @media (max-width:520px){.grid{grid-template-columns:1fr}}
 
-    .p-card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .15s ease, box-shadow .15s ease}
-    .p-card:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(0,0,0,.28)}
-    .p-card img{width:100%;height:170px;object-fit:cover}
+    .p-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
+    .p-card:hover{transform:translateY(-3px);box-shadow:0 14px 28px rgba(0,0,0,.10);border-color:color-mix(in oklab, var(--brand) 25%, var(--line))}
+    .p-card img{width:100%;height:180px;object-fit:cover}
     .p-card .px{padding:12px}
     .p-card h4{margin:.2rem 0 .1rem}
     .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 
-    /* Footer */
-    footer{margin:46px 0 0;padding:24px 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+    /* ===== Footer ===== */
+    footer{margin:46px 0 0;padding:24px 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px;background:#fff}
     .footer-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
     .footer-links a{color:var(--muted)}
 
-    /* Modals */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
+    /* ===== Modals ===== */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(11,18,38,.28);backdrop-filter:blur(6px);z-index:90}
     .modal.open{display:flex}
-    .sheet{width:min(780px,100%);background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .sheet{width:min(780px,100%);background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
     .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line2)}
-    .sheet-title{margin:0;font-size:1.1rem}
-    .close{background:transparent;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+    .sheet-title{margin:0;font-size:1.1rem;color:var(--ink)}
+    .close{background:#fff;border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:6px 10px;cursor:pointer}
     .sheet-body{padding:16px}
 
-    /* Form */
+    /* ===== Form ===== */
     .pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
     @media (max-width:860px){.pro-grid{grid-template-columns:1fr}}
     .field{display:flex;flex-direction:column;gap:6px}
-    .input,.selectEl,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text)}
+    .input,.selectEl,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink)}
     .textarea{min-height:140px;resize:vertical}
     .hint{font-size:12px;color:var(--muted)}
     .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
     .divider{height:1px;background:var(--line2);margin:8px 0}
 
-    /* RTL */
+    /* ===== RTL ===== */
     body.rtl .links a{text-align:right}
     body.rtl .pro-grid{direction:rtl}
     body.rtl label{text-align:right}
+
+    /* ===== Scroll reveal animations ===== */
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease}
+    .reveal.visible{opacity:1;transform:none}
   </style>
 </head>
 <body>
   <!-- Header -->
   <header class="site" role="banner">
     <div class="wrap nav">
-      <div class="brand">
+      <button class="hamb" aria-label="Open menu" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
+
+      <div class="brand" aria-label="VetoCos Sahib">
         <a href="index.html" aria-label="VetoCos home">
           <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
         </a>
-        <span aria-hidden="true">VetoCos</span>
+        <span class="brand-name"><strong>VetoCos</strong>&nbsp;Sahib</span>
       </div>
 
       <nav class="links" id="navlinks" aria-label="Primary">
+        <!-- Keep links exactly as requested -->
         <a class="navlink active" href="index.html" data-i18n="nav.home">Home</a>
         <a class="navlink" href="Products.html" data-i18n="nav.products">Products</a>
         <a class="navlink" href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
@@ -167,11 +162,11 @@
         <!-- Logged in -->
         <div class="acct" id="acctBlock" style="display:none">
           <button class="chip" id="accountBtn" type="button" aria-haspopup="menu" aria-expanded="false">
-            <span class="avatar" aria-hidden="true"></span>
+            <span class="avatar" aria-hidden="true" style="width:28px;height:28px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2));border:1px solid var(--line);"></span>
             <span id="helloName" class="muted" style="font-size:.9rem"></span>
           </button>
-          <div class="menu" id="accountMenu" role="menu" aria-hidden="true">
-            <div id="accountHeader" class="hdr muted"></div>
+          <div class="menu" id="accountMenu" role="menu" aria-hidden="true" style="position:absolute;top:44px;right:0;background:#fff;border:1px solid var(--line);border-radius:14px;min-width:260px;display:none;box-shadow:var(--shadow);overflow:hidden">
+            <div id="accountHeader" class="hdr muted" style="padding:8px 12px;border-bottom:1px solid var(--line2)"></div>
             <a href="account.html"   role="menuitem" data-i18n="nav.account">Account settings</a>
             <a href="my-order.html"  role="menuitem" data-i18n="orders.myOrders">My orders</a>
             <a href="cart.html"      role="menuitem" data-i18n="nav.cart">Cart</a>
@@ -189,14 +184,12 @@
           <option value="ar">العربية</option>
         </select>
       </nav>
-
-      <button class="hamb" aria-label="Open menu" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
     </div>
   </header>
 
   <!-- Main -->
   <main class="wrap" id="main-content">
-    <section class="hero" aria-label="Introduction">
+    <section class="hero reveal" aria-label="Introduction">
       <div>
         <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
         <h1 data-i18n="hero.title">Vet-aligned nutrition from trusted brands</h1>
@@ -204,7 +197,7 @@
           We source and retail complementary feed from trusted brands to support urinary, liver, kidney, joint, and overall well-being. We don’t make therapeutic claims — we help you choose smart nutrition aligned with veterinary guidance.
         </p>
         <div class="cta">
-          <a class="btn" href="Products.html" data-i18n="hero.ctaProducts">Browse products →</a>
+          <a class="btn primary" href="Products.html" data-i18n="hero.ctaProducts">Browse products →</a>
           <a class="btn ghost" href="World Wide.html" data-i18n="hero.ctaWhere">Where to buy</a>
         </div>
       </div>
@@ -214,7 +207,7 @@
     </section>
 
     <!-- Pillars -->
-    <section class="pillars" aria-label="Why VetoCos">
+    <section class="pillars reveal" aria-label="Why VetoCos">
       <div class="card">
         <h3 data-i18n="pillars.vetTitle">Vet-aligned formulas</h3>
         <p class="muted" data-i18n="pillars.vetText">Developed by brands with veterinary input for targeted dietary support across common needs.</p>
@@ -230,7 +223,7 @@
     </section>
 
     <!-- Popular products -->
-    <section style="margin-top:26px" aria-label="Popular products">
+    <section class="reveal" style="margin-top:26px" aria-label="Popular products">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <h2 style="margin:0" data-i18n="popular.title">Popular products</h2>
@@ -281,7 +274,7 @@
     </div>
   </footer>
 
-  <!-- CONTACT MODAL -->
+  <!-- CONTACT MODAL (mailto to info@vetocos.com as per preference) -->
   <div id="contactModal" class="modal" aria-hidden="true">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
       <div class="sheet-head">
@@ -354,7 +347,7 @@
 
             <div class="actions">
               <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
-              <button class="btn" type="submit" data-i18n="form.send">Send</button>
+              <button class="btn primary" type="submit" data-i18n="form.send">Send</button>
             </div>
           </form>
 
@@ -411,81 +404,14 @@
     </div>
   </div>
 
-  <!-- i18n + helpers -->
+  <!-- i18n + helpers + reveal -->
   <script>
-    /* ================= i18n strings ================= */
+    /* ================= i18n strings (unchanged) ================= */
     const I18N = {
-      en: {
-        "nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact",
-        "nav.account":"Account settings","nav.cart":"Cart","nav.checkout":"Checkout",
-        "hero.badge":"Complementary feed — not medicine",
-        "hero.title":"Vet-aligned nutrition from trusted brands",
-        "hero.lead":"We source and retail complementary feed from trusted brands to support urinary, liver, kidney, joint, and overall well-being. We don’t make therapeutic claims.",
-        "hero.ctaProducts":"Browse products →","hero.ctaWhere":"Where to buy",
-        "pillars.vetTitle":"Vet-aligned formulas","pillars.vetText":"Developed by brands with veterinary input for targeted dietary support across common needs.",
-        "pillars.labelTitle":"Label clarity","pillars.labelText":"Transparent ingredients and usage guidance with clear categories like urinary care, liver support, and mobility.",
-        "pillars.qualityTitle":"Quality first","pillars.qualityText":"Brands manufactured to high food-grade standards with batch traceability.",
-        "popular.title":"Popular products","popular.viewAll":"View all",
-        "cat.urinary":"Urinary care","cat.liver":"Liver support","cat.mobility":"Mobility","cat.renal":"Renal support","cat.dogsCats":"Dogs & Cats",
-        "footer.tag":"Complementary feed for companion animals. Not intended to diagnose, treat, cure, or prevent disease.",
-        "footer.policy":"Privacy & Policy","footer.contact":"Contact",
-        "contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.reachText":"We’re happy to help with product questions, availability, or feedback.",
-        "contact.email":"Email:","contact.phone":"Phone:","contact.whatsapp":"WhatsApp:","contact.hours":"Hours:","contact.hoursVal":"Mon–Fri, 9:00–17:00",
-        "form.topic":"Topic","form.topicProduct":"Product question","form.topicAvailability":"Availability / Where to buy","form.topicOrder":"Order / Delivery","form.topicFeedback":"Feedback","form.topicOther":"Other",
-        "form.name":"Name","form.email":"Email","form.country":"Country","form.phone":"Phone (optional)","form.subject":"Subject","form.message":"Message / Comments",
-        "form.namePH":"Full name","form.emailPH":"name@example.com","form.countryPH":"Country (optional)","form.phonePH":"+212 537742213","form.subjectPH":"Question about a product…","form.messagePH":"Write your help request or comment…",
-        "form.phoneHint":"Digits, spaces and +() - allowed","form.consent":"I consent to VetoCos using my details to respond to this enquiry.","form.privacyNote":"Your message is sent via your email app; we don't store it on this site.","form.cancel":"Cancel","form.send":"Send",
-        "policy.title":"Privacy & Policy","policy.close":"Close","policy.overviewTitle":"Overview","policy.overviewText":"VetoCos retails complementary feed (alimentary) products. This website works on desktop and mobile. We do not collect personal data unless you choose to contact us.","policy.dataTitle":"Data we may receive","policy.data1":"Messages you send via the contact form (your name, email, and message content).","policy.data2":"Basic, anonymized analytics (page views, device type) to improve the site.","policy.useTitle":"How we use data","policy.use1":"To respond to your requests and improve our products and site experience.","policy.use2":"We do not sell personal data.","policy.cookiesTitle":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.","policy.choiceTitle":"Your choices","policy.choice1":"You can request that we delete your message and contact details at any time.","policy.choice2":"You can disable cookies in your browser settings.","policy.contactTitle":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Last updated:",
-        "auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification","orders.myOrders":"My orders"
-      },
-      fr:{ "nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact",
-        "nav.account":"Paramètres du compte","nav.cart":"Panier","nav.checkout":"Paiement",
-        "hero.badge":"Complément alimentaire — pas un médicament","hero.title":"Nutrition alignée vétérinaire de marques de confiance",
-        "hero.lead":"Nous sélectionnons et distribuons des compléments alimentaires de marques fiables pour soutenir la santé urinaire, hépatique, rénale, articulaire et le bien-être global. Sans allégations thérapeutiques.",
-        "hero.ctaProducts":"Voir les produits →","hero.ctaWhere":"Où acheter",
-        "pillars.vetTitle":"Formules alignées vétérinaires","pillars.vetText":"Développées par des marques avec avis vétérinaire pour un soutien ciblé.",
-        "pillars.labelTitle":"Clarté de l’étiquetage","pillars.labelText":"Ingrédients transparents, conseils d’utilisation et catégories claires.",
-        "pillars.qualityTitle":"Qualité d’abord","pillars.qualityText":"Marques fabriquées selon des standards élevés et traçabilité des lots.",
-        "popular.title":"Produits populaires","popular.viewAll":"Tout voir",
-        "cat.urinary":"Santé urinaire","cat.liver":"Soutien hépatique","cat.mobility":"Mobilité","cat.renal":"Soutien rénal","cat.dogsCats":"Chiens & Chats",
-        "footer.tag":"Complément alimentaire pour animaux de compagnie. Non destiné à diagnostiquer, traiter, guérir ou prévenir une maladie.",
-        "footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
-        "contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Aide pour questions produit, disponibilité ou avis.","contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00",
-        "form.topic":"Objet","form.topicProduct":"Question produit","form.topicAvailability":"Disponibilité / Où acheter","form.topicOrder":"Commande / Livraison","form.topicFeedback":"Avis","form.topicOther":"Autre","form.name":"Nom","form.email":"E-mail","form.country":"Pays","form.phone":"Téléphone (optionnel)","form.subject":"Sujet","form.message":"Message / Commentaires","form.namePH":"Nom complet","form.emailPH":"nom@exemple.com","form.countryPH":"Pays (optionnel)","form.phonePH":"+212 537742213","form.subjectPH":"Question à propos d’un produit…","form.messagePH":"Écrivez votre demande…","form.phoneHint":"Chiffres, espaces et +() - autorisés","form.consent":"J’autorise VetoCos à utiliser mes coordonnées pour répondre.","form.privacyNote":"Votre message est envoyé via votre application e-mail ; non stocké ici.","form.cancel":"Annuler","form.send":"Envoyer",
-        "policy.title":"Confidentialité & Politique","policy.close":"Fermer","policy.overviewTitle":"Aperçu","policy.overviewText":"VetoCos distribue des compléments alimentaires. Site compatible ordinateur et mobile. Aucune donnée personnelle collectée sauf si vous nous contactez.","policy.dataTitle":"Données reçues","policy.data1":"Messages (nom, e-mail, contenu).","policy.data2":"Analyses anonymisées de base.","policy.useTitle":"Utilisation","policy.use1":"Répondre et améliorer l’expérience.","policy.use2":"Nous ne vendons pas de données.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies essentiels uniquement si nécessaires.","policy.choiceTitle":"Vos choix","policy.choice1":"Demandez la suppression de vos données.","policy.choice2":"Désactivez les cookies dans le navigateur.","policy.contactTitle":"Contact","policy.contactText":"Confidentialité : <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Dernière mise à jour :",
-        "auth.login":"Connexion","auth.signup":"Créer un compte","auth.logout":"Déconnexion","auth.vetVerify":"Vérification vétérinaire","orders.myOrders":"Mes commandes"
-      },
-      es:{ "nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"En el mundo","nav.news":"Noticias","nav.contact":"Contacto",
-        "nav.account":"Ajustes de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar",
-        "hero.badge":"Alimento complementario — no medicamento","hero.title":"Nutrición alineada con veterinarios de marcas de confianza",
-        "hero.lead":"Seleccionamos y comercializamos alimentos complementarios de marcas de confianza para apoyar la salud urinaria, hepática, renal, articular y el bienestar general. Sin afirmaciones terapéuticas: te ayudamos a elegir nutrición inteligente alineada con el criterio veterinario.",
-        "hero.ctaProducts":"Ver productos →","hero.ctaWhere":"Dónde comprar",
-        "pillars.vetTitle":"Fórmulas alineadas con veterinarios","pillars.vetText":"Desarrolladas por marcas con aporte veterinario para apoyo específico.","pillars.labelTitle":"Claridad de la etiqueta","pillars.labelText":"Ingredientes transparentes y guía clara de uso.","pillars.qualityTitle":"Calidad primero","pillars.qualityText":"Marcas con altos estándares y trazabilidad.",
-        "popular.title":"Productos populares","popular.viewAll":"Ver todo",
-        "cat.urinary":"Cuidado urinario","cat.liver":"Apoyo hepático","cat.mobility":"Movilidad","cat.renal":"Apoyo renal","cat.dogsCats":"Perros y Gatos",
-        "footer.tag":"Alimento complementario para animales de compañía. No pretende diagnosticar, tratar, curar ni prevenir enfermedades.",
-        "footer.policy":"Privacidad y Política","footer.contact":"Contacto",
-        "contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Escríbenos","contact.reachText":"Encantados de ayudar con dudas de producto, disponibilidad o comentarios.","contact.email":"Correo:","contact.phone":"Teléfono:","contact.whatsapp":"WhatsApp:","contact.hours":"Horario:","contact.hoursVal":"Lun–Vie, 9:00–17:00",
-        "form.topic":"Tema","form.topicProduct":"Consulta de producto","form.topicAvailability":"Disponibilidad / Dónde comprar","form.topicOrder":"Pedido / Entrega","form.topicFeedback":"Comentarios","form.topicOther":"Otro","form.name":"Nombre","form.email":"Correo","form.country":"País","form.phone":"Teléfono (opcional)","form.subject":"Asunto","form.message":"Mensaje / Comentarios","form.namePH":"Nombre completo","form.emailPH":"nombre@ejemplo.com","form.countryPH":"País (opcional)","form.phonePH":"+212 537742213","form.subjectPH":"Consulta sobre un producto…","form.messagePH":"Escribe tu solicitud…","form.phoneHint":"Se permiten dígitos, espacios y +() -","form.consent":"Autorizo a VetoCos a usar mis datos para responder.","form.privacyNote":"Se envía con tu app de correo; no se guarda aquí.","form.cancel":"Cancelar","form.send":"Enviar",
-        "policy.title":"Privacidad y Política","policy.close":"Cerrar","policy.overviewTitle":"Resumen","policy.overviewText":"VetoCos comercializa complementos alimentarios. Sitio válido en ordenador y móvil. No recopilamos datos personales salvo que nos contactes.","policy.dataTitle":"Datos que podemos recibir","policy.data1":"Mensajes enviados (nombre, correo, contenido).","policy.data2":"Analítica básica y anónima.","policy.useTitle":"Cómo usamos los datos","policy.use1":"Responder y mejorar la experiencia.","policy.use2":"No vendemos datos.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies esenciales solo si son necesarias.","policy.choiceTitle":"Tus opciones","policy.choice1":"Puedes pedir eliminar tus datos.","policy.choice2":"Puedes desactivar las cookies.","policy.contactTitle":"Contacto","policy.contactText":"Privacidad: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Última actualización:",
-        "auth.login":"Iniciar sesión","auth.signup":"Crear cuenta","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria","orders.myOrders":"Mis pedidos"
-      },
-      ar:{ "nav.home":"الصفحة الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا",
-        "nav.account":"إعدادات الحساب","nav.cart":"السلة","nav.checkout":"الدفع",
-        "hero.badge":"غذاء تكميلي — ليس دواءً",
-        "hero.title":"تغذية متوافقة مع الإرشادات البيطرية من علامات موثوقة",
-        "hero.lead":".نوفّر ونبيع أغذية تكميلية من علامات موثوقة لدعم صحة المسالك البولية والكبد والكلى والمفاصل والرفاهية العامة. دون ادعاءات علاجية.",
-        "hero.ctaProducts":"تصفح المنتجات →","hero.ctaWhere":"أماكن الشراء",
-        "pillars.vetTitle":"تركيبات متوافقة مع الطب البيطري","pillars.vetText":"مطوّرة من علامات تجارية بمساهمة بيطرية لدعم غذائي موجّه.","pillars.labelTitle":"وضوح الملصق","pillars.labelText":"مكوّنات شفافة وإرشادات استخدام واضحة.","pillars.qualityTitle":"الجودة أولاً","pillars.qualityText":"علامات بمعايير عالية وتتبع للدفعات.",
-        "popular.title":"منتجات شائعة","popular.viewAll":"عرض الكل",
-        "cat.urinary":"العناية البولية","cat.liver":"دعم الكبد","cat.mobility":"الحركة","cat.renal":"دعم الكلى","cat.dogsCats":"كلاب وقطط",
-        "footer.tag":"غذاء تكميلي للحيوانات الأليفة. ليس مخصصًا للتشخيص أو العلاج أو الشفاء أو الوقاية من الأمراض.",
-        "footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
-        "contact.title":"اتصل بنا","contact.close":"إغلاق","contact.reach":"تواصل معنا","contact.reachText":"نساعدك في الاستفسارات حول المنتجات أو التوفر أو الملاحظات.","contact.email":"البريد:","contact.phone":"الهاتف:","contact.whatsapp":"واتساب:","contact.hours":"الساعات:","contact.hoursVal":"الاثنين–الجمعة، 9:00–17:00",
-        "form.topic":"الموضوع","form.topicProduct":"استفسار عن منتج","form.topicAvailability":"التوفر / أين أشتري","form.topicOrder":"طلب / توصيل","form.topicFeedback":"ملاحظات","form.topicOther":"أخرى","form.name":"الاسم","form.email":"البريد الإلكتروني","form.country":"الدولة","form.phone":"الهاتف (اختياري)","form.subject":"العنوان","form.message":"الرسالة / التعليقات","form.namePH":"الاسم الكامل","form.emailPH":"name@example.com","form.countryPH":"الدولة (اختياري)","form.phonePH":"+212 537742213","form.subjectPH":"سؤال حول منتج…","form.messagePH":"اكتب طلبك…","form.phoneHint":"مسموح بالأرقام والمسافات والرموز +() -","form.consent":"أوافق على استخدام VetoCos لبياناتي للرد.","form.privacyNote":"يُرسل عبر تطبيق البريد لديك؛ لا نخزنه هنا.","form.cancel":"إلغاء","form.send":"إرسال",
-        "policy.title":"الخصوصية والسياسة","policy.close":"إغلاق","policy.overviewTitle":"نظرة عامة","policy.overviewText":"VetoCos يبيع أغذية تكميلية. يعمل الموقع على الحاسوب والهاتف. لا نجمع بيانات شخصية إلا إذا تواصلت معنا.","policy.dataTitle":"البيانات المستلمة","policy.data1":"رسائل نموذج الاتصال (الاسم والبريد والمحتوى).","policy.data2":"تحليلات أساسية مجهولة.","policy.useTitle":"الاستخدام","policy.use1":"للرد وتحسين التجربة.","policy.use2":"لا نبيع البيانات.","policy.cookiesTitle":"ملفات الارتباط","policy.cookiesText":"نستخدم الضروري فقط.","policy.choiceTitle":"خياراتك","policy.choice1":"يمكنك طلب حذف بياناتك.","policy.choice2":"يمكنك تعطيل الكوكيز.","policy.contactTitle":"تواصل","policy.contactText":"للخصوصية: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"آخر تحديث:",
-        "auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"التحقق البيطري","orders.myOrders":"طلباتي"
-      }
+      en: {"nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact","nav.account":"Account settings","nav.cart":"Cart","nav.checkout":"Checkout","hero.badge":"Complementary feed — not medicine","hero.title":"Vet-aligned nutrition from trusted brands","hero.lead":"We source and retail complementary feed from trusted brands to support urinary, liver, kidney, joint, and overall well-being. We don’t make therapeutic claims.","hero.ctaProducts":"Browse products →","hero.ctaWhere":"Where to buy","pillars.vetTitle":"Vet-aligned formulas","pillars.vetText":"Developed by brands with veterinary input for targeted dietary support across common needs.","pillars.labelTitle":"Label clarity","pillars.labelText":"Transparent ingredients and usage guidance with clear categories like urinary care, liver support, and mobility.","pillars.qualityTitle":"Quality first","pillars.qualityText":"Brands manufactured to high food-grade standards with batch traceability.","popular.title":"Popular products","popular.viewAll":"View all","cat.urinary":"Urinary care","cat.liver":"Liver support","cat.mobility":"Mobility","cat.renal":"Renal support","cat.dogsCats":"Dogs & Cats","footer.tag":"Complementary feed for companion animals. Not intended to diagnose, treat, cure, or prevent disease.","footer.policy":"Privacy & Policy","footer.contact":"Contact","contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.reachText":"We’re happy to help with product questions, availability, or feedback.","contact.email":"Email:","contact.phone":"Phone:","contact.whatsapp":"WhatsApp:","contact.hours":"Hours:","contact.hoursVal":"Mon–Fri, 9:00–17:00","form.topic":"Topic","form.topicProduct":"Product question","form.topicAvailability":"Availability / Where to buy","form.topicOrder":"Order / Delivery","form.topicFeedback":"Feedback","form.topicOther":"Other","form.name":"Name","form.email":"Email","form.country":"Country","form.phone":"Phone (optional)","form.subject":"Subject","form.message":"Message / Comments","form.namePH":"Full name","form.emailPH":"name@example.com","form.countryPH":"Country (optional)","form.phonePH":"+212 537742213","form.subjectPH":"Question about a product…","form.messagePH":"Write your help request or comment…","form.phoneHint":"Digits, spaces and +() - allowed","form.consent":"I consent to VetoCos using my details to respond to this enquiry.","form.privacyNote":"Your message is sent via your email app; we don't store it on this site.","form.cancel":"Cancel","form.send":"Send","policy.title":"Privacy & Policy","policy.close":"Close","policy.overviewTitle":"Overview","policy.overviewText":"VetoCos retails complementary feed (alimentary) products. This website works on desktop and mobile. We do not collect personal data unless you choose to contact us.","policy.dataTitle":"Data we may receive","policy.data1":"Messages you send via the contact form (your name, email, and message content).","policy.data2":"Basic, anonymized analytics (page views, device type) to improve the site.","policy.useTitle":"How we use data","policy.use1":"To respond to your requests and improve our products and site experience.","policy.use2":"We do not sell personal data.","policy.cookiesTitle":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.","policy.choiceTitle":"Your choices","policy.choice1":"You can request that we delete your message and contact details at any time.","policy.choice2":"You can disable cookies in your browser settings.","policy.contactTitle":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Last updated:","auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification","orders.myOrders":"My orders"},
+      fr:{"nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact","nav.account":"Paramètres du compte","nav.cart":"Panier","nav.checkout":"Paiement","hero.badge":"Complément alimentaire — pas un médicament","hero.title":"Nutrition alignée vétérinaire de marques de confiance","hero.lead":"Nous sélectionnons et distribuons des compléments alimentaires de marques fiables pour soutenir la santé urinaire, hépatique, rénale, articulaire et le bien-être global. Sans allégations thérapeutiques.","hero.ctaProducts":"Voir les produits →","hero.ctaWhere":"Où acheter","pillars.vetTitle":"Formules alignées vétérinaires","pillars.vetText":"Développées par des marques avec avis vétérinaire pour un soutien ciblé.","pillars.labelTitle":"Clarté de l’étiquetage","pillars.labelText":"Ingrédients transparents, conseils d’utilisation et catégories claires.","pillars.qualityTitle":"Qualité d’abord","pillars.qualityText":"Marques fabriquées selon des standards élevés et traçabilité des lots.","popular.title":"Produits populaires","popular.viewAll":"Tout voir","cat.urinary":"Santé urinaire","cat.liver":"Soutien hépatique","cat.mobility":"Mobilité","cat.renal":"Soutien rénal","cat.dogsCats":"Chiens & Chats","footer.tag":"Complément alimentaire pour animaux de compagnie. Non destiné à diagnostiquer, traiter, guérir ou prévenir une maladie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact","contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Aide pour questions produit, disponibilité ou avis.","contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00","form.topic":"Objet","form.topicProduct":"Question produit","form.topicAvailability":"Disponibilité / Où acheter","form.topicOrder":"Commande / Livraison","form.topicFeedback":"Avis","form.topicOther":"Autre","form.name":"Nom","form.email":"E-mail","form.country":"Pays","form.phone":"Téléphone (optionnel)","form.subject":"Sujet","form.message":"Message / Commentaires","form.namePH":"Nom complet","form.emailPH":"nom@exemple.com","form.countryPH":"Pays (optionnel)","form.phonePH":"+212 537742213","form.subjectPH":"Question à propos d’un produit…","form.messagePH":"Écrivez votre demande…","form.phoneHint":"Chiffres, espaces et +() - autorisés","form.consent":"J’autorise VetoCos à utiliser mes coordonnées pour répondre.","form.privacyNote":"Votre message est envoyé via votre application e-mail ; non stocké ici.","form.cancel":"Annuler","form.send":"Envoyer","policy.title":"Confidentialité & Politique","policy.close":"Fermer","policy.overviewTitle":"Aperçu","policy.overviewText":"VetoCos distribue des compléments alimentaires. Site compatible ordinateur et mobile. Aucune donnée personnelle collectée sauf si vous nous contactez.","policy.dataTitle":"Données reçues","policy.data1":"Messages (nom, e-mail, contenu).","policy.data2":"Analyses anonymisées de base.","policy.useTitle":"Utilisation","policy.use1":"Répondre et améliorer l’expérience.","policy.use2":"Nous ne vendons pas de données.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies essentiels uniquement si nécessaires.","policy.choiceTitle":"Vos choix","policy.choice1":"Demandez la suppression de vos données.","policy.choice2":"Désactivez les cookies dans le navigateur.","policy.contactTitle":"Contact","policy.contactText":"Confidentialité : <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Dernière mise à jour :","auth.login":"Connexion","auth.signup":"Créer un compte","auth.logout":"Déconnexion","auth.vetVerify":"Vérification vétérinaire","orders.myOrders":"Mes commandes"},
+      es:{"nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"En el mundo","nav.news":"Noticias","nav.contact":"Contacto","nav.account":"Ajustes de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar","hero.badge":"Alimento complementario — no medicamento","hero.title":"Nutrición alineada con veterinarios de marcas de confianza","hero.lead":"Seleccionamos y comercializamos alimentos complementarios de marcas de confianza para apoyar la salud urinaria, hepática, renal, articular y el bienestar general. Sin afirmaciones terapéuticas: te ayudamos a elegir nutrición inteligente alineada con el criterio veterinario.","hero.ctaProducts":"Ver productos →","hero.ctaWhere":"Dónde comprar","pillars.vetTitle":"Fórmulas alineadas con veterinarios","pillars.vetText":"Desarrolladas por marcas con aporte veterinario para apoyo específico.","pillars.labelTitle":"Claridad de la etiqueta","pillars.labelText":"Ingredientes transparentes y guía clara de uso.","pillars.qualityTitle":"Calidad primero","pillars.qualityText":"Marcas con altos estándares y trazabilidad.","popular.title":"Productos populares","popular.viewAll":"Ver todo","cat.urinary":"Cuidado urinario","cat.liver":"Apoyo hepático","cat.mobility":"Movilidad","cat.renal":"Apoyo renal","cat.dogsCats":"Perros y Gatos","footer.tag":"Alimento complementario para animales de compañía. No pretende diagnosticar, tratar, curar ni prevenir enfermedades.","footer.policy":"Privacidad y Política","footer.contact":"Contacto","contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Escríbenos","contact.reachText":"Encantados de ayudar con dudas de producto, disponibilidad o comentarios.","contact.email":"Correo:","contact.phone":"Teléfono:","contact.whatsapp":"WhatsApp:","contact.hours":"Horario:","contact.hoursVal":"Lun–Vie, 9:00–17:00","form.topic":"Tema","form.topicProduct":"Consulta de producto","form.topicAvailability":"Disponibilidad / Dónde comprar","form.topicOrder":"Pedido / Entrega","form.topicFeedback":"Comentarios","form.topicOther":"Otro","form.name":"Nombre","form.email":"Correo","form.country":"País","form.phone":"Teléfono (opcional)","form.subject":"Asunto","form.message":"Mensaje / Comentarios","form.namePH":"Nombre completo","form.emailPH":"nombre@ejemplo.com","form.countryPH":"País (opcional)","form.phonePH":"+212 537742213","form.subjectPH":"Consulta sobre un producto…","form.messagePH":"Escribe tu solicitud…","form.phoneHint":"Se permiten dígitos, espacios y +() -","form.consent":"Autorizo a VetoCos a usar mis datos para responder.","form.privacyNote":"Se envía con tu app de correo; no se guarda aquí.","form.cancel":"Cancelar","form.send":"Enviar","policy.title":"Privacidad y Política","policy.close":"Cerrar","policy.overviewTitle":"Resumen","policy.overviewText":"VetoCos comercializa complementos alimentarios. Sitio válido en ordenador y móvil. No recopilamos datos personales salvo que nos contactes.","policy.dataTitle":"Datos que podemos recibir","policy.data1":"Mensajes enviados (nombre, correo, contenido).","policy.data2":"Analítica básica y anónima.","policy.useTitle":"Cómo usamos los datos","policy.use1":"Responder y mejorar la experiencia.","policy.use2":"No vendemos datos.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies esenciales solo si son necesarias.","policy.choiceTitle":"Tus opciones","policy.choice1":"Puedes pedir eliminar tus datos.","policy.choice2":"Puedes desactivar las cookies.","policy.contactTitle":"Contacto","policy.contactText":"Privacidad: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Última actualización:","auth.login":"Iniciar sesión","auth.signup":"Crear cuenta","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria","orders.myOrders":"Mis pedidos"},
+      ar:{"nav.home":"الصفحة الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا","nav.account":"إعدادات الحساب","nav.cart":"السلة","nav.checkout":"الدفع","hero.badge":"غذاء تكميلي — ليس دواءً","hero.title":"تغذية متوافقة مع الإرشادات البيطرية من علامات موثوقة","hero.lead":".نوفّر ونبيع أغذية تكميلية من علامات موثوقة لدعم صحة المسالك البولية والكبد والكلى والمفاصل والرفاهية العامة. دون ادعاءات علاجية.","hero.ctaProducts":"تصفح المنتجات →","hero.ctaWhere":"أماكن الشراء","pillars.vetTitle":"تركيبات متوافقة مع الطب البيطري","pillars.vetText":"مطوّرة من علامات تجارية بمساهمة بيطرية لدعم غذائي موجّه.","pillars.labelTitle":"وضوح الملصق","pillars.labelText":"مكوّنات شفافة وإرشادات استخدام واضحة.","pillars.qualityTitle":"الجودة أولاً","pillars.qualityText":"علامات بمعايير عالية وتتبع للدفعات.","popular.title":"منتجات شائعة","popular.viewAll":"عرض الكل","cat.urinary":"العناية البولية","cat.liver":"دعم الكبد","cat.mobility":"الحركة","cat.renal":"دعم الكلى","cat.dogsCats":"كلاب وقطط","footer.tag":"غذاء تكميلي للحيوانات الأليفة. ليس مخصصًا للتشخيص أو العلاج أو الشفاء أو الوقاية من الأمراض.","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا","contact.title":"اتصل بنا","contact.close":"إغلاق","contact.reach":"تواصل معنا","contact.reachText":"نساعدك في الاستفسارات حول المنتجات أو التوفر أو الملاحظات.","contact.email":"البريد:","contact.phone":"الهاتف:","contact.whatsapp":"واتساب:","contact.hours":"الساعات:","contact.hoursVal":"الاثنين–الجمعة، 9:00–17:00","form.topic":"الموضوع","form.topicProduct":"استفسار عن منتج","form.topicAvailability":"التوفر / أين أشتري","form.topicOrder":"طلب / توصيل","form.topicFeedback":"ملاحظات","form.topicOther":"أخرى","form.name":"الاسم","form.email":"البريد الإلكتروني","form.country":"الدولة","form.phone":"الهاتف (اختياري)","form.subject":"العنوان","form.message":"الرسالة / التعليقات","form.namePH":"الاسم الكامل","form.emailPH":"name@example.com","form.countryPH":"الدولة (اختياري)","form.phonePH":"+212 537742213","form.subjectPH":"سؤال حول منتج…","form.messagePH":"اكتب طلبك…","form.phoneHint":"مسموح بالأرقام والمسافات والرموز +() -","form.consent":"أوافق على استخدام VetoCos لبياناتي للرد.","form.privacyNote":"يُرسل عبر تطبيق البريد لديك؛ لا نخزنه هنا.","form.cancel":"إلغاء","form.send":"إرسال","policy.title":"الخصوصية والسياسة","policy.close":"إغلاق","policy.overviewTitle":"نظرة عامة","policy.overviewText":"VetoCos يبيع أغذية تكميلية. يعمل الموقع على الحاسوب والهاتف. لا نجمع بيانات شخصية إلا إذا تواصلت معنا.","policy.dataTitle":"البيانات المستلمة","policy.data1":"رسائل نموذج الاتصال (الاسم والبريد والمحتوى).","policy.data2":"تحليلات أساسية مجهولة.","policy.useTitle":"الاستخدام","policy.use1":"للرد وتحسين التجربة.","policy.use2":"لا نبيع البيانات.","policy.cookiesTitle":"ملفات الارتباط","policy.cookiesText":"نستخدم الضروري فقط.","policy.choiceTitle":"خياراتك","policy.choice1":"يمكنك طلب حذف بياناتك.","policy.choice2":"يمكنك تعطيل الكوكيز.","policy.contactTitle":"تواصل","policy.contactText":"للخصوصية: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"آخر تحديث:","auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"التحقق البيطري","orders.myOrders":"طلباتي"}
     };
 
     function translateAttributes(dict){
@@ -538,6 +464,17 @@
       return false;
     }
 
+    /* Reveal on scroll */
+    function initReveal(){
+      const els=[...document.querySelectorAll('.reveal'), ...document.querySelectorAll('.p-card')];
+      const io=new IntersectionObserver((entries)=>{
+        entries.forEach((e)=>{
+          if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+        });
+      },{root:null,threshold:.12});
+      els.forEach(el=>io.observe(el));
+    }
+
     document.addEventListener("DOMContentLoaded", ()=>{
       const y=document.getElementById('y'); if(y) y.textContent=new Date().getFullYear();
       const d=new Date(); const month=d.toLocaleString('default',{month:'long'}); const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
@@ -548,6 +485,8 @@
 
       const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount');
       if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+
+      initReveal();
     });
   </script>
 
@@ -576,11 +515,12 @@
     if (logoutBtn) logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
 
     if (accountBtn) accountBtn.addEventListener('click', ()=>{
-      const open = accountMenu.classList.toggle('open');
+      const open = accountMenu.style.display !== 'block';
+      accountMenu.style.display = open ? 'block' : 'none';
       accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
       accountBtn.setAttribute('aria-expanded', String(open));
       if (open){
-        const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); accountBtn.setAttribute('aria-expanded','false'); document.removeEventListener('click', onDoc);} };
+        const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.style.display='none'; accountBtn.setAttribute('aria-expanded','false'); document.removeEventListener('click', onDoc);} };
         setTimeout(()=>document.addEventListener('click', onDoc),0);
       }
     });
@@ -615,7 +555,9 @@
         const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
         if (full) display = full;
         isAdmin = !!p?.is_admin;
-      } catch {}
+      } catch (err) {
+        console.warn('Profile fetch error', err);
+      }
 
       if (helloName) helloName.textContent = display;
       if (accountHeader) accountHeader.innerHTML = `<div><strong>${display}</strong><div class="muted">${email}</div></div>`;
@@ -627,4 +569,3 @@
   </script>
 </body>
 </html>
-
