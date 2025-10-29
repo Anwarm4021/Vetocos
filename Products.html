@@ -15,6 +15,7 @@
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
     a{text-decoration:none;color:inherit}
+    img{display:block;max-width:100%}
     .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
 
     /* Header */
@@ -144,28 +145,27 @@
     .admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
     @media(max-width:720px){.admin-grid{grid-template-columns:1fr 1fr}}
 
-    /* Card variants */
-    .variant-row{display:flex;gap:8px;align-items:center;margin-top:8px}
-    .variant-row label{font-size:12px;color:var(--muted)}
+    /* Card used in contact side panel */
+    .card{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:12px}
   </style>
 </head>
 <body>
-  <header class="site">
+  <header class="site" role="banner">
     <div class="wrap nav">
       <div class="brand">
         <a href="index.html" aria-label="VetoCos home">
           <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
         </a>
-        <span>VetoCos</span>
+        <span aria-hidden="true">VetoCos</span>
       </div>
-      <nav class="links" id="navlinks">
+      <nav class="links" id="navlinks" aria-label="Primary">
         <a href="index.html" data-i18n="nav.home">Home</a>
-        <a class="active" href="Products.html" data-i18n="nav.products">Products</a>
+        <a class="active" href="Products.html" data-i18n="nav.products" aria-current="page">Products</a>
         <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
-        <a href="News.html" data-i18n="nav.news">News</a>
+        <a href="news.html" data-i18n="nav.news">News</a>
 
         <!-- Cart: hidden when logged out -->
-        <a class="cart-link" id="cartLink" href="cart.html" style="display:none">
+        <a class="cart-link" id="cartLink" href="cart.html" style="display:none" aria-label="Cart">
           <span data-i18n="nav.cart">Cart</span>
           <span id="cartCount" class="cart-badge" style="display:none">0</span>
         </a>
@@ -181,7 +181,7 @@
 
         <!-- Account dropdown (visible when logged in) -->
         <div class="acct" id="acctBlock" style="display:none">
-          <button class="contact-btn" id="accountBtn" type="button">
+          <button class="contact-btn" id="accountBtn" type="button" aria-haspopup="menu" aria-expanded="false">
             <span class="avatar" aria-hidden="true"></span>
             <span id="helloName" class="muted" style="font-size:.9rem"></span>
           </button>
@@ -197,6 +197,7 @@
         </div>
 
         <!-- Language switcher -->
+        <label for="lang-switch" class="visually-hidden" style="position:absolute;left:-9999px;">Language</label>
         <select id="lang-switch" aria-label="Language" class="contact-btn">
           <option value="en">English</option>
           <option value="fr">Français</option>
@@ -208,17 +209,17 @@
     </div>
   </header>
 
-  <main class="wrap">
+  <main class="wrap" id="main" role="main">
     <div class="hero">
       <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
       <h1 data-i18n="products.title">Our Product Range</h1>
       <p class="lead" data-i18n="products.lead">Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.</p>
     </div>
 
-    <div class="grid" id="productGrid"></div>
+    <div class="grid" id="productGrid" aria-live="polite" aria-busy="true"></div>
   </main>
 
-  <footer>
+  <footer role="contentinfo">
     © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals</span>
     <div class="footer-links">
       <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
@@ -231,7 +232,7 @@
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
       <div class="sheet-head">
         <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
-        <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
+        <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close" aria-label="Close contact form">Close</button>
       </div>
       <div class="sheet-body">
         <div class="pro-grid">
@@ -329,7 +330,7 @@
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
       <div class="sheet-head">
         <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
-        <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
+        <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close" aria-label="Close privacy policy">Close</button>
       </div>
       <div class="sheet-body policy-body">
         <h3 data-i18n="policy.overviewTitle">Overview</h3>
@@ -364,90 +365,92 @@
     </div>
   </div>
 
-  <!-- i18n + helpers + product rendering -->
+  <!-- i18n dictionary -->
   <script>
-/* SAFER I18N */
-window.I18N = window.I18N || {
-  en: {"ui.loading":"Loading…","nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact","auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification","orders.myOrders":"My orders","nav.account":"Account settings","nav.cart":"Cart","nav.checkout":"Checkout","footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact","hero.badge":"Complementary feed — not medicine","products.title":"Our Product Range","products.lead":"Explore our selection designed to support urinary, liver, mobility, renal, and overall well-being.","grid.available":"Available","grid.unavailable":"Unavailable","grid.instock":" in stock","grid.out":"Out of stock","grid.add":"Add to Cart","grid.buy":"Buy Now","grid.more":"More details","grid.signin":"Sign in to buy","pd.title":"Product details","pd.form":"Form","pd.size":"Pack size","pd.ingr":"Key ingredients","pd.use":"Feeding guidance","pd.variant":"Variant","pd.quantity":"Qty","pd.price":"Price","pd.pdf":"Download PDF","pd.full":"View full page","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Sign in to see price","pd.vetOnly":"Verify vet status to see price","pd.variantMissing":"No variants","pd.notAvailable":"Not available","pd.editPrices":"Edit prices","pd.save":"Save","pd.cancel":"Cancel","pd.note":"Complementary feed — not a medicine. Always follow your vet’s advice.","ui.sku":"SKU: "},
-  fr: {"ui.loading":"Chargement…","nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact","auth.login":"Se connecter","auth.signup":"Créer un compte","auth.logout":"Se déconnecter","auth.vetVerify":"Vérification vétérinaire","orders.myOrders":"Mes commandes","nav.account":"Paramètres du compte","nav.cart":"Panier","nav.checkout":"Commander","footer.tag":"Aliment complémentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact","hero.badge":"Aliment complémentaire — pas un médicament","products.title":"Notre gamme de produits","products.lead":"Découvrez notre sélection pour soutenir l’appareil urinaire, le foie, la mobilité, la fonction rénale et le bien-être général.","grid.available":"Disponible","grid.unavailable":"Indisponible","grid.instock":" en stock","grid.out":"Rupture de stock","grid.add":"Ajouter au panier","grid.buy":"Acheter maintenant","grid.more":"Plus de détails","grid.signin":"Connectez-vous pour acheter","pd.title":"Détails du produit","pd.form":"Forme","pd.size":"Conditionnement","pd.ingr":"Ingrédients clés","pd.use":"Conseils d’utilisation","pd.variant":"Variante","pd.quantity":"Qté","pd.price":"Prix","pd.pdf":"Télécharger le PDF","pd.full":"Voir la fiche","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Connectez-vous pour voir le prix","pd.vetOnly":"Vérifiez le statut vétérinaire pour voir le prix","pd.variantMissing":"Aucune variante","pd.notAvailable":"Non disponible","pd.editPrices":"Modifier les prix","pd.save":"Enregistrer","pd.cancel":"Annuler","pd.note":"Aliment complémentaire — pas un médicament. Suivez toujours l’avis de votre vétérinaire.","ui.sku":"SKU : "},
-  es: {"ui.loading":"Cargando…","nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"Mundo","nav.news":"Noticias","nav.contact":"Contacto","auth.login":"Iniciar sesión","auth.signup":"Registrarse","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria","orders.myOrders":"Mis pedidos","nav.account":"Configuración de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar","footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto","hero.badge":"Alimento complementario — no medicamento","products.title":"Nuestra gama de productos","products.lead":"Explore nuestra selección para apoyar el sistema urinario, el hígado, la movilidad, la función renal y el bienestar general.","grid.available":"Disponible","grid.unavailable":"No disponible","grid.instock":" en stock","grid.out":"Agotado","grid.add":"Añadir al carrito","grid.buy":"Comprar ahora","grid.more":"Más detalles","grid.signin":"Inicia sesión para comprar","pd.title":"Detalles del producto","pd.form":"Forma","pd.size":"Tamaño del paquete","pd.ingr":"Ingredientes clave","pd.use":"Guía de uso","pd.variant":"Variante","pd.quantity":"Cant.","pd.price":"Precio","pd.pdf":"Descargar PDF","pd.full":"Ver página completa","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Inicia sesión para ver el precio","pd.vetOnly":"Verifica el estado veterinario para ver el precio","pd.variantMissing":"Sin variantes","pd.notAvailable":"No disponible","pd.editPrices":"Editar precios","pd.save":"Guardar","pd.cancel":"Cancelar","pd.note":"Alimento complementario — no es un medicamento. Sigue siempre el consejo de tu veterinario.","ui.sku":"SKU: "},
-  ar: {"ui.loading":"جارٍ التحميل…","nav.home":"الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا","auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"توثيق الطبيب البيطري","orders.myOrders":"طلباتي","nav.account":"إعدادات الحساب","nav.cart":"السلة","nav.checkout":"الدفع","footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا","hero.badge":"غذاء تكميلي — ليس دواءً","products.title":"مجموعة منتجاتنا","products.lead":"استكشف مجموعتنا لدعم المسالك البولية والكبد والحركة والكلية والصحة العامة.","grid.available":"متوفر","grid.unavailable":"غير متوفر","grid.instock":" متوفر بالمخزون","grid.out":"غير متوفر","grid.add":"أضف إلى السلة","grid.buy":"اشترِ الآن","grid.more":"مزيد من التفاصيل","grid.signin":"سجّل الدخول للشراء","pd.title":"تفاصيل المنتج","pd.form":"الشكل","pd.size":"حجم العبوة","pd.ingr":"المكونات الرئيسية","pd.use":"إرشادات التغذية","pd.variant":"النوع","pd.quantity":"الكمية","pd.price":"السعر","pd.pdf":"تحميل PDF","pd.full":"عرض الصفحة كاملة","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"سجّل الدخول لعرض السعر","pd.vetOnly":"تحقق من صفتك البيطرية لعرض السعر","pd.variantMissing":"لا توجد أنواع","pd.notAvailable":"غير متاح","pd.editPrices":"تعديل الأسعار","pd.save":"حفظ","pd.cancel":"إلغاء","pd.note":"غذاء تكميلي — ليس دواءً. اتبع دائمًا نصيحة الطبيب البيطري.","ui.sku":"SKU: "}
-};
-function t(key){
-  try{
-    const lang = localStorage.getItem("lang") || "en";
-    const dict = (window.I18N?.[lang]) || (window.I18N?.en) || {};
-    return (dict?.[key] ?? key);
-  }catch(_){ return key; }
-}
-function applyLang(lang){
-  const dict = window.I18N?.[lang] || window.I18N?.en || {};
-  document.querySelectorAll("[data-i18n]").forEach(el=>{
-    const k = el.getAttribute("data-i18n");
-    if (dict && dict[k] != null) el.innerHTML = dict[k];
-  });
-  const html=document.documentElement; html.lang=lang;
-  if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
-  else { html.dir="ltr"; document.body.classList.remove("rtl"); }
-  localStorage.setItem("lang", lang);
-  const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
-}
-</script>
-
-<script>
-/* Modals + contact handlers */
-const contactModal = document.getElementById('contactModal');
-const policyModal  = document.getElementById('policyModal');
-function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
-function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
-function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
-function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
-[contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
-
-const toAddress = 'info@vetocos.com';
-function sendMailto(e){
-  e.preventDefault();
-  const topic   = document.getElementById('topic').value;
-  const name    = document.getElementById('name').value.trim();
-  const email   = document.getElementById('email').value.trim();
-  const country = document.getElementById('country').value.trim();
-  const phone   = document.getElementById('phone').value.trim();
-  const subject = document.getElementById('subject').value.trim() || 'Website enquiry';
-  const message = document.getElementById('message').value.trim();
-  if (!document.getElementById('consent').checked) return false;
-
-  const lines = [`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,country ? `Country: ${country}` : null,phone ? `Phone: ${phone}` : null,'',message].filter(Boolean).join('%0A');
-  const mailto = `mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
-  window.location.href = mailto; return false;
-}
-
-/* On DOM ready: dates, i18n init, and textarea counter */
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById("y").textContent = new Date().getFullYear();
-  const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
-  const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
-
-  const initial = localStorage.getItem("lang") || "en";
-  applyLang(initial);
-
-  const sel = document.getElementById("lang-switch");
-  if (sel){
-    sel.value = initial;
-    sel.addEventListener("change", async e => {
-      applyLang(e.target.value);
-      await renderProducts();
-      await refreshHeader();
-      if (document.getElementById('productDetailsModal')?.classList.contains('open')) {
-        const code = (typeof CURRENT_SKU === 'string') ? CURRENT_SKU : null;
-        if (code) openPD(code, document.getElementById('pdVariantSel')?.value || null);
-      }
+  window.I18N = window.I18N || {
+    en: {"ui.loading":"Loading…","nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact","auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification","orders.myOrders":"My orders","nav.account":"Account settings","nav.cart":"Cart","nav.checkout":"Checkout","footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact","hero.badge":"Complementary feed — not medicine","products.title":"Our Product Range","products.lead":"Explore our selection designed to support urinary, liver, mobility, renal, and overall well-being.","grid.available":"Available","grid.unavailable":"Unavailable","grid.instock":" in stock","grid.out":"Out of stock","grid.add":"Add to Cart","grid.buy":"Buy Now","grid.more":"More details","grid.signin":"Sign in to buy","pd.title":"Product details","pd.form":"Form","pd.size":"Pack size","pd.ingr":"Key ingredients","pd.use":"Feeding guidance","pd.variant":"Variant","pd.quantity":"Qty","pd.price":"Price","pd.pdf":"Download PDF","pd.full":"View full page","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Sign in to see price","pd.vetOnly":"Verify vet status to see price","pd.variantMissing":"No variants","pd.notAvailable":"Not available","pd.editPrices":"Edit prices","pd.save":"Save","pd.cancel":"Cancel","pd.note":"Complementary feed — not a medicine. Always follow your vet’s advice.","ui.sku":"SKU: "},
+    fr: {"ui.loading":"Chargement…","nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact","auth.login":"Se connecter","auth.signup":"Créer un compte","auth.logout":"Se déconnecter","auth.vetVerify":"Vérification vétérinaire","orders.myOrders":"Mes commandes","nav.account":"Paramètres du compte","nav.cart":"Panier","nav.checkout":"Commander","footer.tag":"Aliment complémentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact","hero.badge":"Aliment complémentaire — pas un médicament","products.title":"Notre gamme de produits","products.lead":"Découvrez notre sélection pour soutenir l’appareil urinaire, le foie, la mobilité, la fonction rénale et le bien-être général.","grid.available":"Disponible","grid.unavailable":"Indisponible","grid.instock":" en stock","grid.out":"Rupture de stock","grid.add":"Ajouter au panier","grid.buy":"Acheter maintenant","grid.more":"Plus de détails","grid.signin":"Connectez-vous pour acheter","pd.title":"Détails du produit","pd.form":"Forme","pd.size":"Conditionnement","pd.ingr":"Ingrédients clés","pd.use":"Conseils d’utilisation","pd.variant":"Variante","pd.quantity":"Qté","pd.price":"Prix","pd.pdf":"Télécharger le PDF","pd.full":"Voir la fiche","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Connectez-vous pour voir le prix","pd.vetOnly":"Vérifiez le statut vétérinaire pour voir le prix","pd.variantMissing":"Aucune variante","pd.notAvailable":"Non disponible","pd.editPrices":"Modifier les prix","pd.save":"Enregistrer","pd.cancel":"Annuler","pd.note":"Aliment complémentaire — pas un médicament. Suivez toujours l’avis de votre vétérinaire.","ui.sku":"SKU : "},
+    es: {"ui.loading":"Cargando…","nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"Mundo","nav.news":"Noticias","nav.contact":"Contacto","auth.login":"Iniciar sesión","auth.signup":"Registrarse","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria","orders.myOrders":"Mis pedidos","nav.account":"Configuración de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar","footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto","hero.badge":"Alimento complementario — no medicamento","products.title":"Nuestra gama de productos","products.lead":"Explore nuestra selección para apoyar el sistema urinario, el hígado, la movilidad, la función renal y el bienestar general.","grid.available":"Disponible","grid.unavailable":"No disponible","grid.instock":" en stock","grid.out":"Agotado","grid.add":"Añadir al carrito","grid.buy":"Comprar ahora","grid.more":"Más detalles","grid.signin":"Inicia sesión para comprar","pd.title":"Detalles del producto","pd.form":"Forma","pd.size":"Tamaño del paquete","pd.ingr":"Ingredientes clave","pd.use":"Guía de uso","pd.variant":"Variante","pd.quantity":"Cant.","pd.price":"Precio","pd.pdf":"Descargar PDF","pd.full":"Ver página completa","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Inicia sesión para ver el precio","pd.vetOnly":"Verifica el estado veterinario para ver el precio","pd.variantMissing":"Sin variantes","pd.notAvailable":"No disponible","pd.editPrices":"Editar precios","pd.save":"Guardar","pd.cancel":"Cancelar","pd.note":"Alimento complementario — no es un medicamento. Sigue siempre el consejo de tu veterinario.","ui.sku":"SKU: "},
+    ar: {"ui.loading":"جارٍ التحميل…","nav.home":"الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا","auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"توثيق الطبيب البيطري","orders.myOrders":"طلباتي","nav.account":"إعدادات الحساب","nav.cart":"السلة","nav.checkout":"الدفع","footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا","hero.badge":"غذاء تكميلي — ليس دواءً","products.title":"مجموعة منتجاتنا","products.lead":"استكشف مجموعتنا لدعم المسالك البولية والكبد والحركة والكلية والصحة العامة.","grid.available":"متوفر","grid.unavailable":"غير متوفر","grid.instock":" متوفر بالمخزون","grid.out":"غير متوفر","grid.add":"أضف إلى السلة","grid.buy":"اشترِ الآن","grid.more":"مزيد من التفاصيل","grid.signin":"سجّل الدخول للشراء","pd.title":"تفاصيل المنتج","pd.form":"الشكل","pd.size":"حجم العبوة","pd.ingr":"المكونات الرئيسية","pd.use":"إرشادات التغذية","pd.variant":"النوع","pd.quantity":"الكمية","pd.price":"السعر","pd.pdf":"تحميل PDF","pd.full":"عرض الصفحة كاملة","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"سجّل الدخول لعرض السعر","pd.vetOnly":"تحقق من صفتك البيطرية لعرض السعر","pd.variantMissing":"لا توجد أنواع","pd.notAvailable":"غير متاح","pd.editPrices":"تعديل الأسعار","pd.save":"حفظ","pd.cancel":"إلغاء","pd.note":"غذاء تكميلي — ليس دواءً. اتبع دائمًا نصيحة الطبيب البيطري.","ui.sku":"SKU: "}
+  };
+  function t(key){
+    try{
+      const lang = localStorage.getItem("lang") || "en";
+      const dict = (window.I18N?.[lang]) || (window.I18N?.en) || {};
+      return (dict?.[key] ?? key);
+    }catch(_){ return key; }
+  }
+  function applyLang(lang){
+    const dict = window.I18N?.[lang] || window.I18N?.en || {};
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+      const k = el.getAttribute("data-i18n");
+      if (dict && dict[k] != null) el.innerHTML = dict[k];
     });
+    const html=document.documentElement; html.lang=lang;
+    if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
+    else { html.dir="ltr"; document.body.classList.remove("rtl"); }
+    localStorage.setItem("lang", lang);
+    const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
+  }
+  </script>
+
+  <!-- Modals + contact handlers -->
+  <script>
+  const contactModal = document.getElementById('contactModal');
+  const policyModal  = document.getElementById('policyModal');
+
+  function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+  function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+  function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+  function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+
+  [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+
+  const TO_ADDRESS = 'info@vetocos.com';
+  function sendMailto(e){
+    e.preventDefault();
+    const topic   = document.getElementById('topic').value;
+    const name    = document.getElementById('name').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const country = document.getElementById('country').value.trim();
+    const phone   = document.getElementById('phone').value.trim();
+    const subject = document.getElementById('subject').value.trim() || 'Website enquiry';
+    const message = document.getElementById('message').value.trim();
+    if (!document.getElementById('consent').checked) return false;
+
+    const raw = [`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,country ? `Country: ${country}` : null,phone ? `Phone: ${phone}` : null,'',message].filter(Boolean).join('\n');
+    const href = `mailto:${encodeURIComponent(TO_ADDRESS)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(raw)}`;
+    window.location.href = href; 
+    return false;
   }
 
-  const msg = document.getElementById('message'); const cnt = document.getElementById('msgCount');
-  if (msg && cnt){ const upd = () => { cnt.textContent = String(msg.value.length); }; msg.addEventListener('input', upd); upd(); }
-});
-</script>
+  /* On DOM ready: dates, i18n init, and textarea counter */
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById("y").textContent = new Date().getFullYear();
+    const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
+    const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+
+    const initial = localStorage.getItem("lang") || "en";
+    applyLang(initial);
+
+    const sel = document.getElementById("lang-switch");
+    if (sel){
+      sel.value = initial;
+      sel.addEventListener("change", async e => {
+        applyLang(e.target.value);
+        await renderProducts();
+        await refreshHeader();
+        if (document.getElementById('productDetailsModal')?.classList.contains('open')) {
+          const code = (typeof CURRENT_SKU === 'string') ? CURRENT_SKU : null;
+          if (code) openPD(code, document.getElementById('pdVariantSel')?.value || null);
+        }
+      });
+    }
+
+    const msg = document.getElementById('message'); const cnt = document.getElementById('msgCount');
+    if (msg && cnt){ const upd = () => { cnt.textContent = String(msg.value.length); }; msg.addEventListener('input', upd); upd(); }
+  });
+  </script>
 
   <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -478,8 +481,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (accountBtn) accountBtn.addEventListener('click', ()=>{
       const open = accountMenu.classList.toggle('open');
       accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
+      accountBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
       if (open){
-        const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
+        const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); accountBtn.setAttribute('aria-expanded','false'); document.removeEventListener('click', onDoc);} };
         setTimeout(()=>document.addEventListener('click', onDoc),0);
       }
     });
@@ -551,7 +555,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       return "https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/" + PRODUCT_BUCKET + "/" + encodeURI(p);
     }
 
-    /* ---------- NEW: image fallback helpers ---------- */
+    /* Image fallbacks */
     function slugifyName(name=''){
       return String(name).trim().toLowerCase()
         .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
@@ -568,16 +572,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (spec.image_url)  out.push(spec.image_url);
       const sku = (spec.sku || '').toLowerCase();
       const nm  = slugifyName(spec.name || '');
-      ['/images/'+sku+'.jpg','/images/'+sku+'.png',
-       '/images/'+nm +'.jpg','/images/'+nm +'.png'
-      ].forEach(u => out.push(u));
+      // note: no leading slash (keeps relative URL correct on subpaths)
+      ['images/'+sku+'.jpg','images/'+sku+'.png','images/'+nm+'.jpg','images/'+nm+'.png']
+        .forEach(u => out.push(u));
       if (spec.image) out.push(spec.image);
       out.push('images/placeholder.png');
       return Array.from(new Set(out.filter(Boolean)));
     }
-    /* ----------------------------------------------- */
 
-    /* Fallback catalog */
+    /* Fallback catalog (for empty DB) */
     const FALLBACK = {
       "URO-CHIEN": { name:"Urocline Chien", image:"images/Product1.jpg", category:"Urinary care", form:"Chewable tablets", size:"30 comp.", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", page:"Product1.html", pdf:"pdf/Product1.pdf" },
       "HEP-AT":    { name:"Hepatiale", image:"images/Product2.jpg", category:"Liver support",   form:"Capsules", size:"", ingredients:"Silybin-phospholipid, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", page:"Product2.html", pdf:"pdf/Product2.pdf" },
@@ -707,16 +710,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (pdAdminForm){
         pdAdminForm.addEventListener('submit', async (e)=>{
           e.preventDefault();
-          const edited = [...pdAdminForm.querySelectorAll('.admin-grid')].map(row=>{
+          const rows = Array.from(pdAdminForm.querySelectorAll('.admin-grid'));
+          const edited = rows.map(row=>{
             const code = row.getAttribute('data-vid');
-            const src  = CURRENT_VARIANTS.find(v=> (v.variant_code||'') === code) || {};
             const num  = (name)=> {
               const v = row.querySelector(`[name="${name}"]`)?.value;
               return (v === '' || v == null) ? null : Number(v);
             };
             return {
               code,
-              name: src.label || src._uiLabel || code,
+              name: row.querySelector('.input[disabled]')?.value || code,
               price_ppv:        num('price_ppv'),
               price_pv_minus10: num('price_pv_minus10'),
               price_pv_plus10:  num('price_pv_plus10'),
@@ -775,10 +778,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
       }
       if (!variant){ pdPriceBox.textContent = t('pd.variantMissing'); pdPriceNote.textContent = ''; return; }
       const tier = priceForQty(variant, qty);
-      if (!tier || !tier.value){ pdPriceBox.textContent = t('pd.notAvailable'); pdPriceNote.textContent = ''; return; }
-      const total = (Number(tier.value)||0) * qty;
-      pdPriceBox.textContent = `${tier.currency||'MAD'} ${Number(tier.value).toFixed(2)}  — ${tier.label}`;
-      pdPriceNote.textContent = `Total: ${tier.currency||'MAD'} ${total.toFixed(2)} (${qty} × ${Number(tier.value).toFixed(2)})`;
+      if (!tier || tier.value==null || Number.isNaN(Number(tier.value))){ pdPriceBox.textContent = t('pd.notAvailable'); pdPriceNote.textContent = ''; return; }
+      const unit = Number(tier.value);
+      const total = unit * qty;
+      pdPriceBox.textContent = `${tier.currency||'MAD'} ${unit.toFixed(2)}  — ${tier.label}`;
+      pdPriceNote.textContent = `Total: ${tier.currency||'MAD'} ${total.toFixed(2)} (${qty} × ${unit.toFixed(2)})`;
     }
 
     async function loadVariants(sku){
@@ -803,9 +807,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
           variant_code: code,
           _uiLabel: prettyVariantLabel(sku, code, v.name || v.label || ''),
           label: v.name || v.label || '',
-          price_ppv:        (v.price_ppv        ?? v.ppv        ?? null) * 1 || (v.price_ppv===0||v.ppv===0 ? 0 : null),
-          price_pv_minus10: (v.price_pv_minus10 ?? v.pv_minus_10u ?? null) * 1 || (v.price_pv_minus10===0||v.pv_minus_10u===0 ? 0 : null),
-          price_pv_plus10:  (v.price_pv_plus10  ?? v.pv_plus_10u  ?? null) * 1 || (v.price_pv_plus10===0||v.pv_plus_10u===0 ? 0 : null),
+          price_ppv:        (v.price_ppv        ?? v.ppv        ?? null),
+          price_pv_minus10: (v.price_pv_minus10 ?? v.pv_minus_10u ?? null),
+          price_pv_plus10:  (v.price_pv_plus10  ?? v.pv_plus_10u  ?? null),
           currency: v.currency || 'MAD'
         };
       });
@@ -845,15 +849,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
           </div>
           <div>
             <label class="muted">${t('pd.ppv')}</label>
-            <input name="price_ppv" class="input" type="number" step="0.01" value="${(v.price_ppv ?? v.ppv ?? '')}">
+            <input name="price_ppv" class="input" type="number" step="0.01" value="${(v.price_ppv ?? '')}">
           </div>
           <div>
             <label class="muted">${t('pd.pv10m')}</label>
-            <input name="price_pv_minus10" class="input" type="number" step="0.01" value="${(v.price_pv_minus10 ?? v.pv_minus_10u ?? '')}">
+            <input name="price_pv_minus10" class="input" type="number" step="0.01" value="${(v.price_pv_minus10 ?? '')}">
           </div>
           <div>
             <label class="muted">${t('pd.pv10p')}</label>
-            <input name="price_pv_plus10" class="input" type="number" step="0.01" value="${(v.price_pv_plus10 ?? v.pv_plus_10u ?? '')}">
+            <input name="price_pv_plus10" class="input" type="number" step="0.01" value="${(v.price_pv_plus10 ?? '')}">
           </div>
           <div>
             <label class="muted">Currency</label>
@@ -888,7 +892,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       pdDesc.textContent = spec.description || '';
       pdSku.textContent = t("ui.sku") + sku;
 
-      /* ---------- NEW: modal image with fallback chain ---------- */
+      // modal image with fallback chain
       const cands = imageCandidates(spec);
       pdImg.alt = spec.name || sku;
       pdImg.style.visibility = 'hidden';
@@ -896,12 +900,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
       pdImg.onerror = () => nextSrcOnError(pdImg);
       pdImg.setAttribute('data-candidates', cands.slice(1).join('|'));
       pdImg.src = cands[0];
-      /* ---------------------------------------------------------- */
 
+      // PDF + full page
+      const pdfHref = spec.pdf_path ? filePublicUrl(spec.pdf_path) : (spec.pdf || '');
       pdPdf.textContent = t("pd.pdf");
-      pdPdf.href = (spec.pdf_path ? filePublicUrl(spec.pdf_path) : (spec.pdf || '#')) || '#';
+      if (pdfHref){ pdPdf.href = pdfHref; pdPdf.target = "_blank"; pdPdf.rel="noopener"; } else { pdPdf.removeAttribute('href'); }
 
-      pdPage.textContent = t("pd.full"); pdPage.href = spec.page || '#';
+      pdPage.textContent = t("pd.full"); 
+      if (spec.page){ pdPage.href = spec.page; } else { pdPage.removeAttribute('href'); }
 
       const isAvail = !!(spec.available && (Number(spec.stock_qty||0) > 0));
       pdAdd.textContent = t("grid.add"); pdBuy.textContent = t("grid.buy");
@@ -951,7 +957,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
           stock_qty: Number(r.stock_qty||0),
           available: !!r.available,
           image_path: r.image_path || null,
-          image_url:  r.image_url  || null,   // NEW
+          image_url:  r.image_url  || null,
           pdf_path: r.pdf_path || null,
           category: f.category || '',
           form: f.form || '',
@@ -990,9 +996,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
         variant_code: (v.code || v.variant_code || v.name || `v${i}`).toString(),
         _uiLabel: prettyVariantLabel(sku, (v.code||v.variant_code||v.name||'').toString(), v.name || v.label || ''),
         label: v.name || v.label || '',
-        price_ppv: Number(v.price_ppv ?? 0) || null,
-        price_pv_minus10: Number(v.price_pv_minus10 ?? 0) || null,
-        price_pv_plus10: Number(v.price_pv_plus10 ?? 0) || null,
+        price_ppv: (v.price_ppv ?? null),
+        price_pv_minus10: (v.price_pv_minus10 ?? null),
+        price_pv_plus10: (v.price_pv_plus10 ?? null),
         currency: v.currency || 'MAD'
       }));
       VARIANTS_CACHE[sku] = normalized;
@@ -1001,6 +1007,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     async function renderProducts(){
       const grid = document.getElementById('productGrid');
+      grid.setAttribute('aria-busy','true');
       grid.innerHTML = `<div class="muted">${t("ui.loading")}</div>`;
 
       const { data:{ session } } = await supa.auth.getSession();
@@ -1019,7 +1026,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       for (const r of rows){
         const p = PRODUCT_CACHE[r.sku];
 
-        /* ---------- NEW: grid card image with fallback chain ---------- */
         const cands = imageCandidates(p);
         const imgTag = `
           <img alt="${p.name}"
@@ -1028,7 +1034,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
                onerror="nextSrcOnError(this)"
                src="${cands[0]}"
                data-candidates="${cands.slice(1).join('|')}">`;
-        /* -------------------------------------------------------------- */
 
         const isAvail = p.available && (p.stock_qty > 0);
         const statusHtml = isAvail ? `<span class="status ok">${t("grid.available")}</span>`
@@ -1038,11 +1043,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
         const card = document.createElement('div');
         card.className = 'p-card';
         card.setAttribute('data-sku', r.sku);
+        card.setAttribute('role','article');
 
         const variantRowHtml = `
           <div class="variant-row">
             <label>${t('pd.variant')}</label>
-            <select class="select card-variant" data-sku="${r.sku}" style="min-width:140px">
+            <select class="select card-variant" data-sku="${r.sku}" style="min-width:140px" aria-label="${p.name} variant">
               <option>${t('ui.loading')}</option>
             </select>
           </div>`;
@@ -1097,6 +1103,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
         grid.appendChild(card);
       }
+
+      grid.removeAttribute('aria-busy');
     }
 
     window.addEventListener('storage', (ev)=>{ if(ev.key === 'cart') updateCartBadge(); });
@@ -1115,7 +1123,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
       <div class="sheet-head">
         <h2 id="pdTitle" class="sheet-title" data-i18n="pd.title">Product details</h2>
-        <button class="close" type="button" onclick="(function(){ const m=document.getElementById('productDetailsModal'); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } })()" data-i18n="contact.close">Close</button>
+        <button class="close" type="button" onclick="(function(){ const m=document.getElementById('productDetailsModal'); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } })()" data-i18n="contact.close" aria-label="Close product details">Close</button>
       </div>
       <div class="sheet-body">
         <div class="pd-cols">
@@ -1134,10 +1142,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
             <div class="spec" style="margin-top:10px">
               <div class="price-row">
                 <label class="muted" style="min-width:80px" data-i18n="pd.variant">Variant</label>
-                <select id="pdVariantSel" class="select" style="min-width:140px"></select>
+                <select id="pdVariantSel" class="select" style="min-width:140px" aria-label="Variant"></select>
 
                 <label class="muted" style="min-width:60px" data-i18n="pd.quantity">Qty</label>
-                <input id="pdQtyInp" class="input" type="number" min="1" step="1" value="1" style="max-width:100px">
+                <input id="pdQtyInp" class="input" type="number" min="1" step="1" value="1" style="max-width:100px" aria-label="Quantity">
 
                 <span class="pill ok" style="margin-left:auto" data-i18n="pd.price">Price</span>
               </div>
@@ -1160,7 +1168,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 <strong>Admin</strong>
                 <button id="pdEditBtn" class="btn small" type="button" data-i18n="pd.editPrices">Edit prices</button>
               </div>
-              <form id="pdAdminForm" style="display:none;margin-top:10px"></form>
+              <form id="pdAdminForm" style="display:none;margin-top:10px" aria-label="Admin price editor"></form>
             </div>
           </div>
         </div>
