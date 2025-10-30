@@ -2,151 +2,153 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>VetoCos | Complementary feed for dogs & cats</title>
+  <title>VetoCos | Products</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Professional complementary feed for companion animals. Urinary, liver, mobility, renal and overall wellness.">
+  <meta name="description" content="VetoCos complementary feed for dogs & cats.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--accent:#6dd5ff;--accent2:#83f0a5;
-      --max:1100px;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,.25)
+      --bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;
+      --brand:#6dd5ff;--brand2:#83f0a5;--max:1120px;--radius:18px;
+      --shadow:0 10px 30px rgba(0,0,0,.25)
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
     a{text-decoration:none;color:inherit}
-    img{display:block;max-width:100%}
     .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
 
     /* Header */
     header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:10px;font-weight:700}
-    .brand-logo{width:60px;filter: drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+    .brand-logo{width:60px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
     .links{display:flex;gap:18px;align-items:center}
-    .links a{padding:8px 12px;border-radius:10px}
+    .links a{padding:8px 12px;border-radius:10px;color:var(--text)}
     .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
-    .btn,.chip{
-      padding:10px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);
-      background:linear-gradient(135deg,rgba(109,213,255,.16),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600
+    .contact-btn,#lang-switch,.btn{
+      padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer
     }
-    .btn.ghost{background:transparent}
-    #lang-switch{min-width:120px}
-    .hamb{display:none;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
+    #lang-switch{background:rgba(255,255,255,.04);min-width:120px}
     .cart-link{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.04)}
     .cart-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;display:grid;place-items:center;font-size:12px;background:#ff6d6d;border-radius:999px;padding:0 6px;color:white}
+    .hamb{display:none;cursor:pointer;border:1px solid rgba(141,158,199,.25);padding:8px 10px;border-radius:10px}
     @media(max-width:820px){
       .links{display:none;position:absolute;right:18px;top:58px;background:rgba(16,24,53,.98);padding:10px;border:1px solid rgba(141,158,199,.2);border-radius:12px;flex-direction:column;min-width:240px}
       .links.open{display:flex}
       .hamb{display:block}
+      .contact-btn,#lang-switch{width:100%;text-align:left}
     }
 
+    /* Account dropdown */
     .acct{position:relative;display:inline-flex;align-items:center;gap:8px}
-    .avatar{width:28px;height:28px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:inline-block;border:1px solid rgba(141,158,199,.3)}
+    .avatar{width:28px;height:28px;border-radius:999px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:inline-block;border:1px solid rgba(141,158,199,.3)}
     .menu{position:absolute;top:42px;right:0;background:rgba(16,24,53,.98);border:1px solid rgba(141,158,199,.2);border-radius:12px;min-width:240px;display:none;box-shadow:var(--shadow)}
     .menu.open{display:block}
     .menu a,.menu button{display:block;width:100%;text-align:left;padding:10px 12px;background:transparent;border:0;color:var(--text);cursor:pointer}
     .menu a:hover,.menu button:hover{background:rgba(141,158,199,.15)}
+    .menu .muted{font-size:12px}
 
     /* Hero */
-    .hero{padding:56px 0 24px;display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:center}
-    .kicker{display:inline-flex;gap:8px;align-items:center;background:rgba(141,158,199,.15);border:1px solid rgba(141,158,199,.25);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
-    h1{font-size:clamp(28px,5vw,46px);margin:14px 0}
-    .lead{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:680px;margin:0 0 16px}
-    .hero-cta{display:flex;gap:10px;flex-wrap:wrap}
-    .hero-card{background:radial-gradient(1200px 400px at 100% -100%, rgba(109,213,255,.12), transparent), var(--card);border:1px solid rgba(141,158,199,.18);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
-    .hero-card img{border-radius:12px;border:1px solid rgba(141,158,199,.18)}
+    .hero{padding:40px 0 20px;text-align:center}
+    .badge{display:inline-flex;gap:8px;align-items:center;background:rgba(141,158,199,.15);border:1px solid rgba(141,158,199,.25);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
+    h1{font-size:clamp(28px,5vw,42px);margin:14px 0}
+    .lead{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:700px;margin:0 auto 18px}
 
-    /* Trust row */
-    .trust{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:22px 0;color:var(--muted);font-size:14px}
-    .trust .chip{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.2);font-weight:500}
-
-    /* Value props */
-    .section{padding:34px 0}
-    .section h2{font-size:clamp(22px,3.6vw,32px);margin:0 0 10px}
-    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-    @media(max-width:900px){.grid-3{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;padding:16px}
-    .card h3{margin:.2rem 0 .3rem;font-size:1.05rem}
-    .muted{color:var(--muted)}
-
-    /* Featured products */
-    .products{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-    @media(max-width:1100px){.products{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:820px){.products{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:520px){.products{grid-template-columns:1fr}}
-    .p-card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;transition:.2s}
+    /* Grid */
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
+    @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.grid{grid-template-columns:1fr}}
+    .p-card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:.2s;position:relative}
     .p-card:hover{transform:translateY(-3px);border-color:rgba(131,240,165,.3)}
-    .p-card img{width:100%;height:170px;object-fit:cover}
-    .p-body{padding:12px}
+    .p-card .thumb{width:100%;height:170px;object-fit:cover;visibility:hidden}
+    .px{padding:12px}
+    .px h4{margin:.2rem 0 .1rem}
     .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
     .status{font-size:12px;border-radius:999px;padding:2px 8px;border:1px solid rgba(141,158,199,.25)}
     .status.ok{background:rgba(131,240,165,.14)}
     .status.bad{background:rgba(255,120,120,.14)}
-    .p-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .qty{font-size:12px;color:var(--muted)}
+    .lock-overlay{
+      position:absolute;inset:auto 8px 8px 8px;display:flex;align-items:center;justify-content:center;
+      background:rgba(5,8,18,.7);backdrop-filter:blur(2px);border:1px solid rgba(141,158,199,.25);border-radius:12px;padding:8px;font-size:.9rem;color:var(--muted)
+    }
 
-    /* CTA rows */
-    .cta{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    @media(max-width:880px){.cta{grid-template-columns:1fr}}
-    .cta .panel{background:linear-gradient(135deg,rgba(109,213,255,.12),rgba(131,240,165,.10));border:1px solid rgba(141,158,199,.22);border-radius:18px;padding:16px}
-
-    /* Testimonials */
-    .t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-    @media(max-width:980px){.t-grid{grid-template-columns:1fr}}
-    .t{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.18);border-radius:16px;padding:14px}
-    .t .who{display:flex;align-items:center;gap:10px;margin-top:10px}
-    .avatar-sm{width:36px;height:36px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
-
-    /* FAQ */
-    .faq-item{border:1px solid rgba(141,158,199,.18);border-radius:14px;margin-bottom:10px;overflow:hidden;background:rgba(255,255,255,.03)}
-    .faq-q{width:100%;text-align:left;background:transparent;border:0;color:var(--text);padding:12px;font-weight:600;cursor:pointer}
-    .faq-a{display:none;padding:0 12px 12px;color:var(--muted)}
-    .faq-item.open .faq-a{display:block}
-
-    /* Footer */
-    footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
-    .footer-links{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+    /* Buttons */
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600}
+    .btn.ghost{background:transparent}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
 
     /* Modals */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
     .modal.open{display:flex}
-    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .sheet{width:min(820px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
     .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
     .sheet-title{margin:0;font-size:1.1rem}
     .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+    .sheet-body{padding:16px}
+
+    .pd-cols{display:grid;grid-template-columns:240px 1fr;gap:16px}
+    @media(max-width:760px){.pd-cols{grid-template-columns:1fr}}
+    .pd-img{width:100%;height:240px;object-fit:cover;border-radius:12px;border:1px solid rgba(141,158,199,.18);visibility:hidden}
+    .specs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:760px){.specs{grid-template-columns:1fr}}
+    .spec{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:12px}
+    .spec h5{margin:.2rem 0 .3rem;font-size:0.95rem}
+    .sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+    /* Forms & admin */
+    .field{display:flex;flex-direction:column;gap:6px}
+    .input, .select, .textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text);outline:none}
+    .price-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem}
+    .pill.info{background:rgba(109,213,255,.12)}
+    .pill.ok{background:rgba(131,240,165,.12)}
+    .admin-box{margin-top:10px;border:1px dashed rgba(141,158,199,.35);border-radius:12px;padding:10px}
+    .admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    @media(max-width:760px){.admin-grid{grid-template-columns:1fr 1fr}}
+    footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
 
     /* RTL */
-    body.rtl .hero, body.rtl .cta{direction:rtl}
+    body.rtl .links a{text-align:right}
+    body.rtl .pd-cols,.rtl .specs{direction:rtl}
+    body.rtl label{text-align:right}
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="site" role="banner">
+  <header class="site">
     <div class="wrap nav">
       <div class="brand">
-        <a href="index.html" aria-label="VetoCos home">
-          <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
-        </a>
-        <span aria-hidden="true">VetoCos</span>
+        <a href="index.html" aria-label="VetoCos home"><img class="brand-logo" src="images/logo.png" alt="VetoCos logo"></a>
+        <span>VetoCos</span>
       </div>
-
-      <nav class="links" id="navlinks" aria-label="Primary">
-        <a class="active" href="index.html" data-i18n="nav.home" aria-current="page">Home</a>
-        <a href="Products.html" data-i18n="nav.products">Products</a>
+      <nav class="links" id="navlinks">
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a class="active" href="Products.html" data-i18n="nav.products">Products</a>
         <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
-        <a href="news.html" data-i18n="nav.news">News</a>
+        <a href="News.html" data-i18n="nav.news">News</a>
 
-        <a class="cart-link" id="cartLink" href="cart.html" style="display:none" aria-label="Cart">
+        <!-- Cart (hidden when logged out) -->
+        <a class="cart-link" id="cartLink" href="cart.html" style="display:none">
           <span data-i18n="nav.cart">Cart</span>
           <span id="cartCount" class="cart-badge" style="display:none">0</span>
         </a>
 
-        <button class="btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
-        <a class="btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
-        <button class="btn" id="signInBtn" type="button" data-i18n="auth.login">Sign in</button>
-        <button class="btn" id="signUpBtn" type="button" data-i18n="auth.signup">Sign up</button>
+        <!-- Contact (mailto as requested) -->
+        <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
 
+        <!-- Admin link -->
+        <a class="contact-btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
+
+        <!-- Auth controls -->
+        <button class="contact-btn" id="signInBtn" type="button" data-i18n="auth.login">Sign in</button>
+        <button class="contact-btn" id="signUpBtn" type="button" data-i18n="auth.signup">Sign up</button>
+
+        <!-- Account dropdown -->
         <div class="acct" id="acctBlock" style="display:none">
-          <button class="btn" id="accountBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+          <button class="contact-btn" id="accountBtn" type="button">
             <span class="avatar" aria-hidden="true"></span>
             <span id="helloName" class="muted" style="font-size:.9rem"></span>
           </button>
@@ -161,124 +163,29 @@
           </div>
         </div>
 
-        <select class="btn" id="lang-switch" aria-label="Language">
-          <option value="en">English</option><option value="fr">Français</option>
-          <option value="es">Español</option><option value="ar">العربية</option>
+        <!-- Language -->
+        <select id="lang-switch" aria-label="Language" class="contact-btn">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="es">Español</option>
+          <option value="ar">العربية</option>
         </select>
       </nav>
-
       <button class="hamb" aria-label="Open menu" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
     </div>
   </header>
 
-  <!-- Main -->
-  <main id="main" role="main">
-    <!-- Hero -->
-    <section class="wrap hero">
-      <div>
-        <span class="kicker" data-i18n="hero.badge">Complementary feed — not medicine</span>
-        <h1 data-i18n="home.h1">Science-guided complementary feed for dogs & cats</h1>
-        <p class="lead" data-i18n="home.lead">Targeted nutritional support for urinary, liver, mobility, renal and overall wellness — developed with veterinarians and made with high-quality ingredients.</p>
-        <div class="hero-cta">
-          <a class="btn" href="Products.html" data-i18n="home.ctaBrowse">Browse products</a>
-          <a class="btn ghost" href="vet-verify.html" data-i18n="home.ctaVet">I’m a veterinarian</a>
-          <button class="btn" type="button" onclick="openContact()" data-i18n="home.ctaContact">Contact</button>
-        </div>
-        <div class="trust">
-          <span class="chip" data-i18n="home.tag1">No prescription • Complementary feed</span>
-          <span class="chip" data-i18n="home.tag2">Mobile-friendly site</span>
-          <span class="chip" data-i18n="home.tag3">Secure checkout</span>
-        </div>
-      </div>
-      <div class="hero-card">
-        <img src="images/hero-products.jpg" alt="Selection of VetoCos complementary feeds">
-        <p class="muted" style="margin:8px 0 0" data-i18n="pd.note">Complementary feed — not a medicine. Always follow your vet’s advice.</p>
-      </div>
-    </section>
+  <main class="wrap">
+    <div class="hero">
+      <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
+      <h1 data-i18n="products.title">Our Product Range</h1>
+      <p class="lead" data-i18n="products.lead">Explore our selection designed to support urinary, liver, mobility, renal, and overall well-being.</p>
+    </div>
 
-    <!-- Value props -->
-    <section class="wrap section" aria-labelledby="valuesTitle">
-      <h2 id="valuesTitle" data-i18n="home.valuesTitle">Why choose VetoCos</h2>
-      <div class="grid-3">
-        <div class="card">
-          <h3 data-i18n="home.v1h">Targeted formulations</h3>
-          <p class="muted" data-i18n="home.v1t">Designed for specific needs: urinary, liver, mobility, renal, calming and more.</p>
-        </div>
-        <div class="card">
-          <h3 data-i18n="home.v2h">Quality ingredients</h3>
-          <p class="muted" data-i18n="home.v2t">Evidence-informed actives with consistent sourcing and batch oversight.</p>
-        </div>
-        <div class="card">
-          <h3 data-i18n="home.v3h">Vet-aligned guidance</h3>
-          <p class="muted" data-i18n="home.v3t">Clear feeding guidance and materials to support professional advice.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Featured products -->
-    <section class="wrap section" aria-labelledby="featTitle">
-      <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap">
-        <h2 id="featTitle" data-i18n="home.featTitle">Featured products</h2>
-        <a class="btn ghost" href="Products.html" data-i18n="home.viewAll">View all</a>
-      </div>
-      <div class="products" id="featuredGrid" aria-live="polite" aria-busy="true"></div>
-    </section>
-
-    <!-- Dual CTA -->
-    <section class="wrap section cta">
-      <div class="panel">
-        <h3 data-i18n="home.ctaLearnH">New here?</h3>
-        <p class="muted" data-i18n="home.ctaLearnT">Explore our range and read concise product sheets to find the best fit for your companion.</p>
-        <a class="btn" href="Products.html" data-i18n="home.ctaLearnB">Explore products</a>
-      </div>
-      <div class="panel">
-        <h3 data-i18n="home.ctaVetH">For veterinarians</h3>
-        <p class="muted" data-i18n="home.ctaVetT">Verify your vet status for professional pricing and clinic-level support materials.</p>
-        <a class="btn" href="vet-verify.html" data-i18n="home.ctaVetB">Verify vet status</a>
-      </div>
-    </section>
-
-    <!-- Testimonials -->
-    <section class="wrap section" aria-labelledby="tTitle">
-      <h2 id="tTitle" data-i18n="home.tTitle">What clients say</h2>
-      <div class="t-grid">
-        <div class="t">
-          <p>“Urocline helped stabilize recurrent issues — easy to give and well tolerated.”</p>
-          <div class="who"><span class="avatar-sm" aria-hidden="true"></span><div><strong>Sara, DVM</strong><div class="muted">Small animal practice</div></div></div>
-        </div>
-        <div class="t">
-          <p>“Art-Asuh improved mobility in a few weeks. Owners reported better activity and comfort.”</p>
-          <div class="who"><span class="avatar-sm" aria-hidden="true"></span><div><strong>Imran, Vet Tech</strong><div class="muted">Rehab & mobility</div></div></div>
-        </div>
-        <div class="t">
-          <p>“Clear guidance, tidy packaging, and responsive support from the team.”</p>
-          <div class="who"><span class="avatar-sm" aria-hidden="true"></span><div><strong>Lina</strong><div class="muted">Dog owner</div></div></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAQ -->
-    <section class="wrap section" aria-labelledby="faqTitle">
-      <h2 id="faqTitle" data-i18n="home.faqTitle">Frequently asked questions</h2>
-      <div class="faq">
-        <div class="faq-item">
-          <button class="faq-q">Are these medicines?</button>
-          <div class="faq-a">No. Our products are complementary feed. Always follow your veterinarian’s advice.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q">Where can I buy VetoCos?</button>
-          <div class="faq-a">Browse our products and purchase online, or contact us for a nearby distributor.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q">How do I see professional pricing?</button>
-          <div class="faq-a">Verify your vet status on the “Vet verification” page. Once verified, prices show after sign-in.</div>
-        </div>
-      </div>
-    </section>
+    <div class="grid" id="productGrid"></div>
   </main>
 
-  <!-- Footer -->
-  <footer role="contentinfo">
+  <footer>
     © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals</span>
     <div class="footer-links">
       <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
@@ -291,40 +198,78 @@
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
       <div class="sheet-head">
         <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
-        <button class="close" type="button" onclick="closeContact()" aria-label="Close">Close</button>
+        <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
       </div>
-      <div class="sheet-body" style="padding:16px">
-        <form id="contactForm" onsubmit="return sendMailto(event)" class="card" style="display:grid;gap:12px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <label>Topic
-              <select id="topic" class="btn" style="width:100%">
-                <option value="product">Product question</option>
-                <option value="availability">Availability / Where to buy</option>
-                <option value="order">Order / Delivery</option>
-                <option value="feedback">Feedback</option>
-                <option value="other">Other</option>
-              </select>
-            </label>
-            <label>Email
-              <input id="email" type="email" class="btn" placeholder="name@example.com" required>
-            </label>
+      <div class="sheet-body">
+        <form onsubmit="return sendMailto(event)">
+          <div class="field">
+            <label for="topic" data-i18n="form.topic">Topic</label>
+            <select id="topic" class="select">
+              <option value="product" data-i18n="form.topicProduct">Product question</option>
+              <option value="availability" data-i18n="form.topicAvailability">Availability / Where to buy</option>
+              <option value="order" data-i18n="form.topicOrder">Order / Delivery</option>
+              <option value="feedback" data-i18n="form.topicFeedback">Feedback</option>
+              <option value="other" data-i18n="form.topicOther">Other</option>
+            </select>
           </div>
-          <label>Subject
-            <input id="subject" class="btn" placeholder="How can we help?" required maxlength="120">
-          </label>
-          <label>Message
-            <textarea id="message" class="btn" placeholder="Write your message…" required maxlength="1200" style="min-height:140px"></textarea>
-          </label>
-          <label style="display:flex;gap:8px;align-items:flex-start">
-            <input type="checkbox" id="consent" required>
-            <span class="muted">I consent to VetoCos using my details to respond to this enquiry.</span>
-          </label>
-          <div style="display:flex;gap:10px;justify-content:flex-end">
-            <button class="close" type="button" onclick="closeContact()">Cancel</button>
-            <button class="btn" type="submit">Send</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <div class="field">
+              <label for="name" data-i18n="form.name">Name</label>
+              <input id="name" class="input" autocomplete="name" required placeholder="Full name"
+                     data-i18n="form.namePH" data-i18n-attr="placeholder">
+            </div>
+            <div class="field">
+              <label for="email" data-i18n="form.email">Email</label>
+              <input id="email" type="email" class="input" autocomplete="email" required placeholder="name@example.com"
+                     data-i18n="form.emailPH" data-i18n-attr="placeholder">
+            </div>
           </div>
-          <div class="muted" style="font-size:12px">Or email us: <a href="mailto:info@vetocos.com">info@vetocos.com</a></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <div class="field">
+              <label for="country" data-i18n="form.country">Country</label>
+              <input id="country" class="input" placeholder="Country (optional)"
+                     data-i18n="form.countryPH" data-i18n-attr="placeholder">
+            </div>
+            <div class="field">
+              <label for="phone" data-i18n="form.phone">Phone (optional)</label>
+              <input id="phone" class="input" inputmode="tel" pattern="^[0-9+() -]{6,}$" placeholder="+212 537742213"
+                     data-i18n="form.phonePH" data-i18n-attr="placeholder">
+              <span class="pill info" style="margin-top:6px" data-i18n="form.phoneHint">Digits, spaces and +() - allowed</span>
+            </div>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label for="subject" data-i18n="form.subject">Subject</label>
+            <input id="subject" class="input" maxlength="120" required placeholder="Question about a product…"
+                   data-i18n="form.subjectPH" data-i18n-attr="placeholder">
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label for="message" data-i18n="form.message">Message / Comments</label>
+            <textarea id="message" class="textarea" maxlength="1200" required
+                      placeholder="Write your help request or comment…"
+                      data-i18n="form.messagePH" data-i18n-attr="placeholder"></textarea>
+            <div class="muted"><span id="msgCount">0</span>/1200</div>
+          </div>
+          <div class="field" style="margin-top:8px">
+            <label style="display:flex;gap:8px;align-items:flex-start">
+              <input type="checkbox" id="consent" required>
+              <span data-i18n="form.consent">I consent to VetoCos using my details to respond to this enquiry.</span>
+            </label>
+            <span class="muted" data-i18n="form.privacyNote">Your message is sent via your email app; we don't store it on this site.</span>
+          </div>
+          <div class="sheet-actions" style="justify-content:flex-end">
+            <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
+            <button class="contact-btn" type="submit" data-i18n="form.send">Send</button>
+          </div>
         </form>
+        <div style="height:8px"></div>
+        <div class="spec">
+          <h3 style="margin:0 0 6px" data-i18n="contact.reach">Reach us</h3>
+          <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
+          <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
+          <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
+          <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
+          <p><strong data-i18n="contact.hours">Hours:</strong> <span data-i18n="contact.hoursVal">Mon–Fri, 9:00–17:00</span></p>
+        </div>
       </div>
     </div>
   </div>
@@ -333,107 +278,115 @@
   <div id="policyModal" class="modal" aria-hidden="true">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
       <div class="sheet-head">
-        <h2 id="policyTitle" class="sheet-title">Privacy & Policy</h2>
-        <button class="close" type="button" onclick="closePolicy()" aria-label="Close">Close</button>
+        <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
+        <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
       </div>
-      <div class="sheet-body" style="padding:16px">
-        <p>We provide complementary feed and collect no personal data unless you contact us. For privacy questions, email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
-        <p class="muted">Last updated: <span id="policyDate"></span></p>
+      <div class="sheet-body">
+        <h3 data-i18n="policy.overviewTitle">Overview</h3>
+        <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. We do not collect personal data unless you choose to contact us.</p>
+        <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
+        <ul>
+          <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
+          <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
+        </ul>
+        <h3 data-i18n="policy.useTitle">How we use data</h3>
+        <ul>
+          <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
+          <li data-i18n="policy.use2">We do not sell personal data.</li>
+        </ul>
+        <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
+        <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
+        <h3 data-i18n="policy.choiceTitle">Your choices</h3>
+        <ul>
+          <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
+          <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
+        </ul>
+        <h3 data-i18n="policy.contactTitle">Contact</h3>
+        <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
+        <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
       </div>
     </div>
   </div>
 
-  <!-- i18n dictionary -->
+  <!-- i18n -->
   <script>
-    window.I18N = {
-      en: {"nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.cart":"Cart","auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification","orders.myOrders":"My orders","footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact","hero.badge":"Complementary feed — not medicine",
-      "home.h1":"Science-guided complementary feed for dogs & cats","home.lead":"Targeted nutritional support for urinary, liver, mobility, renal and overall wellness — developed with veterinarians and made with high-quality ingredients.","home.ctaBrowse":"Browse products","home.ctaVet":"I’m a veterinarian","home.ctaContact":"Contact","home.tag1":"No prescription • Complementary feed","home.tag2":"Mobile-friendly site","home.tag3":"Secure checkout",
-      "home.valuesTitle":"Why choose VetoCos","home.v1h":"Targeted formulations","home.v1t":"Designed for specific needs: urinary, liver, mobility, renal, calming and more.","home.v2h":"Quality ingredients","home.v2t":"Evidence-informed actives with consistent sourcing and batch oversight.","home.v3h":"Vet-aligned guidance","home.v3t":"Clear feeding guidance and materials to support professional advice.",
-      "home.featTitle":"Featured products","home.viewAll":"View all","home.ctaLearnH":"New here?","home.ctaLearnT":"Explore our range and read concise product sheets to find the best fit for your companion.","home.ctaLearnB":"Explore products","home.ctaVetH":"For veterinarians","home.ctaVetT":"Verify your vet status for professional pricing and clinic-level support materials.","home.ctaVetB":"Verify vet status",
-      "home.tTitle":"What clients say"},
-      fr: {"nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.cart":"Panier","auth.login":"Se connecter","auth.signup":"Créer un compte","auth.logout":"Se déconnecter","auth.vetVerify":"Vérification vétérinaire","orders.myOrders":"Mes commandes","footer.tag":"Aliment complémentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact","hero.badge":"Aliment complémentaire — pas un médicament",
-      "home.h1":"Aliments complémentaires guidés par la science pour chiens et chats","home.lead":"Soutien nutritionnel ciblé (urinaire, foie, mobilité, rénal, bien-être global) — développés avec des vétérinaires et des ingrédients de qualité.","home.ctaBrowse":"Voir les produits","home.ctaVet":"Je suis vétérinaire","home.ctaContact":"Contact","home.tag1":"Sans ordonnance • Aliment complémentaire","home.tag2":"Site adapté au mobile","home.tag3":"Paiement sécurisé",
-      "home.valuesTitle":"Pourquoi choisir VetoCos","home.v1h":"Formulations ciblées","home.v1t":"Conçues pour des besoins spécifiques : urinaire, foie, mobilité, rénal, apaisement…","home.v2h":"Ingrédients de qualité","home.v2t":"Actifs fondés sur les preuves, approvisionnement constant et contrôle des lots.","home.v3h":"Aligné aux pratiques vétérinaires","home.v3t":"Conseils d’utilisation clairs et supports professionnels.",
-      "home.featTitle":"Produits en vedette","home.viewAll":"Tout voir","home.ctaLearnH":"Nouveau ici ?","home.ctaLearnT":"Parcourez notre gamme et lisez des fiches concises pour trouver la meilleure option.","home.ctaLearnB":"Explorer les produits","home.ctaVetH":"Pour les vétérinaires","home.ctaVetT":"Vérifiez votre statut vétérinaire pour les tarifs pro et supports.","home.ctaVetB":"Vérifier le statut",
-      "home.tTitle":"Ils témoignent"},
-      es: {"nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"Mundo","nav.news":"Noticias","nav.cart":"Carrito","auth.login":"Iniciar sesión","auth.signup":"Registrarse","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria","orders.myOrders":"Mis pedidos","footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto","hero.badge":"Alimento complementario — no medicamento",
-      "home.h1":"Alimentos complementarios guiados por la ciencia para perros y gatos","home.lead":"Apoyo nutricional dirigido: urinario, hígado, movilidad, renal y bienestar general — desarrollado con veterinarios e ingredientes de calidad.","home.ctaBrowse":"Ver productos","home.ctaVet":"Soy veterinario","home.ctaContact":"Contacto","home.tag1":"Sin receta • Alimento complementario","home.tag2":"Sitio móvil","home.tag3":"Pago seguro",
-      "home.valuesTitle":"Por qué elegir VetoCos","home.v1h":"Formulaciones específicas","home.v1t":"Diseñadas para necesidades concretas: urinario, hígado, movilidad, renal, calma…","home.v2h":"Ingredientes de calidad","home.v2t":"Activos basados en evidencia con suministro constante.","home.v3h":"Alineado con veterinarios","home.v3t":"Guías claras y materiales de apoyo.",
-      "home.featTitle":"Productos destacados","home.viewAll":"Ver todo","home.ctaLearnH":"¿Nuevo aquí?","home.ctaLearnT":"Explora nuestra gama y fichas para elegir mejor.","home.ctaLearnB":"Explorar productos","home.ctaVetH":"Para veterinarios","home.ctaVetT":"Verifica tu condición profesional para precios pro.","home.ctaVetB":"Verificar estado",
-      "home.tTitle":"Opiniones"},
-      ar: {"nav.home":"الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.cart":"السلة","auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"توثيق الطبيب البيطري","orders.myOrders":"طلباتي","footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا","hero.badge":"غذاء تكميلي — ليس دواءً",
-      "home.h1":"غذاء تكميلي مبني على العلم للكلاب والقطط","home.lead":"دعم غذائي موجه للمسالك البولية والكبد والحركة والكلية والصحة العامة — بالتعاون مع الأطباء البيطريين.","home.ctaBrowse":"تصفح المنتجات","home.ctaVet":"أنا طبيب بيطري","home.ctaContact":"اتصل بنا","home.tag1":"بدون وصفة • غذاء تكميلي","home.tag2":"مناسب للجوال","home.tag3":"دفع آمن",
-      "home.valuesTitle":"لماذا VetoCos","home.v1h":"تركيبات موجهة","home.v1t":"مصممة لاحتياجات محددة: بولية، كبد، حركة، كلوية، تهدئة…","home.v2h":"مكونات عالية الجودة","home.v2t":"مواد فعالة مدروسة بمصادر موثوقة.","home.v3h":"إرشادات متوافقة مع الأطباء","home.v3t":"إرشادات واضحة ومواد داعمة.",
-      "home.featTitle":"منتجات مميزة","home.viewAll":"عرض الكل","home.ctaLearnH":"هل أنت جديد؟","home.ctaLearnT":"استكشف مجموعتنا واقرأ النشرات المختصرة.","home.ctaLearnB":"استكشاف المنتجات","home.ctaVetH":"للأطباء البيطريين","home.ctaVetT":"تحقق للحصول على أسعار مهنية.","home.ctaVetB":"تحقق الآن",
-      "home.tTitle":"آراء العملاء"}
-    };
-    function t(key){
-      try{
-        const lang = localStorage.getItem("lang") || "en";
-        const dict = (window.I18N?.[lang]) || (window.I18N?.en) || {};
-        return (dict?.[key] ?? key);
-      }catch(_){ return key; }
-    }
-    function applyLang(lang){
-      const dict = window.I18N?.[lang] || window.I18N?.en || {};
-      document.querySelectorAll("[data-i18n]").forEach(el=>{
-        const k = el.getAttribute("data-i18n");
-        if (dict && dict[k] != null) el.innerHTML = dict[k];
+  window.I18N = window.I18N || {
+    en: {"ui.loading":"Loading…","nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact","auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification","orders.myOrders":"My orders","nav.account":"Account settings","nav.cart":"Cart","nav.checkout":"Checkout","footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact","hero.badge":"Complementary feed — not medicine","products.title":"Our Product Range","products.lead":"Explore our selection designed to support urinary, liver, mobility, renal, and overall well-being.","grid.available":"Available","grid.unavailable":"Unavailable","grid.instock":" in stock","grid.out":"Out of stock","grid.add":"Add to Cart","grid.buy":"Buy Now","grid.more":"More details","grid.signin":"Sign in to see details","pd.title":"Product details","pd.form":"Form","pd.size":"Pack size","pd.ingr":"Key ingredients","pd.use":"Feeding guidance","pd.variant":"Variant","pd.quantity":"Qty","pd.price":"Price","pd.pdf":"Download PDF","pd.full":"View full page","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Sign in to see price","pd.vetOnly":"Verify vet status to see price","pd.variantMissing":"No variants","pd.notAvailable":"Not available","pd.editPrices":"Edit prices","pd.save":"Save","pd.cancel":"Cancel","pd.note":"Complementary feed — not a medicine. Always follow your vet’s advice.","ui.sku":"SKU: ","ui.locked":"Sign in to see details"},
+    fr: {"ui.loading":"Chargement…","nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.contact":"Contact","auth.login":"Se connecter","auth.signup":"Créer un compte","auth.logout":"Se déconnecter","auth.vetVerify":"Vérification vétérinaire","orders.myOrders":"Mes commandes","nav.account":"Paramètres du compte","nav.cart":"Panier","nav.checkout":"Commander","footer.tag":"Aliment complémentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact","hero.badge":"Aliment complémentaire — pas un médicament","products.title":"Notre gamme de produits","products.lead":"Découvrez notre sélection pour soutenir l’appareil urinaire, le foie, la mobilité, la fonction rénale et le bien-être général.","grid.available":"Disponible","grid.unavailable":"Indisponible","grid.instock":" en stock","grid.out":"Rupture de stock","grid.add":"Ajouter au panier","grid.buy":"Acheter maintenant","grid.more":"Plus de détails","grid.signin":"Connectez-vous pour voir les détails","pd.title":"Détails du produit","pd.form":"Forme","pd.size":"Conditionnement","pd.ingr":"Ingrédients clés","pd.use":"Conseils d’utilisation","pd.variant":"Variante","pd.quantity":"Qté","pd.price":"Prix","pd.pdf":"Télécharger le PDF","pd.full":"Voir la fiche","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Connectez-vous pour voir le prix","pd.vetOnly":"Vérifiez le statut vétérinaire pour voir le prix","pd.variantMissing":"Aucune variante","pd.notAvailable":"Non disponible","pd.editPrices":"Modifier les prix","pd.save":"Enregistrer","pd.cancel":"Annuler","pd.note":"Aliment complémentaire — pas un médicament. Suivez toujours l’avis de votre vétérinaire.","ui.sku":"SKU : ","ui.locked":"Connectez-vous pour voir les détails"},
+    es: {"ui.loading":"Cargando…","nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"Mundo","nav.news":"Noticias","nav.contact":"Contacto","auth.login":"Iniciar sesión","auth.signup":"Registrarse","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria","orders.myOrders":"Mis pedidos","nav.account":"Configuración de cuenta","nav.cart":"Carrito","nav.checkout":"Pagar","footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto","hero.badge":"Alimento complementario — no medicamento","products.title":"Nuestra gama de productos","products.lead":"Explore nuestra selección para apoyar el sistema urinario, el hígado, la movilidad, la función renal y el bienestar general.","grid.available":"Disponible","grid.unavailable":"No disponible","grid.instock":" en stock","grid.out":"Agotado","grid.add":"Añadir al carrito","grid.buy":"Comprar ahora","grid.more":"Más detalles","grid.signin":"Inicia sesión para ver detalles","pd.title":"Detalles del producto","pd.form":"Forma","pd.size":"Tamaño del paquete","pd.ingr":"Ingredientes clave","pd.use":"Guía de uso","pd.variant":"Variante","pd.quantity":"Cant.","pd.price":"Precio","pd.pdf":"Descargar PDF","pd.full":"Ver página completa","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Inicia sesión para ver el precio","pd.vetOnly":"Verifica el estado veterinario para ver el precio","pd.variantMissing":"Sin variantes","pd.notAvailable":"No disponible","pd.editPrices":"Editar precios","pd.save":"Guardar","pd.cancel":"Cancelar","pd.note":"Alimento complementario — no es un medicamento. Sigue siempre el consejo de tu veterinario.","ui.sku":"SKU: ","ui.locked":"Inicia sesión para ver detalles"},
+    ar: {"ui.loading":"جارٍ التحميل…","nav.home":"الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.contact":"اتصل بنا","auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"توثيق الطبيب البيطري","orders.myOrders":"طلباتي","nav.account":"إعدادات الحساب","nav.cart":"السلة","nav.checkout":"الدفع","footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا","hero.badge":"غذاء تكميلي — ليس دواءً","products.title":"مجموعة منتجاتنا","products.lead":"استكشف مجموعتنا لدعم المسالك البولية والكبد والحركة والكلية والصحة العامة.","grid.available":"متوفر","grid.unavailable":"غير متوفر","grid.instock":" متوفر بالمخزون","grid.out":"غير متوفر","grid.add":"أضف إلى السلة","grid.buy":"اشترِ الآن","grid.more":"مزيد من التفاصيل","pd.title":"تفاصيل المنتج","pd.form":"الشكل","pd.size":"حجم العبوة","pd.ingr":"المكونات الرئيسية","pd.use":"إرشادات التغذية","pd.variant":"النوع","pd.quantity":"الكمية","pd.price":"السعر","pd.pdf":"تحميل PDF","pd.full":"عرض الصفحة كاملة","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"سجّل الدخول لعرض السعر","pd.vetOnly":"تحقق من صفتك البيطرية لعرض السعر","pd.variantMissing":"لا توجد أنواع","pd.notAvailable":"غير متاح","pd.editPrices":"تعديل الأسعار","pd.save":"حفظ","pd.cancel":"إلغاء","pd.note":"غذاء تكميلي — ليس دواءً. اتبع دائمًا نصيحة الطبيب البيطري.","ui.sku":"SKU: ","ui.locked":"سجّل الدخول لعرض التفاصيل"}
+  };
+  function t(key){
+    try{ const lang = localStorage.getItem("lang") || "en"; const dict = (window.I18N?.[lang]) || (window.I18N?.en) || {}; return (dict?.[key] ?? key); }
+    catch(_){ return key; }
+  }
+  function applyLang(lang){
+    const dict = window.I18N?.[lang] || window.I18N?.en || {};
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+      const k = el.getAttribute("data-i18n");
+      if (dict && dict[k] != null) el.innerHTML = dict[k];
+    });
+    const html=document.documentElement; html.lang=lang;
+    if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
+    else { html.dir="ltr"; document.body.classList.remove("rtl"); }
+    localStorage.setItem("lang", lang);
+    const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
+  }
+  </script>
+
+  <!-- Helpers & modals -->
+  <script>
+  const contactModal = document.getElementById('contactModal');
+  const policyModal  = document.getElementById('policyModal');
+  function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+  function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+  function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+  function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+  [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+
+  const toAddress = 'info@vetocos.com';
+  function sendMailto(e){
+    e.preventDefault();
+    const topic   = document.getElementById('topic').value;
+    const name    = document.getElementById('name').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const country = document.getElementById('country').value.trim();
+    const phone   = document.getElementById('phone').value.trim();
+    const subject = document.getElementById('subject').value.trim() || 'Website enquiry';
+    const message = document.getElementById('message').value.trim();
+    if (!document.getElementById('consent').checked) return false;
+    const lines = [`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,country ? `Country: ${country}` : null,phone ? `Phone: ${phone}` : null,'',message].filter(Boolean).join('%0A');
+    const mailto = `mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
+    window.location.href = mailto; return false;
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById("y").textContent = new Date().getFullYear();
+    const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
+    const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+
+    const initial = localStorage.getItem("lang") || "en";
+    applyLang(initial);
+    const sel = document.getElementById("lang-switch");
+    if (sel){
+      sel.value = initial;
+      sel.addEventListener("change", async e => {
+        applyLang(e.target.value);
+        await renderProducts();
+        await refreshHeader();
+        if (document.getElementById('productDetailsModal')?.classList.contains('open')) {
+          const code = (typeof CURRENT_SKU === 'string') ? CURRENT_SKU : null;
+          if (code) openPD(code, document.getElementById('pdVariantSel')?.value || null);
+        }
       });
-      const html=document.documentElement; html.lang=lang;
-      if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
-      else { html.dir="ltr"; document.body.classList.remove("rtl"); }
-      localStorage.setItem("lang", lang);
-      const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
-    }
-  </script>
-
-  <!-- Core helpers (modals, contact, FAQ) -->
-  <script>
-    const contactModal = document.getElementById('contactModal');
-    const policyModal  = document.getElementById('policyModal');
-    function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
-    function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
-    function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
-    function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
-    [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
-
-    const TO_ADDRESS='info@vetocos.com';
-    function sendMailto(e){
-      e.preventDefault();
-      if(!document.getElementById('consent').checked) return false;
-      const topic=document.getElementById('topic').value||'General';
-      const email=document.getElementById('email').value.trim();
-      const subject=document.getElementById('subject').value.trim()||'Website enquiry';
-      const message=document.getElementById('message').value.trim();
-      const raw=[`Topic: ${topic}`,`Email: ${email}`,'',message].join('\n');
-      const href=`mailto:${encodeURIComponent(TO_ADDRESS)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(raw)}`;
-      window.location.href=href; return false;
     }
 
-    // FAQ
-    document.addEventListener('click', (e)=>{
-      const q=e.target.closest('.faq-q'); if(!q) return;
-      const item=q.closest('.faq-item'); item.classList.toggle('open');
-    });
-
-    // i18n + footer dates
-    document.addEventListener('DOMContentLoaded', ()=>{
-      document.getElementById('y').textContent=new Date().getFullYear();
-      const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
-      const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
-
-      const initial = localStorage.getItem("lang") || "en";
-      applyLang(initial);
-      const sel = document.getElementById("lang-switch");
-      if (sel){
-        sel.value = initial;
-        sel.addEventListener("change", e => applyLang(e.target.value));
-      }
-    });
+    const msg = document.getElementById('message'); const cnt = document.getElementById('msgCount');
+    if (msg && cnt){ const upd = () => { cnt.textContent = String(msg.value.length); }; msg.addEventListener('input', upd); upd(); }
+  });
   </script>
 
-  <!-- Supabase + auth + featured products -->
+  <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
     const supa = supabase.createClient(
@@ -441,62 +394,71 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
       { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
-    const SUPER_ADMINS=["Anwar.moumenjamai19@gmail.com"];
+    const SUPER_ADMINS = ["Anwar.moumenjamai19@gmail.com"];
 
-    const signInBtn=document.getElementById('signInBtn');
-    const signUpBtn=document.getElementById('signUpBtn');
-    const acctBlock=document.getElementById('acctBlock');
-    const accountBtn=document.getElementById('accountBtn');
-    const accountMenu=document.getElementById('accountMenu');
-    const accountHeader=document.getElementById('accountHeader');
-    const helloName=document.getElementById('helloName');
-    const adminBtn=document.getElementById('adminBtn');
-    const logoutBtn=document.getElementById('logoutBtn');
-    const cartLink=document.getElementById('cartLink');
-    const cartCount=document.getElementById('cartCount');
+    /* Header auth UI */
+    const signInBtn  = document.getElementById('signInBtn');
+    const signUpBtn  = document.getElementById('signUpBtn');
+    const acctBlock  = document.getElementById('acctBlock');
+    const accountBtn = document.getElementById('accountBtn');
+    const accountMenu= document.getElementById('accountMenu');
+    const accountHeader = document.getElementById('accountHeader');
+    const helloName  = document.getElementById('helloName');
+    const adminBtn   = document.getElementById('adminBtn');
+    const logoutBtn  = document.getElementById('logoutBtn');
+    const cartLink   = document.getElementById('cartLink');
+    const cartCount  = document.getElementById('cartCount');
 
-    if (signInBtn) signInBtn.addEventListener('click', ()=>{ location.href='login.html?redirect=' + encodeURIComponent('index.html'); });
-    if (signUpBtn) signUpBtn.addEventListener('click', ()=>{ location.href='signup.html?redirect=' + encodeURIComponent('index.html'); });
+    if (signInBtn) signInBtn.addEventListener('click', ()=>{ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); });
+    if (signUpBtn) signUpBtn.addEventListener('click', ()=>{ location.href = 'signup.html?redirect=' + encodeURIComponent('Products.html'); });
 
     if (accountBtn) accountBtn.addEventListener('click', ()=>{
       const open = accountMenu.classList.toggle('open');
       accountMenu.setAttribute('aria-hidden', open ? 'false' : 'true');
-      accountBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
       if (open){
-        const onDoc=(e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); accountBtn.setAttribute('aria-expanded','false'); document.removeEventListener('click',onDoc);} };
+        const onDoc = (e)=>{ if(!accountMenu.contains(e.target) && !accountBtn.contains(e.target)){ accountMenu.classList.remove('open'); document.removeEventListener('click', onDoc);} };
         setTimeout(()=>document.addEventListener('click', onDoc),0);
       }
     });
     if (logoutBtn) logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
 
-    let IS_LOGGED_IN=false, IS_ADMIN=false;
+    let IS_LOGGED_IN = false;
+    let IS_ADMIN = false;
+    let IS_VET = false;
 
     async function refreshHeader(){
       const { data:{ session } } = await supa.auth.getSession();
       if (!session?.user){
-        IS_LOGGED_IN=false; IS_ADMIN=false;
-        if (signInBtn) signInBtn.style.display='inline-block';
-        if (signUpBtn) signUpBtn.style.display='inline-block';
-        if (acctBlock) acctBlock.style.display='none';
-        if (adminBtn) adminBtn.style.display='none';
-        if (cartLink) cartLink.style.display='none';
+        IS_LOGGED_IN = false; IS_ADMIN = false; IS_VET = false;
+        if (signInBtn) signInBtn.style.display = 'inline-block';
+        if (signUpBtn) signUpBtn.style.display = 'inline-block';
+        if (acctBlock) acctBlock.style.display = 'none';
+        if (adminBtn) adminBtn.style.display  = 'none';
+        if (cartLink) cartLink.style.display  = 'none';
         return;
       }
-      IS_LOGGED_IN=true;
-      let display=session.user.email||'';
+      IS_LOGGED_IN = true;
+
+      let display = session.user.email || '';
+      IS_ADMIN = false; IS_VET = false;
       try{
-        const { data:p } = await supa.from('profiles').select('first_name,last_name,is_admin').eq('id', session.user.id).maybeSingle();
-        const full=[p?.first_name,p?.last_name].filter(Boolean).join(' ').trim();
-        if (full) display=full;
-        IS_ADMIN=!!p?.is_admin || (session.user.email && SUPER_ADMINS.includes(session.user.email));
+        const { data: p } = await supa.from('profiles')
+          .select('first_name,last_name,is_admin,is_vet_verified').eq('id', session.user.id).maybeSingle();
+        const full = [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
+        if (full) display = full;
+        IS_ADMIN = !!p?.is_admin || (session.user.email && SUPER_ADMINS.includes(session.user.email));
+        IS_VET = !!p?.is_vet_verified;
       }catch(_){}
-      if (helloName) helloName.textContent=display;
-      if (accountHeader) accountHeader.innerHTML=`<div><strong>${display}</strong><div class="muted">${session.user.email||''}</div></div>`;
-      if (signInBtn) signInBtn.style.display='none';
-      if (signUpBtn) signUpBtn.style.display='none';
-      if (acctBlock) acctBlock.style.display='inline-flex';
-      if (cartLink) cartLink.style.display='inline-flex';
-      if (adminBtn) adminBtn.style.display=IS_ADMIN ? 'inline-block':'none';
+
+      if (helloName) helloName.textContent = display;
+      if (accountHeader) accountHeader.innerHTML = `<div><strong>${display}</strong><div class="muted">${session.user.email || ''}</div></div>`;
+
+      if (signInBtn) signInBtn.style.display = 'none';
+      if (signUpBtn) signUpBtn.style.display = 'none';
+      if (acctBlock) acctBlock.style.display = 'inline-flex';
+      if (cartLink) cartLink.style.display  = 'inline-flex';
+
+      if (adminBtn) adminBtn.style.display = IS_ADMIN ? 'inline-block' : 'none';
     }
 
     /* Cart */
@@ -504,80 +466,624 @@
     function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items)); updateCartBadge(); }
     function countCart(){ return readCart().reduce((n,x)=>n + Number(x.qty||0), 0); }
     function updateCartBadge(){
-      const n=countCart();
+      const n = countCart();
       if (!cartCount) return;
-      if (n>0){ cartCount.style.display='inline-grid'; cartCount.textContent=n; }
+      if (n>0){ cartCount.style.display='inline-grid'; cartCount.textContent = n; }
       else { cartCount.style.display='none'; }
     }
-    window.addEventListener('storage', (ev)=>{ if(ev.key==='cart') updateCartBadge(); });
+    function addToCartBySKU(sku, name, qty=1, variant_code=null){
+      const items = readCart();
+      const key = variant_code ? `${sku}:${variant_code}` : sku;
+      const i = items.findIndex(x=> (x.key||x.sku) === key );
+      if(i>-1) items[i].qty += qty;
+      else items.push({ key, sku, variant: variant_code, name, qty });
+      writeCart(items);
+    }
 
-    /* Featured products (top 6 by sort/name) */
-    const PRODUCT_BUCKET="ProductFiles";
+    /* Files */
+    const PRODUCT_BUCKET = "ProductFiles";
     function filePublicUrl(path){
       if(!path) return null;
-      const p=String(path).replace(/^ProductFiles\//,'');
+      const p = String(path).replace(/^ProductFiles\//,'');
       return "https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/" + PRODUCT_BUCKET + "/" + encodeURI(p);
     }
-    function slugifyName(name=''){ return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
-    function nextSrcOnError(img){ const left=(img.dataset.candidates||'').split('|').filter(Boolean); const next=left.shift(); img.dataset.candidates=left.join('|'); img.src=next||'images/placeholder.png'; }
+
+    function slugifyName(name=''){
+      return String(name).trim().toLowerCase()
+        .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    }
+    function nextSrcOnError(img){
+      const left = (img.dataset.candidates || '').split('|').filter(Boolean);
+      const next = left.shift();
+      img.dataset.candidates = left.join('|');
+      img.src = next || 'images/placeholder.png';
+    }
     function imageCandidates(spec){
-      const out=[];
+      const out = [];
+      if (spec.image) out.push(spec.image);           // fallback exact images/productN.png
       if (spec.image_path) out.push(filePublicUrl(spec.image_path));
       if (spec.image_url)  out.push(spec.image_url);
-      const sku=(spec.sku||'').toLowerCase(), nm=slugifyName(spec.name||'');
-      ['images/'+sku+'.jpg','images/'+sku+'.png','images/'+nm+'.jpg','images/'+nm+'.png'].forEach(u=>out.push(u));
+
+      const m = (spec.page || '').match(/product(\d+)\.html/i);
+      if (m && m[1]){
+        out.push(`images/product${m[1].toLowerCase()}.png`);
+        out.push(`images/product${m[1].toLowerCase()}.jpg`);
+      }
+
+      const sku = (spec.sku || '').toLowerCase();
+      const nm  = slugifyName(spec.name || '');
+      out.push(`images/${sku}.png`, `images/${sku}.jpg`,
+               `images/${nm}.png`,  `images/${nm}.jpg`);
       out.push('images/placeholder.png');
       return Array.from(new Set(out.filter(Boolean)));
     }
 
-    async function loadFeatured(){
-      const grid=document.getElementById('featuredGrid');
-      grid.innerHTML='<div class="muted">Loading…</div>';
+    /* Rich fallback catalog (full details + exact assets) */
+    const FALLBACK = {
+      "URO-CHIEN": { name:"Urocline Chien", category:"Urinary care", form:"Chewable tablets", size:"30 comp.", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tab / 10 kg daily or as advised", image:"images/product1.png", page:"Product1.html", pdf:"pdf/Product1.pdf" },
+      "HEP-AT":    { name:"Hepatiale", category:"Liver support", form:"Capsules", size:"30 / 60 caps", ingredients:"Silybin-phospholipid complex, SAMe, Vitamin E", usage:"1 cap / 10 kg daily for 4–8 weeks", image:"images/product2.png", page:"Product2.html", pdf:"pdf/Product2.pdf" },
+      "NEU-VIEW":  { name:"Neuroview", category:"Cognitive support", form:"Soft chews", size:"60 chews", ingredients:"Phosphatidylserine, DHA, L-theanine, B-vitamins", usage:"1 chew / 10 kg daily", image:"images/product3.png", page:"Product3.html", pdf:"pdf/Product3.pdf" },
+      "MUNI-SAN":  { name:"Munisan", category:"Immune support", form:"Powder", size:"120 g", ingredients:"Beta-glucans, Colostrum, Zinc, Vitamin C", usage:"Mix with food once daily", image:"images/product4.png", page:"Product4.html", pdf:"pdf/Product4.pdf" },
+      "PILO-SAN":  { name:"Pilosan", category:"Skin & coat", form:"Twist-off", size:"60 / 90 twist-off", ingredients:"Biotin, Omega-3 & 6, Zinc", usage:"1 ml / 5 kg daily", image:"images/product5.png", page:"Product5.html", pdf:"pdf/Product5.pdf" },
+      "HEMO-VET":  { name:"HemoVet", category:"Vitamins & minerals", form:"Tablets", size:"60 tabs", ingredients:"Iron, Vitamin B12, Folic acid, Copper", usage:"As directed by your vet", image:"images/product6.png", page:"Product6.html", pdf:"pdf/Product6.pdf" },
+      "URO-STONES":{ name:"Urocline Stones", category:"Urinary care", form:"Tablets", size:"45 comp.", ingredients:"DL-methionine, Potassium citrate, Cranberry", usage:"Supports urinary environment", image:"images/product7.png", page:"Product7.html", pdf:"pdf/Product7.pdf" },
+      "VIT-MIN":   { name:"Vit&Min", category:"Vitamins & minerals", form:"Powder", size:"200 g", ingredients:"Balanced vitamins & trace minerals", usage:"Daily multivitamin per weight", image:"images/product8.png", page:"Product8.html", pdf:"pdf/Product8.pdf" },
+      "ART-ASUH":  { name:"Art-Asuh", category:"Mobility", form:"Chewable tablets", size:"S / XL", ingredients:"Glucosamine, Chondroitin, MSM, Hyaluronic acid", usage:"Initial 4–6 weeks then maintenance", image:"images/product9.png", page:"Product9.html", pdf:"pdf/Product9.pdf" },
+      "CARBO-DIG": { name:"Carbo Digest", category:"Digestive comfort", form:"Capsules", size:"30 caps", ingredients:"Activated charcoal, Prebiotics", usage:"Short-term digestive comfort", image:"images/product10.png", page:"Product10.html", pdf:"pdf/Product10.pdf" },
+      "RENO-SAN":  { name:"Renosan", category:"Renal support", form:"Powder", size:"150 g", ingredients:"Calcium carbonate, Chitosan, Omega-3", usage:"Supports renal function (dietary)", image:"images/product11.png", page:"Product11.html", pdf:"pdf/Product11.pdf" },
+      "QAL-MIL":   { name:"Qalmil", category:"Calming", form:"Soft chews", size:"60 chews", ingredients:"L-tryptophan, L-theanine, Lemon balm", usage:"Use before stressful events or daily", image:"images/product12.png", page:"Product12.html", pdf:"pdf/Product12.pdf" }
+    };
+
+    /* Variants pretty labels */
+    const VARIANT_HINTS = {
+      "ART-ASUH": { "S":{label:"S — 60 twist-off",size:"60 twist-off"}, "XL":{label:"XL — 90 comprimés",size:"90 comprimés"} },
+      "PILO-SAN": { "60":{label:"60 twist-off",size:"60 twist-off"}, "90":{label:"90 twist-off",size:"90 twist-off"} },
+      "URO-STONES": { "45":{label:"Stones — 45 comp.",size:"45 comp."} },
+      "URO-CHIEN": { "30":{label:"Chien — 30 comp.",size:"30 comp."} },
+      "HEP-AT": { "S":{label:"Small — 30 caps",size:"30 caps"}, "XL":{label:"Large — 60 caps",size:"60 caps"} }
+    };
+    function prettyVariantLabel(sku, variantCode, rawLabel){
+      const bySku = VARIANT_HINTS[sku] || {};
+      const hint  = bySku[variantCode] || null;
+      if (hint?.label) return hint.label;
+      const code = String(variantCode || rawLabel || '').trim();
+      if (!code) return rawLabel || variantCode || "";
+      if (/^xl$/i.test(code)) return "XL";
+      if (/^s$/i.test(code))  return "S";
+      if (/^\d{2,3}$/.test(code)) {
+        if (sku === 'URO-CHIEN' || sku === 'URO-STONES')  return `${code} comp.`;
+        if (sku === 'PILO-SAN')   return `${code} twist-off`;
+        if (sku === 'HEP-AT')     return `${code} caps`;
+        return code;
+      }
+      if (/cmp|comp/i.test(code)) return code.replace(/cmp/i,'comp.').replace(/compres|comprimes/i,'comprimés');
+      if (/twist/i.test(code)) return code.replace(/twist\s*off/i,'twist-off');
+      return rawLabel || code;
+    }
+    function sizeFromVariant(sku, variantCode, rawLabel){
+      const bySku = VARIANT_HINTS[sku] || {};
+      const hint  = bySku[variantCode] || null;
+      if (hint?.size) return hint.size;
+      const s = String(rawLabel || variantCode || '').toLowerCase();
+      const m = s.match(/\b(\d{2,3})\b/);
+      if (m) {
+        if (/(twist|off)/.test(s) || sku === 'PILO-SAN') return `${m[1]} twist-off`;
+        if (sku === 'URO-CHIEN' || sku === 'URO-STONES')  return `${m[1]} comp.`;
+        if (sku === 'HEP-AT') return `${m[1]} caps`;
+        return m[1];
+      }
+      if (/^xl$/.test(s) && sku==='ART-ASUH') return '90 comprimés';
+      if (/^s$/.test(s)  && sku==='ART-ASUH') return '60 twist-off';
+      return '';
+    }
+
+    /* Product state */
+    let pdModal=null,pdImg=null,pdName=null,pdCat=null,pdForm=null,pdSize=null,pdIngr=null,pdUse=null,pdSku=null,pdAdd=null,pdBuy=null,pdPdf=null,pdPage=null,pdDesc=null;
+    let pdVariantSel=null, pdQtyInp=null, pdPriceBox=null, pdPriceNote=null, pdAdminBox=null, pdEditBtn=null, pdAdminForm=null;
+    let CURRENT_SKU = null;
+    let CURRENT_VARIANTS = [];
+    let PRODUCT_CACHE = {};
+    const VARIANTS_CACHE = {};
+
+    function ensurePDRefs(){
+      if (pdModal) return;
+      pdModal = document.getElementById('productDetailsModal');
+      pdImg   = document.getElementById('pdImg');
+      pdName  = document.getElementById('pdName');
+      pdCat   = document.getElementById('pdCategory');
+      pdForm  = document.getElementById('pdForm');
+      pdSize  = document.getElementById('pdSize');
+      pdIngr  = document.getElementById('pdIngredients');
+      pdUse   = document.getElementById('pdUsage');
+      pdSku   = document.getElementById('pdSku');
+      pdAdd   = document.getElementById('pdAddBtn');
+      pdBuy   = document.getElementById('pdBuyBtn');
+      pdPdf   = document.getElementById('pdPdfBtn');
+      pdPage  = document.getElementById('pdPageBtn');
+      pdDesc  = document.getElementById('pdDesc');
+
+      pdVariantSel = document.getElementById('pdVariantSel');
+      pdQtyInp     = document.getElementById('pdQtyInp');
+      pdPriceBox   = document.getElementById('pdPrice');
+      pdPriceNote  = document.getElementById('pdPriceNote');
+      pdAdminBox   = document.getElementById('pdAdminBox');
+      pdEditBtn    = document.getElementById('pdEditBtn');
+      pdAdminForm  = document.getElementById('pdAdminForm');
+
+      if (!pdModal) return;
+      pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
+
+      pdAdd.addEventListener('click', ()=>{
+        if(!CURRENT_SKU) return;
+        if(!IS_LOGGED_IN){ location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'); return; }
+        const v = currentVariant();
+        const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
+        addToCartBySKU(CURRENT_SKU, (spec.name || CURRENT_SKU) + (v?.label?` (${v.label})`:''), Math.max(1, Number(pdQtyInp.value||1)), v?.variant_code||null);
+        alert((spec.name || CURRENT_SKU) + " added");
+      });
+      pdBuy.addEventListener('click', ()=>{
+        if(!CURRENT_SKU) return;
+        if(!IS_LOGGED_IN){ location.href = 'login.html?redirect=' + encodeURIComponent('cart.html'); return; }
+        const v = currentVariant();
+        const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
+        addToCartBySKU(CURRENT_SKU, (spec.name || CURRENT_SKU) + (v?.label?` (${v.label})`:''), Math.max(1, Number(pdQtyInp.value||1)), v?.variant_code||null);
+        location.href = 'cart.html';
+      });
+
+      pdVariantSel.addEventListener('change', ()=>{
+        updatePriceUI();
+        const v = currentVariant();
+        const newSize = sizeFromVariant(CURRENT_SKU, v?.variant_code||'', v?.label||'');
+        if (newSize) pdSize.textContent = newSize;
+      });
+      pdQtyInp.addEventListener('input', updatePriceUI);
+
+      if (pdEditBtn){
+        pdEditBtn.addEventListener('click', ()=> {
+          pdAdminForm.style.display = pdAdminForm.style.display === 'none' ? 'block' : 'none';
+        });
+      }
+      if (pdAdminForm){
+        pdAdminForm.addEventListener('submit', async (e)=>{
+          e.preventDefault();
+          const edited = [...pdAdminForm.querySelectorAll('.admin-grid')].map(row=>{
+            const code = row.getAttribute('data-vid');
+            const src  = CURRENT_VARIANTS.find(v=> (v.variant_code||'') === code) || {};
+            const num  = (name)=> {
+              const v = row.querySelector(`[name="${name}"]`)?.value;
+              return (v === '' || v == null) ? null : Number(v);
+            };
+            return {
+              code,
+              name: src.label || src._uiLabel || code,
+              price_ppv:        num('price_ppv'),
+              price_pv_minus10: num('price_pv_minus10'),
+              price_pv_plus10:  num('price_pv_plus10'),
+              currency: row.querySelector('[name="currency"]')?.value || 'MAD',
+              active:   row.querySelector('[name="active"]')?.checked !== false
+            };
+          });
+
+          try{
+            const { error } = await supa.from('products')
+              .update({ variants: edited })
+              .eq('sku', CURRENT_SKU);
+            if (error) throw error;
+
+            PRODUCT_CACHE[CURRENT_SKU] = PRODUCT_CACHE[CURRENT_SKU] || {};
+            PRODUCT_CACHE[CURRENT_SKU].variants = edited;
+
+            await loadVariants(CURRENT_SKU);
+            buildAdminForm();
+            buildVariantSelector();
+            updatePriceUI();
+            alert(t('pd.save'));
+          }catch(err){
+            alert('Error: ' + (err?.message || String(err)));
+          }
+        });
+      }
+    }
+
+    function currentVariant(){
+      const code = pdVariantSel.value || null;
+      return CURRENT_VARIANTS.find(v=>v.variant_code===code) || CURRENT_VARIANTS[0] || null;
+    }
+    function priceForQty(variant, qty){
+      if (!variant) return null;
+      const q = Math.max(1, Number(qty||1));
+      const ppv   = (variant.ppv ?? variant.price_ppv);
+      const pv_m  = (variant.pv_minus_10u ?? variant.price_pv_minus10);
+      const pv_p  = (variant.pv_plus_10u  ?? variant.price_pv_plus10);
+      const cur   = variant.currency || 'MAD';
+      if (q === 1)  return { label: t('pd.ppv'),   value: ppv,  currency: cur };
+      if (q >= 10)  return { label: t('pd.pv10p'), value: pv_p, currency: cur };
+      return         { label: t('pd.pv10m'), value: pv_m,  currency: cur };
+    }
+    function updatePriceUI(){
+      const variant = currentVariant();
+      const qty = Math.max(1, Number(pdQtyInp.value||1));
+      if (!IS_LOGGED_IN){
+        pdPriceBox.textContent = t('pd.signInToSeePrice'); pdPriceNote.innerHTML = ''; return;
+      }
+      if (!IS_VET){
+        pdPriceBox.textContent = t('pd.vetOnly');
+        pdPriceNote.innerHTML = `<a class="pill info" href="vet-verify.html">${t('auth.vetVerify')}</a>`;
+        return;
+      }
+      if (!variant){ pdPriceBox.textContent = t('pd.variantMissing'); pdPriceNote.textContent = ''; return; }
+      const tier = priceForQty(variant, qty);
+      if (!tier || tier.value==null){ pdPriceBox.textContent = t('pd.notAvailable'); pdPriceNote.textContent = ''; return; }
+      const total = (Number(tier.value)||0) * qty;
+      pdPriceBox.textContent = `${tier.currency||'MAD'} ${Number(tier.value).toFixed(2)}  — ${tier.label}`;
+      pdPriceNote.textContent = `Total: ${tier.currency||'MAD'} ${total.toFixed(2)} (${qty} × ${Number(tier.value).toFixed(2)})`;
+    }
+
+    async function loadVariants(sku){
+      const prod = PRODUCT_CACHE[sku] || {};
+      let list = Array.isArray(prod.variants) ? prod.variants : [];
+      if (!list.length){
+        const fallback = {
+          variant_code: 'default',
+          _uiLabel: 'Default',
+          label: 'Default',
+          price_ppv:        prod.price_ppv ?? null,
+          price_pv_minus10: prod.price_pv_minus10 ?? null,
+          price_pv_plus10:  prod.price_pv_plus10 ?? null,
+          currency: 'MAD'
+        };
+        CURRENT_VARIANTS = [fallback];
+        return CURRENT_VARIANTS;
+      }
+      CURRENT_VARIANTS = list.map((v, i) => {
+        const code = String(v.code ?? v.variant_code ?? v.name ?? `v${i}`);
+        return {
+          variant_code: code,
+          _uiLabel: prettyVariantLabel(sku, code, v.name || v.label || ''),
+          label: v.name || v.label || '',
+          price_ppv:        (v.price_ppv        ?? v.ppv        ?? null),
+          price_pv_minus10: (v.price_pv_minus10 ?? v.pv_minus_10u ?? null),
+          price_pv_plus10:  (v.price_pv_plus10  ?? v.pv_plus_10u  ?? null),
+          currency: v.currency || 'MAD'
+        };
+      });
+      return CURRENT_VARIANTS;
+    }
+    function buildVariantSelector(preselectCode=null){
+      if (!pdVariantSel) return;
+      if (!CURRENT_VARIANTS.length){
+        pdVariantSel.innerHTML = `<option value="">${t('pd.variantMissing')}</option>`;
+        pdVariantSel.disabled = true; return;
+      }
+      pdVariantSel.disabled = false;
+      pdVariantSel.innerHTML = CURRENT_VARIANTS
+        .map(v=>`<option value="${v.variant_code}">${v._uiLabel || v.label || v.variant_code}</option>`)
+        .join('');
+      pdVariantSel.value = (preselectCode && CURRENT_VARIANTS.some(v=>v.variant_code===preselectCode))
+        ? preselectCode
+        : CURRENT_VARIANTS[0].variant_code;
+    }
+    function buildAdminForm(){
+      if (!pdAdminBox) return;
+      pdAdminBox.style.display = IS_ADMIN ? 'block' : 'none';
+      if (!IS_ADMIN) return;
+
+      const rows = Array.isArray(CURRENT_VARIANTS) ? CURRENT_VARIANTS : [];
+      pdAdminForm.style.display = 'none';
+
+      if (!rows.length){
+        pdAdminForm.innerHTML = `<div class="muted">${t('pd.variantMissing')}</div>`;
+        return;
+      }
+      pdAdminForm.innerHTML = rows.map((v, i)=>`
+        <div class="admin-grid" data-vid="${v.variant_code || `v${i}`}">
+          <div>
+            <label class="muted">${t('pd.variant')}</label>
+            <input class="input" value="${(v._uiLabel || v.label || v.variant_code || '')}" disabled>
+          </div>
+          <div>
+            <label class="muted">${t('pd.ppv')}</label>
+            <input name="price_ppv" class="input" type="number" step="0.01" value="${(v.price_ppv ?? v.ppv ?? '')}">
+          </div>
+          <div>
+            <label class="muted">${t('pd.pv10m')}</label>
+            <input name="price_pv_minus10" class="input" type="number" step="0.01" value="${(v.price_pv_minus10 ?? v.pv_minus_10u ?? '')}">
+          </div>
+          <div>
+            <label class="muted">${t('pd.pv10p')}</label>
+            <input name="price_pv_plus10" class="input" type="number" step="0.01" value="${(v.price_pv_plus10 ?? v.pv_plus_10u ?? '')}">
+          </div>
+          <div>
+            <label class="muted">Currency</label>
+            <input name="currency" class="input" value="${(v.currency || 'MAD')}">
+          </div>
+          <div>
+            <label class="muted">Active</label><br>
+            <input name="active" type="checkbox" ${(v.active !== false) ? 'checked' : ''}>
+          </div>
+        </div>
+        <div style="height:8px"></div>
+      `).join('') + `
+        <div class="sheet-actions" style="justify-content:flex-end">
+          <button class="close" type="button" onclick="(function(f){ f.style.display='none'; })(document.getElementById('pdAdminForm'))">${t('pd.cancel')}</button>
+          <button class="contact-btn" type="submit">${t('pd.save')}</button>
+        </div>
+      `;
+    }
+
+    function openPD(sku, preselectVariant=null){
+      if(!IS_LOGGED_IN){
+        // Gate details for visitors
+        location.href = 'login.html?redirect=' + encodeURIComponent('Products.html');
+        return;
+      }
+      ensurePDRefs();
+      const spec = PRODUCT_CACHE[sku] || {};
+      CURRENT_SKU = sku;
+
+      document.getElementById('pdTitle').textContent = t("pd.title");
+      pdName.textContent = spec.name || sku;
+      pdCat.textContent = spec.category || '';
+      pdForm.textContent = spec.form || '—';
+      pdSize.textContent = spec.size || '—';
+      pdIngr.textContent = spec.ingredients || '—';
+      pdUse.textContent = spec.usage || '—';
+      pdDesc.textContent = spec.description || '';
+      pdSku.textContent = t("ui.sku") + sku;
+
+      const cands = imageCandidates(spec);
+      pdImg.alt = spec.name || sku;
+      pdImg.onload = () => { pdImg.style.visibility = 'visible'; };
+      pdImg.onerror = () => nextSrcOnError(pdImg);
+      pdImg.setAttribute('data-candidates', cands.slice(1).join('|'));
+      pdImg.src = cands[0]; pdImg.style.visibility = 'hidden';
+
+      pdPdf.textContent = t("pd.pdf");
+      pdPdf.href = (spec.pdf_path ? filePublicUrl(spec.pdf_path) : (spec.pdf || '#')) || '#';
+
+      pdPage.textContent = t("pd.full"); pdPage.href = spec.page || '#';
+
+      const isAvail = !!(spec.available && (Number(spec.stock_qty||0) > 0));
+      pdAdd.textContent = t("grid.add"); pdBuy.textContent = t("grid.buy");
+      pdAdd.disabled = !isAvail; pdBuy.disabled = !isAvail;
+
+      loadVariants(sku).then(()=>{
+        buildVariantSelector(preselectVariant);
+        buildAdminForm();
+        updatePriceUI();
+        const v = currentVariant();
+        const newSize = sizeFromVariant(CURRENT_SKU, v?.variant_code||'', v?.label||'');
+        if (newSize) pdSize.textContent = newSize;
+
+        pdModal.classList.add('open'); pdModal.setAttribute('aria-hidden','false');
+      }).catch(_=>{
+        pdVariantSel.innerHTML = `<option value="">${t('pd.variantMissing')}</option>`;
+        pdPriceBox.textContent = t('pd.notAvailable'); pdPriceNote.textContent = '';
+        pdModal.classList.add('open'); pdModal.setAttribute('aria-hidden','false');
+      });
+    }
+    function closePD(){ if(pdModal){ pdModal.classList.remove('open'); pdModal.setAttribute('aria-hidden','true'); } }
+
+    async function fetchProducts(){
+      let rows = [];
       const { data, error } = await supa
         .from('products')
-        .select('sku,name,stock_qty,available,image_path,image_url,sort_order')
-        .order('sort_order',{ascending:true, nullsFirst:false})
-        .order('name',{ascending:true})
-        .limit(6);
-      const rows = (!error && Array.isArray(data) && data.length) ? data : [
-        { sku:'URO-CHIEN', name:'Urocline Chien', stock_qty:30, available:true },
-        { sku:'HEP-AT', name:'Hepatiale', stock_qty:12, available:true },
-        { sku:'ART-ASUH', name:'Art-Asuh', stock_qty:0, available:false },
-        { sku:'RENO-SAN', name:'Renosan', stock_qty:18, available:true },
-        { sku:'PILO-SAN', name:'Pilosan', stock_qty:20, available:true },
-        { sku:'NEU-VIEW', name:'Neuroview', stock_qty:8, available:true },
-      ];
-      grid.innerHTML='';
-      rows.forEach(p=>{
-        const cands=imageCandidates(p);
-        const isAvail=p.available && (Number(p.stock_qty||0)>0);
-        const card=document.createElement('article');
-        card.className='p-card';
-        card.innerHTML=`
-          <img alt="${p.name}" src="${cands[0]}" data-candidates="${cands.slice(1).join('|')}"
-               style="visibility:hidden" onload="this.style.visibility='visible'" onerror="nextSrcOnError(this)">
-          <div class="p-body">
-            <h3 style="margin:.2rem 0 .1rem;font-size:1.05rem">${p.name}</h3>
-            <div class="p-meta">
-              <span class="status ${isAvail?'ok':'bad'}">${isAvail?'Available':'Unavailable'}</span>
-              <span>•</span>
-              <span class="muted">${isAvail ? (p.stock_qty + ' in stock') : 'Out of stock'}</span>
-            </div>
-            <div class="p-actions">
-              <a class="btn" href="Products.html" aria-label="View ${p.name}">View</a>
-              <a class="btn ghost" href="Products.html">Details</a>
-            </div>
-          </div>`;
-        grid.appendChild(card);
+        .select('sku,name,description,stock_qty,available,image_path,image_url,pdf_path,sort_order,price_ppv,price_pv_minus10,price_pv_plus10,variants,category,form,size,ingredients,usage,page')
+        .order('sort_order', { ascending:true, nullsFirst:false })
+        .order('name', { ascending:true });
+
+      if (!error && Array.isArray(data)) rows = data;
+      if (!rows.length){
+        rows = Object.keys(FALLBACK).map((sku, i)=>({ sku, name: FALLBACK[sku].name, sort_order: i+1, available: true, stock_qty: 99 }));
+      }
+
+      PRODUCT_CACHE = {};
+      rows.forEach(r=>{
+        const f = FALLBACK[r.sku] || {};
+        PRODUCT_CACHE[r.sku] = {
+          sku: r.sku,
+          name: r.name || f.name || r.sku,
+          description: r.description || '',
+          stock_qty: Number(r.stock_qty ?? 0),
+          available: !!(r.available ?? true),
+          image_path: r.image_path || null,
+          image_url:  r.image_url  || null,
+          image: f.image || null,
+          pdf_path: r.pdf_path || null,
+          pdf: f.pdf || null,
+          page: r.page || f.page || '#',
+          category: r.category || f.category || '',
+          form:     r.form     || f.form     || '',
+          size:     r.size     || f.size     || '',
+          ingredients: r.ingredients || f.ingredients || '',
+          usage:       r.usage       || f.usage       || '',
+          price_ppv:        r.price_ppv ?? null,
+          price_pv_minus10: r.price_pv_minus10 ?? null,
+          price_pv_plus10:  r.price_pv_plus10 ?? null,
+          variants: Array.isArray(r.variants) ? r.variants : []
+        };
       });
-      grid.removeAttribute('aria-busy');
+      return rows;
     }
+
+    async function getVariantsForSku(sku){
+      const prod = PRODUCT_CACHE[sku] || {};
+      const list = Array.isArray(prod.variants) ? prod.variants : [];
+      if (!list.length) {
+        const label = 'Default';
+        return VARIANTS_CACHE[sku] = [{
+          variant_code: 'default',
+          _uiLabel: label,
+          label,
+          price_ppv: prod.price_ppv ?? null,
+          price_pv_minus10: prod.price_pv_minus10 ?? null,
+          price_pv_plus10: prod.price_pv_plus10 ?? null,
+          currency: 'MAD'
+        }]);
+      }
+      const normalized = list.map((v, i) => ({
+        variant_code: (v.code || v.variant_code || v.name || `v${i}`).toString(),
+        _uiLabel: prettyVariantLabel(sku, (v.code||v.variant_code||v.name||'').toString(), v.name || v.label || ''),
+        label: v.name || v.label || '',
+        price_ppv: Number(v.price_ppv ?? v.ppv ?? null),
+        price_pv_minus10: Number(v.price_pv_minus10 ?? v.pv_minus_10u ?? null),
+        price_pv_plus10: Number(v.price_pv_plus10 ?? v.pv_plus_10u ?? null),
+        currency: v.currency || 'MAD'
+      }));
+      VARIANTS_CACHE[sku] = normalized;
+      return normalized;
+    }
+
+    async function renderProducts(){
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = `<div class="muted">${t("ui.loading")}</div>`;
+
+      const { data:{ session } } = await supa.auth.getSession();
+      IS_LOGGED_IN = !!session?.user;
+      IS_ADMIN = false; IS_VET = false;
+      if (session?.user){
+        try{
+          const { data:p } = await supa.from('profiles').select('is_vet_verified,is_admin,first_name,last_name').eq('id', session.user.id).maybeSingle();
+          IS_VET = !!p?.is_vet_verified;
+          IS_ADMIN = !!p?.is_admin || (session.user.email && SUPER_ADMINS.includes(session.user.email));
+        }catch(_){}
+      }
+
+      const rows = await fetchProducts();
+      grid.innerHTML = '';
+
+      for (const r of rows){
+        const p = PRODUCT_CACHE[r.sku];
+
+        const cands = imageCandidates(p);
+        const imgTag = `
+          <img class="thumb" alt="${p.name}"
+               onload="this.style.visibility='visible'"
+               onerror="nextSrcOnError(this)"
+               src="${cands[0]}"
+               data-candidates="${cands.slice(1).join('|')}">`;
+
+        const isAvail = p.available && (p.stock_qty > 0);
+        const statusHtml = isAvail ? `<span class="status ok">${t("grid.available")}</span>`
+                                   : `<span class="status bad">${t("grid.unavailable")}</span>`;
+        const qtyHtml = `<span class="qty">${p.stock_qty>0 ? (p.stock_qty + t("grid.instock")) : t("grid.out")}</span>`;
+
+        const card = document.createElement('div');
+        card.className = 'p-card';
+        card.setAttribute('data-sku', r.sku);
+
+        const actionsVisitor = `
+          <div class="lock-overlay">🔒 ${t("ui.locked")}</div>
+          <button class="btn" type="button" data-action="signin">${t("grid.signin")}</button>
+        `;
+        const actionsUser = `
+          <button class="btn add-btn" type="button" ${!isAvail ? 'disabled' : ''}>${t("grid.add")}</button>
+          <button class="btn ghost buy-btn" type="button" ${!isAvail ? 'disabled' : ''}>${t("grid.buy")}</button>
+          <button class="btn ghost more-btn" type="button">${t("grid.more")}</button>
+        `;
+
+        card.innerHTML = imgTag +
+          `<div class="px">
+            <h4>${p.name}</h4>
+            <div class="p-meta">${statusHtml}<span>•</span>${qtyHtml}</div>
+            <div class="p-meta" style="margin-top:6px">${p.category ? p.category : ''}</div>
+            <div class="sheet-actions" style="padding:0;margin-top:8px">${IS_LOGGED_IN ? actionsUser : actionsVisitor}</div>
+          </div>`;
+
+        // Wire actions
+        card.querySelector('[data-action="signin"]')?.addEventListener('click', (ev)=>{
+          ev.stopPropagation();
+          location.href = 'login.html?redirect=' + encodeURIComponent('Products.html');
+        });
+        card.querySelector('.add-btn')?.addEventListener('click', (ev)=>{
+          ev.stopPropagation(); openPD(r.sku, null);
+        });
+        card.querySelector('.buy-btn')?.addEventListener('click', (ev)=>{
+          ev.stopPropagation(); openPD(r.sku, null);
+        });
+        card.querySelector('.more-btn')?.addEventListener('click', (ev)=>{
+          ev.stopPropagation(); openPD(r.sku, null);
+        });
+
+        // Block click on entire card for visitors
+        if (!IS_LOGGED_IN){
+          card.addEventListener('click', ()=> location.href = 'login.html?redirect=' + encodeURIComponent('Products.html'));
+        } else {
+          card.addEventListener('click', (e)=>{ if (!e.target.closest('.sheet-actions')) openPD(r.sku, null); });
+        }
+
+        grid.appendChild(card);
+      }
+    }
+
+    window.addEventListener('storage', (ev)=>{ if(ev.key === 'cart') updateCartBadge(); });
 
     document.addEventListener('DOMContentLoaded', async ()=>{
       await refreshHeader();
+      await renderProducts();
       updateCartBadge();
-      loadFeatured();
+      const noteEl = document.querySelector('[data-i18n="pd.note"]');
+      if (noteEl) noteEl.textContent = t('pd.note');
     });
   </script>
+
+  <!-- Product Details Modal -->
+  <div id="productDetailsModal" class="modal" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
+      <div class="sheet-head">
+        <h2 id="pdTitle" class="sheet-title" data-i18n="pd.title">Product details</h2>
+        <button class="close" type="button" onclick="(function(){ const m=document.getElementById('productDetailsModal'); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } })()" data-i18n="contact.close">Close</button>
+      </div>
+      <div class="sheet-body">
+        <div class="pd-cols">
+          <img id="pdImg" class="pd-img" alt="">
+          <div>
+            <h3 id="pdName" style="margin:0 0 6px"></h3>
+            <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
+            <div class="specs">
+              <div class="spec"><h5 data-i18n="pd.form">Form</h5><div id="pdForm" class="muted"></div></div>
+              <div class="spec"><h5 data-i18n="pd.size">Pack size</h5><div id="pdSize" class="muted"></div></div>
+              <div class="spec"><h5 data-i18n="pd.ingr">Key ingredients</h5><div id="pdIngredients" class="muted"></div></div>
+              <div class="spec"><h5 data-i18n="pd.use">Feeding guidance</h5><div id="pdUsage" class="muted"></div></div>
+            </div>
+            <p id="pdDesc" class="muted" style="margin-top:10px"></p>
+
+            <div class="spec" style="margin-top:10px">
+              <div class="price-row">
+                <label class="muted" style="min-width:80px" data-i18n="pd.variant">Variant</label>
+                <select id="pdVariantSel" class="select" style="min-width:140px"></select>
+
+                <label class="muted" style="min-width:60px" data-i18n="pd.quantity">Qty</label>
+                <input id="pdQtyInp" class="input" type="number" min="1" step="1" value="1" style="max-width:100px">
+
+                <span class="pill ok" style="margin-left:auto" data-i18n="pd.price">Price</span>
+              </div>
+              <div class="price-row" style="margin-top:8px">
+                <strong id="pdPrice"></strong>
+                <span id="pdPriceNote" class="muted"></span>
+              </div>
+            </div>
+
+            <div class="sheet-actions">
+              <button class="btn" id="pdAddBtn" type="button" data-i18n="grid.add">Add to Cart</button>
+              <button class="btn ghost" id="pdBuyBtn" type="button" data-i18n="grid.buy">Buy Now</button>
+              <a class="btn" id="pdPdfBtn" href="#" target="_blank" rel="noopener" data-i18n="pd.pdf">Download PDF</a>
+              <a class="btn ghost" id="pdPageBtn" href="#" data-i18n="pd.full">View full page</a>
+              <span class="muted" id="pdSku" style="margin-left:auto"></span>
+            </div>
+
+            <div id="pdAdminBox" class="admin-box" style="display:none">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+                <strong>Admin</strong>
+                <button id="pdEditBtn" class="btn" type="button" data-i18n="pd.editPrices">Edit prices</button>
+              </div>
+              <form id="pdAdminForm" style="display:none;margin-top:10px"></form>
+            </div>
+          </div>
+        </div>
+        <p class="muted" style="margin-top:12px" data-i18n="pd.note">Complementary feed — not a medicine. Always follow your vet’s advice.</p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
