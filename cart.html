@@ -641,52 +641,61 @@
 
     /* ======================= Orders ======================= */
     async function renderOrders(){
-      const ordersBox = document.getElementById('ordersBox');
-      const hint = document.getElementById('ordersHint');
-      const { data:{ user } } = await supa.auth.getUser();
+  const ordersBox = document.getElementById('ordersBox');
+  const hint = document.getElementById('ordersHint');
 
-      if (!user) {
-        ordersBox.style.display = 'none';
-        hint.textContent = t('orders.hint');
-        return;
-      }
-      hint.textContent = t('orders.signed');
-      ordersBox.style.display = 'block';
-      ordersBox.innerHTML = `<div class="muted">${t('orders.loading')}</div>`;
+  const { data: sessionWrap, error: sessErr } = await supa.auth.getSession();
+  const session = sessionWrap?.session;
 
-      const { data: orders, error } = await supa
-        .from('orders')
-        .select('id, created_at, status, total_qty, total_amount')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending:false })
-        .limit(20);
+  if (sessErr) {
+    hint.textContent = "Session error: " + sessErr.message;
+    ordersBox.style.display = 'none';
+    return;
+  }
 
-      if (error) {
-        ordersBox.innerHTML = `<div class="muted">Could not load orders: ${escapeHtml(error.message)}</div>`;
-        return;
-      }
-      if (!orders || !orders.length){
-        ordersBox.innerHTML = `<div class="muted">${t('orders.none')}</div>`;
-        return;
-      }
+  if (!session?.user) {
+    ordersBox.style.display = 'none';
+    hint.textContent = t('orders.hint'); // "Sign in to see your purchase history."
+    return;
+  }
 
-      ordersBox.innerHTML = orders.map(o=>{
-        const d = new Date(o.created_at);
-        const badgeCls = (o.status||'').toLowerCase()==='paid' ? 'ok' : 'warn';
-        const amountTxt = (o.total_amount!=null) ? ` · Amount: ${Number(o.total_amount).toFixed(2)}` : '';
-        const qtyTxt = (o.total_qty!=null) ? ` · Items: ${o.total_qty}` : '';
-        return `
-          <div class="order">
-            <div class="row">
-              <div><strong>Order #${escapeHtml(o.id)}</strong> · <span class="muted">${d.toLocaleString()}</span></div>
-              <span class="badge ${badgeCls}">${escapeHtml(o.status || 'pending')}</span>
-            </div>
-            <div class="muted">${qtyTxt}${amountTxt}</div>
-          </div>
-        `;
-      }).join('');
-    }
+  hint.textContent = `Signed in as ${session.user.email}`;
+  ordersBox.style.display = 'block';
+  ordersBox.innerHTML = `<div class="muted">${t('orders.loading')}</div>`;
 
+  const { data: orders, error } = await supa
+    .from('orders')
+    .select('id, created_at, status, total_qty, total_amount')
+    .eq('user_id', session.user.id)
+    .order('created_at', { ascending:false })
+    .limit(20);
+
+  if (error) {
+    ordersBox.innerHTML = `<div class="muted">Could not load orders: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  if (!orders?.length){
+    ordersBox.innerHTML = `<div class="muted">${t('orders.none')}</div>`;
+    return;
+  }
+
+  ordersBox.innerHTML = orders.map(o=>{
+    const d = new Date(o.created_at);
+    const badgeCls = (o.status||'').toLowerCase()==='paid' ? 'ok' : 'warn';
+    const amountTxt = (o.total_amount!=null) ? ` · Amount: ${Number(o.total_amount).toFixed(2)}` : '';
+    const qtyTxt = (o.total_qty!=null) ? ` · Items: ${o.total_qty}` : '';
+    return `
+      <div class="order">
+        <div class="row">
+          <div><strong>Order #${escapeHtml(o.id)}</strong> · <span class="muted">${d.toLocaleString()}</span></div>
+          <span class="badge ${badgeCls}">${escapeHtml(o.status || 'pending')}</span>
+        </div>
+        <div class="muted">${qtyTxt}${amountTxt}</div>
+      </div>
+    `;
+  }).join('');
+}
     /* ======================= Live refresh when admin edits products ======================= */
     async function refreshProductsAndCart(){
       await loadProductsForCart();
