@@ -509,20 +509,20 @@
     }
 
     // FIX: include DB image + local images + fallback ProductX.jpg by SKU
-    const FALLBACK_HOME = {
-      "URO-CHIEN":"images/Product1.jpg",
-      "HEP-AT":"images/Product2.jpg",
-      "NEU-VIEW":"images/Product3.jpg",
-      "MUNI-SAN":"images/Product4.jpg",
-      "PILO-SAN":"images/Product5.jpg",
-      "HEMO-VET":"images/Product6.jpg",
-      "URO-STONES":"images/Product7.jpg",
-      "VIT-MIN":"images/Product8.jpg",
-      "ART-ASUH":"images/Product9.jpg",
-      "CARBO-DIG":"images/Product10.jpg",
-      "RENO-SAN":"images/Product11.jpg",
-      "QAL-MIL":"images/Product12.jpg"
-    };
+  const FALLBACK = {
+    "URO-CHIEN":  { name:"Urocline Chien",  image:"images/Product1.jpg" },
+    "HEP-AT":     { name:"Hepatiale",       image:"images/Product2.jpg" },
+    "NEU-VIEW":   { name:"Neuroview",       image:"images/Product3.jpg" },
+    "MUNI-SAN":   { name:"Munisan",         image:"images/Product4.jpg" },
+    "PILO-SAN":   { name:"Pilosan",         image:"images/Product5.jpg" },
+    "HEMO-VET":   { name:"HemoVet",         image:"images/Product6.jpg" },
+    "URO-STONES": { name:"Urocline Stones", image:"images/Product7.jpg" },
+    "VIT-MIN":    { name:"Vit&Min",         image:"images/Product8.jpg" },
+    "ART-ASUH":   { name:"Art-Asuh",        image:"images/Product9.jpg" },
+    "CARBO-DIG":  { name:"Carbo Digest",    image:"images/Product10.jpg" },
+    "RENO-SAN":   { name:"Renosan",         image:"images/Product11.jpg" },
+    "QAL-MIL":    { name:"Qalmil",          image:"images/Product12.jpg" }
+  };
 
     function imageCandidates(spec){
       const out=[];
@@ -607,3 +607,4 @@
   </script>
 </body>
 </html>
+
