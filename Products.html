@@ -1033,19 +1033,24 @@
     return CURRENT_VARIANTS;
   }
 
-  function imageCandidates(spec){
-    const out = [];
-    if (spec.image_path) out.push(filePublicUrl(spec.image_path));
-    if (spec.image_url)  out.push(spec.image_url);
-    const sku = (spec.sku || '').toLowerCase();
-    const nm  = slugifyName(spec.name || '');
-    ['/images/'+sku+'.jpg','/images/'+sku+'.png',
-     '/images/'+nm +'.jpg','/images/'+nm +'.png'
-    ].forEach(u => out.push(u));
-    if (spec.image) out.push(spec.image);
-    out.push('images/placeholder.png');
-    return Array.from(new Set(out.filter(Boolean)));
-  }
+function imageCandidates(spec){
+  const out = [];
+  if (spec.image_path) out.push(filePublicUrl(spec.image_path));
+  if (spec.image_url)  out.push(spec.image_url);
+
+  const sku = (spec.sku || '').toLowerCase();
+  const nm  = slugifyName(spec.name || '');
+
+  // IMPORTANT: no leading slash
+  [
+    `images/${sku}.jpg`, `images/${sku}.png`,
+    `images/${nm}.jpg`,  `images/${nm}.png`,
+  ].forEach(u => out.push(u));
+
+  if (spec.image) out.push(spec.image);
+  out.push('images/placeholder.png');
+  return Array.from(new Set(out.filter(Boolean)));
+}
 
   async function openPD(sku, preselectVariant=null){
     ensurePDRefs();
@@ -1280,4 +1285,5 @@
   </script>
 </body>
 </html>
+
 
