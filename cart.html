@@ -12,6 +12,7 @@
     *{ box-sizing:border-box }
     body{ margin:0; font-family:Inter,sans-serif; background:linear-gradient(135deg,var(--bg),#101835); color:var(--text) }
 
+    /* Header */
     header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .wrap{ max-width:1100px; margin:0 auto; padding:0 18px }
@@ -24,6 +25,7 @@
     }
     #lang-switch{background:rgba(255,255,255,.04);min-width:120px}
 
+    /* Main */
     main{ max-width:1100px; margin:40px auto; padding:0 18px }
     h1{ margin:0 0 16px }
     h2{ margin:26px 0 10px; font-size:1.15rem }
@@ -53,9 +55,11 @@
     .note{ font-size:.88rem; color:var(--muted) }
     .namecell{ display:flex; flex-direction:column; gap:4px }
 
+    /* Footer */
     footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
     .footer-links{display:flex;gap:14px;flex-wrap:wrap}
 
+    /* Modals */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:90}
     .modal.open{display:flex}
     .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
@@ -72,6 +76,7 @@
     .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
     .divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
 
+    /* RTL */
     body.rtl .wrap, body.rtl main, body.rtl table, body.rtl .pro-grid{direction:rtl}
     body.rtl th, body.rtl td{text-align:inherit}
   </style>
@@ -88,15 +93,11 @@
         </a>
         <span>VetoCos</span>
       </div>
-
       <nav class="links">
-        <!-- ✅ FIX: goes to Products section on index.html -->
-        <a class="btn" href="index.html#products" data-i18n="nav.products">Products</a>
-
+        <a class="btn" href="Products.html" data-i18n="nav.products">Products</a>
         <a class="btn" href="vet-verify.html" data-i18n="nav.verify">Verification</a>
         <a class="btn" href="account.html" data-i18n="nav.account">My Account</a>
         <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
-
         <select id="lang-switch" aria-label="Language">
           <option value="en">English</option>
           <option value="fr">Français</option>
@@ -121,6 +122,7 @@
     </section>
   </main>
 
+  <!-- Footer -->
   <footer>
     <div class="wrap">
       © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals.</span>
@@ -217,20 +219,38 @@
       <div class="sheet-body">
         <h3 data-i18n="policy.overviewTitle">Overview</h3>
         <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. We do not collect personal data unless you choose to contact us.</p>
+        <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
+        <ul>
+          <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
+          <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
+        </ul>
+        <h3 data-i18n="policy.useTitle">How we use data</h3>
+        <ul>
+          <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
+          <li data-i18n="policy.use2">We do not sell personal data.</li>
+        </ul>
+        <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
+        <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for functionality and anonymous analytics.</p>
+        <h3 data-i18n="policy.choiceTitle">Your choices</h3>
+        <ul>
+          <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
+          <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
+        </ul>
+        <h3 data-i18n="policy.contactTitle">Contact</h3>
+        <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
         <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
       </div>
     </div>
   </div>
 
   <script>
-    /* ======================= i18n (unchanged) ======================= */
+    /* ======================= i18n ======================= */
     const I18N = {
       en:{ "nav.products":"Products","nav.verify":"Verification","nav.account":"My Account","nav.contact":"Contact",
            "page.title":"Your Cart",
            "orders.title":"Your Purchases","orders.hint":"Sign in to see your purchase history.","orders.signed":"You are signed in. Your recent purchases are below.","orders.none":"No purchases yet.","orders.loading":"Loading your orders…",
            "footer.tag":"Complementary feed for companion animals.","footer.policy":"Privacy & Policy","footer.contact":"Contact",
-           "cart.empty":"Your cart is empty","cart.total":"Total items:","cart.clear":"Clear cart","cart.stockNote":"Stock limits enforced automatically.",
-           "cart.product":"Product","cart.qty":"Quantity","cart.action":"Action","cart.remove":"Remove","cart.ok":"OK","cart.unavailable":"Unavailable","cart.onlyLeft":"Only {n} left",
+           "cart.empty":"Your cart is empty","cart.total":"Total items:","cart.clear":"Clear cart","cart.stockNote":"Stock limits enforced automatically.","cart.product":"Product","cart.qty":"Quantity","cart.action":"Action","cart.remove":"Remove","cart.ok":"OK","cart.unavailable":"Unavailable","cart.onlyLeft":"Only {n} left",
            "cart.unit":"Unit price","cart.line":"Line total","cart.sum":"Cart total","cart.currencyMixed":"*Prices show per line currency","cart.pay":"Pay now",
            "cart.variant":"Variant"
       },
@@ -238,8 +258,7 @@
            "page.title":"Votre panier",
            "orders.title":"Vos achats","orders.hint":"Connectez-vous pour voir votre historique d’achats.","orders.signed":"Vous êtes connecté. Vos achats récents ci-dessous.","orders.none":"Aucun achat pour le moment.","orders.loading":"Chargement de vos commandes…",
            "footer.tag":"Complément alimentaire pour animaux de compagnie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
-           "cart.empty":"Votre panier est vide","cart.total":"Articles au total :","cart.clear":"Vider le panier","cart.stockNote":"Limites de stock appliquées automatiquement.",
-           "cart.product":"Produit","cart.qty":"Qté","cart.action":"Action","cart.remove":"Supprimer","cart.ok":"OK","cart.unavailable":"Indisponible","cart.onlyLeft":"Plus que {n}",
+           "cart.empty":"Votre panier est vide","cart.total":"Articles au total :","cart.clear":"Vider le panier","cart.stockNote":"Limites de stock appliquées automatiquement.","cart.product":"Produit","cart.qty":"Qté","cart.action":"Action","cart.remove":"Supprimer","cart.ok":"OK","cart.unavailable":"Indisponible","cart.onlyLeft":"Plus que {n}",
            "cart.unit":"Prix unitaire","cart.line":"Total ligne","cart.sum":"Total panier","cart.currencyMixed":"*Prix par devise de la ligne","cart.pay":"Payer maintenant",
            "cart.variant":"Variante"
       },
@@ -247,8 +266,7 @@
            "page.title":"Tu carrito",
            "orders.title":"Tus compras","orders.hint":"Inicia sesión para ver tu historial.","orders.signed":"Has iniciado sesión. Compras recientes abajo.","orders.none":"Sin compras aún.","orders.loading":"Cargando tus pedidos…",
            "footer.tag":"Alimento complementario para animales de compañía.","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
-           "cart.empty":"Tu carrito está vacío","cart.total":"Artículos totales:","cart.clear":"Vaciar carrito","cart.stockNote":"Límites de stock aplicados automáticamente.",
-           "cart.product":"Producto","cart.qty":"Cantidad","cart.action":"Acción","cart.remove":"Quitar","cart.ok":"OK","cart.unavailable":"No disponible","cart.onlyLeft":"Solo quedan {n}",
+           "cart.empty":"Tu carrito está vacío","cart.total":"Artículos totales:","cart.clear":"Vaciar carrito","cart.stockNote":"Límites de stock aplicados automáticamente.","cart.product":"Producto","cart.qty":"Cantidad","cart.action":"Acción","cart.remove":"Quitar","cart.ok":"OK","cart.unavailable":"No disponible","cart.onlyLeft":"Solo quedan {n}",
            "cart.unit":"Precio unitario","cart.line":"Total de línea","cart.sum":"Total del carrito","cart.currencyMixed":"*Precios por moneda de la línea","cart.pay":"Pagar ahora",
            "cart.variant":"Variante"
       },
@@ -256,8 +274,7 @@
            "page.title":"سلة التسوق",
            "orders.title":"مشترياتك","orders.hint":"سجّل الدخول لعرض سجل المشتريات.","orders.signed":"تم تسجيل الدخول. تظهر المشتريات الأخيرة أدناه.","orders.none":"لا توجد مشتريات بعد.","orders.loading":"جارٍ تحميل الطلبات…",
            "footer.tag":"غذاء تكميلي للحيوانات الأليفة.","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
-           "cart.empty":"سلة التسوق فارغة","cart.total":"إجمالي العناصر:","cart.clear":"تفريغ السلة","cart.stockNote":"تُطبّق حدود المخزون تلقائيًا.",
-           "cart.product":"المنتج","cart.qty":"الكمية","cart.action":"إجراء","cart.remove":"إزالة","cart.ok":"جيد","cart.unavailable":"غير متاح","cart.onlyLeft":"المتبقي {n}",
+           "cart.empty":"سلة التسوق فارغة","cart.total":"إجمالي العناصر:","cart.clear":"تفريغ السلة","cart.stockNote":"تُطبّق حدود المخزون تلقائيًا.","cart.product":"المنتج","cart.qty":"الكمية","cart.action":"إجراء","cart.remove":"إزالة","cart.ok":"جيد","cart.unavailable":"غير متاح","cart.onlyLeft":"المتبقي {n}",
            "cart.unit":"سعر الوحدة","cart.line":"إجمالي السطر","cart.sum":"إجمالي السلة","cart.currencyMixed":"*الأسعار حسب عملة كل سطر","cart.pay":"ادفع الآن",
            "cart.variant":"النوع"
       }
@@ -272,11 +289,13 @@
         if(dict[k]==null) return; attrs.forEach(a=>el.setAttribute(a, dict[k]));
       });
       const html=document.documentElement; html.lang=lang;
-      if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); } else { html.dir="ltr"; document.body.classList.remove("rtl"); }
+      if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
+      else { html.dir="ltr"; document.body.classList.remove("rtl"); }
       localStorage.setItem("lang",lang); const sel=document.getElementById('lang-switch'); if(sel) sel.value=lang;
     }
     function t(k){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][k])||(I18N.en[k]||k); }
 
+    /* Contact / Policy modals */
     const contactModal=document.getElementById('contactModal');
     const policyModal=document.getElementById('policyModal');
     function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
@@ -313,268 +332,162 @@
           await renderOrders();
         });
       }
-      const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+      const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount');
+      if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
     });
   </script>
 
   <script>
-    /* ======================= Supabase ======================= */
+    /* ======================= Supabase client ======================= */
     const supa = supabase.createClient(
       "https://qdepgviimbcdlozjpbhm.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
       { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
 
-    /* ======================= Cart + Variant-aware pricing ======================= */
+    /* ======================= Cart storage (sku + variant + qty ONLY) ======================= */
     const CART_KEY = 'cart';
-    const CART_UPDATED_KEY = 'cart_updated_at';
-    const CART_RESTORED_KEY = 'cart_restored_v3';
-
-    // We show DH (Dirham). Even if DB uses MAD, UI will show DH.
-    const DISPLAY_CURRENCY = 'DH';
-
-    // sku(lower) -> product row from Supabase including variants
-    let PRODUCTS = Object.create(null);
+    const DEFAULT_CURRENCY = 'MAD';
 
     function norm(s){ return String(s||'').trim().toLowerCase(); }
 
-    // Parse "SKU:VARIANT" key
-    function parseKey(keyOrSku){
-      const raw = String(keyOrSku||'').trim();
-      const parts = raw.split(':');
-      const sku = parts[0] || '';
-      const variant = parts[1] || null;
-      return { sku, variant };
-    }
-
     function readCart(){
       try{
-        const arr = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
-        return (Array.isArray(arr)?arr:[]).map(it=>{
-          const key = String(it.key || it.sku || '').trim();
-          const pk = parseKey(key);
-          return {
-            key: key || pk.sku,
-            sku: norm(it.sku || pk.sku),
-            variant: (it.variant || pk.variant || null),
-            name: String(it.name || it.sku || pk.sku || ''),
-            qty: Math.max(0, Number(it.qty||0))
-          };
-        }).filter(x=>x.sku && x.qty>0);
+        const raw = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+        const items = Array.isArray(raw) ? raw : [];
+        return items
+          .map(it => ({
+            key: it.key || (it.variant ? `${it.sku}:${it.variant}` : it.sku),
+            sku: norm(it.sku),
+            variant: it.variant ? String(it.variant) : null,
+            name: it.name ? String(it.name) : '',
+            qty: Math.max(1, Number(it.qty||1))
+          }))
+          .filter(x => x.sku && x.qty>0);
       }catch{
         return [];
       }
     }
 
-    function setCart(items, updatedAt=null){
-      const stamp = updatedAt || new Date().toISOString();
-      const cleaned = (items||[]).filter(Boolean).map(it=>{
-        const key = String(it.key || (it.sku + (it.variant?(':'+it.variant):'')) || '').trim();
-        const pk = parseKey(key);
-        return {
-          key: key || pk.sku,
-          sku: norm(it.sku || pk.sku),
-          variant: it.variant || pk.variant || null,
-          name: String(it.name || it.sku || pk.sku || ''),
-          qty: Math.max(0, Number(it.qty||0))
-        };
-      }).filter(x=>x.sku && x.qty>0);
-
-      localStorage.setItem(CART_KEY, JSON.stringify(cleaned));
-      localStorage.setItem(CART_UPDATED_KEY, stamp);
+    function writeCartLocal(items){
+      localStorage.setItem(CART_KEY, JSON.stringify(items));
       try{ localStorage.setItem('cart_ping', String(Date.now())); }catch{}
     }
 
-    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]) ); }
-    function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
+    /* ======================= Products/Variants cache from DB ======================= */
+    // sku -> { sku,name,available,stock_qty,currency, variants:[{variant_code, price_ppv, price_pv_minus10, price_pv_plus10, currency}] }
+    let PRODUCTS = Object.create(null);
 
-    /* ====== Stock ====== */
-    function getProduct(sku){ return PRODUCTS[norm(sku)] || null; }
+    function toNumOrNull(x){
+      if (x === 0 || x === '0') return 0;
+      const n = Number(x);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    async function loadProductsForCart(){
+      const cart = readCart();
+      const skus = [...new Set(cart.map(i => i.sku))];
+      if (!skus.length){ PRODUCTS = {}; return; }
+
+      const { data, error } = await supa
+        .from('products')
+        .select('sku,name,available,stock_qty,currency,price_ppv,price_pv_minus10,price_pv_plus10,variants')
+        .in('sku', skus);
+
+      if (error){
+        console.warn('loadProductsForCart error:', error.message);
+        return;
+      }
+
+      PRODUCTS = {};
+      (data||[]).forEach(p=>{
+        const sku = norm(p.sku);
+        const list = Array.isArray(p.variants) ? p.variants : [];
+        const currency = p.currency || DEFAULT_CURRENCY;
+
+        // Normalize variants so cart can price by variant_code
+        const variants = list.length
+          ? list.map((v,i)=>({
+              variant_code: String(v.code ?? v.variant_code ?? v.name ?? `v${i}`),
+              price_ppv: toNumOrNull(v.price_ppv ?? v.ppv),
+              price_pv_minus10: toNumOrNull(v.price_pv_minus10 ?? v.pv_minus_10u),
+              price_pv_plus10: toNumOrNull(v.price_pv_plus10 ?? v.pv_plus_10u),
+              currency: v.currency || currency
+            }))
+          : [{
+              variant_code: 'default',
+              price_ppv: toNumOrNull(p.price_ppv),
+              price_pv_minus10: toNumOrNull(p.price_pv_minus10),
+              price_pv_plus10: toNumOrNull(p.price_pv_plus10),
+              currency
+            }];
+
+        PRODUCTS[sku] = {
+          sku,
+          name: p.name || p.sku,
+          available: p.available !== false,
+          stock_qty: Number(p.stock_qty ?? 0),
+          currency,
+          variants
+        };
+      });
+
+      // Keep cart names updated from DB (optional nice UX)
+      const nameMap = Object.fromEntries(Object.values(PRODUCTS).map(p => [p.sku, p.name]));
+      const updatedCart = readCart().map(i => ({ ...i, name: i.name || nameMap[i.sku] || i.sku }));
+      writeCartLocal(updatedCart);
+    }
 
     function getMaxForSKU(sku){
-      const p = getProduct(sku) || {};
+      const p = PRODUCTS[norm(sku)];
+      if (!p) return Infinity;
       if (p.available === false) return 0;
       if (typeof p.stock_qty === 'number' && p.stock_qty >= 0) return p.stock_qty;
       return Infinity;
     }
 
-    function clampToStock(items){
-      return (items||[]).map(it=>{
-        const max = getMaxForSKU(it.sku);
-        const q = Math.max(0, Math.min(Number(it.qty||0), Number.isFinite(max)?max:it.qty));
-        return { ...it, qty:q };
-      }).filter(x=>x.qty>0);
+    /* ======================= Pricing (variant-aware) ======================= */
+    function findVariant(product, variantCode){
+      if (!product) return null;
+      const code = variantCode ? String(variantCode) : 'default';
+      return product.variants.find(v => v.variant_code === code) || product.variants[0] || null;
     }
 
-    async function writeCart(items){
-      const updated_at = new Date().toISOString();
-      const clamped = clampToStock(items);
-      setCart(clamped, updated_at);
-
-      const { data:{ user } } = await supa.auth.getUser();
-      if (user){
-        await supa.from('carts').upsert({ user_id:user.id, items:clamped, updated_at });
-      }
-      renderCart();
-    }
-
-    /* ====== Load products incl. variants ====== */
-    async function loadProductsForCart(){
-      const cart = readCart();
-      const skus = [...new Set(cart.map(x=>norm(x.sku)))];
-      if (!skus.length){ PRODUCTS = {}; return; }
-
-      const { data, error } = await supa
-        .from('products')
-        .select('sku,name,stock_qty,available,price_ppv,price_pv_minus10,price_pv_plus10,variants,currency')
-        .in('sku', skus);
-
-      if (!error && Array.isArray(data)){
-        PRODUCTS = {};
-        data.forEach(p => { PRODUCTS[norm(p.sku)] = p; });
-      } else {
-        console.warn('Product load error', error?.message);
-      }
-
-      // Fill missing names
-      const nameMap = Object.fromEntries((data||[]).map(p => [norm(p.sku), p.name]));
-      const withNames = cart.map(i => ({ ...i, name: i.name || nameMap[norm(i.sku)] || i.sku }));
-      setCart(withNames, localStorage.getItem(CART_UPDATED_KEY) || new Date().toISOString());
-    }
-
-    /* ====== Variant price picker ====== */
-    function normalizeVariantList(v){
-      if (!Array.isArray(v)) return [];
-      return v.map((x,i)=>({
-        code: String(x.code || x.variant_code || x.name || `v${i}`),
-        price_ppv: x.price_ppv ?? x.ppv ?? null,
-        price_pv_minus10: x.price_pv_minus10 ?? x.pv_minus_10u ?? null,
-        price_pv_plus10: x.price_pv_plus10 ?? x.pv_plus_10u ?? null,
-        currency: x.currency || null
-      }));
-    }
-
-    function pickVariant(product, variantCode){
-      const list = normalizeVariantList(product?.variants);
-      if (!variantCode) return null;
-      const vc = String(variantCode).trim().toLowerCase();
-      return list.find(v => String(v.code).trim().toLowerCase() === vc) || null;
-    }
-
-    function tierForQty(qty){
+    function priceTier(variant, qty){
       const q = Math.max(1, Number(qty||1));
-      if (q === 1) return 'ppv';
-      if (q >= 10) return 'pv_plus10';
-      return 'pv_minus10';
+      if (!variant) return null;
+      if (q === 1) return { label:'PPV', unit: variant.price_ppv, currency: variant.currency || DEFAULT_CURRENCY };
+      if (q >= 10) return { label:'PV+10U', unit: variant.price_pv_plus10, currency: variant.currency || DEFAULT_CURRENCY };
+      return { label:'PV-10U', unit: variant.price_pv_minus10, currency: variant.currency || DEFAULT_CURRENCY };
     }
 
-    function getPricesForItem(item){
-      const p = getProduct(item.sku);
-      if (!p) return null;
+    function computeLine(item){
+      const p = PRODUCTS[item.sku];
+      if (!p) return { ok:false, reason:'missing' };
 
-      const tier = tierForQty(item.qty);
-      const v = pickVariant(p, item.variant);
+      const v = findVariant(p, item.variant);
+      const tier = priceTier(v, item.qty);
+      if (!tier || tier.unit == null) return { ok:false, reason:'no_price' };
 
-      // If variant exists, use its prices; otherwise fallback to base product prices.
-      const src = v || p;
-      const unit =
-        tier === 'ppv'       ? Number(src.price_ppv ?? 0) :
-        tier === 'pv_plus10' ? Number(src.price_pv_plus10 ?? 0) :
-                               Number(src.price_pv_minus10 ?? 0);
+      const unit = Number(tier.unit);
+      if (!Number.isFinite(unit)) return { ok:false, reason:'bad_price' };
 
-      if (!Number.isFinite(unit)) return null;
       const line = unit * Number(item.qty||0);
-
-      // UI currency: DH
-      return {
-        unit,
-        line,
-        label: tier === 'ppv' ? 'PPV' : (tier === 'pv_plus10' ? 'PV+10U' : 'PV-10U'),
-        cur: DISPLAY_CURRENCY
-      };
+      return { ok:true, unit, line, currency: tier.currency, tier: tier.label, variant_code: v?.variant_code || 'default' };
     }
 
-    function currencyGroups(totals){
+    function currencyGroups(lines){
       const out = {};
-      totals.forEach(x=>{ out[x.cur] = (out[x.cur] || 0) + x.amount; });
+      for (const x of lines){
+        out[x.currency] = (out[x.currency] || 0) + x.line;
+      }
       return out;
     }
 
-    /* ====== Cart restore helpers (kept) ====== */
-    function overlayByKey(baseArr, incomingArr){
-      const map = {};
-      (baseArr||[]).forEach(it => { const k=String(it.key||it.sku||''); if(k) map[k] = { ...it, key:k }; });
-      (incomingArr||[]).forEach(it => { const k=String(it.key||it.sku||''); if(k) map[k] = { ...map[k], ...it, key:k }; });
-      return Object.values(map).filter(x=>Number(x.qty||0)>0);
-    }
+    /* ======================= UI render ======================= */
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]) ); }
+    function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
 
-    function adoptQueryCartOnce(){
-      if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
-      const qs = new URLSearchParams(location.search);
-      const raw = qs.get('cart');
-      if (!raw) return;
-      try {
-        const incoming = JSON.parse(decodeURIComponent(raw));
-        const merged = overlayByKey(readCart(), Array.isArray(incoming) ? incoming : []);
-        setCart(merged, new Date().toISOString());
-      } catch(e){ console.warn('cart restore from URL failed', e); }
-      finally {
-        qs.delete('cart');
-        const newUrl = location.pathname + (qs.toString() ? '?' + qs.toString() : '');
-        history.replaceState({}, '', newUrl);
-        sessionStorage.setItem(CART_RESTORED_KEY, '1');
-      }
-    }
-    function adoptBackupCartOnce(){
-      if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
-      const backup = localStorage.getItem('cart_backup');
-      if (!backup) return;
-      try {
-        const incoming = JSON.parse(backup);
-        const merged = overlayByKey(readCart(), Array.isArray(incoming) ? incoming : []);
-        setCart(merged, new Date().toISOString());
-      } catch(e){ console.warn('backup restore failed', e); }
-      finally {
-        localStorage.removeItem('cart_backup');
-        sessionStorage.setItem(CART_RESTORED_KEY, '1');
-      }
-    }
-
-    /* ====== Sync cart with DB (variant-safe) ====== */
-    async function syncCartFromDB(){
-      const { data:{ user } } = await supa.auth.getUser();
-      if (!user) return;
-
-      const { data: row, error } = await supa
-        .from('carts')
-        .select('items, updated_at')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error){ console.error('carts select error:', error); return; }
-
-      const localItems = readCart();
-      const localUpdated = localStorage.getItem(CART_UPDATED_KEY) || null;
-
-      const serverItems = Array.isArray(row?.items) ? row.items : [];
-      const serverUpdated = row?.updated_at || null;
-
-      const localTime = localUpdated ? Date.parse(localUpdated) : 0;
-      const serverTime = serverUpdated ? Date.parse(serverUpdated) : 0;
-
-      if (serverItems.length && serverTime >= localTime){
-        setCart(serverItems, serverUpdated || new Date().toISOString());
-      } else if (!serverItems.length && localItems.length){
-        await supa.from('carts').upsert({ user_id:user.id, items:localItems, updated_at: localUpdated || new Date().toISOString() });
-      } else if (serverItems.length && localItems.length && localTime > serverTime){
-        await supa.from('carts').upsert({ user_id:user.id, items:localItems, updated_at: localUpdated || new Date().toISOString() });
-      }
-
-      await loadProductsForCart();
-      await renderCart();
-    }
-
-    /* ====== UI ====== */
     function badgeHTML(max, qty){
       if (max === 0) return `<span class="badge bad">${t('cart.unavailable')}</span>`;
       if (Number.isFinite(max) && max >= 0){
@@ -586,7 +499,7 @@
     }
 
     async function renderCart(){
-      const box = document.getElementById("cartBox");
+      const box = document.getElementById('cartBox');
       const cart = readCart();
 
       if (!cart.length){
@@ -594,70 +507,51 @@
         return;
       }
 
-      // ensure product rows loaded
-      const missing = cart.some(it => !(norm(it.sku) in PRODUCTS));
+      // Ensure PRODUCTS loaded for these cart items
+      const missing = cart.some(it => !(it.sku in PRODUCTS));
       if (missing) await loadProductsForCart();
 
       const current = readCart();
+      const lines = current.map(it => ({ item: it, calc: computeLine(it) }));
 
-      const lineInfos = current.map(it=>{
-        const price = getPricesForItem(it);
-        return { key: it.key, sku: it.sku, qty: it.qty, name: it.name, variant: it.variant, price };
-      });
-
-      const rows = current.map(item=>{
-        const max = getMaxForSKU(item.sku);
+      const rowsHTML = lines.map(({item, calc})=>{
+        const sku = item.sku;
+        const max = getMaxForSKU(sku);
         const qty = Number(item.qty||0);
 
         const plusDisabled = !(max === Infinity || qty < max);
         const minusDisabled = qty <= 1;
 
         const badge = badgeHTML(max, qty);
-        const info = lineInfos.find(x=>x.key===item.key)?.price;
 
-        const unitHTML = info
-          ? `${info.cur} ${Number(info.unit).toFixed(2)} <span class="note">(${info.label})</span>`
-          : `<span class="note">—</span>`;
-
-        const lineHTML = info
-          ? `${info.cur} ${Number(info.line).toFixed(2)}`
-          : `<span class="note">—</span>`;
-
-        const varLine = item.variant
-          ? `<span class="note">${t('cart.variant')}: <strong>${escapeHtml(item.variant)}</strong></span>`
-          : ``;
+        const variantTxt = item.variant ? ` · ${t('cart.variant')}: ${escapeHtml(item.variant)}` : '';
+        const unitHTML = calc.ok ? `${calc.currency} ${calc.unit.toFixed(2)} <span class="note">(${calc.tier})</span>` : '-';
+        const lineHTML = calc.ok ? `${calc.currency} ${calc.line.toFixed(2)}` : '-';
 
         return `
           <tr>
             <td class="namecell">
-              <strong>${escapeHtml(item.name || item.sku)}</strong>
-              ${varLine}
-              <span class="note">${escapeHtml(item.sku)}</span>
+              <strong>${escapeHtml(item.name || sku)}</strong>
+              <span class="note">${escapeHtml(sku)}${variantTxt}</span>
               <span>${badge}</span>
             </td>
             <td>
-              <button class="qty-btn" onclick="changeQty('${escapeAttr(item.key)}', -1)" ${minusDisabled?'disabled':''}>-</button>
+              <button class="qty-btn" aria-label="Decrease" onclick="changeQty('${escapeAttr(item.key)}', -1)" ${minusDisabled?'disabled':''}>-</button>
               ${qty}
-              <button class="qty-btn" onclick="changeQty('${escapeAttr(item.key)}', 1)" ${plusDisabled?'disabled':''}>+</button>
+              <button class="qty-btn" aria-label="Increase" onclick="changeQty('${escapeAttr(item.key)}', 1)" ${plusDisabled?'disabled':''}>+</button>
             </td>
             <td>${unitHTML}</td>
             <td>${lineHTML}</td>
-            <td>
-              <button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)"
-                onclick="removeItem('${escapeAttr(item.key)}')">${t('cart.remove')}</button>
-            </td>
+            <td><button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)" onclick="removeItem('${escapeAttr(item.key)}')">${t('cart.remove')}</button></td>
           </tr>
         `;
-      }).join("");
+      }).join('');
 
-      const totals = lineInfos
-        .filter(x=>x.price)
-        .map(x=>({ cur: x.price.cur, amount: x.price.line }));
-
-      const grouped = currencyGroups(totals);
+      const okLines = lines.filter(x => x.calc.ok).map(x => x.calc);
+      const grouped = currencyGroups(okLines);
       const totalsHTML = Object.keys(grouped).length
         ? Object.entries(grouped).map(([cur,amt])=>`${cur} ${Number(amt||0).toFixed(2)}`).join(' · ')
-        : '—';
+        : '-';
 
       box.innerHTML = `
         <div class="card">
@@ -669,10 +563,11 @@
               <th>${t('cart.line')}</th>
               <th>${t('cart.action')}</th>
             </tr>
-            ${rows}
+            ${rowsHTML}
           </table>
+
           <div class="summary">${t('cart.total')} ${current.reduce((n,x)=>n + Number(x.qty||0), 0)}</div>
-          <div class="summary">${t('cart.sum')}: ${totalsHTML}</div>
+          <div class="summary">${t('cart.sum')}: ${totalsHTML} ${Object.keys(grouped).length>1?`<span class="note">(${t('cart.currencyMixed')})</span>`:''}</div>
 
           <div class="row" style="margin-top:10px">
             <button class="btn secondary" onclick="clearCart()">${t('cart.clear')}</button>
@@ -683,36 +578,51 @@
       `;
     }
 
-    /* ====== ops use item.key now ====== */
-    async function changeQty(key, delta){
-      const k = String(key||'').trim();
-      const cart = readCart();
-      const i = cart.findIndex(x => String(x.key||'') === k);
-      if (i === -1) return;
+    /* ======================= Cart operations (key-aware) ======================= */
+    // key = sku OR sku:variant (matches Products page addToCartBySKU style)
+    function parseKey(key){
+      const k = String(key||'');
+      const parts = k.split(':');
+      const sku = norm(parts[0] || '');
+      const variant = parts.length > 1 ? parts.slice(1).join(':') : null;
+      return { sku, variant, key: k };
+    }
 
-      const sku = cart[i].sku;
+    async function changeQty(key, delta){
+      const cart = readCart();
+      const idx = cart.findIndex(x => (x.key || (x.variant ? `${x.sku}:${x.variant}` : x.sku)) === key);
+      if (idx === -1) return;
+
+      const { sku } = parseKey(key);
       const max = getMaxForSKU(sku);
 
       if (delta > 0){
         if (Number.isFinite(max) && max <= 0) return;
-        const next = Number(cart[i].qty||0) + 1;
+        const next = Number(cart[idx].qty||0) + 1;
         if (Number.isFinite(max) && next > max) return;
-        cart[i].qty = next;
+        cart[idx].qty = next;
       } else {
-        const next = Number(cart[i].qty||0) - 1;
-        if (next <= 0) cart.splice(i, 1);
-        else cart[i].qty = next;
+        const next = Number(cart[idx].qty||0) - 1;
+        if (next <= 0) cart.splice(idx, 1);
+        else cart[idx].qty = next;
       }
-      await writeCart(cart);
+
+      writeCartLocal(cart);
+      await renderCart();
     }
 
     async function removeItem(key){
-      const k = String(key||'').trim();
-      await writeCart(readCart().filter(x => String(x.key||'') !== k));
+      const cart = readCart().filter(x => (x.key || (x.variant ? `${x.sku}:${x.variant}` : x.sku)) !== key);
+      writeCartLocal(cart);
+      await renderCart();
     }
 
-    async function clearCart(){ await writeCart([]); }
+    async function clearCart(){
+      writeCartLocal([]);
+      await renderCart();
+    }
 
+    /* ======================= Checkout flow (kept same behavior) ======================= */
     async function proceedCheckout(){
       const cart = readCart();
       if (!cart.length) return;
@@ -729,7 +639,7 @@
       }
     }
 
-    /* ======================= Orders (your same version) ======================= */
+    /* ======================= Orders ======================= */
     async function renderOrders(){
       const ordersBox = document.getElementById('ordersBox');
       const hint = document.getElementById('ordersHint');
@@ -777,23 +687,45 @@
       }).join('');
     }
 
-    /* ======================= Boot ======================= */
-    document.addEventListener('DOMContentLoaded', async ()=>{
-      adoptQueryCartOnce();
-      adoptBackupCartOnce();
+    /* ======================= Live refresh when admin edits products ======================= */
+    async function refreshProductsAndCart(){
       await loadProductsForCart();
       await renderCart();
-      await syncCartFromDB();
+    }
+
+    function startRealtime(){
+      const channel = supa.channel('cart-live-products');
+
+      channel.on(
+        'postgres_changes',
+        { event:'*', schema:'public', table:'products' },
+        async (payload) => {
+          const cartSkus = new Set(readCart().map(i => i.sku));
+          const changedSku = norm(payload.new?.sku || payload.old?.sku || '');
+          if (!changedSku || !cartSkus.has(changedSku)) return;
+          await refreshProductsAndCart();
+        }
+      ).subscribe();
+    }
+
+    /* ======================= Boot ======================= */
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      await loadProductsForCart();
+      await renderCart();
       await renderOrders();
+      startRealtime();
     });
 
-    supa.auth.onAuthStateChange((_event, session)=>{
-      if (session?.user){ syncCartFromDB(); renderOrders(); }
-      else { renderOrders(); }
-    });
-
+    // Live update if another tab updates cart
     window.addEventListener('storage', (e)=>{
-      if (e.key === 'cart' || e.key === 'cart_ping') renderCart();
+      if (e.key === 'cart' || e.key === 'cart_ping'){
+        renderCart();
+      }
+    });
+
+    // If user signs in/out while on cart
+    supa.auth.onAuthStateChange(async ()=>{
+      await renderOrders();
     });
   </script>
 </body>
