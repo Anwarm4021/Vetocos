@@ -422,7 +422,7 @@
     </div>
   </div>
 
-  <!-- I18N + HELPER SCRIPTS -->
+  <!-- I18N -->
   <script>
   window.I18N = window.I18N || {
     en: {"ui.loading":"Loading…","nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.contact":"Contact","auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification","orders.myOrders":"My orders","nav.account":"Account settings","nav.cart":"Cart","nav.checkout":"Checkout","footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact","hero.badge":"Complementary feed — not medicine","products.title":"Our Product Range","products.lead":"Explore our selection designed to support urinary, liver, mobility, renal, and overall well-being.","grid.available":"Available","grid.unavailable":"Unavailable","grid.instock":" in stock","grid.out":"Out of stock","grid.add":"Add to Cart","grid.buy":"Buy Now","grid.more":"More details","grid.signin":"Sign in to buy","pd.title":"Product details","pd.form":"Form","pd.size":"Pack size","pd.ingr":"Key ingredients","pd.use":"Feeding guidance","pd.variant":"Variant","pd.quantity":"Qty","pd.price":"Price","pd.pdf":"Download PDF","pd.full":"View full page","pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U","pd.signInToSeePrice":"Sign in to see price","pd.vetOnly":"Verify vet status to see price","pd.variantMissing":"No variants","pd.notAvailable":"Not available","pd.editPrices":"Edit prices","pd.save":"Save","pd.cancel":"Cancel","pd.note":"Complementary feed — not a medicine. Always follow your vet’s advice.","ui.sku":"SKU: "},
@@ -594,6 +594,7 @@
     writeCart(items);
   }
 
+  /* Storage */
   const PRODUCT_BUCKET = "ProductFiles";
   function filePublicUrl(path){
     if(!path) return null;
@@ -601,7 +602,7 @@
     return "https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/" + PRODUCT_BUCKET + "/" + encodeURI(p);
   }
 
-  /* IMAGE FALLBACKS */
+  /* Helpers */
   function slugifyName(name=''){
     return String(name).trim().toLowerCase()
       .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
@@ -613,153 +614,29 @@
     img.src = next || 'images/placeholder.png';
   }
 
-  /* BUILT-IN CATALOG based on your previous Product1..12 pages */
+  /* FALLBACK catalog (local images + local PDFs) */
   const FALLBACK = {
-    "URO-CHIEN": {
-      name:"Urocline Chien",
-      image:"images/Product1.jpg",
-      category:"Urinary care",
-      form:"Chewable tablets",
-      size:"30 tablets",
-      ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C",
-      usage:"1 tablet / 10 kg daily or as advised by the veterinarian",
-      page:"Product1.html",
-      pdf:"pdf/Product1.pdf",
-      description:"Complementary feed supporting lower urinary tract function in dogs."
-    },
-    "HEP-AT": {
-      name:"Hepatiale",
-      image:"images/Product2.jpg",
-      category:"Liver support",
-      form:"Capsules",
-      size:"30 or 60 caps",
-      ingredients:"Silybin-phospholipid complex, SAMe, Vitamin E",
-      usage:"1 capsule / 10 kg daily for 4–8 weeks, or as recommended",
-      page:"Product2.html",
-      pdf:"pdf/Product2.pdf",
-      description:"Supports liver function in dogs and cats in case of chronic liver insufficiency."
-    },
-    "NEU-VIEW": {
-      name:"Neuroview",
-      image:"images/Product3.jpg",
-      category:"Cognitive",
-      form:"Soft chews",
-      size:"60 chews",
-      ingredients:"Phosphatidylserine, DHA, L-theanine, B-vitamins",
-      usage:"1 chew / 10 kg once daily",
-      page:"Product3.html",
-      pdf:"pdf/Product3.pdf",
-      description:"Complementary feed to support cognitive function and mental sharpness."
-    },
-    "MUNI-SAN": {
-      name:"Munisan",
-      image:"images/Product4.jpg",
-      category:"Immune support",
-      form:"Powder",
-      size:"120 g",
-      ingredients:"Beta-glucans, Colostrum, Zinc, Vitamin C",
-      usage:"Mix with food once daily for 2–4 weeks",
-      page:"Product4.html",
-      pdf:"pdf/Product4.pdf",
-      description:"Supports the natural immunity of dogs and cats."
-    },
-    "PILO-SAN": {
-      name:"Pilosan",
-      image:"images/Product5.jpg",
-      category:"Skin & coat",
-      form:"Twist-off capsules",
-      size:"60 / 90 twist-off",
-      ingredients:"Biotin, Omega-3 & 6 fatty acids, Zinc",
-      usage:"1 capsule / 5 kg daily",
-      page:"Product5.html",
-      pdf:"pdf/Product5.pdf",
-      description:"For healthy skin and shiny coat; supports dermal function."
-    },
-    "HEMO-VET": {
-      name:"HemoVet",
-      image:"images/Product6.jpg",
-      category:"Vitamins & minerals",
-      form:"Tablets",
-      size:"60 tabs",
-      ingredients:"Iron, Vitamin B12, Folic acid, Copper",
-      usage:"As directed by the veterinarian",
-      page:"Product6.html",
-      pdf:"pdf/Product6.pdf",
-      description:"Complementary feed to support haematopoiesis and vitality."
-    },
-    "URO-STONES": {
-      name:"Urocline Stones",
-      image:"images/Product7.jpg",
-      category:"Urinary care",
-      form:"Tablets",
-      size:"45 tablets",
-      ingredients:"DL-methionine, Potassium citrate, Cranberry",
-      usage:"Supports urinary environment to reduce crystal formation",
-      page:"Product7.html",
-      pdf:"pdf/Product7.pdf",
-      description:"For dogs and cats prone to urinary stones or crystals."
-    },
-    "VIT-MIN": {
-      name:"Vit&Min",
-      image:"images/Product8.jpg",
-      category:"Vitamins & minerals",
-      form:"Powder",
-      size:"200 g",
-      ingredients:"Balanced vitamins and trace minerals",
-      usage:"Daily multivitamin per body weight",
-      page:"Product8.html",
-      pdf:"pdf/Product8.pdf",
-      description:"Daily complementary feeding stuff for overall well-being."
-    },
-    "ART-ASUH": {
-      name:"Art-Asuh",
-      image:"images/Product9.jpg",
-      category:"Mobility / joints",
-      form:"Chewable tablets / twist-off",
-      size:"S / XL",
-      ingredients:"Glucosamine, Chondroitin, MSM, Hyaluronic acid",
-      usage:"Initial 4–6 weeks, then maintenance dose",
-      page:"Product9.html",
-      pdf:"pdf/Product9.pdf",
-      description:"Supports joint function in dogs and cats."
-    },
-    "CARBO-DIG": {
-      name:"Carbo Digest",
-      image:"images/Product10.jpg",
-      category:"Digestive comfort",
-      form:"Capsules",
-      size:"30 caps",
-      ingredients:"Activated charcoal, Prebiotics",
-      usage:"Short-term digestive comfort, 1–2 times daily",
-      page:"Product10.html",
-      pdf:"pdf/Product10.pdf",
-      description:"Helps digestive balance and reduces flatulence."
-    },
-    "RENO-SAN": {
-      name:"Renosan",
-      image:"images/Product11.jpg",
-      category:"Renal support",
-      form:"Powder",
-      size:"150 g",
-      ingredients:"Calcium carbonate, Chitosan, Omega-3",
-      usage:"Add to food daily to support renal function",
-      page:"Product11.html",
-      pdf:"pdf/Product11.pdf",
-      description:"Complementary feed to support kidney function."
-    },
-    "QAL-MIL": {
-      name:"Qalmil",
-      image:"images/Product12.jpg",
-      category:"Calming",
-      form:"Soft chews",
-      size:"60 chews",
-      ingredients:"L-tryptophan, L-theanine, Lemon balm",
-      usage:"Use before stressful events or daily",
-      page:"Product12.html",
-      pdf:"pdf/Product12.pdf",
-      description:"Helps dogs and cats to cope in stressful situations."
-    }
+    "URO-CHIEN": { name:"Urocline Chien", image:"images/Product1.jpg", category:"Urinary care", form:"Chewable tablets", size:"30 tablets", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tablet / 10 kg daily or as advised by the veterinarian", page:"Product1.html", pdf:"pdf/Product1.pdf", description:"Complementary feed supporting lower urinary tract function in dogs." },
+    "HEP-AT":    { name:"Hepatiale", image:"images/Product2.jpg", category:"Liver support", form:"Capsules", size:"30 or 60 caps", ingredients:"Silybin-phospholipid complex, SAMe, Vitamin E", usage:"1 capsule / 10 kg daily for 4–8 weeks, or as recommended", page:"Product2.html", pdf:"pdf/Product2.pdf", description:"Supports liver function in dogs and cats in case of chronic liver insufficiency." },
+    "NEU-VIEW":  { name:"Neuroview", image:"images/Product3.jpg", category:"Cognitive", form:"Soft chews", size:"60 chews", ingredients:"Phosphatidylserine, DHA, L-theanine, B-vitamins", usage:"1 chew / 10 kg once daily", page:"Product3.html", pdf:"pdf/Product3.pdf", description:"Complementary feed to support cognitive function and mental sharpness." },
+    "MUNI-SAN":  { name:"Munisan", image:"images/Product4.jpg", category:"Immune support", form:"Powder", size:"120 g", ingredients:"Beta-glucans, Colostrum, Zinc, Vitamin C", usage:"Mix with food once daily for 2–4 weeks", page:"Product4.html", pdf:"pdf/Product4.pdf", description:"Supports the natural immunity of dogs and cats." },
+    "PILO-SAN":  { name:"Pilosan", image:"images/Product5.jpg", category:"Skin & coat", form:"Twist-off capsules", size:"60 / 90 twist-off", ingredients:"Biotin, Omega-3 & 6 fatty acids, Zinc", usage:"1 capsule / 5 kg daily", page:"Product5.html", pdf:"pdf/Product5.pdf", description:"For healthy skin and shiny coat; supports dermal function." },
+    "HEMO-VET":  { name:"HemoVet", image:"images/Product6.jpg", category:"Vitamins & minerals", form:"Tablets", size:"60 tabs", ingredients:"Iron, Vitamin B12, Folic acid, Copper", usage:"As directed by the veterinarian", page:"Product6.html", pdf:"pdf/Product6.pdf", description:"Complementary feed to support haematopoiesis and vitality." },
+    "URO-STONES":{ name:"Urocline Stones", image:"images/Product7.jpg", category:"Urinary care", form:"Tablets", size:"45 tablets", ingredients:"DL-methionine, Potassium citrate, Cranberry", usage:"Supports urinary environment to reduce crystal formation", page:"Product7.html", pdf:"pdf/Product7.pdf", description:"For dogs and cats prone to urinary stones or crystals." },
+    "VIT-MIN":   { name:"Vit&Min", image:"images/Product8.jpg", category:"Vitamins & minerals", form:"Powder", size:"200 g", ingredients:"Balanced vitamins and trace minerals", usage:"Daily multivitamin per body weight", page:"Product8.html", pdf:"pdf/Product8.pdf", description:"Daily complementary feeding stuff for overall well-being." },
+    "ART-ASUH":  { name:"Art-Asuh", image:"images/Product9.jpg", category:"Mobility / joints", form:"Chewable tablets / twist-off", size:"S / XL", ingredients:"Glucosamine, Chondroitin, MSM, Hyaluronic acid", usage:"Initial 4–6 weeks, then maintenance dose", page:"Product9.html", pdf:"pdf/Product9.pdf", description:"Supports joint function in dogs and cats." },
+    "CARBO-DIG": { name:"Carbo Digest", image:"images/Product10.jpg", category:"Digestive comfort", form:"Capsules", size:"30 caps", ingredients:"Activated charcoal, Prebiotics", usage:"Short-term digestive comfort, 1–2 times daily", page:"Product10.html", pdf:"pdf/Product10.pdf", description:"Helps digestive balance and reduces flatulence." },
+    "RENO-SAN":  { name:"Renosan", image:"images/Product11.jpg", category:"Renal support", form:"Powder", size:"150 g", ingredients:"Calcium carbonate, Chitosan, Omega-3", usage:"Add to food daily to support renal function", page:"Product11.html", pdf:"pdf/Product11.pdf", description:"Complementary feed to support kidney function." },
+    "QAL-MIL":   { name:"Qalmil", image:"images/Product12.jpg", category:"Calming", form:"Soft chews", size:"60 chews", ingredients:"L-tryptophan, L-theanine, Lemon balm", usage:"Use before stressful events or daily", page:"Product12.html", pdf:"pdf/Product12.pdf", description:"Helps dogs and cats to cope in stressful situations." }
   };
+
+  /* ✅ NEW: fallback matcher (SKU OR name) */
+  function fallbackBySkuOrName(r){
+    if (r?.sku && FALLBACK[r.sku]) return FALLBACK[r.sku];
+    const nm = (r?.name || '').toLowerCase().trim();
+    const hit = Object.values(FALLBACK).find(x => (x.name || '').toLowerCase().trim() === nm);
+    return hit || null;
+  }
 
   /* Variant hints */
   const VARIANT_HINTS = {
@@ -1024,33 +901,35 @@
         variant_code: code,
         _uiLabel: prettyVariantLabel(sku, code, v.name || v.label || ''),
         label: v.name || v.label || '',
-        price_ppv:        (v.price_ppv        ?? v.ppv        ?? null) * 1 || (v.price_ppv===0||v.ppv===0 ? 0 : null),
-        price_pv_minus10: (v.price_pv_minus10 ?? v.pv_minus_10u ?? null) * 1 || (v.price_pv_minus10===0||v.pv_minus_10u===0 ? 0 : null),
-        price_pv_plus10:  (v.price_pv_plus10  ?? v.pv_plus_10u  ?? null) * 1 || (v.price_pv_plus10===0||v.pv_plus_10u===0 ? 0 : null),
+        price_ppv:        (v.price_ppv        ?? v.ppv        ?? null),
+        price_pv_minus10: (v.price_pv_minus10 ?? v.pv_minus_10u ?? null),
+        price_pv_plus10:  (v.price_pv_plus10  ?? v.pv_plus_10u  ?? null),
         currency: v.currency || 'MAD'
       };
     });
     return CURRENT_VARIANTS;
   }
 
-function imageCandidates(spec){
-  const out = [];
-  if (spec.image_path) out.push(filePublicUrl(spec.image_path));
-  if (spec.image_url)  out.push(spec.image_url);
+  /* ✅ Image candidates: (1) Supabase storage (2) image_url (3) local images by sku/name (4) fallback image (5) placeholder */
+  function imageCandidates(spec){
+    const out = [];
+    if (spec.image_path) out.push(filePublicUrl(spec.image_path));
+    if (spec.image_url)  out.push(spec.image_url);
 
-  const sku = (spec.sku || '').toLowerCase();
-  const nm  = slugifyName(spec.name || '');
+    const sku = (spec.sku || '').toLowerCase();
+    const nm  = slugifyName(spec.name || '');
 
-  // IMPORTANT: no leading slash
-  [
-    `images/${sku}.jpg`, `images/${sku}.png`,
-    `images/${nm}.jpg`,  `images/${nm}.png`,
-  ].forEach(u => out.push(u));
+    // IMPORTANT: no leading slash
+    [
+      `images/${sku}.jpg`, `images/${sku}.png`,
+      `images/${nm}.jpg`,  `images/${nm}.png`
+    ].forEach(u => out.push(u));
 
-  if (spec.image) out.push(spec.image);
-  out.push('images/placeholder.png');
-  return Array.from(new Set(out.filter(Boolean)));
-}
+    if (spec.image) out.push(spec.image);     // fallback local image like images/Product1.jpg
+    out.push('images/placeholder.png');
+
+    return Array.from(new Set(out.filter(Boolean)));
+  }
 
   async function openPD(sku, preselectVariant=null){
     ensurePDRefs();
@@ -1115,66 +994,89 @@ function imageCandidates(spec){
       .select('sku,name,description,stock_qty,available,image_path,image_url,pdf_path,sort_order,updated_at,price_ppv,price_pv_minus10,price_pv_plus10,variants')
       .order('sort_order', { ascending:true, nullsFirst:false })
       .order('name', { ascending:true });
+
     if (!error && Array.isArray(data)) rows = data;
+
+    // if table empty, use FALLBACK as “rows”
     if (!rows.length){
       rows = Object.keys(FALLBACK).map((sku, i)=>({
-        sku, name: FALLBACK[sku].name, description: '', stock_qty: 999, available: true,
-        image_path: null, pdf_path: null, sort_order: i+1
+        sku, name: FALLBACK[sku].name, description: FALLBACK[sku].description || '',
+        stock_qty: 999, available: true,
+        image_path: null, image_url: null, pdf_path: null, sort_order: i+1,
+        price_ppv: null, price_pv_minus10: null, price_pv_plus10: null, variants: []
       }));
     }
+
     PRODUCT_CACHE = {};
     rows.forEach(r=>{
-      const f = FALLBACK[r.sku] || {};
+      const f = fallbackBySkuOrName(r) || {};
+
       PRODUCT_CACHE[r.sku] = {
         sku: r.sku,
         name: r.name || f.name || r.sku,
         description: r.description || f.description || '',
         stock_qty: Number(r.stock_qty||0),
         available: r.available ?? true,
+
         image_path: r.image_path || null,
         image_url:  r.image_url  || null,
-        pdf_path: r.pdf_path || null,
+        pdf_path:   r.pdf_path   || null,
+
         category: f.category || '',
         form: f.form || '',
         size: f.size || '',
         ingredients: f.ingredients || '',
         usage: f.usage || '',
+
+        // ✅ critical: keep fallback image/pdf/page even if Supabase has different SKU format
         image: f.image || '',
         page: f.page || '',
-        pdf: f.pdf || '',
+        pdf:  f.pdf  || '',
+
         price_ppv: r.price_ppv ?? null,
         price_pv_minus10: r.price_pv_minus10 ?? null,
         price_pv_plus10: r.price_pv_plus10 ?? null,
-        variants: Array.isArray(r.variants) ? r.variants : [],
+        variants: Array.isArray(r.variants) ? r.variants : []
       };
     });
+
     return rows;
+  }
+
+  /* ✅ Fix: keep 0 prices (don’t convert 0 to null) */
+  function toNumOrNull(x){
+    if (x === 0 || x === '0') return 0;
+    const n = Number(x);
+    return Number.isFinite(n) ? n : null;
   }
 
   async function getVariantsForSku(sku){
     const prod = PRODUCT_CACHE[sku] || {};
     const list = Array.isArray(prod.variants) ? prod.variants : [];
+
     if (!list.length) {
       const label = 'Default';
       return VARIANTS_CACHE[sku] = [{
         variant_code: 'default',
         _uiLabel: label,
         label,
-        price_ppv: prod.price_ppv ?? null,
-        price_pv_minus10: prod.price_pv_minus10 ?? null,
-        price_pv_plus10: prod.price_pv_plus10 ?? null,
+        price_ppv: toNumOrNull(prod.price_ppv),
+        price_pv_minus10: toNumOrNull(prod.price_pv_minus10),
+        price_pv_plus10: toNumOrNull(prod.price_pv_plus10),
         currency: 'MAD'
       }];
     }
+
     const normalized = list.map((v, i) => ({
       variant_code: (v.code || v.variant_code || v.name || `v${i}`).toString(),
       _uiLabel: prettyVariantLabel(sku, (v.code||v.variant_code||v.name||'').toString(), v.name || v.label || ''),
       label: v.name || v.label || '',
-      price_ppv: Number(v.price_ppv ?? 0) || null,
-      price_pv_minus10: Number(v.price_pv_minus10 ?? 0) || null,
-      price_pv_plus10: Number(v.price_pv_plus10 ?? 0) || null,
+      price_ppv: toNumOrNull(v.price_ppv),
+      price_pv_minus10: toNumOrNull(v.price_pv_minus10),
+      price_pv_plus10: toNumOrNull(v.price_pv_plus10),
       currency: v.currency || 'MAD'
     }));
+
     VARIANTS_CACHE[sku] = normalized;
     return normalized;
   }
@@ -1186,6 +1088,7 @@ function imageCandidates(spec){
     const { data:{ session } } = await supa.auth.getSession();
     IS_LOGGED_IN = !!session?.user;
     IS_VET = false;
+
     if (session?.user){
       try{
         const { data:p } = await supa.from('profiles').select('is_vet_verified').eq('id', session.user.id).maybeSingle();
@@ -1285,5 +1188,3 @@ function imageCandidates(spec){
   </script>
 </body>
 </html>
-
-
