@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>VetoCos | Vet verification</title>
+<title>VetoCos | Vet verification & Checkout</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="Submit your professional credentials to unlock purchasing on VetoCos." />
+<meta name="description" content="Vet verification + checkout in one page." />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <style>
 :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--radius:16px;--brand:#6dd5ff;--brand2:#83f0a5;--shadow:0 10px 30px rgba(0,0,0,.25)}
 *{box-sizing:border-box}
@@ -61,28 +63,9 @@ footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18)
 #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
        border-radius:12px;padding:10px 14px;color:#fff;max-width:70vw;display:none;z-index:9999}
 
-/* Modals */
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:90}
-.modal.open{display:flex}
-.sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
-.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
-.sheet-title{margin:0;font-size:1.1rem}
-.close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
-.sheet-body{padding:16px}
-.pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
-@media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
-.field{display:flex;flex-direction:column;gap:6px}
-.input,.select,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text);outline:none}
-.textarea{min-height:140px;resize:vertical}
-.hint{font-size:12px;color:var(--muted)}
-.actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
-.divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
-
-/* RTL */
-body.rtl .wrap, body.rtl main, body.rtl table, body.rtl .pro-grid{direction:rtl}
-body.rtl th, body.rtl td{text-align:inherit}
+/* Checkout */
+.notice{padding:10px;border:1px dashed rgba(141,158,199,.35);border-radius:12px;background:rgba(255,255,255,.03);margin:10px 0}
 </style>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -95,11 +78,9 @@ body.rtl th, body.rtl td{text-align:inherit}
       <span>VetoCos</span>
     </div>
     <nav class="links">
-      <a class="btn" href="Products.html" data-i18n="actions.products">Products</a>
-      <a class="btn" href="cart.html" data-i18n="actions.cart">Cart</a>
-      <a class="btn" href="account.html" data-i18n="actions.account">My Account</a>
-      <a id="checkoutBtnTop" class="btn" href="checkout.html" style="display:none" data-i18n="actions.checkout">Checkout</a>
-      <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
+      <a class="btn" href="Products.html">Products</a>
+      <a class="btn" href="cart.html">Cart</a>
+      <a class="btn" href="account.html">My Account</a>
       <select id="lang-switch" aria-label="Language">
         <option value="en">English</option>
         <option value="fr">Français</option>
@@ -112,632 +93,466 @@ body.rtl th, body.rtl td{text-align:inherit}
 
 <main class="wrap">
   <div class="row" style="justify-content:space-between;margin-bottom:12px">
-    <h1 data-i18n="page.title">Vet verification</h1>
-    <a id="checkoutBtnRight" class="btn" href="checkout.html" style="display:none" data-i18n="actions.gotoCheckout">Go to Checkout</a>
+    <h1>Vet verification & Checkout</h1>
+    <div class="row">
+      <span class="badge" id="purchaseModeBadge" title="How approvals behave">Mode: per-item approvals</span>
+    </div>
   </div>
 
   <!-- Verification card -->
   <div class="card">
     <div class="rowbar">
-      <p class="kicker" data-i18n="intro.kicker">Provide your credentials to unlock purchasing. Once approved, the checkout button will appear.</p>
+      <p class="kicker">Provide your credentials to unlock purchasing. If admin enables global access, you won't need per-product approvals.</p>
     </div>
 
     <!-- Status area -->
     <div id="statusBox" class="grid2" style="display:none">
       <div>
-        <div class="small muted" data-i18n="status.currentLabel">Current status</div>
-        <div id="statusPill" class="badge pend" aria-live="polite" data-i18n="status.pending">pending</div>
+        <div class="small muted">Current status</div>
+        <div id="statusPill" class="badge pend" aria-live="polite">pending</div>
       </div>
       <div id="previewWrap" class="preview" style="display:none">
-        <a id="previewLink" class="btn small" target="_blank" rel="noopener" data-i18n="buttons.openFile">Open uploaded file</a>
-        <button id="replaceBtn" class="btn small" type="button" data-i18n="buttons.replace">Replace file</button>
-        <button id="withdrawBtn" class="btn small" type="button" style="display:none" data-i18n="buttons.withdraw">Withdraw application</button>
+        <a id="previewLink" class="btn small" target="_blank" rel="noopener">Open uploaded file</a>
+        <button id="replaceBtn" class="btn small" type="button">Replace file</button>
+        <button id="withdrawBtn" class="btn small" type="button" style="display:none">Withdraw application</button>
       </div>
     </div>
 
-    <div class="hr" role="separator" aria-hidden="true"></div>
+    <div class="hr"></div>
 
-    <label for="idnum" data-i18n="labels.id">Identity number</label>
-    <input id="idnum" type="text" autocomplete="off" inputmode="text" data-i18n="ph.id" data-i18n-attr="placeholder" placeholder="e.g., License / Registration / ID" />
+    <label for="idnum">Identity number</label>
+    <input id="idnum" type="text" autocomplete="off" inputmode="text" placeholder="e.g., License / Registration / ID" />
 
-    <label for="file" data-i18n="labels.file">Diploma / professional card (PDF/JPG/PNG, max 10 MB)</label>
+    <label for="file">Diploma / professional card (PDF/JPG/PNG, max 10 MB)</label>
     <input id="file" type="file" accept=".pdf,.png,.jpg,.jpeg" />
 
-    <button class="btn" id="submit" type="button" data-i18n="buttons.submit">Submit for review</button>
+    <button class="btn" id="submit" type="button">Submit for review</button>
     <p id="msg" class="muted" aria-live="polite"></p>
 
-    <p class="help kicker" data-i18n="messages.emailOnChange">We’ll email you when your application status changes. If you update the file or ID, the status returns to <em>pending</em> for re-review.</p>
-  </div>
-
-  <!-- Admin notices to user -->
-  <div id="globalNotice" class="card" style="display:none">
-    <div class="kicker" style="margin-bottom:6px" data-i18n="notices.adminTitle">Message from admin</div>
-    <div id="globalNoticeBody"></div>
-  </div>
-
-  <div id="appNotice" class="card" style="display:none">
-    <div class="kicker" style="margin-bottom:6px" data-i18n="notices.appTitle">Note about your verification</div>
-    <div id="appNoticeBody"></div>
+    <p class="help kicker">
+      If you update the file or ID, the status returns to <em>pending</em> for re-review.
+    </p>
   </div>
 
   <!-- Mini Cart -->
-  <h2 class="section-title" data-i18n="cart.title">My Cart (quick edit)</h2>
-  <div class="card" id="cartBox" data-i18n="general.loading">Loading…</div>
+  <h2 style="margin-top:18px">My Cart (quick edit)</h2>
+  <div class="card" id="cartBox">Loading…</div>
 
-  <!-- Product Browser (add more products) -->
-  <h2 class="section-title" data-i18n="add.title">Add more products</h2>
+  <!-- Checkout (merged here) -->
+  <h2 style="margin-top:18px">Checkout</h2>
+  <div class="grid2">
+    <div class="card">
+      <div class="rowbar">
+        <div>
+          <div class="kicker">Prices + totals show here before placing your order.</div>
+          <div id="checkoutIssues" class="notice small" style="display:none"></div>
+        </div>
+        <div class="row">
+          <span class="badge" id="checkoutEligibility">Eligibility: —</span>
+        </div>
+      </div>
+      <div id="checkoutCart" class="muted">Loading…</div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 10px">Summary</h2>
+      <div class="row small"><span>Items</span><strong id="sumItems">0</strong></div>
+      <div class="row small"><span>Estimated total</span><strong id="sumTotal">—</strong></div>
+      <button id="placeOrder" class="btn" style="width:100%;margin-top:12px" disabled>Place order</button>
+      <div id="placeMsg" class="muted" style="margin-top:8px" aria-live="polite"></div>
+      <div class="small muted" style="margin-top:10px">
+        ✅ After a successful order, your approval quantity is reduced (or removed).<br>
+        ♾️ If admin sets approval quantity = <strong>-1</strong>, it never expires for that product.
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Browser -->
+  <h2 style="margin-top:18px">Add more products</h2>
   <div class="card">
     <div class="rowbar" style="margin-bottom:10px">
-      <input id="prodSearch" class="search" data-i18n="add.searchPH" data-i18n-attr="placeholder" placeholder="Search products by name or SKU">
-      <span class="kicker" data-i18n="messages.stockNote">Only available items are shown. Stock limits apply. Items require approval.</span>
+      <input id="prodSearch" class="search" placeholder="Search products by name or SKU">
+      <span class="kicker">Only available items are shown. Stock limits apply. All items require admin approval unless you have global access.</span>
     </div>
-    <div id="prodList" class="muted" data-i18n="general.loading">Loading…</div>
+    <div id="prodList" class="muted">Loading…</div>
   </div>
 
   <!-- My approval requests -->
-  <h2 class="section-title" data-i18n="approvals.title">My approval requests</h2>
-  <div class="card" id="myApprovalsBox" data-i18n="general.loading">Loading…</div>
+  <h2 style="margin-top:18px">My approval requests</h2>
+  <div class="card" id="myApprovalsBox">Loading…</div>
 
   <!-- Orders -->
-  <h2 class="section-title" data-i18n="orders.title">My Orders</h2>
-  <div class="card" id="ordersBox" data-i18n="general.loading">Loading…</div>
-
-  <!-- Reviews -->
-  <h2 class="section-title" data-i18n="reviews.title">Write a Review</h2>
-  <div class="card">
-    <div class="grid3">
-      <label data-i18n="reviews.product">Product purchased
-        <select id="revSku"><option value="" data-i18n="reviews.select">Select a product…</option></select>
-      </label>
-      <label data-i18n="reviews.rating">Rating
-        <select id="revRating">
-          <option value="5">5 – Excellent</option>
-          <option value="4">4 – Good</option>
-          <option value="3">3 – Okay</option>
-          <option value="2">2 – Poor</option>
-          <option value="1">1 – Bad</option>
-        </select>
-      </label>
-      <div style="display:flex;align-items:flex-end">
-        <a id="revViewProduct" class="btn ghost" href="Products.html" target="_blank" rel="noopener" style="margin-top:0" data-i18n="buttons.viewProduct">View product</a>
-      </div>
-    </div>
-    <label data-i18n="reviews.comment">Comment
-      <textarea id="revComment" data-i18n="reviews.commentPH" data-i18n-attr="placeholder" placeholder="Share your experience… (optional)"></textarea>
-    </label>
-    <button class="btn" id="revSubmit" data-i18n="reviews.submit">Submit review</button>
-    <div id="revMsg" class="muted"></div>
-  </div>
+  <h2 style="margin-top:18px">My Orders</h2>
+  <div class="card" id="ordersBox">Loading…</div>
 </main>
 
 <footer>
   <div class="wrap">
-    © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals. Not intended to diagnose, treat, cure, or prevent disease.</span>
+    © <span id="y"></span> VetoCos
     <div class="footer-links">
-      <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
-      <a href="#" onclick="openContact();return false;" data-i18n="footer.contact">Contact</a>
+      <a href="Products.html">Products</a>
+      <a href="cart.html">Cart</a>
+      <a href="account.html">My Account</a>
     </div>
   </div>
 </footer>
 
-<!-- CONTACT MODAL -->
-<div id="contactModal" class="modal" aria-hidden="true">
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
-    <div class="sheet-head">
-      <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
-      <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
-    </div>
-    <div class="sheet-body">
-      <div class="pro-grid">
-        <form id="contactForm" onsubmit="return sendMailto(event)">
-          <div class="field">
-            <label for="topic" data-i18n="form.topic">Topic</label>
-            <select id="topic" name="topic" class="select">
-              <option value="product" data-i18n="form.topicProduct">Product question</option>
-              <option value="availability" data-i18n="form.topicAvailability">Availability / Where to buy</option>
-              <option value="order" data-i18n="form.topicOrder">Order / Delivery</option>
-              <option value="feedback" data-i18n="form.topicFeedback">Feedback</option>
-              <option value="other" data-i18n="form.topicOther">Other</option>
-            </select>
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
-            <div class="field">
-              <label for="name" data-i18n="form.name">Name</label>
-              <input id="name" name="name" class="input" autocomplete="name" required
-                     data-i18n="form.namePH" data-i18n-attr="placeholder" placeholder="Full name">
-            </div>
-            <div class="field">
-              <label for="email2" data-i18n="form.email">Email</label>
-              <input id="email2" name="email" type="email" class="input" autocomplete="email" required
-                     inputmode="email" data-i18n="form.emailPH" data-i18n-attr="placeholder" placeholder="name@example.com">
-            </div>
-          </div>
-
-          <div class="field" style="margin-top:10px">
-            <label for="subject" data-i18n="form.subject">Subject</label>
-            <input id="subject" name="subject" class="input" maxlength="120" required
-                   data-i18n="form.subjectPH" data-i18n-attr="placeholder" placeholder="Question about a product…">
-          </div>
-
-          <div class="field" style="margin-top:10px">
-            <label for="message" data-i18n="form.message">Message / Comments</label>
-            <textarea id="message" name="message" class="textarea" maxlength="1200" required
-                      data-i18n="form.messagePH" data-i18n-attr="placeholder" placeholder="Write your help request or comment…"></textarea>
-            <div class="hint"><span id="msgCount">0</span>/1200</div>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="field">
-            <label style="display:flex;gap:8px;align-items:flex-start">
-              <input type="checkbox" id="consent" required>
-              <span data-i18n="form.consent">I consent to VetoCos using my details to respond to this enquiry.</span>
-            </label>
-            <span class="hint" data-i18n="form.privacyNote">Your message is sent via your email app; we don't store it on this site.</span>
-          </div>
-
-          <div class="actions-fw">
-            <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
-            <button class="contact-btn" type="submit" data-i18n="form.send">Send</button>
-          </div>
-        </form>
-
-        <div class="card" style="height:fit-content">
-          <h3 data-i18n="contact.reach">Reach us</h3>
-          <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
-          <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
-          <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
-          <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
-          <p><strong data-i18n="contact.hours">Hours:</strong> <span data-i18n="contact.hoursVal">Mon–Fri, 9:00–17:00</span></p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- PRIVACY & POLICY MODAL -->
-<div id="policyModal" class="modal" aria-hidden="true">
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
-    <div class="sheet-head">
-      <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
-      <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
-    </div>
-    <div class="sheet-body policy-body">
-      <h3 data-i18n="policy.overviewTitle">Overview</h3>
-      <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.</p>
-
-      <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
-      <ul>
-        <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
-        <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
-      </ul>
-
-      <h3 data-i18n="policy.useTitle">How we use data</h3>
-      <ul>
-        <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
-        <li data-i18n="policy.use2">We do not sell personal data.</li>
-      </ul>
-
-      <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
-      <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
-
-      <h3 data-i18n="policy.choiceTitle">Your choices</h3>
-      <ul>
-        <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
-        <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
-      </ul>
-
-      <h3 data-i18n="policy.contactTitle">Contact</h3>
-      <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
-
-      <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
-    </div>
-  </div>
-</div>
-
 <div id="toast"></div>
 
 <script>
-/* ================= i18n dictionary ================= */
-const I18N = {
-  en: {
-    "actions.products":"Products","actions.cart":"Cart","actions.account":"My Account","actions.checkout":"Checkout","actions.gotoCheckout":"Go to Checkout",
-    "nav.contact":"Contact","footer.tag":"Complementary feed for companion animals. Not intended to diagnose, treat, cure, or prevent disease.","footer.policy":"Privacy & Policy","footer.contact":"Contact",
-    "page.title":"Vet verification",
-    "intro.kicker":"Provide your credentials to unlock purchasing. Once approved, the checkout button will appear.",
-    "status.currentLabel":"Current status",
-    "status.pending":"pending","status.approved":"approved","status.rejected":"rejected","status.withdrawn":"withdrawn",
-    "labels.id":"Identity number",
-    "labels.file":"Diploma / professional card (PDF/JPG/PNG, max 10 MB)",
-    "ph.id":"e.g., License / Registration / ID",
-    "buttons.submit":"Submit for review","buttons.replace":"Replace file","buttons.withdraw":"Withdraw application","buttons.openFile":"Open uploaded file","buttons.viewProduct":"View product",
-    "messages.emailOnChange":"We’ll email you when your application status changes. If you update the file or ID, the status returns to <em>pending</em> for re-review.",
-    "messages.stockNote":"Only available items are shown. Stock limits apply. Items require approval.",
-    "messages.cartEmpty":"Cart is empty. You can add from the products list below.",
-    "messages.cartItems":"Total items:",
-    "notices.adminTitle":"Message from admin","notices.appTitle":"Note about your verification",
-    "cart.title":"My Cart (quick edit)",
-    "add.title":"Add more products","add.searchPH":"Search products by name or SKU",
-    "approvals.title":"My approval requests",
-    "orders.title":"My Orders",
-    "reviews.title":"Write a Review","reviews.product":"Product purchased","reviews.select":"Select a product…","reviews.rating":"Rating","reviews.comment":"Comment","reviews.commentPH":"Share your experience… (optional)","reviews.submit":"Submit review","reviews.thanks":"Thanks for your review!","reviews.choose":"Choose a product.",
-    "general.loading":"Loading…","general.signin":"Please sign in.","general.receipt":"Receipt","general.instock":"In stock:","general.qty":"Qty","general.action":"Action",
-    "badges.requires":"Requires verification","badges.open":"Open","badges.pending":"Pending",
-    "toasts.cartUpdated":"Cart updated","toasts.approvalSubmitted":"Approval request submitted","toasts.cancelled":"Request cancelled",
-    "errors.fileTooLarge":"File too large (max 10 MB).","errors.fileType":"Unsupported file type.","errors.nothingToUpdate":"Nothing to update. Change ID and/or choose a new file.","errors.enterIdAndFile":"Please enter ID number and choose a file.","errors.signinFirst":"Please sign in first.","errors.loadOrders":"Could not load orders.",
-    "errors.noApproved":"Not approved yet.","errors.badQty":"Quantity must be greater than zero.","errors.badFile":"Please upload a PDF or image."
-  },
-  fr: {
-    "actions.products":"Produits","actions.cart":"Panier","actions.account":"Mon compte","actions.checkout":"Paiement","actions.gotoCheckout":"Aller au paiement",
-    "nav.contact":"Contact","footer.tag":"Complément alimentaire pour animaux de compagnie. Non destiné à diagnostiquer, traiter، guérir ou prévenir une maladie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
-    "page.title":"Vérification vétérinaire",
-    "intro.kicker":"Fournissez vos justificatifs pour débloquer l’achat. Une fois approuvé، le bouton de paiement s’affichera.",
-    "status.currentLabel":"Statut actuel",
-    "status.pending":"en attente","status.approved":"approuvé","status.rejected":"refusé","status.withdrawn":"retiré",
-    "labels.id":"Numéro d’identification",
-    "labels.file":"Diplôme / carte professionnelle (PDF/JPG/PNG, 10 Mo max)","ph.id":"ex. : Licence / Enregistrement / ID",
-    "buttons.submit":"Soumettre à la revue","buttons.replace":"Remplacer le fichier","buttons.withdraw":"Retirer la demande","buttons.openFile":"Ouvrir le fichier","buttons.viewProduct":"Voir le produit",
-    "messages.emailOnChange":"Nous vous informerons par e-mail des changements d’état. Toute mise à jour renvoie le statut à <em>en attente</em>.",
-    "messages.stockNote":"Seuls les articles disponibles sont affichés. Limites de stock. Les articles nécessitent une approbation.",
-    "messages.cartEmpty":"Votre panier est vide. Ajoutez des produits ci-dessous.","messages.cartItems":"Articles au total :",
-    "notices.adminTitle":"Message de l’administrateur","notices.appTitle":"Note concernant votre vérification",
-    "cart.title":"Mon panier (édition rapide)","add.title":"Ajouter des produits","add.searchPH":"Rechercher par nom ou SKU",
-    "approvals.title":"Mes demandes d’approbation","orders.title":"Mes commandes","reviews.title":"Rédiger un avis","reviews.product":"Produit acheté","reviews.select":"Sélectionnez un produit…","reviews.rating":"Note","reviews.comment":"Commentaire","reviews.commentPH":"Partagez votre expérience… (facultatif)","reviews.submit":"Envoyer l’avis","reviews.thanks":"Merci pour votre avis !","reviews.choose":"Choisissez un produit.",
-    "general.loading":"Chargement…","general.signin":"Veuillez vous connecter.","general.receipt":"Reçu","general.instock":"En stock :","general.qty":"Qté","general.action":"Action",
-    "badges.requires":"Vérification requise","badges.pending":"En attente",
-    "toasts.cartUpdated":"Panier mis à jour","toasts.approvalSubmitted":"Demande d’approbation envoyée","toasts.cancelled":"Demande annulée",
-    "errors.fileTooLarge":"Fichier trop volumineux (10 Mo max).","errors.fileType":"Type de fichier non pris en charge.","errors.nothingToUpdate":"Rien à mettre à jour.","errors.enterIdAndFile":"Veuillez saisir l’ID et choisir un fichier.","errors.signinFirst":"Veuillez vous connecter d’abord.","errors.loadOrders":"Impossible de charger les commandes.","errors.noApproved":"Pas encore approuvé.","errors.badQty":"La quantité doit être supérieure à zéro.","errors.badFile":"Veuillez téléverser un PDF ou une image."
-  },
-  es: {
-    "actions.products":"Productos","actions.cart":"Carrito","actions.account":"Mi cuenta","actions.checkout":"Pagar","actions.gotoCheckout":"Ir a pagar",
-    "nav.contact":"Contacto","footer.tag":"Alimento complementario para animales de compañía. No destinado a diagnosticar، tratar، curar ni prevenir enfermedades.","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
-    "page.title":"Verificación veterinaria",
-    "intro.kicker":"Proporcione sus credenciales para habilitar las compras. Una vez aprobado، aparecerá el botón de pago.",
-    "status.currentLabel":"Estado actual",
-    "status.pending":"pendiente","status.approved":"aprobado","status.rejected":"rechazado","status.withdrawn":"retirado",
-    "labels.id":"Número de identificación",
-    "labels.file":"Diploma / tarjeta profesional (PDF/JPG/PNG، máx. 10 MB)","ph.id":"p. ej., Licencia / Registro / ID",
-    "buttons.submit":"Enviar para revisión","buttons.replace":"Reemplazar archivo","buttons.withdraw":"Retirar solicitud","buttons.openFile":"Abrir archivo","buttons.viewProduct":"Ver producto",
-    "messages.emailOnChange":"Le avisaremos por correo cuando cambie el estado. Si actualiza el archivo o el ID، vuelve a <em>pendiente</em> para revisión.",
-    "messages.stockNote":"Solo se muestran artículos disponibles. Se aplican límites de stock. Los artículos requieren aprobación.",
-    "messages.cartEmpty":"El carrito está vacío. Agregue productos abajo.","messages.cartItems":"Artículos totales:",
-    "notices.adminTitle":"Mensaje de administración","notices.appTitle":"Nota sobre su verificación",
-    "cart.title":"Mi carrito (edición rápida)","add.title":"Añadir más productos","add.searchPH":"Buscar por nombre o SKU",
-    "approvals.title":"Mis solicitudes de aprobación","orders.title":"Mis pedidos","reviews.title":"Escribir una reseña","reviews.product":"Producto comprado","reviews.select":"Selecciona un producto…","reviews.rating":"Valoración","reviews.comment":"Comentario","reviews.commentPH":"Comparte tu experiencia… (opcional)","reviews.submit":"Enviar reseña","reviews.thanks":"¡Gracias por tu reseña!","reviews.choose":"Elige un producto.",
-    "general.loading":"Cargando…","general.signin":"Inicia sesión.","general.receipt":"Recibo","general.instock":"En stock:","general.qty":"Cant.","general.action":"Acción",
-    "badges.requires":"Requiere verificación","badges.pending":"Pendiente",
-    "toasts.cartUpdated":"Carrito actualizado","toasts.approvalSubmitted":"Solicitud enviada","toasts.cancelled":"Solicitud cancelada",
-    "errors.fileTooLarge":"Archivo demasiado grande (máx. 10 MB).","errors.fileType":"Tipo de archivo no compatible.","errors.nothingToUpdate":"Nada que actualizar.","errors.enterIdAndFile":"Introduce el ID y el archivo.","errors.signinFirst":"Primero inicia sesión.","errors.loadOrders":"No se pudieron cargar los pedidos.","errors.noApproved":"Aún no aprobado.","errors.badQty":"La cantidad debe ser mayor que cero.","errors.badFile":"Sube un PDF o una imagen."
-  },
-  ar: {
-    "actions.products":"المنتجات","actions.cart":"السلة","actions.account":"حسابي","actions.checkout":"إتمام الشراء","actions.gotoCheckout":"اذهب للدفع",
-    "nav.contact":"اتصل بنا","footer.tag":"غذاء تكميلي للحيوانات الأليفة. غير مخصّص للتشخيص أو العلاج أو الشفاء أو الوقاية.","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
-    "page.title":"التحقق البيطري",
-    "intro.kicker":"قدّم بياناتك المهنية لفتح الشراء. عند الموافقة سيظهر زر الدفع.",
-    "status.currentLabel":"الحالة الحالية",
-    "status.pending":"قيد المراجعة","status.approved":"مقبول","status.rejected":"مرفوض","status.withdrawn":"مسحوب",
-    "labels.id":"رقم التعريف","labels.file":"شهادة/بطاقة مهنية (PDF/JPG/PNG، 10 م.ب كحد أقصى)","ph.id":"مثال: رخصة / تسجيل / رقم هوية",
-    "buttons.submit":"إرسال للمراجعة","buttons.replace":"استبدال الملف","buttons.withdraw":"سحب الطلب","buttons.openFile":"فتح الملف المرفوع","buttons.viewProduct":"عرض المنتج",
-    "messages.emailOnChange":"سنراسلك عند تغيير الحالة. أي تحديث للملف/الرقم يعيد الحالة إلى <em>قيد المراجعة</em>.","messages.stockNote":"يُعرض المتاح فقط. توجد حدود للمخزون. جميع المنتجات تحتاج موافقة.",
-    "messages.cartEmpty":"سلة التسوق فارغة. يمكنك الإضافة من القائمة أدناه.","messages.cartItems":"إجمالي العناصر:",
-    "notices.adminTitle":"رسالة من الإدارة","notices.appTitle":"ملاحظة حول التحقق الخاص بك",
-    "cart.title":"سلتي (تعديل سريع)","add.title":"أضف المزيد من المنتجات","add.searchPH":"ابحث بالاسم أو برمز SKU","approvals.title":"طلبات الموافقة الخاصة بي","orders.title":"طلباتي",
-    "reviews.title":"اكتب مراجعة","reviews.product":"المنتج الذي تم شراؤه","reviews.select":"اختر منتجًا…","reviews.rating":"التقييم","reviews.comment":"تعليق","reviews.commentPH":"شارك تجربتك… (اختياري)","reviews.submit":"إرسال المراجعة","reviews.thanks":"شكرًا على مراجعتك!","reviews.choose":"اختر منتجًا.",
-    "general.loading":"جارٍ التحميل…","general.signin":"يرجى تسجيل الدخول.","general.receipt":"الإيصال","general.instock":"المتوفر:","general.qty":"الكمية","general.action":"إجراء",
-    "badges.requires":"يتطلّب تحقق","badges.pending":"قيد المراجعة",
-    "toasts.cartUpdated":"تم تحديث السلة","toasts.approvalSubmitted":"تم إرسال طلب الموافقة","toasts.cancelled":"تم إلغاء الطلب",
-    "errors.fileTooLarge":"الملف كبير جدًا (الحد 10 م.ب).","errors.fileType":"نوع الملف غير مدعوم.","errors.nothingToUpdate":"لا يوجد ما يتم تحديثه.","errors.enterIdAndFile":"أدخل رقم التعريف واختر ملفًا.","errors.signinFirst":"يرجى تسجيل الدخول أولًا.","errors.loadOrders":"تعذّر تحميل الطلبات.","errors.noApproved":"غير مقبول بعد.","errors.badQty":"الكمية يجب أن تكون أكبر من 0.","errors.badFile":"رجاءً ارفع PDF أو صورة."
-  }
-};
-
-/* i18n helpers */
-function translateAttributes(dict){
-  document.querySelectorAll("[data-i18n-attr]").forEach(el=>{
-    const key = el.getAttribute("data-i18n");
-    const attrs = (el.getAttribute("data-i18n-attr")||"").split(",").map(s=>s.trim()).filter(Boolean);
-    const val = dict[key];
-    if (val == null) return;
-    attrs.forEach(attr => el.setAttribute(attr, val));
-  });
-}
-function applyLang(lang){
-  const dict = I18N[lang]||I18N.en;
-  document.querySelectorAll("[data-i18n]").forEach(el=>{
-    const k = el.getAttribute("data-i18n");
-    if (dict[k] != null) el.innerHTML = dict[k];
-  });
-  translateAttributes(dict);
-  const html=document.documentElement; html.lang=lang;
-  if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
-  else { html.dir="ltr"; document.body.classList.remove("rtl"); }
-  localStorage.setItem("lang",lang);
-  const sel=document.getElementById('lang-switch'); if(sel) sel.value=lang;
-}
-function t(key){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][key])||(I18N.en[key]||key); }
-
-/* Contact & Policy modals */
-const contactModal=document.getElementById('contactModal');
-const policyModal=document.getElementById('policyModal');
-function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
-function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
-function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
-function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
-[contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
-
-/* Mailto */
-const toAddress='info@vetocos.com';
-function sendMailto(e){
-  e.preventDefault();
-  const topic=document.getElementById('topic').value;
-  const name=document.getElementById('name').value.trim();
-  const email=document.getElementById('email2').value.trim();
-  const subject=document.getElementById('subject')?.value.trim()||'Website enquiry';
-  const message=document.getElementById('message').value.trim();
-  if(!document.getElementById('consent').checked) return false;
-  const lines=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,'',message].join('%0A');
-  window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
-  return false;
-}
-
-/* Small page inits */
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('y').textContent = new Date().getFullYear();
-  const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
-  const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
-  const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
-  const sel=document.getElementById('lang-switch'); if(sel){ sel.value=initial; sel.addEventListener('change',e=>applyLang(e.target.value)); }
-  const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
-});
-</script>
-
-<script>
-/* ===== Supabase ===== */
+/* ================= Supabase ================= */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
-/* ===== UI refs ===== */
-const BUCKET = 'Documents';
-const statusBox   = document.getElementById('statusBox');
-const statusPill  = document.getElementById('statusPill');
-const previewWrap = document.getElementById('previewWrap');
-const previewLink = document.getElementById('previewLink');
-const replaceBtn  = document.getElementById('replaceBtn');
-const withdrawBtn = document.getElementById('withdrawBtn');
-const idInput     = document.getElementById('idnum');
-const fileInput   = document.getElementById('file');
-const btn         = document.getElementById('submit');
-const msgEl       = document.getElementById('msg');
-const checkoutBtnTop   = document.getElementById('checkoutBtnTop');
-const checkoutBtnRight = document.getElementById('checkoutBtnRight');
+/* ================= UI ================= */
+const BUCKET='Documents';
+const statusBox=document.getElementById('statusBox');
+const statusPill=document.getElementById('statusPill');
+const previewWrap=document.getElementById('previewWrap');
+const previewLink=document.getElementById('previewLink');
+const replaceBtn=document.getElementById('replaceBtn');
+const withdrawBtn=document.getElementById('withdrawBtn');
+const idInput=document.getElementById('idnum');
+const fileInput=document.getElementById('file');
+const btn=document.getElementById('submit');
+const msgEl=document.getElementById('msg');
 
-const toastEl = document.getElementById('toast');
-function toast(m, err=false){ toastEl.textContent=m; toastEl.style.display='block'; toastEl.style.borderColor = err?'rgba(255,120,120,.4)':'rgba(141,158,199,.25)'; clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.style.display='none',2200); }
-
-/* ===== Helpers ===== */
-function setMsg(tk,kind=''){ msgEl.innerHTML=tk.startsWith('errors.')||tk.startsWith('messages.')?t(tk):tk; msgEl.className='muted '+kind; }
-function pill(status){
-  const s = (status||'pending').toLowerCase();
-  const map = {approved:t('status.approved'),rejected:t('status.rejected'),withdrawn:t('status.withdrawn'),pending:t('status.pending')};
-  statusPill.textContent = map[s] || t('status.pending');
-  statusPill.className = 'badge ' + (s==='approved'?'ok':s==='rejected'?'bad':'pend');
+const toastEl=document.getElementById('toast');
+function toast(m, err=false){
+  toastEl.textContent=m;
+  toastEl.style.display='block';
+  toastEl.style.borderColor = err?'rgba(255,120,120,.4)':'rgba(141,158,199,.25)';
+  clearTimeout(toast._t);
+  toast._t=setTimeout(()=>toastEl.style.display='none',2200);
 }
 function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
-/* ===== Auth + Approval state ===== */
-let currentUser = null;
-let currentApp  = null;
-let CAN_CHECKOUT = false;
-
-async function checkCanCheckout(userId){
-  let ok = false;
-  try{
-    const { data: prof } = await supa.from('profiles').select('can_purchase').eq('id', userId).maybeSingle();
-    ok = !!prof?.can_purchase;
-  }catch{}
-  if (!ok && currentApp && currentApp.status === 'approved') ok = true;
-  toggleCheckout(ok);
-  return ok;
-}
-function toggleCheckout(show){
-  CAN_CHECKOUT = !!show;
-  checkoutBtnTop.style.display = show ? 'inline-block' : 'none';
-  checkoutBtnRight.style.display = show ? 'inline-block' : 'none';
+function pill(status){
+  const s=(status||'pending').toLowerCase();
+  statusPill.textContent=s;
+  statusPill.className='badge '+(s==='approved'?'ok':s==='rejected'?'bad':'pend');
 }
 
-/* ===== Notices ===== */
-const globalNotice = document.getElementById('globalNotice');
-const globalNoticeBody = document.getElementById('globalNoticeBody');
-const appNotice = document.getElementById('appNotice');
-const appNoticeBody = document.getElementById('appNoticeBody');
+/* ================= Auth + profile ================= */
+let USER=null;
+let PROFILE=null;     // profiles row
+let CAN_PURCHASE=false; // global forever
+const purchaseModeBadge=document.getElementById('purchaseModeBadge');
 
-async function loadGlobalNotice(){
-  try{
-    const { data } = await supa.from('site_settings').select('value').eq('key','vet_notice').maybeSingle();
-    const msg = typeof data?.value === 'string' ? data.value : (Array.isArray(data?.value) ? data.value.join(' ') : '');
-    if (msg){
-      globalNotice.style.display = 'block';
-      globalNoticeBody.textContent = msg;
+async function loadProfile(){
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user) throw new Error('No session');
+  USER=user;
+
+  const { data } = await supa.from('profiles')
+    .select('id,email,can_purchase')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  PROFILE = data || { id:user.id, email:user.email, can_purchase:false };
+  CAN_PURCHASE = !!PROFILE.can_purchase;
+
+  purchaseModeBadge.textContent = CAN_PURCHASE ? 'Mode: approved forever (global)' : 'Mode: per-item approvals';
+}
+
+/* ================= Vet application (same behavior) ================= */
+let currentApp=null;
+
+function setMsg(text, kind=''){
+  msgEl.innerHTML = text;
+  msgEl.className='muted '+kind;
+}
+function maybeShowWithdraw(){
+  const st=currentApp?.status||'';
+  withdrawBtn.style.display = (st && st !== 'withdrawn') ? 'inline-block' : 'none';
+}
+
+replaceBtn?.addEventListener('click', ()=>{
+  idInput.disabled=false; fileInput.disabled=false; btn.disabled=false; btn.textContent='Submit for review';
+  setMsg('You can update ID and/or replace file. Status will become pending again.','');
+});
+
+withdrawBtn?.addEventListener('click', async ()=>{
+  if (!currentApp) return;
+  if (!confirm('Withdraw your verification application? This will revoke approval if you were approved.')) return;
+  const { error } = await supa.from('vet_applications').update({ status:'withdrawn' }).eq('id', currentApp.id);
+  if (error){ toast(error.message,true); return; }
+  currentApp={...currentApp,status:'withdrawn'};
+  pill('withdrawn');
+  idInput.disabled=false; fileInput.disabled=false; btn.disabled=false; btn.textContent='Submit for review';
+  setMsg('Application withdrawn. You can submit a new one.','');
+  maybeShowWithdraw();
+});
+
+/* Submit / Update */
+btn.onclick = async ()=>{
+  if (btn.disabled) return;
+  btn.disabled=true; setMsg('Preparing submission…');
+
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user){ location.replace('login.html?redirect='+encodeURIComponent(location.pathname)); return; }
+
+  const idnum=(idInput.value||'').trim();
+  const f=fileInput.files[0];
+
+  if (!currentApp){
+    if(!idnum || !f){ setMsg('Please enter ID number and choose a file.','error'); btn.disabled=false; return; }
+  } else if (!idnum && !f){
+    setMsg('Nothing to update. Change ID and/or choose a new file.','error'); btn.disabled=false; return;
+  }
+
+  let newPath=currentApp?.diploma_path || null;
+
+  if (f){
+    if (f.size > 10*1024*1024){ setMsg('File too large (max 10 MB).','error'); btn.disabled=false; return; }
+    const okTypes=['application/pdf','image/jpeg','image/png'];
+    if (f.type && !okTypes.includes(f.type)){ setMsg('Unsupported file type.','error'); btn.disabled=false; return; }
+
+    const cleanName=f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
+    const path=`${user.id}/${Date.now()}_${cleanName || 'diploma'}`;
+    setMsg('Uploading document…');
+
+    const up = await supa.storage.from(BUCKET).upload(path, f, {
+      upsert:false,
+      contentType: f.type || 'application/octet-stream',
+      cacheControl:'3600'
+    });
+    if (up.error){ setMsg(up.error.message,'error'); btn.disabled=false; return; }
+    newPath = up.data.path;
+  }
+
+  if (!currentApp){
+    setMsg('Saving application…');
+    const ins = await supa.from('vet_applications').insert({
+      user_id:user.id,
+      identity_number:idnum,
+      diploma_path:newPath,
+      status:'pending'
+    }).select().single();
+    if (ins.error){ setMsg(ins.error.message,'error'); btn.disabled=false; return; }
+    currentApp=ins.data;
+  } else {
+    setMsg('Updating application…');
+    const upd = await supa.from('vet_applications').update({
+      identity_number: idnum || currentApp.identity_number,
+      diploma_path: f ? newPath : currentApp.diploma_path,
+      status:'pending'
+    }).eq('id', currentApp.id).select().single();
+    if (upd.error){ setMsg(upd.error.message,'error'); btn.disabled=false; return; }
+    currentApp=upd.data;
+  }
+
+  statusBox.style.display='grid';
+  pill('pending');
+
+  if (currentApp.diploma_path){
+    const { data, error } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
+    if (!error && data?.signedUrl){
+      previewWrap.style.display='flex';
+      previewLink.href=data.signedUrl;
     }
-  }catch{}
-}
-async function showApplicationAdminNote(){
-  if (!currentUser) return;
-  try{
-    const { data: rows } = await supa.from('vet_applications')
-      .select('admin_note').eq('user_id', currentUser.id).order('created_at',{ascending:false}).limit(1);
-    const note = rows && rows[0]?.admin_note;
-    if (note){
-      appNotice.style.display = 'block';
-      appNoticeBody.textContent = note;
-    }
-  }catch{}
-}
+  }
 
-/* ===== Cart helpers (LOCAL + DB sync + approval enforcement) ===== */
+  maybeShowWithdraw();
+  setMsg('Submitted. We will review and approve your account.','success');
+  btn.disabled=false; btn.textContent='Submit for review';
+};
+
+/* ================= Cart (local) ================= */
 const CART_KEY='cart';
-function readCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY)||'[]'); } catch { return []; } }
-function writeCart(items){ localStorage.setItem(CART_KEY, JSON.stringify((items||[]).filter(x=>x && x.sku && Number(x.qty)>0))); }
+function readCart(){
+  try{
+    const arr = JSON.parse(localStorage.getItem(CART_KEY)||'[]');
+    return Array.isArray(arr) ? arr.filter(x=>x && x.sku && Number(x.qty)>0) : [];
+  }catch{ return []; }
+}
+function writeCart(items){
+  const cleaned=(items||[]).filter(x=>x && x.sku && Number(x.qty)>0);
+  localStorage.setItem(CART_KEY, JSON.stringify(cleaned));
+}
 
-/* Product/approval caches */
-let PRODUCT_CACHE = [];
-let REQ_BY_SKU = new Map();   // sku -> boolean (requires_verification) — we’ll force true for all
-let MY_APPROVALS = new Map(); // sku -> { status, quantity }
+/* ================= Products + approvals ================= */
+let PRODUCT_CACHE=[];
+let PRODUCTS={};          // skuLower -> product row (includes prices + variants)
+let MY_APPROVALS=new Map(); // sku -> {status, quantity} quantity=-1 => forever
 
-/* ===== Product Browser ===== */
-const prodSearch = document.getElementById('prodSearch');
-const prodList   = document.getElementById('prodList');
-prodSearch.addEventListener('input', renderProducts);
+function skuKey(s){ return String(s||'').trim().toLowerCase(); }
 
 async function primeMyApprovalsMap(){
-  const { data:{ user } } = await supa.auth.getUser(); if (!user) { MY_APPROVALS = new Map(); return; }
-  const { data, error } = await supa.from('vet_product_approvals').select('product_sku,status,quantity').eq('user_id', user.id);
-  if (error){ MY_APPROVALS = new Map(); return; }
-  MY_APPROVALS = new Map((data||[]).map(r=>[r.product_sku, { status:r.status, quantity:Number(r.quantity||0) }]));
+  if (!USER){ MY_APPROVALS=new Map(); return; }
+  const { data, error } = await supa
+    .from('vet_product_approvals')
+    .select('product_sku,status,quantity,updated_at')
+    .eq('user_id', USER.id);
+
+  if (error){ MY_APPROVALS=new Map(); return; }
+
+  // If admin wants "forever per product": set quantity = -1
+  MY_APPROVALS = new Map((data||[]).map(r=>[
+    r.product_sku,
+    { status:r.status, quantity: (r.quantity==null?0:Number(r.quantity)) }
+  ]));
+}
+
+function isForeverApproval(ap){
+  if (!ap) return false;
+  return Number(ap.quantity) < 0; // -1 means forever
+}
+function approvedQtyForSku(sku){
+  const ap = MY_APPROVALS.get(sku);
+  if (!ap || ap.status !== 'approved') return 0;
+  if (isForeverApproval(ap)) return Infinity;
+  return Math.max(0, Number(ap.quantity||0));
 }
 
 async function loadProducts(){
-  prodList.textContent = t('general.loading');
-  const { data, error } = await supa.from('products')
-    .select('sku,name,stock_qty,available,requires_verification')
+  const prodList=document.getElementById('prodList');
+  prodList.textContent='Loading…';
+  const { data, error } = await supa
+    .from('products')
+    .select('sku,name,stock_qty,available,currency,price_ppv,price_pv_minus10,price_pv_plus10,variants')
     .order('name', { ascending:true });
-  if (error){ prodList.textContent = error.message; return; }
-  PRODUCT_CACHE = (data||[]).filter(p=>p.available && Number(p.stock_qty||0) > 0);
-  // Force verification for ALL SKUs
-  REQ_BY_SKU = new Map(PRODUCT_CACHE.map(p=>[p.sku, true]));
+
+  if (error){ prodList.textContent=error.message; return; }
+
+  PRODUCT_CACHE=(data||[]).filter(p=>p.available && Number(p.stock_qty||0)>0);
+
+  PRODUCTS={};
+  (data||[]).forEach(p=>{ PRODUCTS[skuKey(p.sku)]=p; });
+
   await primeMyApprovalsMap();
   renderProducts();
 }
 
-/* ===== DB cart sync helpers ===== */
-async function loadCartFromDBToLocal(){
-  const { data:{ user } } = await supa.auth.getUser();
-  if (!user) return;
+/* ================= Variant-aware pricing (works even if no variants) ================= */
+const DEFAULT_CURRENCY='MAD';
 
-  const { data, error } = await supa
-    .from('cart_items')
-    .select('product_sku, quantity')
-    .eq('user_id', user.id);
+function toNumOrNull(x){
+  if (x === 0 || x === '0') return 0;
+  const n = Number(x);
+  return Number.isFinite(n) ? n : null;
+}
+function findVariant(product, variantCode){
+  if (!product || !variantCode) return null;
+  const list = Array.isArray(product.variants) ? product.variants : [];
+  const code = String(variantCode).trim().toLowerCase();
+  return list.find(v => String(v.code ?? v.variant_code ?? v.name ?? v.label ?? '').trim().toLowerCase() === code) || null;
+}
+function tierForQty(priceObj, qty){
+  const q = Math.max(1, Number(qty||1));
+  const cur = priceObj.currency || DEFAULT_CURRENCY;
+  const ppv  = toNumOrNull(priceObj.price_ppv ?? priceObj.ppv);
+  const pv_m = toNumOrNull(priceObj.price_pv_minus10 ?? priceObj.pv_minus_10u);
+  const pv_p = toNumOrNull(priceObj.price_pv_plus10  ?? priceObj.pv_plus_10u);
 
-  if (error) { console.warn('loadCartFromDBToLocal error', error); return; }
+  if (q === 1)  return { label:'PPV', unit: ppv,  cur };
+  if (q >= 10)  return { label:'PV+10U', unit: pv_p, cur };
+  return         { label:'PV-10U', unit: pv_m, cur };
+}
+function computeItemPrice(item){
+  const p = PRODUCTS[skuKey(item.sku)];
+  if (!p) return null;
 
-  const dbMap = new Map((data||[]).filter(r=>Number(r.quantity)>0).map(r=>[r.product_sku, Number(r.quantity)]));
-  const local = readCart();
-  local.forEach(it=>{
-    if (!dbMap.has(it.sku) && Number(it.qty)>0) dbMap.set(it.sku, Number(it.qty));
-  });
-  const merged = [...dbMap.entries()].map(([sku,qty])=>({
-    sku, name: (local.find(x=>x.sku===sku)?.name) || sku, qty
-  }));
-  writeCart(merged);
+  // supports item.variant if you store it in cart (optional)
+  const v = findVariant(p, item.variant);
+  const priceSource = v
+    ? { ...v, currency: v.currency || p.currency || DEFAULT_CURRENCY }
+    : { ...p, currency: p.currency || DEFAULT_CURRENCY };
+
+  const tier = tierForQty(priceSource, item.qty);
+  if (!tier || tier.unit == null) return null;
+
+  const unit = Number(tier.unit);
+  const line = unit * Number(item.qty||0);
+  if (!Number.isFinite(unit) || !Number.isFinite(line)) return null;
+
+  return { unit, line, cur:tier.cur, label:tier.label };
+}
+function groupTotals(lines){
+  const out={};
+  lines.forEach(x=>{ out[x.cur]=(out[x.cur]||0)+x.amount; });
+  return out;
 }
 
-async function saveLocalCartToDB(){
-  const { data:{ user } } = await supa.auth.getUser();
-  if (!user) return;
-
-  const cart = readCart();
-  const effective = [];
-  for (const it of cart){
-    const apQ = approvedQtyForSku(it.sku);
-    if (apQ > 0){
-      effective.push({ sku: it.sku, name: it.name || it.sku, qty: Math.min(apQ, Number(it.qty||0)) });
-    }
-  }
-  // keep local cart as-is (so user sees requests), DB stays clamped/safe
-  if (effective.length){
-    const upserts = effective.map(it=>({ user_id:user.id, product_sku:it.sku, quantity:it.qty }));
-    await supa.from('cart_items').upsert(upserts, { onConflict: 'user_id,product_sku' });
-  }
-
-  // prune DB rows for non-effective items
-  const { data: dbRows } = await supa.from('cart_items').select('product_sku').eq('user_id', user.id);
-  const localSkus = new Set(effective.map(it=>it.sku));
-  for (const r of (dbRows||[])){
-    if (!localSkus.has(r.product_sku)){
-      await supa.from('cart_items').delete().eq('user_id', user.id).eq('product_sku', r.product_sku);
-    }
-  }
-}
-
-// --- approval helpers ---
-function requiresSku(_sku){ return true; } // ALL products require verification
-function approvedQtyForSku(sku){
-  const ap = MY_APPROVALS.get(sku);
-  return (ap && ap.status === 'approved') ? Number(ap.quantity || 0) : 0;
-}
+/* ================= Cart UI (approval-aware) ================= */
 function cartQtyForSku(sku){
-  try{ return readCart().filter(x=>x.sku===sku).reduce((n,x)=>n+Number(x.qty||0),0); }catch{ return 0; }
+  return readCart().filter(x=>x.sku===sku).reduce((n,x)=>n+Number(x.qty||0),0);
 }
 function remainingApprovedForSku(sku){
-  return Math.max(0, approvedQtyForSku(sku) - cartQtyForSku(sku));
+  const apQ = approvedQtyForSku(sku);
+  if (apQ === Infinity) return Infinity;
+  return Math.max(0, apQ - cartQtyForSku(sku));
 }
 function isCartFullyApproved(){
-  const cart = readCart();
+  if (CAN_PURCHASE) return true;
+  const cart=readCart();
   if (!cart.length) return false;
   for (const it of cart){
-    if (approvedQtyForSku(it.sku) < Number(it.qty||0)) return false;
+    const apQ = approvedQtyForSku(it.sku);
+    const need = Number(it.qty||0);
+    if (apQ === Infinity) continue;
+    if (apQ < need) return false;
   }
   return true;
 }
-function addToCart(sku, qty, name){
-  if (!qty || qty <= 0) return;
-  const cart = readCart();
-  const idx = cart.findIndex(x=>x.sku===sku);
-  if (idx>-1) cart[idx].qty = Number(cart[idx].qty||0) + qty;
-  else cart.push({ sku, name: name || sku, qty });
-  writeCart(cart);
-  renderMiniCart();
-  saveLocalCartToDB();
-  toast(t('toasts.cartUpdated'));
-}
-async function requestMoreApproval(sku, delta){
-  const { data:{ user } } = await supa.auth.getUser();
-  if(!user){ toast(t('errors.signinFirst'), true); return; }
-  const current = MY_APPROVALS.get(sku);
-  const baseQty = Number(current?.quantity||0);
-  const nextQty = baseQty + Math.max(1, Number(delta)||1);
-  const payload = { user_id:user.id, product_sku:sku, quantity: nextQty, status:'pending' };
+
+async function requestApproval(sku, qty){
+  if (!USER){ toast('Please sign in first.', true); return; }
+  const q = Math.max(1, Number(qty||1));
+  const payload = { user_id:USER.id, product_sku:sku, quantity:q, status:'pending' };
   const { error } = await supa.from('vet_product_approvals').upsert(payload, { onConflict:'user_id,product_sku' });
-  if (error){ toast(error.message, true); return; }
+  if (error){ toast(error.message,true); return; }
   await primeMyApprovalsMap();
   renderProducts();
   renderMyApprovals();
-  toast(t('toasts.approvalSubmitted'));
+  await renderMiniCartAndCheckout();
+  toast('Approval request submitted');
 }
 
-/* ===== Mini Cart (approval-aware, remove always allowed) ===== */
+function addToCart(sku, qty, name){
+  const q = Math.max(1, Number(qty||1));
+  const cart = readCart();
+  const idx = cart.findIndex(x=>x.sku===sku);
+  if (idx>-1) cart[idx].qty = Number(cart[idx].qty||0) + q;
+  else cart.push({ sku, name: name||sku, qty:q });
+  writeCart(cart);
+}
+
 function renderMiniCartRow(it, i){
-  const sku = it.sku;
-  const need = Number(it.qty||0);
-  const apQ  = approvedQtyForSku(sku);
+  const sku=it.sku;
+  const need=Number(it.qty||0);
+  const apQ=approvedQtyForSku(sku);
 
-  let statusNote = '';
-  let extra = '';
-
-  if (apQ >= need && apQ > 0){
-    statusNote = `<div class="small success">Approved up to: ${apQ}</div>`;
+  let note='', extra='';
+  if (CAN_PURCHASE){
+    note = `<div class="small success">Global purchase enabled</div>`;
+  } else if (apQ === Infinity){
+    note = `<div class="small success">Approved forever</div>`;
+  } else if (apQ >= need && apQ > 0){
+    note = `<div class="small success">Approved up to: ${apQ}</div>`;
   } else if (apQ > 0){
-    statusNote = `<div class="small" style="color:#ffd08a">Approved ${apQ}, need ${need}</div>`;
-    extra = `<button class="qtybtn" data-verify="${i}" title="Request more">Verify</button>`;
+    note = `<div class="small" style="color:#ffd08a">Approved ${apQ}, need ${need}</div>`;
+    extra = `<button class="qtybtn" data-verify="${i}">Verify</button>`;
   } else {
-    statusNote = `<div class="small" style="color:#ffd08a">Not approved yet</div>`;
-    extra = `<button class="qtybtn" data-verify="${i}" title="Request approval">Verify</button>`;
+    note = `<div class="small" style="color:#ffd08a">Not approved yet</div>`;
+    extra = `<button class="qtybtn" data-verify="${i}">Verify</button>`;
   }
 
-  return `<tr data-sku="${sku}">
+  const variantTxt = it.variant ? ` <span class="kicker">(Variant: ${escapeHtml(it.variant)})</span>` : '';
+
+  return `<tr>
     <td>
-      <a class="link" href="Products.html#${encodeURIComponent(sku)}" target="_blank" rel="noopener">${escapeHtml(it.name || sku)}</a>
-      <span class="kicker">(${escapeHtml(sku)})</span>
-      ${statusNote}
+      <a class="link" href="Products.html#${encodeURIComponent(sku)}" target="_blank" rel="noopener">${escapeHtml(it.name||sku)}</a>
+      <span class="kicker">(${escapeHtml(sku)})</span>${variantTxt}
+      ${note}
     </td>
     <td>
-      <button class="qtybtn" data-cart="${i}" data-d="-1" aria-label="decrease">−</button>
+      <button class="qtybtn" data-cart="${i}" data-d="-1">−</button>
       <span style="display:inline-block;width:34px;text-align:center">${need}</span>
-      <button class="qtybtn" data-cart="${i}" data-d="1" aria-label="increase">+</button>
+      <button class="qtybtn" data-cart="${i}" data-d="1">+</button>
     </td>
     <td>
       ${extra}
@@ -746,517 +561,671 @@ function renderMiniCartRow(it, i){
   </tr>`;
 }
 
-async function renderMiniCart(){
-  // Ensure caches exist
-  if (!PRODUCT_CACHE.length) await loadProducts();
+async function renderMiniCartAndCheckout(){
   await primeMyApprovalsMap();
 
-  // Keep user-entered qty (no clamping) so they can see what still needs approval
-  const raw = readCart().filter(it => Number(it.qty||0) > 0);
-  writeCart(raw);
+  const box=document.getElementById('cartBox');
+  const cart=readCart();
 
-  const box = document.getElementById('cartBox');
-  if (!raw.length){
-    box.innerHTML = `<div class="muted">${t('messages.cartEmpty')}</div>`;
-    toggleCheckout(false);
-    await saveLocalCartToDB();
-    return;
+  if (!cart.length){
+    box.innerHTML = `<div class="muted">Cart is empty.</div>`;
+  } else {
+    box.innerHTML = `<table>
+      <thead><tr><th>Product</th><th>Qty</th><th>Action</th></tr></thead>
+      <tbody>${cart.map(renderMiniCartRow).join('')}</tbody>
+    </table>
+    <div class="small muted" style="margin-top:8px">Total items: ${cart.reduce((n,x)=>n+Number(x.qty||0),0)}</div>`;
+
+    // +/- with approval cap (unless global or forever)
+    box.querySelectorAll('button[data-cart]').forEach(b=>{
+      b.onclick = ()=>{
+        const idx=Number(b.dataset.cart);
+        const d=Number(b.dataset.d);
+        const c=readCart();
+        if (!c[idx]) return;
+
+        const sku=c[idx].sku;
+        const cur=Number(c[idx].qty||0);
+
+        if (d > 0 && !CAN_PURCHASE){
+          const apQ=approvedQtyForSku(sku);
+          if (apQ !== Infinity && cur >= apQ){
+            toast('Need admin approval to add more. Use Verify for this product.', true);
+            const row=document.querySelector(`#prodList [data-sku="${CSS.escape(sku)}"]`);
+            if (row){ row.scrollIntoView({behavior:'smooth',block:'center'}); row.style.outline='2px solid #ffd08a'; setTimeout(()=>row.style.outline='',1200); }
+            return;
+          }
+        }
+
+        c[idx].qty = Math.max(0, cur + d);
+        if (c[idx].qty === 0) c.splice(idx,1);
+        writeCart(c);
+        renderMiniCartAndCheckout();
+      };
+    });
+
+    // Remove
+    box.querySelectorAll('button[data-rem]').forEach(b=>{
+      b.onclick = ()=>{
+        const idx=Number(b.dataset.rem);
+        const c=readCart();
+        if (!c[idx]) return;
+        c.splice(idx,1);
+        writeCart(c);
+        renderMiniCartAndCheckout();
+      };
+    });
+
+    // Verify -> scroll
+    box.querySelectorAll('button[data-verify]').forEach(b=>{
+      b.onclick = ()=>{
+        const idx=Number(b.dataset.verify);
+        const c=readCart(); if(!c[idx]) return;
+        const sku=c[idx].sku;
+        const row=document.querySelector(`#prodList [data-sku="${CSS.escape(sku)}"]`);
+        if (row){
+          row.scrollIntoView({behavior:'smooth',block:'center'});
+          row.style.outline='2px solid #ffd08a';
+          setTimeout(()=> row.style.outline='',1200);
+        }
+      };
+    });
   }
 
-  const rowsHtml = raw.map((it,i)=>renderMiniCartRow(it,i)).join('');
-  box.innerHTML = `<table>
-    <thead><tr><th>Product</th><th>${t('general.qty')}</th><th>${t('general.action')}</th></tr></thead>
-    <tbody>${rowsHtml}</tbody>
-  </table>
-  <div class="small muted" style="margin-top:8px">
-    ${t('messages.cartItems')} ${raw.reduce((n,x)=>n+Number(x.qty||0),0)}
-  </div>`;
-
-  // +/- with approval cap
-  box.querySelectorAll('button[data-cart]').forEach(b=>{
-    b.onclick = ()=>{
-      const idx = Number(b.dataset.cart);
-      const d   = Number(b.dataset.d);
-      const c   = readCart();
-      if (!c[idx]) return;
-
-      const sku = c[idx].sku;
-      const cur = Number(c[idx].qty||0);
-
-      if (d > 0){
-        const apQ = approvedQtyForSku(sku);
-        if (cur >= apQ){
-          toast('Need admin approval to add more. Click “Verify” for this product.', true);
-          const row = document.querySelector(`#prodList [data-sku="${CSS.escape(sku)}"]`);
-          if (row){ row.scrollIntoView({ behavior:'smooth', block:'center' }); row.style.outline='2px solid #ffd08a'; setTimeout(()=>row.style.outline='',1200); }
-          return;
-        }
-      }
-
-      c[idx].qty = Math.max(0, cur + d);
-      if (c[idx].qty === 0) c.splice(idx,1);
-
-      writeCart(c);
-      renderMiniCart();
-      saveLocalCartToDB();
-      toast(t('toasts.cartUpdated'));
-    };
-  });
-
-  // Remove ALWAYS allowed
-  box.querySelectorAll('button[data-rem]').forEach(b=>{
-    b.onclick = ()=>{
-      const idx = Number(b.dataset.rem);
-      const c = readCart();
-      if (!c[idx]) return;
-      c.splice(idx,1);
-      writeCart(c);
-      renderMiniCart();
-      saveLocalCartToDB();
-      toast(t('toasts.cartUpdated'));
-    };
-  });
-
-  // "Verify" button → scroll to product row controls
-  box.querySelectorAll('button[data-verify]').forEach(b=>{
-    b.onclick = ()=>{
-      const idx = Number(b.dataset.verify);
-      const c = readCart(); if (!c[idx]) return;
-      const sku = c[idx].sku;
-      const row = document.querySelector(`#prodList [data-sku="${CSS.escape(sku)}"]`);
-      if (row){
-        row.scrollIntoView({ behavior:'smooth', block:'center' });
-        row.style.outline = '2px solid #ffd08a';
-        setTimeout(()=> row.style.outline = '', 1200);
-      }
-    };
-  });
-
-  // Checkout visible only if the whole cart is fully approved
-  toggleCheckout(isCartFullyApproved());
-
-  await saveLocalCartToDB();
+  // Checkout render
+  await renderCheckout();
 }
 
-/* ===== Product rows (ALL require approval) ===== */
+/* ================= Product Browser ================= */
+const prodSearch=document.getElementById('prodSearch');
+const prodList=document.getElementById('prodList');
+prodSearch.addEventListener('input', renderProducts);
+
 function productRow(p){
-  const ap = MY_APPROVALS.get(p.sku); // {status, quantity} | undefined
+  const ap = MY_APPROVALS.get(p.sku);
   const st = (ap?.status || '').toLowerCase();
-  const approved = st === 'approved' && Number(ap?.quantity) > 0;
-  const pending  = st === 'pending';
-  const rejected = st === 'rejected';
+  const qty = (ap?.quantity==null?0:Number(ap.quantity));
+  const approved = st==='approved' && (qty>0 || qty<0);
+  const pending  = st==='pending';
+  const rejected = st==='rejected';
 
-  const badge = `<span class="badge">${t('badges.requires')}</span>`;
+  const approvedTxt = (qty<0) ? 'Approved forever' : `Approved up to: ${qty}`;
 
-  let right = '';
-  if (approved) {
-    right = `
-      <div class="row" style="gap:8px;align-items:center">
-        <span class="small success">Approved up to: ${Number(ap.quantity)}</span>
-        <input class="ap-add" type="number" min="1" value="1" style="width:80px;text-align:center"/>
-        <button class="btn small" data-add-approved>Add</button>
-        <button class="btn small" data-req-more>Request more</button>
-      </div>`;
-  } else if (pending) {
-    right = `
-      <div class="row" style="gap:8px;align-items:center">
-        <span class="badge pend">${t('badges.pending')}</span>
-        <input class="ap-qty" type="number" min="1" value="${Number(ap?.quantity||1)}" style="width:80px;text-align:center"/>
-        <button class="btn small" data-update-approval>Update request</button>
-        <button class="btn small" data-cancel-approval>Cancel request</button>
-      </div>`;
-  } else if (rejected) {
-    right = `
-      <div class="row" style="gap:8px;align-items:center">
-        <span class="badge bad">${t('status.rejected')}</span>
-        <input class="ap-qty" type="number" min="1" value="1" style="width:80px;text-align:center"/>
-        <button class="btn small" data-req-approval>Request approval</button>
-      </div>`;
+  let right='';
+  if (CAN_PURCHASE){
+    right = `<div class="row"><span class="badge ok">Global access</span>
+      <input class="ap-add" type="number" min="1" value="1" style="width:80px;text-align:center"/>
+      <button class="btn small" data-add> Add </button>
+    </div>`;
+  } else if (approved){
+    right = `<div class="row" style="gap:8px;align-items:center">
+      <span class="small success">${approvedTxt}</span>
+      <input class="ap-add" type="number" min="1" value="1" style="width:80px;text-align:center"/>
+      <button class="btn small" data-add> Add </button>
+      <button class="btn small" data-req-more>Request more</button>
+    </div>`;
+  } else if (pending){
+    right = `<div class="row" style="gap:8px;align-items:center">
+      <span class="badge pend">Pending</span>
+      <input class="ap-qty" type="number" min="1" value="${Math.max(1, qty||1)}" style="width:80px;text-align:center"/>
+      <button class="btn small" data-update>Update</button>
+      <button class="btn small" data-cancel>Cancel</button>
+    </div>`;
+  } else if (rejected){
+    right = `<div class="row" style="gap:8px;align-items:center">
+      <span class="badge bad">Rejected</span>
+      <input class="ap-qty" type="number" min="1" value="1" style="width:80px;text-align:center"/>
+      <button class="btn small" data-req>Request approval</button>
+    </div>`;
   } else {
-    right = `
-      <div class="row" style="gap:8px;align-items:center">
-        <input class="ap-qty" type="number" min="1" value="1" style="width:80px;text-align:center"/>
-        <button class="btn small" data-req-approval>Request approval</button>
-      </div>`;
+    right = `<div class="row" style="gap:8px;align-items:center">
+      <input class="ap-qty" type="number" min="1" value="1" style="width:80px;text-align:center"/>
+      <button class="btn small" data-req>Request approval</button>
+    </div>`;
   }
 
   return `<div class="row" style="justify-content:space-between;align-items:center;border-bottom:1px solid rgba(141,158,199,.12);padding:8px 0" data-sku="${escapeHtml(p.sku)}">
     <div>
       <div><a class="link" href="Products.html#${encodeURIComponent(p.sku)}" target="_blank" rel="noopener">${escapeHtml(p.name)}</a> <span class="kicker">(${escapeHtml(p.sku)})</span></div>
-      <div class="small muted">${t('general.instock')} ${Number(p.stock_qty||0)} · ${badge}</div>
+      <div class="small muted">In stock: ${Number(p.stock_qty||0)} · <span class="badge">Requires approval</span></div>
     </div>
     <div>${right}</div>
   </div>`;
 }
 
 function renderProducts(){
-  const q = (prodSearch.value||'').toLowerCase().trim();
-  const rows = PRODUCT_CACHE.filter(p=>{
+  const q=(prodSearch.value||'').toLowerCase().trim();
+  const rows=PRODUCT_CACHE.filter(p=>{
     if(!q) return true;
     return (p.name||'').toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q);
   }).map(productRow).join('');
-  prodList.innerHTML = rows || '<div class="muted">No products found.</div>';
 
-  // Wire row actions (ALL require verification)
+  prodList.innerHTML = rows || `<div class="muted">No products found.</div>`;
+
+  // Wire actions
   prodList.querySelectorAll('[data-sku]').forEach(row=>{
-    const sku = row.dataset.sku;
-    const prod = PRODUCT_CACHE.find(x=>x.sku===sku);
+    const sku=row.dataset.sku;
+    const prod=PRODUCT_CACHE.find(x=>x.sku===sku);
 
-    row.querySelector('[data-req-approval]')?.addEventListener('click', async ()=>{
-      const qty = Math.max(1, Number(row.querySelector('.ap-qty')?.value||1));
-      const { data:{ user } } = await supa.auth.getUser(); if(!user){ toast(t('errors.signinFirst'), true); return; }
-      const { error } = await supa.from('vet_product_approvals').upsert({
-        user_id:user.id, product_sku:sku, quantity:qty, status:'pending'
-      }, { onConflict:'user_id,product_sku' });
-      if (error){ toast(error.message, true); return; }
-      toast(t('toasts.approvalSubmitted'));
-      await primeMyApprovalsMap(); renderProducts(); renderMyApprovals();
+    row.querySelector('[data-req]')?.addEventListener('click', async ()=>{
+      const qty=Math.max(1, Number(row.querySelector('.ap-qty')?.value||1));
+      await requestApproval(sku, qty);
     });
 
-    row.querySelector('[data-update-approval]')?.addEventListener('click', async ()=>{
-      const qty = Math.max(1, Number(row.querySelector('.ap-qty')?.value||1));
-      const { data:{ user } } = await supa.auth.getUser(); if(!user){ toast(t('errors.signinFirst'), true); return; }
+    row.querySelector('[data-update]')?.addEventListener('click', async ()=>{
+      const qty=Math.max(1, Number(row.querySelector('.ap-qty')?.value||1));
       const { error } = await supa.from('vet_product_approvals')
-        .update({ quantity: qty })
-        .eq('user_id', user.id).eq('product_sku', sku).eq('status','pending');
-      if (error){ toast(error.message, true); return; }
+        .update({ quantity:qty })
+        .eq('user_id', USER.id).eq('product_sku', sku).eq('status','pending');
+      if (error){ toast(error.message,true); return; }
+      await primeMyApprovalsMap();
+      renderProducts(); renderMyApprovals(); await renderMiniCartAndCheckout();
       toast('Request updated');
-      await primeMyApprovalsMap(); renderProducts(); renderMyApprovals();
     });
 
-    row.querySelector('[data-cancel-approval]')?.addEventListener('click', async ()=>{
-      const { data:{ user } } = await supa.auth.getUser(); if(!user){ toast(t('errors.signinFirst'), true); return; }
+    row.querySelector('[data-cancel]')?.addEventListener('click', async ()=>{
       const { error } = await supa.from('vet_product_approvals')
         .update({ status:'withdrawn' })
-        .eq('user_id', user.id).eq('product_sku', sku).eq('status','pending');
-      if (error){ toast(error.message, true); return; }
-      toast(t('toasts.cancelled')); await primeMyApprovalsMap(); renderProducts(); renderMyApprovals();
+        .eq('user_id', USER.id).eq('product_sku', sku).eq('status','pending');
+      if (error){ toast(error.message,true); return; }
+      await primeMyApprovalsMap();
+      renderProducts(); renderMyApprovals(); await renderMiniCartAndCheckout();
+      toast('Request cancelled');
     });
 
-    // APPROVED branch: add within quota OR request more
-    row.querySelector('[data-add-approved]')?.addEventListener('click', async ()=>{
-      const input = row.querySelector('.ap-add');
-      const want  = Math.max(1, Number(input?.value||1));
-      const rem   = remainingApprovedForSku(sku);
-      if (rem <= 0){
-        toast('You have used your approved quantity. Request more to add.', true);
+    row.querySelector('[data-add]')?.addEventListener('click', async ()=>{
+      const want=Math.max(1, Number(row.querySelector('.ap-add')?.value||1));
+
+      if (!CAN_PURCHASE){
+        const rem=remainingApprovedForSku(sku);
+        if (rem !== Infinity && rem <= 0){
+          toast('You have no remaining approved quantity. Request more.', true);
+          return;
+        }
+        const toAdd = (rem === Infinity) ? want : Math.min(want, rem);
+        addToCart(sku, toAdd, prod?.name);
+        await renderMiniCartAndCheckout();
+
+        if (rem !== Infinity && want > toAdd){
+          await requestApproval(sku, (want - toAdd));
+          row.scrollIntoView({ behavior:'smooth', block:'center' });
+        }
         return;
       }
-      const toAdd = Math.min(want, rem);
-      addToCart(sku, toAdd, prod?.name);
 
-      if (want > toAdd){
-        const delta = want - toAdd;
-        await requestMoreApproval(sku, delta);
-        row.scrollIntoView({ behavior:'smooth', block:'center' });
-      }
+      // global access
+      addToCart(sku, want, prod?.name);
+      await renderMiniCartAndCheckout();
     });
 
     row.querySelector('[data-req-more]')?.addEventListener('click', async ()=>{
-      const input = row.querySelector('.ap-add');
-      const want  = Math.max(1, Number(input?.value||1));
-      const rem   = remainingApprovedForSku(sku);
-      const delta = Math.max(1, want - Math.max(0, rem)); // at least 1
-      await requestMoreApproval(sku, delta);
+      const want=Math.max(1, Number(row.querySelector('.ap-add')?.value||1));
+      // request more by increasing desired quantity; simplest: set pending qty = current approved + want
+      const ap = MY_APPROVALS.get(sku);
+      const cur = (ap?.status==='approved' && ap.quantity>0) ? Number(ap.quantity) : 0;
+      await requestApproval(sku, cur + want);
       row.scrollIntoView({ behavior:'smooth', block:'center' });
     });
   });
 }
 
-/* ===== My approval requests ===== */
-const myApprovalsBox = document.getElementById('myApprovalsBox');
-
+/* ================= My approvals table ================= */
+const myApprovalsBox=document.getElementById('myApprovalsBox');
 async function renderMyApprovals(){
-  const { data:{ user } } = await supa.auth.getUser();
-  if (!user){ myApprovalsBox.textContent = t('general.signin'); return; }
+  if (!USER){ myApprovalsBox.textContent='Please sign in.'; return; }
 
-  const { data, error } = await supa
-    .from('vet_product_approvals')
-    .select('product_sku, quantity, status, updated_at')
-    .eq('user_id', user.id)
-    .order('updated_at', { ascending: false });
+  const { data, error } = await supa.from('vet_product_approvals')
+    .select('product_sku,quantity,status,updated_at')
+    .eq('user_id', USER.id)
+    .order('updated_at', { ascending:false });
 
-  if (error){ myApprovalsBox.textContent = error.message; return; }
-  if (!data?.length){ myApprovalsBox.innerHTML = '<div class="muted">No approval requests.</div>'; return; }
+  if (error){ myApprovalsBox.textContent=error.message; return; }
+  if (!data?.length){ myApprovalsBox.innerHTML=`<div class="muted">No approval requests.</div>`; return; }
 
-  myApprovalsBox.innerHTML = `
-    <table>
-      <thead><tr><th>SKU</th><th>${t('general.qty')}</th><th>Status</th><th>Updated</th><th>${t('general.action')}</th></tr></thead>
-      <tbody>
-        ${data.map(r=>{
-          const st = (r.status||'pending').toLowerCase();
-          const pillCls = st==='approved' ? 'ok' : st==='rejected' ? 'bad' : st==='withdrawn' ? 'bad' : 'pend';
-          const pillTxt = st;
-          const canWithdraw = st==='pending';
-          const when = r.updated_at ? new Date(r.updated_at).toLocaleString() : '';
-          return `
-            <tr data-sku="${r.product_sku}">
-              <td><a class="link" href="Products.html#${encodeURIComponent(r.product_sku)}" target="_blank" rel="noopener">${r.product_sku}</a></td>
-              <td>${Number(r.quantity||0)}</td>
-              <td><span class="badge ${pillCls}">${pillTxt}</span></td>
-              <td class="small muted">${when}</td>
-              <td>${canWithdraw?`<button class="btn small" data-cancel>Withdraw</button>`:''}</td>
-            </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
+  myApprovalsBox.innerHTML = `<table>
+    <thead><tr><th>SKU</th><th>Qty</th><th>Status</th><th>Updated</th><th>Action</th></tr></thead>
+    <tbody>
+      ${data.map(r=>{
+        const st=(r.status||'pending').toLowerCase();
+        const q=Number(r.quantity||0);
+        const qtyTxt = (q<0) ? 'Forever (-1)' : String(q);
+        const cls = st==='approved'?'ok':st==='rejected'?'bad':st==='withdrawn'?'bad':'pend';
+        const when=r.updated_at?new Date(r.updated_at).toLocaleString():'';
+        return `<tr data-sku="${escapeHtml(r.product_sku)}">
+          <td><a class="link" href="Products.html#${encodeURIComponent(r.product_sku)}" target="_blank" rel="noopener">${escapeHtml(r.product_sku)}</a></td>
+          <td>${qtyTxt}</td>
+          <td><span class="badge ${cls}">${escapeHtml(st)}</span></td>
+          <td class="small muted">${escapeHtml(when)}</td>
+          <td>${st==='pending'?`<button class="btn small" data-withdraw>Withdraw</button>`:''}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
 
-  myApprovalsBox.querySelectorAll('button[data-cancel]').forEach(btn=>{
-    btn.onclick = async ()=>{
-      const tr = btn.closest('tr'); const sku = tr.dataset.sku;
-      const { data:{ user } } = await supa.auth.getUser();
-      const { error } = await supa
-        .from('vet_product_approvals')
+  myApprovalsBox.querySelectorAll('button[data-withdraw]').forEach(b=>{
+    b.onclick = async ()=>{
+      const tr=b.closest('tr'); const sku=tr.dataset.sku;
+      const { error } = await supa.from('vet_product_approvals')
         .update({ status:'withdrawn' })
-        .eq('user_id', user.id)
-        .eq('product_sku', sku)
-        .eq('status','pending');
-      if (error){ toast(error.message, true); return; }
-      toast(t('toasts.cancelled'));
+        .eq('user_id', USER.id).eq('product_sku', sku).eq('status','pending');
+      if (error){ toast(error.message,true); return; }
       await primeMyApprovalsMap();
-      renderProducts();
-      await renderMyApprovals();
+      renderProducts(); renderMyApprovals(); await renderMiniCartAndCheckout();
+      toast('Request withdrawn');
     };
   });
 }
 
-/* ===== Orders ===== */
+/* ================= Orders ================= */
 async function renderOrders(){
-  const box = document.getElementById('ordersBox');
-  const { data:{ user } } = await supa.auth.getUser();
-  if (!user){ box.textContent=t('general.signin'); return; }
+  const box=document.getElementById('ordersBox');
+  if (!USER){ box.textContent='Please sign in.'; return; }
+
   const { data: rows, error } = await supa.from('orders')
-    .select('id, created_at, status, total_qty, total_amount, receipt_url')
-    .eq('user_id', user.id).order('created_at', { ascending:false }).limit(20);
-  if (error){ box.innerHTML = `<div class="muted">${t('errors.loadOrders')}: ${escapeHtml(error.message)}</div>`; return; }
-  if (!rows || !rows.length){ box.innerHTML = `<div class="muted">No purchases yet.</div>`; return; }
+    .select('id,created_at,status,total_qty,total_amount')
+    .eq('user_id', USER.id)
+    .order('created_at', { ascending:false })
+    .limit(20);
+
+  if (error){ box.innerHTML=`<div class="muted">Could not load orders: ${escapeHtml(error.message)}</div>`; return; }
+  if (!rows?.length){ box.innerHTML=`<div class="muted">No purchases yet.</div>`; return; }
+
   box.innerHTML = rows.map(o=>{
-    const d = new Date(o.created_at);
-    const badge = (o.status||'').toLowerCase()==='paid' ? 'ok' : 'pend';
-    const rec = o.receipt_url ? `<a class="btn small" href="${o.receipt_url}" target="_blank" rel="noopener">${t('general.receipt')}</a>` : '';
+    const d=new Date(o.created_at);
+    const cls=(o.status||'').toLowerCase()==='paid'?'ok':'pend';
     return `<div class="row" style="border-top:1px solid rgba(141,158,199,.18);padding:10px 0">
-      <div style="flex:1 1 auto"><strong>Order #${o.id}</strong> · <span class="muted">${d.toLocaleString()}</span><div class="muted small">${t('general.qty')}: ${o.total_qty||0} · Amount: ${o.total_amount!=null?Number(o.total_amount).toFixed(2):'-'}</div></div>
-      <div style="flex:0 0 auto" class="row"><span class="badge ${badge}">${o.status||t('status.pending')}</span>${rec}</div>
+      <div style="flex:1 1 auto">
+        <strong>Order #${o.id}</strong> · <span class="muted">${d.toLocaleString()}</span>
+        <div class="muted small">Items: ${o.total_qty||0} · Amount: ${o.total_amount!=null?Number(o.total_amount).toFixed(2):'-'}</div>
+      </div>
+      <div><span class="badge ${cls}">${escapeHtml(o.status||'pending')}</span></div>
     </div>`;
   }).join('');
 }
 
-/* ===== Reviews ===== */
-const revSku = document.getElementById('revSku');
-const revRating = document.getElementById('revRating');
-const revComment = document.getElementById('revComment');
-const revSubmit = document.getElementById('revSubmit');
-const revMsg = document.getElementById('revMsg');
-const revViewProduct = document.getElementById('revViewProduct');
+/* ================= Checkout rendering + place order ================= */
+const checkoutCart=document.getElementById('checkoutCart');
+const checkoutIssues=document.getElementById('checkoutIssues');
+const checkoutEligibility=document.getElementById('checkoutEligibility');
+const sumItems=document.getElementById('sumItems');
+const sumTotal=document.getElementById('sumTotal');
+const placeOrderBtn=document.getElementById('placeOrder');
+const placeMsg=document.getElementById('placeMsg');
 
-revSku.addEventListener('change', ()=>{
-  const sku = revSku.value;
-  revViewProduct.href = sku ? `Products.html#${encodeURIComponent(sku)}` : 'Products.html';
-});
+function eligibilityForCart(cart){
+  const issues=[];
+  const eligible=[];
+  const ineligible=[];
 
-async function populateReviewSKUs(){
-  const { data:{ user } } = await supa.auth.getUser(); if (!user) return;
+  cart.forEach(it=>{
+    const prod=PRODUCTS[skuKey(it.sku)];
+    const qty=Number(it.qty||0);
 
-  let skus = [];
-  try{
-    const { data: items } = await supa.from('order_items').select('product_sku').eq('user_id', user.id);
-    if (Array.isArray(items)) skus = items.map(i=>i.product_sku);
-  }catch{}
-  if (!skus.length){
-    const { data: orders } = await supa.from('orders').select('items').eq('user_id', user.id).limit(50);
-    if (Array.isArray(orders)){
-      orders.forEach(o=>{ if(Array.isArray(o.items)){ o.items.forEach(it=>{ if(it?.sku) skus.push(it.sku); }); } });
+    // stock / available
+    if (prod && prod.available === false){
+      ineligible.push({ sku:it.sku, reason:'Unavailable' });
+      return;
+    }
+    if (prod && typeof prod.stock_qty === 'number' && prod.stock_qty < qty){
+      ineligible.push({ sku:it.sku, reason:`Only ${prod.stock_qty|0} in stock` });
+      return;
+    }
+
+    if (CAN_PURCHASE){
+      eligible.push(it);
+      return;
+    }
+
+    const apQ=approvedQtyForSku(it.sku);
+    if (apQ === Infinity){
+      eligible.push(it);
+      return;
+    }
+    if (apQ >= qty){
+      eligible.push(it);
+      return;
+    }
+
+    const need = qty - apQ;
+    ineligible.push({ sku:it.sku, reason: apQ>0 ? `Approval short by ${need}` : 'Approval required' });
+  });
+
+  if (!CAN_PURCHASE){
+    if (ineligible.some(x=>/Approval/.test(x.reason))) issues.push('Some items still need admin approval.');
+  }
+  if (ineligible.some(x=>/stock|Unavailable|Only/i.test(x.reason))) issues.push('Some items are unavailable or exceed stock.');
+
+  return { eligible, ineligible, issues };
+}
+
+async function renderCheckout(){
+  const cart=readCart();
+  if (!cart.length){
+    checkoutCart.innerHTML=`<div class="muted">Cart is empty.</div>`;
+    checkoutIssues.style.display='none';
+    checkoutEligibility.textContent='Eligibility: —';
+    sumItems.textContent='0';
+    sumTotal.textContent='—';
+    placeOrderBtn.disabled=true;
+    placeMsg.textContent='';
+    return;
+  }
+
+  // Make sure product rows are available for pricing/stock
+  const missing = cart.some(it => !PRODUCTS[skuKey(it.sku)]);
+  if (missing){
+    // fetch only needed skus (case-flex)
+    const skus=[...new Set(cart.map(x=>x.sku).filter(Boolean))];
+    const candidates=[...new Set(skus.flatMap(s=>[s,String(s).toUpperCase(),String(s).toLowerCase()]))];
+    const { data } = await supa.from('products')
+      .select('sku,name,stock_qty,available,currency,price_ppv,price_pv_minus10,price_pv_plus10,variants')
+      .in('sku', candidates);
+    (data||[]).forEach(p=>{ PRODUCTS[skuKey(p.sku)]=p; });
+  }
+
+  const { eligible, ineligible, issues } = eligibilityForCart(cart);
+
+  // Issues UI
+  if (issues.length || ineligible.length){
+    const list=[
+      ...issues.map(x=>`<li>${escapeHtml(x)}</li>`),
+      ...ineligible.map(x=>`<li><strong>${escapeHtml(x.sku)}</strong>: ${escapeHtml(x.reason)}</li>`)
+    ];
+    checkoutIssues.innerHTML=`<ul style="margin:0;padding-left:18px">${list.join('')}</ul>`;
+    checkoutIssues.style.display='block';
+  } else {
+    checkoutIssues.style.display='none';
+    checkoutIssues.innerHTML='';
+  }
+
+  // Eligibility badge + button
+  const fullApproved = isCartFullyApproved();
+  checkoutEligibility.textContent = fullApproved ? 'Eligibility: FULL' : (eligible.length ? 'Eligibility: PARTIAL' : 'Eligibility: NONE');
+  checkoutEligibility.className = 'badge ' + (fullApproved ? 'ok' : (eligible.length ? 'pend' : 'bad'));
+  placeOrderBtn.disabled = (eligible.length === 0); // allow partial orders
+
+  // Table with prices
+  const rows = cart.map(it=>{
+    const prod = PRODUCTS[skuKey(it.sku)] || {};
+    const qty = Number(it.qty||0);
+
+    const apQ = CAN_PURCHASE ? Infinity : approvedQtyForSku(it.sku);
+    const approvalTag = CAN_PURCHASE ? `<span class="badge ok">Global</span>`
+      : apQ===Infinity ? `<span class="badge ok">Forever</span>`
+      : apQ>=qty ? `<span class="badge ok">Approved</span>`
+      : apQ>0 ? `<span class="badge pend">Approved ${apQ}</span>`
+      : `<span class="badge bad">Needs approval</span>`;
+
+    const price = computeItemPrice(it);
+    const unitHTML = price ? `${escapeHtml(price.cur)} ${price.unit.toFixed(2)} <span class="muted small">(${escapeHtml(price.label)})</span>` : '—';
+    const lineHTML = price ? `${escapeHtml(price.cur)} ${price.line.toFixed(2)}` : '—';
+
+    const stockTag = (prod.available === false) ? `<span class="badge bad">Unavailable</span>`
+      : (typeof prod.stock_qty === 'number' && prod.stock_qty < qty) ? `<span class="badge pend">Only ${prod.stock_qty|0}</span>`
+      : `<span class="badge ok">OK</span>`;
+
+    const variantTxt = it.variant ? ` <span class="kicker">(Variant: ${escapeHtml(it.variant)})</span>` : '';
+
+    return `<tr>
+      <td>
+        <strong>${escapeHtml(it.name || prod.name || it.sku)}</strong>
+        <div class="muted small">SKU: ${escapeHtml(it.sku)}${variantTxt}</div>
+      </td>
+      <td>${qty}</td>
+      <td>${unitHTML}</td>
+      <td>${lineHTML}</td>
+      <td>${approvalTag} ${stockTag}</td>
+    </tr>`;
+  }).join('');
+
+  checkoutCart.innerHTML = `<table>
+    <thead><tr><th>Product</th><th>Qty</th><th>Unit</th><th>Line total</th><th>Status</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  // Summary
+  sumItems.textContent = String(cart.reduce((n,x)=>n+Number(x.qty||0),0));
+
+  const totals = cart.map(it=>{
+    const p = computeItemPrice(it);
+    return p ? { cur:p.cur, amount:p.line } : null;
+  }).filter(Boolean);
+
+  if (!totals.length){
+    sumTotal.textContent = '—';
+  } else {
+    const grouped = groupTotals(totals);
+    const txt = Object.entries(grouped).map(([cur,amt])=>`${cur} ${amt.toFixed(2)}`).join(' · ');
+    sumTotal.textContent = txt + (Object.keys(grouped).length>1 ? '  (*grouped by currency)' : '');
+  }
+
+  placeMsg.textContent = '';
+}
+
+/* ================= Consume approvals after successful order =================
+   Rules:
+   - If profiles.can_purchase = true => do NOT consume
+   - If approval.quantity = -1 => forever => do NOT consume
+   - Otherwise subtract purchased qty; if reaches 0 => delete approval row (approval disappears)
+*/
+async function consumeApprovalsForOrder(eligibleItems){
+  if (CAN_PURCHASE) return;
+
+  const need={};
+  eligibleItems.forEach(it=>{
+    need[it.sku] = (need[it.sku]||0) + Number(it.qty||0);
+  });
+
+  for (const [sku, toUse] of Object.entries(need)){
+    if (!toUse) continue;
+
+    const ap = MY_APPROVALS.get(sku);
+    if (!ap || ap.status !== 'approved') continue;
+    if (isForeverApproval(ap)) continue;
+
+    const curQty = Number(ap.quantity||0);
+    const next = curQty - toUse;
+
+    if (next > 0){
+      const { error } = await supa.from('vet_product_approvals')
+        .update({ quantity: next })
+        .eq('user_id', USER.id)
+        .eq('product_sku', sku)
+        .eq('status','approved');
+      if (error) console.warn('consume update error', sku, error.message);
+    } else {
+      // delete => approval disappears until admin approves again
+      const { error } = await supa.from('vet_product_approvals')
+        .delete()
+        .eq('user_id', USER.id)
+        .eq('product_sku', sku)
+        .eq('status','approved');
+      if (error) console.warn('consume delete error', sku, error.message);
     }
   }
-  skus = [...new Set(skus)];
+}
 
-  let options = `<option value="">${t('reviews.select')}</option>`;
-  if (skus.length){
-    const { data: prods } = await supa.from('products').select('sku,name').in('sku', skus);
-    const nameBySku = Object.fromEntries((prods||[]).map(p=>[p.sku, p.name]));
-    skus.forEach(s=>{
-      const name = nameBySku[s] || s;
-      options += `<option value="${escapeHtml(s)}">${escapeHtml(name)} (${escapeHtml(s)})</option>`;
+async function placeOrder(){
+  placeOrderBtn.disabled=true;
+  placeMsg.textContent='Placing order…';
+
+  try{
+    const cart=readCart();
+    const { eligible, ineligible } = eligibilityForCart(cart);
+
+    if (!eligible.length){
+      placeMsg.textContent='Nothing eligible to order yet.';
+      placeOrderBtn.disabled=false;
+      return;
+    }
+
+    // Build lines for eligible items (with current prices)
+    const lines = eligible.map(it=>{
+      const p = computeItemPrice(it);
+      return {
+        sku: it.sku,
+        name: it.name || it.sku,
+        qty: Number(it.qty||0),
+        unit_price: p ? p.unit : null,
+        currency: p ? p.cur : null,
+        price_tier: p ? p.label : null,
+        line_total: p ? p.line : null,
+        variant: it.variant || null
+      };
     });
+
+    // Totals (single currency => store total_amount; multi => store null like your checkout)
+    const totals = {};
+    lines.forEach(l=>{
+      if (!l.currency || l.line_total == null) return;
+      totals[l.currency] = (totals[l.currency]||0) + Number(l.line_total||0);
+    });
+    const total_amount = (Object.keys(totals).length===1) ? Object.values(totals)[0] : null;
+
+    // Create order
+    const orderPayload = {
+      user_id: USER.id,
+      email: USER.email || PROFILE?.email || null,
+      status: 'pending',
+      total_qty: eligible.reduce((n,x)=>n+Number(x.qty||0),0),
+      total_amount
+    };
+
+    const { data: orderRow, error: orderErr } = await supa.from('orders').insert([orderPayload]).select('id').single();
+    if (orderErr) throw new Error(orderErr.message || 'Failed to create order.');
+
+    const order_id = orderRow.id;
+
+    // Create order_items (variant saved if your table has column; if it doesn't, remove variant field)
+    const itemsPayload = lines.map(l=>({
+      order_id,
+      user_id: USER.id,                // keep if your order_items uses it (your old code sometimes had it)
+      product_sku: l.sku,
+      product_name: l.name,
+      quantity: l.qty,
+      unit_price: l.unit_price,
+      currency: l.currency,
+      price_tier: l.price_tier,
+      line_total: l.line_total,
+      variant: l.variant               // ✅ remove this line if column doesn't exist in DB
+    }));
+
+    const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
+    if (itemsErr){
+      // rollback order if items fail (optional)
+      await supa.from('orders').delete().eq('id', order_id);
+      throw new Error(itemsErr.message || 'Failed to add order items.');
+    }
+
+    // ✅ Consume approvals ONLY AFTER order+items succeed
+    await consumeApprovalsForOrder(eligible);
+
+    // Remove eligible items from cart, keep the rest
+    const eligibleSkuSet = new Set(eligible.map(x=>x.sku));
+    const remaining = cart.filter(it=>!eligibleSkuSet.has(it.sku));
+    writeCart(remaining);
+
+    // Refresh approval cache + UI
+    await primeMyApprovalsMap();
+    renderProducts();
+    renderMyApprovals();
+    await renderMiniCartAndCheckout();
+    await renderOrders();
+
+    placeMsg.textContent = (remaining.length)
+      ? 'Order placed for eligible items. Some items still need approval/stock (see checkout notes).'
+      : 'Order placed successfully.';
+    placeMsg.className='success';
+
+  }catch(e){
+    console.error(e);
+    placeMsg.textContent = 'Something went wrong: ' + (e?.message || 'Unknown error');
+    placeMsg.className='error';
+  }finally{
+    placeOrderBtn.disabled = false;
   }
-  revSku.innerHTML = options;
 }
 
-revSubmit.onclick = async ()=>{
-  revMsg.textContent = t('general.loading');
-  const sku = revSku.value.trim(); const rating = Math.max(1, Math.min(5, Number(revRating.value||5)|0)); const comment = (revComment.value||'').trim();
-  if (!sku){ revMsg.textContent = t('reviews.choose'); return; }
-  const { data:{ user } } = await supa.auth.getUser(); if (!user){ revMsg.textContent = t('general.signin'); return; }
+placeOrderBtn.addEventListener('click', placeOrder);
 
-  const { error } = await supa.from('reviews').insert({ user_id: user.id, product_sku: sku, rating, comment });
-  if (error){ revMsg.textContent = error.message; return; }
-  revMsg.textContent = t('reviews.thanks'); revComment.value='';
-};
-
-/* ===== Vet app actions ===== */
-function maybeShowWithdraw(){
-  const st = currentApp?.status || '';
-  withdrawBtn.style.display = (st && st !== 'withdrawn') ? 'inline-block' : 'none';
-}
-
-replaceBtn?.addEventListener('click', ()=>{
-  idInput.disabled = false; fileInput.disabled = false; btn.disabled = false; btn.textContent = t('buttons.submit');
-  setMsg('messages.emailOnChange','');
-});
-
-withdrawBtn?.addEventListener('click', async ()=>{
-  if (!currentApp) return;
-  const st = (currentApp.status||'').toLowerCase();
-  const warn = st === 'approved'
-    ? 'Your account is approved. Withdrawing will revoke your approval and checkout access. Continue?'
-    : st === 'rejected'
-      ? 'Your application was rejected. Withdraw and start fresh?'
-      : 'Withdraw your verification application? You can re-submit later.';
-  if (!confirm(warn)) return;
-  const { error } = await supa.from('vet_applications').update({ status: 'withdrawn' }).eq('id', currentApp.id);
-  if (error) { toast(error.message, true); return; }
-  currentApp = { ...currentApp, status:'withdrawn' };
-  pill('withdrawn');
-  idInput.disabled = false; idInput.value = '';
-  fileInput.disabled = false; fileInput.value = '';
-  btn.disabled = false; btn.textContent = t('buttons.submit');
-  setMsg('Application withdrawn. You can submit a new one now.','success');
-  maybeShowWithdraw();
-  toggleCheckout(false);
-});
-
-/* ===== Boot ===== */
+/* ================= Boot ================= */
 async function boot(){
-  setMsg(t('general.loading'));
-  const { data:{ user }, error } = await supa.auth.getUser();
-  if (error) { setMsg(error.message,'error'); return; }
-  if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
-  currentUser = user;
+  document.getElementById('y').textContent=new Date().getFullYear();
+
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user){
+    location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html'));
+    return;
+  }
+  USER=user;
+
+  await loadProfile();
 
   // Load latest application
-  setMsg(t('general.loading'));
-  const { data: rows, error: e2 } = await supa.from('vet_applications')
-    .select('id, identity_number, diploma_path, status, created_at')
-    .eq('user_id', user.id).order('created_at', { ascending:false }).limit(1);
-  if (e2) { setMsg(e2.message,'error'); return; }
-  currentApp = rows && rows[0] ? rows[0] : null;
+  const { data: rows, error } = await supa.from('vet_applications')
+    .select('id,identity_number,diploma_path,status,created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending:false })
+    .limit(1);
 
-  if (currentApp){
-    statusBox.style.display = 'grid';
+  if (!error && rows && rows[0]){
+    currentApp=rows[0];
+    statusBox.style.display='grid';
     pill(currentApp.status);
-    if (currentApp.identity_number) idInput.value = currentApp.identity_number;
+
+    if (currentApp.identity_number) idInput.value=currentApp.identity_number;
+
     if (currentApp.diploma_path){
-      const { data, error: sErr } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
-      if (!sErr && data?.signedUrl){ previewWrap.style.display = 'flex'; previewLink.href = data.signedUrl; }
+      const { data: signed, error: sErr } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
+      if (!sErr && signed?.signedUrl){
+        previewWrap.style.display='flex';
+        previewLink.href=signed.signedUrl;
+      }
     }
+
     maybeShowWithdraw();
+
     if (currentApp.status === 'approved'){
-      idInput.disabled = true; fileInput.disabled = true; btn.disabled = true; btn.textContent = t('status.approved');
-      setMsg('Your account is approved. You can proceed to checkout.','success');
+      idInput.disabled=true; fileInput.disabled=true; btn.disabled=true; btn.textContent='approved';
+      setMsg('Your account is approved. If admin also enables global purchasing, you won’t need per-product approvals.','success');
     } else if (currentApp.status === 'rejected'){
       setMsg('Your previous submission was rejected. Update your ID and upload a new file for review.','error');
     } else if (currentApp.status === 'withdrawn'){
       setMsg('Application withdrawn. You can submit a new one.','');
     } else {
-      setMsg('Your application is pending. You can replace the file or update ID while under review.','');
+      setMsg('Your application is pending.','');
     }
   } else {
-    setMsg('No submission yet. Please fill your details below.','');
+    setMsg('No submission yet. Please fill your details.','');
   }
 
-  await checkCanCheckout(user.id);
-  await loadGlobalNotice();
-  await showApplicationAdminNote();
-
   await loadProducts();
-  await loadCartFromDBToLocal();
-  await renderMiniCart();
   await renderMyApprovals();
   await renderOrders();
-  await populateReviewSKUs();
+  await renderMiniCartAndCheckout();
 
-  // Realtime updates
+  // realtime: approvals change => update UI
   supa.channel('appr-'+user.id)
     .on('postgres_changes',
       { event:'*', schema:'public', table:'vet_product_approvals', filter:`user_id=eq.${user.id}` },
-      async (_payload)=>{
+      async ()=>{
         await primeMyApprovalsMap();
-        await renderProducts();
-        await renderMyApprovals();
-        await renderMiniCart();
-        await saveLocalCartToDB();
+        renderProducts();
+        renderMyApprovals();
+        await renderMiniCartAndCheckout();
       }
     )
     .on('postgres_changes',
       { event:'UPDATE', schema:'public', table:'profiles', filter:`id=eq.${user.id}` },
-      async (_payload)=>{ await checkCanCheckout(user.id); }
+      async ()=>{
+        await loadProfile();
+        await renderMiniCartAndCheckout();
+      }
     )
     .subscribe();
 }
+
 document.addEventListener('DOMContentLoaded', boot);
-
-/* ===== Submit or update ===== */
-btn.onclick = async () => {
-  if (btn.disabled) return;
-  btn.disabled = true; setMsg('Preparing submission…');
-
-  const { data:{ user }, error: uErr } = await supa.auth.getUser();
-  if (uErr) { setMsg(uErr.message, 'error'); btn.disabled=false; return; }
-  if (!user) { location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html')); return; }
-
-  const idnum = (idInput.value||'').trim();
-  const f = fileInput.files[0];
-
-  if (!currentApp){
-    if(!idnum || !f){ setMsg('errors.enterIdAndFile','error'); btn.disabled=false; return; }
-  } else if (!idnum && !f){
-    setMsg('errors.nothingToUpdate','error'); btn.disabled=false; return;
-  }
-
-  let newPath = currentApp?.diploma_path || null;
-
-  if (f){
-    if (f.size > 10 * 1024 * 1024) { setMsg('errors.fileTooLarge','error'); btn.disabled=false; return; }
-    const okTypes = ['application/pdf','image/jpeg','image/png'];
-    if (f.type && !okTypes.includes(f.type)) { setMsg('errors.fileType','error'); btn.disabled=false; return; }
-
-    const cleanName = f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
-    const path = `${user.id}/${Date.now()}_${cleanName || 'diploma'}`;
-    setMsg('Uploading document…');
-    const up = await supa.storage.from(BUCKET).upload(path, f, { upsert:false, contentType: f.type || 'application/octet-stream', cacheControl: '3600' });
-    if(up.error) { setMsg(up.error.message,'error'); btn.disabled=false; return; }
-    newPath = up.data.path;
-  }
-
-  if (!currentApp){
-    setMsg('Saving application…');
-    const ins = await supa.from('vet_applications').insert({
-      user_id: user.id, identity_number: idnum, diploma_path: newPath, status: 'pending'
-    }).select().single();
-    if(ins.error){ setMsg(ins.error.message,'error'); btn.disabled=false; return; }
-    currentApp = ins.data;
-  } else {
-    setMsg('Updating application…');
-    const upd = await supa.from('vet_applications').update({
-      identity_number: idnum || currentApp.identity_number,
-      diploma_path: f ? newPath : currentApp.diploma_path,
-      status: 'pending'
-    }).eq('id', currentApp.id).select().single();
-    if(upd.error){ setMsg(upd.error.message,'error'); btn.disabled=false; return; }
-    currentApp = upd.data;
-  }
-
-  pill('pending'); statusBox.style.display = 'grid';
-  if (currentApp.diploma_path){
-    try{ const { data } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
-      if (data?.signedUrl){ previewWrap.style.display = 'flex'; previewLink.href = data.signedUrl; }
-    }catch{}
-  }
-  maybeShowWithdraw();
-  setMsg('Submitted. We will review and approve your account.','success');
-  btn.disabled = false; btn.textContent = t('buttons.submit');
-};
 </script>
 </body>
 </html>
