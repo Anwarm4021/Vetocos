@@ -1,1342 +1,487 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>VetoCos | Vet-Only Pricing Store</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="VetoCos web app with Supabase auth, vet verification, product listing, and cart." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
+  <meta charset="utf-8"/>
+  <title>VetoCos | Sign in</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="Sign in to VetoCos to continue."/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg:#0b1020;
-      --bg2:#101835;
-      --card:#0f162f;
-      --text:#f6f7fb;
-      --muted:#8ea0c8;
-      --line:rgba(141,158,199,.18);
-      --line2:rgba(141,158,199,.25);
-      --brand:#6dd5ff;
-      --brand2:#83f0a5;
-      --danger:#ffb4b4;
-      --shadow:0 10px 30px rgba(0,0,0,.25);
-      --radius:16px;
-      --max:1100px;
+    :root{--bg:#0b1020;--card:#0f162f;--muted:#8ea0c8;--text:#f6f7fb;--br:16px;--brand:#6dd5ff;--brand2:#83f0a5;--max:980px;--shadow:0 10px 30px rgba(0,0,0,.25)}
+    *{box-sizing:border-box}
+    html,body{margin:0;background:linear-gradient(135deg,var(--bg),#101835);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
+    a{color:#6dd5ff;text-decoration:none}
+    header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .brand-logo{width:60px;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35))}
+    .links{display:flex;gap:10px;align-items:center}
+    .contact-btn,#lang-switch{
+      padding:8px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);cursor:pointer
     }
-
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      color:var(--text);
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      background:linear-gradient(135deg,var(--bg),var(--bg2));
-      line-height:1.55;
-    }
-    a{ color:var(--brand); text-decoration:none; }
-    a:hover{ text-decoration:underline; }
-
-    .wrap{ max-width:var(--max); margin:0 auto; padding:0 18px; }
-    .hide{ display:none !important; }
-
-    header.site{
-      position:sticky;
-      top:0;
-      z-index:60;
-      background:rgba(11,16,32,.72);
-      backdrop-filter:blur(10px);
-      border-bottom:1px solid rgba(141,158,199,.15);
-    }
-
-    .nav{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:14px 0;
-      flex-wrap:wrap;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-weight:800;
-      letter-spacing:.2px;
-    }
-    .brand-logo{
-      width:56px;
-      height:auto;
-      display:block;
-      filter:drop-shadow(0 6px 12px rgba(0,0,0,.35));
-    }
-
-    .links{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--line2);
-      background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));
-      color:var(--text);
-      font-weight:700;
-      cursor:pointer;
-      transition:transform .05s ease;
-      user-select:none;
-    }
-    .btn:active{ transform:translateY(1px); }
-    .btn.ghost{ background:rgba(255,255,255,.04); }
-    .btn.danger{ border-color:rgba(255,180,180,.35); background:rgba(255,120,120,.12); }
-    .btn[disabled]{ opacity:.6; cursor:not-allowed; }
-
-    main{ padding:22px 0 40px; }
-
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:16px;
-      box-shadow:var(--shadow);
-    }
-
-    h1,h2{ margin:0 0 10px; line-height:1.2; }
-    .muted{ color:var(--muted); }
-    .kicker{ font-size:.92rem; color:var(--muted); }
-
-    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .rowbar{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
-
-    .hr{ height:1px; background:rgba(141,158,199,.15); margin:12px 0; }
-
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      min-width:220px;
-      flex:1 1 220px;
-    }
-    label{ font-size:.95rem; color:var(--muted); }
-    input,select,textarea{
-      width:100%;
-      padding:12px 14px;
-      border-radius:12px;
-      border:1px solid rgba(141,158,199,.28);
-      background:rgba(255,255,255,.03);
-      color:var(--text);
-      outline:none;
-    }
-    textarea{ min-height:120px; resize:vertical; }
-
-    .msg{ margin-top:10px; font-size:.95rem; }
-    .ok{ color:var(--brand2); }
-    .err{ color:var(--danger); }
-
-    .pill{
-      display:inline-block;
-      padding:4px 10px;
-      border-radius:999px;
-      border:1px solid rgba(141,158,199,.25);
-      font-size:.9rem;
-      white-space:nowrap;
-    }
-    .pill.ok{ background:rgba(131,240,165,.12); }
-    .pill.pend{ background:rgba(109,213,255,.12); }
-    .pill.bad{ background:rgba(255,180,180,.12); }
-
-    .tag{
-      display:inline-block;
-      padding:3px 8px;
-      border-radius:999px;
-      border:1px solid rgba(141,158,199,.25);
-      font-size:.85rem;
-      background:rgba(109,213,255,.12);
-      white-space:nowrap;
-    }
-
-    .notice{
-      padding:10px;
-      border-radius:12px;
-      border:1px solid rgba(141,158,199,.22);
-      background:rgba(255,255,255,.03);
-    }
-
-    .price{ font-weight:900; letter-spacing:.2px; }
-
-    table{ width:100%; border-collapse:collapse; }
-    th,td{
-      padding:10px;
-      border-bottom:1px solid rgba(141,158,199,.18);
-      text-align:left;
-      vertical-align:middle;
-    }
-    th{ color:var(--muted); font-size:.92rem; font-weight:700; }
-
-    footer{
-      border-top:1px solid rgba(141,158,199,.18);
-      padding:24px 0;
-      color:var(--muted);
-      font-size:14px;
-    }
+    #lang-switch{background:rgba(255,255,255,.04);min-width:120px}
+    main{max-width:520px;margin:8vh auto;padding:0 18px}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:var(--br);padding:18px;box-shadow:var(--shadow)}
+    h1{margin:0 0 10px}
+    label{display:block;font-size:.92rem;color:var(--muted);margin:10px 0 6px}
+    input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.05);color:#fff}
+    .btn{margin-top:12px;padding:10px 14px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
+         background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:#fff;font-weight:600;cursor:pointer}
+    .muted{color:var(--muted)}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .sep{height:1px;background:rgba(141,158,199,.18);margin:12px 0}
+    .alert{padding:10px;border:1px solid rgba(255,120,120,.35);border-radius:10px;background:rgba(255,120,120,.12);color:#ffbdbd;margin-top:10px}
+    .ok{padding:10px;border:1px solid rgba(131,240,165,.35);border-radius:10px;background:rgba(131,240,165,.12);color:#a6f3c4;margin-top:10px}
+    .hint{font-size:12px;color:var(--muted)}
+    footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap}
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
+    .modal.open{display:flex}
+    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
+    .sheet-title{margin:0;font-size:1.1rem}
+    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+    .sheet-body{padding:16px}
+    .pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    @media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .input,.select,.textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);background:rgba(255,255,255,.03);color:var(--text);outline:none}
+    .textarea{min-height:140px;resize:vertical}
+    .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+    .divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
+    .pill{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem;background:rgba(109,213,255,.12)}
+    .captcha{display:flex;gap:10px;align-items:center}
+    body.rtl { direction:rtl }
+    body.rtl header .wrap, body.rtl main, body.rtl footer{ direction:rtl }
+    body.rtl label{text-align:right}
   </style>
-</head>
 
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
 <body>
-<header class="site" role="banner">
-  <div class="wrap nav" aria-label="Top navigation">
-    <div class="brand" aria-label="Brand">
-      <img class="brand-logo" src="images/logo.png" alt="VetoCos logo" onerror="this.style.display='none'">
+<header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <a href="index.html" aria-label="VetoCos home">
+        <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
+      </a>
       <span>VetoCos</span>
     </div>
-
-    <nav class="links" aria-label="Primary links">
-      <button class="btn ghost" data-go="#/products" type="button">Products</button>
-      <button class="btn ghost" data-go="#/cart" type="button">Cart</button>
-      <button class="btn ghost" data-go="#/account" type="button">My Account</button>
-      <button class="btn ghost" data-go="#/verify" type="button">Vet Verification</button>
-      <button class="btn" id="authBtn" type="button">Sign in</button>
-      <button class="btn danger hide" id="logoutBtn" type="button">Logout</button>
+    <nav class="links">
+      <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
+      <select id="lang-switch" aria-label="Language" class="contact-btn">
+        <option value="en">English</option><option value="fr">Français</option>
+        <option value="es">Español</option><option value="ar">العربية</option>
+      </select>
     </nav>
   </div>
 </header>
 
-<main class="wrap" role="main">
-  <!-- Global status -->
-  <section class="card" aria-label="Session status">
-    <div class="rowbar">
-      <div>
-        <div style="font-weight:900">Status</div>
-        <div class="kicker" id="statusLine">Checking session…</div>
-      </div>
-      <div class="row" aria-label="Badges">
-        <span class="pill pend" id="purchasePill">Not verified</span>
-        <span class="tag" id="routeTag">#/products</span>
-      </div>
-    </div>
-  </section>
+<main>
+  <div class="card">
+    <h1 id="title" data-i18n="auth.title">Sign in</h1>
+    <p id="kicker" class="muted" data-i18n="auth.kicker">Use your email and password. Leave password empty to receive a magic link.</p>
 
-  <!-- Routes -->
-  <section id="route-auth" class="card hide" aria-label="Authentication">
-    <h1 id="authTitle">Sign in</h1>
-    <p class="muted" id="authKicker">Sign in or create an account. Prices are hidden until vet verification is approved.</p>
+    <label data-i18n="auth.email">Email</label>
+    <input id="email" type="email" class="input" placeholder="you@example.com" autocomplete="email" data-i18n="auth.emailPH" data-i18n-attr="placeholder"/>
 
-    <div class="hr"></div>
-
-    <div class="rowbar">
-      <h2 style="margin:0">Access</h2>
-      <button class="btn ghost" id="toggleAuthModeBtn" type="button">Need an account? Sign up</button>
+    <div id="pwWrap">
+      <label data-i18n="auth.passwordLabel">Password <span class="muted">(optional for magic link)</span></label>
+      <input id="password" type="password" class="input" placeholder="••••••••" autocomplete="current-password" data-i18n="auth.passwordPH" data-i18n-attr="placeholder"/>
     </div>
 
-    <!-- Sign in -->
-    <div id="signinBox">
-      <div class="row">
-        <div class="field">
-          <label for="si_email">Email</label>
-          <input id="si_email" type="email" autocomplete="email" placeholder="you@example.com" />
-        </div>
-        <div class="field">
-          <label for="si_pw">Password</label>
-          <input id="si_pw" type="password" autocomplete="current-password" placeholder="••••••••" />
-        </div>
-      </div>
-      <div class="row">
-        <button class="btn" id="signinBtn" type="button">Continue</button>
-        <button class="btn ghost" id="forgotBtn" type="button">Forgot password</button>
-      </div>
-      <div class="msg muted" id="si_msg" role="status" aria-live="polite"></div>
+    <!-- Simple math captcha -->
+    <div class="row" style="margin-top:8px;align-items:center">
+      <div class="pill" id="mathQ" aria-live="polite"></div>
+      <input id="mathA" class="input" style="max-width:140px" placeholder="Answer" inputmode="numeric" data-i18n="auth.captchaPH" data-i18n-attr="placeholder"/>
+      <button id="refreshCaptcha" class="btn" type="button" style="margin:0" data-i18n="auth.captchaRefresh">Refresh</button>
+    </div>
+    <div class="hint" data-i18n="auth.captchaHint">Basic captcha to reduce abuse. (Optional hCaptcha block is commented in code.)</div>
+
+    <button id="continue" class="btn" data-i18n="auth.continue">Continue</button>
+    <div id="msg" class="muted" style="margin-top:8px"></div>
+
+    <div class="row" style="margin-top:6px">
+      <button id="forgotBtn" class="btn" type="button" data-i18n="auth.forgot">Forgot password</button>
+      <button id="logout" class="btn" style="display:none" data-i18n="auth.switch">Switch account</button>
+      <a id="goHome" href="index.html" data-i18n="nav.home">Home</a>
     </div>
 
-    <!-- Sign up -->
-    <div id="signupBox" class="hide">
-      <div class="row">
-        <div class="field">
-          <label for="su_first">First name</label>
-          <input id="su_first" autocomplete="given-name" placeholder="First name" />
-        </div>
-        <div class="field">
-          <label for="su_last">Last name</label>
-          <input id="su_last" autocomplete="family-name" placeholder="Last name" />
-        </div>
-      </div>
-      <div class="row">
-        <div class="field">
-          <label for="su_dob">Date of birth</label>
-          <input id="su_dob" type="date" />
-        </div>
-        <div class="field">
-          <label for="su_email">Email</label>
-          <input id="su_email" type="email" autocomplete="email" placeholder="you@example.com" />
-        </div>
-      </div>
-      <div class="row">
-        <div class="field">
-          <label for="su_pw">Password</label>
-          <input id="su_pw" type="password" minlength="8" autocomplete="new-password" placeholder="At least 8 characters" />
-        </div>
-        <div class="field">
-          <label for="su_pw2">Confirm password</label>
-          <input id="su_pw2" type="password" minlength="8" autocomplete="new-password" placeholder="Repeat password" />
-        </div>
-      </div>
-      <div class="row">
-        <button class="btn" id="signupBtn" type="button">Create account</button>
-        <button class="btn ghost" id="backToSigninBtn" type="button">Back to sign in</button>
-      </div>
-      <div class="msg muted" id="su_msg" role="status" aria-live="polite"></div>
-    </div>
-  </section>
+    <div id="notAdminBox" class="alert" style="display:none;margin-top:14px"></div>
 
-  <section id="route-verify" class="card hide" aria-label="Vet verification">
-    <h1>Vet verification</h1>
-    <p class="muted">Submit your professional document to unlock prices and purchasing. After admin approval, prices appear automatically.</p>
-
-    <div class="hr"></div>
-
-    <div class="rowbar">
-      <div>
-        <div class="kicker">Current status</div>
-        <div id="vetStatusPill" class="pill pend">pending</div>
-      </div>
-      <div class="row">
-        <button class="btn ghost" data-go="#/products" type="button">Back to Products</button>
-      </div>
-    </div>
-
-    <div class="hr"></div>
-
-    <div class="row">
-      <div class="field">
-        <label for="vv_idnum">Identity number</label>
-        <input id="vv_idnum" placeholder="License / Registration / ID" />
-      </div>
-      <div class="field">
-        <label for="vv_file">Diploma / professional card (PDF/JPG/PNG, max 10MB)</label>
-        <input id="vv_file" type="file" accept=".pdf,.png,.jpg,.jpeg" />
-      </div>
-    </div>
-
-    <div class="row">
-      <button class="btn" id="vv_submit" type="button">Submit for review</button>
-      <button class="btn danger hide" id="vv_withdraw" type="button">Withdraw application</button>
-      <a class="btn ghost hide" id="vv_preview" target="_blank" rel="noopener">Open uploaded file</a>
-    </div>
-
-    <div class="msg muted" id="vv_msg" role="status" aria-live="polite"></div>
-
-    <div class="notice" style="margin-top:12px">
-      <div class="kicker"><strong>Admin approval</strong></div>
-      <div class="kicker">Admin must set your application to <em>approved</em> and set <code>profiles.can_purchase = true</code>.</div>
-    </div>
-  </section>
-
-  <section id="route-products" class="card hide" aria-label="Products">
-    <div class="rowbar">
-      <h1 style="margin:0">Products</h1>
-      <div class="row">
-        <label class="hide" for="prodSearch">Search</label>
-        <input id="prodSearch" placeholder="Search by name or SKU" style="min-width:260px" />
-        <button class="btn ghost" data-go="#/cart" type="button">Go to Cart</button>
-      </div>
-    </div>
-
-    <div class="hr"></div>
-
-    <!-- FIXED: this notice never tells a logged-in user to sign in -->
-    <div id="priceGateNotice" class="notice hide" role="note">
-      <strong>Prices are hidden.</strong>
-      <div class="kicker" id="priceGateKicker"></div>
-      <div class="row" style="margin-top:10px" id="priceGateActions"></div>
-    </div>
-
-    <div id="prodList" class="muted" aria-live="polite">Loading…</div>
-  </section>
-
-  <section id="route-cart" class="card hide" aria-label="Cart">
-    <div class="rowbar">
-      <h1 style="margin:0">Cart</h1>
-      <div class="row">
-        <button class="btn ghost" data-go="#/products" type="button">Continue shopping</button>
-        <button class="btn" id="checkoutBtn" type="button" disabled>Checkout</button>
-      </div>
-    </div>
-
-    <div class="hr"></div>
-
-    <div id="cartGateNotice" class="notice hide" role="note">
-      <strong>Checkout is locked.</strong>
-      <div class="kicker">You must be verified to see prices and checkout.</div>
-      <div class="row" style="margin-top:10px">
-        <button class="btn" data-go="#/verify" type="button">Go to verification</button>
-      </div>
-    </div>
-
-    <div id="cartBox" class="muted" aria-live="polite">Loading…</div>
-    <div class="msg muted" id="cartMsg" role="status" aria-live="polite"></div>
-  </section>
-
-  <section id="route-account" class="card hide" aria-label="Account">
-    <div class="rowbar">
-      <h1 style="margin:0">My Account</h1>
-      <div class="row">
-        <button class="btn ghost" data-go="#/verify" type="button">Verification</button>
-      </div>
-    </div>
-
-    <div class="hr"></div>
-
-    <div id="accBox" class="muted" aria-live="polite">Loading…</div>
-  </section>
+    <div class="sep"></div>
+    <div class="hint" data-i18n="auth.serverCaptchaNote">If CAPTCHA is enforced in Supabase, enable hCaptcha in code and verify tokens server-side.</div>
+  </div>
 </main>
 
-<footer role="contentinfo">
-  <div class="wrap">© <span id="y"></span> VetoCos · Complementary feed for companion animals</div>
+<footer>
+  <div class="wrap">
+    © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals</span>
+    <div class="footer-links">
+      <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
+      <a href="#" onclick="openContact();return false;" data-i18n="footer.contact">Contact</a>
+    </div>
+  </div>
 </footer>
 
-<script>
-(() => {
-  "use strict";
-
-  /* =========================================================
-     CONFIG
-  ========================================================= */
-  const CONFIG = Object.freeze({
-    supabaseUrl: "https://qdepgviimbcdlozjpbhm.supabase.co",
-    supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
-    documentsBucket: "Documents",
-    cartStorageKey: "vetocos_cart_v1",
-    maxUploadBytes: 10 * 1024 * 1024,
-    allowedMimeTypes: new Set(["application/pdf", "image/jpeg", "image/png"]),
-    adminEmails: new Set(["anwar.moumenjamai19@gmail.com"].map(e => e.toLowerCase())),
-  });
-
-  /* =========================================================
-     SUPABASE
-  ========================================================= */
-  const supa = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-  });
-
-  /* =========================================================
-     DOM HELPERS
-  ========================================================= */
-  const $ = (id) => document.getElementById(id);
-
-  function setText(el, text) { if (el) el.textContent = String(text ?? ""); }
-  function setHTML(el, html) { if (el) el.innerHTML = String(html ?? ""); }
-  function show(el, yes) { if (el) el.classList.toggle("hide", !yes); }
-
-  function escapeHtml(value) {
-    const s = String(value ?? "");
-    return s.replace(/[&<>"']/g, (m) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
-  }
-
-  function setPill(el, kind, text) {
-    if (!el) return;
-    el.className = `pill ${kind || "pend"}`;
-    el.textContent = text || "";
-  }
-
-  function setMessage(el, type, text) {
-    if (!el) return;
-    el.className = `msg ${type || "muted"}`;
-    el.textContent = text || "";
-  }
-
-  /* =========================================================
-     STATE
-  ========================================================= */
-  const state = {
-    route: "#/products",
-    user: null,
-    profile: null,
-    vetApp: null,
-    products: [],
-    cart: [],
-    canPurchase: false,
-    authMode: "signin",
-  };
-
-  /* =========================================================
-     CART (local + optional DB sync)
-  ========================================================= */
-  function readLocalCart() {
-    try { return JSON.parse(localStorage.getItem(CONFIG.cartStorageKey) || "[]"); }
-    catch { return []; }
-  }
-
-  function writeLocalCart(items) {
-    const cleaned = (items || [])
-      .filter(x => x && x.sku && Number(x.qty) > 0)
-      .map(x => ({ sku: String(x.sku), name: String(x.name || x.sku), qty: Math.max(1, Number(x.qty) || 1) }));
-    localStorage.setItem(CONFIG.cartStorageKey, JSON.stringify(cleaned));
-    state.cart = cleaned;
-  }
-
-  function cartCount() {
-    return state.cart.reduce((sum, it) => sum + (Number(it.qty) || 0), 0);
-  }
-
-  async function syncCartToDB() {
-    if (!state.user) return;
-
-    const cart = readLocalCart();
-
-    if (cart.length) {
-      const payload = cart.map(it => ({
-        user_id: state.user.id,
-        product_sku: it.sku,
-        quantity: Number(it.qty || 0),
-      }));
-      await supa.from("cart_items").upsert(payload, { onConflict: "user_id,product_sku" });
-    }
-
-    const { data: rows } = await supa
-      .from("cart_items")
-      .select("product_sku,quantity")
-      .eq("user_id", state.user.id);
-
-    const keep = new Set(cart.map(x => x.sku));
-    for (const r of (rows || [])) {
-      if (!keep.has(r.product_sku)) {
-        await supa.from("cart_items")
-          .delete()
-          .eq("user_id", state.user.id)
-          .eq("product_sku", r.product_sku);
-      }
-    }
-  }
-
-  async function loadCartFromDB() {
-    if (!state.user) return;
-
-    const { data, error } = await supa
-      .from("cart_items")
-      .select("product_sku,quantity")
-      .eq("user_id", state.user.id);
-
-    if (error) return;
-
-    const db = new Map((data || [])
-      .filter(r => Number(r.quantity) > 0)
-      .map(r => [r.product_sku, Number(r.quantity)]));
-
-    const local = readLocalCart();
-    for (const it of local) {
-      if (!db.has(it.sku)) db.set(it.sku, Number(it.qty || 0));
-    }
-
-    const merged = [...db.entries()].map(([sku, qty]) => {
-      const prod = state.products.find(p => p.sku === sku);
-      const localItem = local.find(x => x.sku === sku);
-      return { sku, qty, name: prod?.name || localItem?.name || sku };
-    });
-
-    writeLocalCart(merged);
-  }
-
-  /* =========================================================
-     LOADERS
-  ========================================================= */
-  async function refreshUser() {
-    const { data: { user } } = await supa.auth.getUser();
-    state.user = user || null;
-    return state.user;
-  }
-
-  async function ensureProfile() {
-    state.profile = null;
-    state.canPurchase = false;
-    if (!state.user) return null;
-
-    let { data: p } = await supa
-      .from("profiles")
-      .select("id,email,first_name,last_name,dob,can_purchase,is_admin")
-      .eq("id", state.user.id)
-      .maybeSingle();
-
-    if (!p) {
-      await supa.from("profiles").insert({
-        id: state.user.id,
-        email: state.user.email || null,
-        first_name: null,
-        last_name: null,
-        dob: null,
-        can_purchase: false,
-        is_admin: CONFIG.adminEmails.has((state.user.email || "").toLowerCase()),
-      });
-
-      ({ data: p } = await supa
-        .from("profiles")
-        .select("id,email,first_name,last_name,dob,can_purchase,is_admin")
-        .eq("id", state.user.id)
-        .maybeSingle());
-    }
-
-    state.profile = p || null;
-    state.canPurchase = !!p?.can_purchase;
-    return state.profile;
-  }
-
-  async function loadLatestVetApplication() {
-    state.vetApp = null;
-    if (!state.user) return null;
-
-    const { data } = await supa
-      .from("vet_applications")
-      .select("id,user_id,identity_number,diploma_path,status,created_at")
-      .eq("user_id", state.user.id)
-      .order("created_at", { ascending: false })
-      .limit(1);
-
-    state.vetApp = (data && data[0]) ? data[0] : null;
-    return state.vetApp;
-  }
-
-  async function loadProducts() {
-    setText($("prodList"), "Loading…");
-    const { data, error } = await supa
-      .from("products")
-      .select("sku,name,price,stock_qty,available")
-      .order("name", { ascending: true });
-
-    if (error) {
-      setHTML($("prodList"), `<div class="err">${escapeHtml(error.message)}</div>`);
-      state.products = [];
-      return [];
-    }
-
-    state.products = (data || []).filter(p => p.available && Number(p.stock_qty || 0) > 0);
-    return state.products;
-  }
-
-  async function refreshAll() {
-    await refreshUser();
-    await ensureProfile();
-    await loadLatestVetApplication();
-
-    state.canPurchase = !!state.profile?.can_purchase;
-
-    await loadProducts();
-
-    if (state.user) await loadCartFromDB();
-    else writeLocalCart(readLocalCart());
-
-    renderGlobalStatus();
-  }
-
-  /* =========================================================
-     ROUTING
-  ========================================================= */
-  const ROUTES = new Set(["auth", "verify", "products", "cart", "account"]);
-
-  function currentRouteName() {
-    const hash = location.hash || "#/products";
-    const name = hash.replace(/^#\/?/, "").split("/")[0] || "products";
-    return ROUTES.has(name) ? name : "products";
-  }
-
-  function setRoute(hash) {
-    const name = (hash || location.hash || "#/products")
-      .replace(/^#\/?/, "")
-      .split("/")[0] || "products";
-
-    state.route = `#/${ROUTES.has(name) ? name : "products"}`;
-    setText($("routeTag"), state.route);
-
-    for (const r of ROUTES) show($(`route-${r}`), r === state.route.replace("#/", ""));
-  }
-
-  function navigateTo(hash) { location.hash = hash; }
-
-  function setupNavButtons() {
-    document.querySelectorAll("[data-go]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const to = btn.getAttribute("data-go");
-        if (to) navigateTo(to);
-      });
-    });
-  }
-
-  /* =========================================================
-     GLOBAL STATUS + HEADER
-  ========================================================= */
-  function renderGlobalStatus() {
-    const authBtn = $("authBtn");
-    const logoutBtn = $("logoutBtn");
-
-    if (!state.user) {
-      setText($("statusLine"), "Not signed in.");
-      setPill($("purchasePill"), "pend", "Not verified");
-      setText(authBtn, "Sign in");
-      show(logoutBtn, false);
-      return;
-    }
-
-    const name = [state.profile?.first_name, state.profile?.last_name]
-      .filter(Boolean).join(" ") || (state.user.email || "").split("@")[0] || "User";
-
-    setText($("statusLine"), `Signed in as ${name} (${state.user.email || ""}).`);
-    setPill($("purchasePill"), state.canPurchase ? "ok" : "bad", state.canPurchase ? "Verified" : "Not verified");
-    setText(authBtn, "Account");
-    show(logoutBtn, true);
-  }
-
-  function wireHeaderAuthButtons() {
-    $("authBtn").addEventListener("click", () => {
-      if (!state.user) navigateTo("#/auth");
-      else navigateTo("#/account");
-    });
-
-    $("logoutBtn").addEventListener("click", async () => {
-      await supa.auth.signOut();
-      state.user = null;
-      state.profile = null;
-      state.vetApp = null;
-      state.canPurchase = false;
-      renderGlobalStatus();
-      navigateTo("#/auth");
-    });
-  }
-
-  /* =========================================================
-     AUTH UI
-  ========================================================= */
-  function setAuthMode(mode) {
-    state.authMode = mode;
-    show($("signinBox"), mode === "signin");
-    show($("signupBox"), mode === "signup");
-    setText($("toggleAuthModeBtn"), mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in");
-  }
-
-  function wireAuthPage() {
-    $("toggleAuthModeBtn").addEventListener("click", () => {
-      setAuthMode(state.authMode === "signin" ? "signup" : "signin");
-    });
-    $("backToSigninBtn").addEventListener("click", () => setAuthMode("signin"));
-
-    $("signinBtn").addEventListener("click", async () => {
-      const msg = $("si_msg");
-      setMessage(msg, "muted", "Signing in…");
-
-      const email = ($("si_email").value || "").trim().toLowerCase();
-      const password = $("si_pw").value || "";
-
-      if (!email || !password) {
-        setMessage(msg, "err", "Enter email and password.");
-        return;
-      }
-
-      const { error } = await supa.auth.signInWithPassword({ email, password });
-      if (error) {
-        setMessage(msg, "err", error.message);
-        return;
-      }
-
-      await refreshAll();
-      navigateTo("#/products"); // ALWAYS go to products; prices depend on verification
-    });
-
-    $("forgotBtn").addEventListener("click", async () => {
-      const msg = $("si_msg");
-      setMessage(msg, "muted", "Sending reset email…");
-
-      const email = ($("si_email").value || "").trim().toLowerCase();
-      if (!email) {
-        setMessage(msg, "err", "Enter your email first.");
-        return;
-      }
-
-      const redirectTo = location.origin + location.pathname + "#/auth";
-      const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo });
-
-      if (error) setMessage(msg, "err", error.message);
-      else setMessage(msg, "ok", "Password reset email sent. Check inbox/spam.");
-    });
-
-    $("signupBtn").addEventListener("click", async () => {
-      const msg = $("su_msg");
-      setMessage(msg, "muted", "Creating account…");
-
-      const first = ($("su_first").value || "").trim();
-      const last = ($("su_last").value || "").trim();
-      const dob = ($("su_dob").value || "").trim();
-      const email = ($("su_email").value || "").trim().toLowerCase();
-      const pw = $("su_pw").value || "";
-      const pw2 = $("su_pw2").value || "";
-
-      if (!first || !last || !dob || !email || !pw) {
-        setMessage(msg, "err", "Please fill all fields.");
-        return;
-      }
-      if (pw.length < 8) {
-        setMessage(msg, "err", "Password must be at least 8 characters.");
-        return;
-      }
-      if (pw !== pw2) {
-        setMessage(msg, "err", "Passwords do not match.");
-        return;
-      }
-
-      const emailRedirectTo = location.origin + location.pathname + "#/auth";
-      const { error } = await supa.auth.signUp({
-        email,
-        password: pw,
-        options: {
-          emailRedirectTo,
-          data: { first_name: first, last_name: last, dob },
-        },
-      });
-
-      if (error) {
-        setMessage(msg, "err", error.message);
-        return;
-      }
-
-      setMessage(msg, "ok", "Almost done! Check your email to confirm, then return and sign in.");
-    });
-
-    setAuthMode("signin");
-  }
-
-  /* =========================================================
-     VERIFY UI
-  ========================================================= */
-  function vetStatusLabel() {
-    const st = String(state.vetApp?.status || (state.canPurchase ? "approved" : "pending")).toLowerCase();
-    return st;
-  }
-
-  async function renderVerifyPage() {
-    const msg = $("vv_msg");
-    const idInput = $("vv_idnum");
-    const fileInput = $("vv_file");
-    const submitBtn = $("vv_submit");
-    const withdrawBtn = $("vv_withdraw");
-    const previewLink = $("vv_preview");
-
-    if (!state.user) {
-      setPill($("vetStatusPill"), "pend", "Sign in required");
-      setMessage(msg, "muted", "Please sign in first.");
-      show(withdrawBtn, false);
-      show(previewLink, false);
-      submitBtn.onclick = () => navigateTo("#/auth");
-      return;
-    }
-
-    await loadLatestVetApplication();
-
-    const st = vetStatusLabel();
-    if (st === "approved" || state.canPurchase) setPill($("vetStatusPill"), "ok", "approved");
-    else if (st === "rejected") setPill($("vetStatusPill"), "bad", "rejected");
-    else if (st === "withdrawn") setPill($("vetStatusPill"), "bad", "withdrawn");
-    else setPill($("vetStatusPill"), "pend", "pending");
-
-    idInput.value = state.vetApp?.identity_number || "";
-
-    if (st === "approved") setMessage(msg, "ok", "Approved. Prices and checkout are unlocked.");
-    else if (st === "rejected") setMessage(msg, "err", "Rejected. Please re-submit with the correct document.");
-    else if (st === "withdrawn") setMessage(msg, "muted", "Withdrawn. You can submit a new application.");
-    else if (state.vetApp) setMessage(msg, "muted", "Pending review. You can re-submit to update your document.");
-    else setMessage(msg, "muted", "No submission yet. Fill the form and submit.");
-
-    show(previewLink, false);
-    if (state.vetApp?.diploma_path) {
-      const { data } = await supa.storage
-        .from(CONFIG.documentsBucket)
-        .createSignedUrl(state.vetApp.diploma_path, 300);
-
-      if (data?.signedUrl) {
-        previewLink.href = data.signedUrl;
-        show(previewLink, true);
-      }
-    }
-
-    show(withdrawBtn, !!state.vetApp && st !== "withdrawn");
-    withdrawBtn.onclick = async () => {
-      if (!state.vetApp) return;
-      if (!confirm("Withdraw your verification application?")) return;
-
-      const { error } = await supa.from("vet_applications")
-        .update({ status: "withdrawn" })
-        .eq("id", state.vetApp.id);
-
-      if (error) { setMessage(msg, "err", error.message); return; }
-
-      setMessage(msg, "ok", "Application withdrawn.");
-      await refreshAll();
-      await renderVerifyPage();
-      renderGlobalStatus();
-    };
-
-    submitBtn.onclick = async () => {
-      setMessage(msg, "muted", "Preparing submission…");
-
-      const identityNumber = (idInput.value || "").trim();
-      const file = fileInput.files?.[0];
-
-      if (!identityNumber || !file) {
-        setMessage(msg, "err", "Please enter ID number and choose a file.");
-        return;
-      }
-      if (file.size > CONFIG.maxUploadBytes) {
-        setMessage(msg, "err", "File too large (max 10 MB).");
-        return;
-      }
-      if (file.type && !CONFIG.allowedMimeTypes.has(file.type)) {
-        setMessage(msg, "err", "Unsupported file type. Upload PDF/JPG/PNG.");
-        return;
-      }
-
-      setMessage(msg, "muted", "Uploading document…");
-
-      const cleanName = (file.name || "document")
-        .replace(/\s+/g, "_")
-        .replace(/[^\w.\-]/g, "")
-        .slice(-120);
-
-      const path = `${state.user.id}/${Date.now()}_${cleanName}`;
-
-      const upload = await supa.storage
-        .from(CONFIG.documentsBucket)
-        .upload(path, file, { upsert: false, cacheControl: "3600", contentType: file.type || "application/octet-stream" });
-
-      if (upload.error) {
-        setMessage(msg, "err", upload.error.message);
-        return;
-      }
-
-      setMessage(msg, "muted", "Saving application…");
-
-      if (!state.vetApp) {
-        const ins = await supa.from("vet_applications").insert({
-          user_id: state.user.id,
-          identity_number: identityNumber,
-          diploma_path: upload.data.path,
-          status: "pending",
-        }).select().single();
-
-        if (ins.error) { setMessage(msg, "err", ins.error.message); return; }
-        state.vetApp = ins.data;
-      } else {
-        const upd = await supa.from("vet_applications").update({
-          identity_number: identityNumber,
-          diploma_path: upload.data.path,
-          status: "pending",
-        }).eq("id", state.vetApp.id).select().single();
-
-        if (upd.error) { setMessage(msg, "err", upd.error.message); return; }
-        state.vetApp = upd.data;
-      }
-
-      setMessage(msg, "ok", "Submitted. We will review and approve your account.");
-      await refreshAll();
-      await renderVerifyPage();
-      renderGlobalStatus();
-    };
-  }
-
-  /* =========================================================
-     PRODUCTS UI (fixed gating: never asks logged-in users to sign in)
-  ========================================================= */
-  function renderProductsGate() {
-    const gate = $("priceGateNotice");
-    const kicker = $("priceGateKicker");
-    const actions = $("priceGateActions");
-
-    if (state.user && state.canPurchase) {
-      show(gate, false);
-      return;
-    }
-
-    show(gate, true);
-
-    if (!state.user) {
-      setText(kicker, "Please sign in to request vet verification and unlock pricing.");
-      setHTML(actions, `
-        <button class="btn" type="button" data-go="#/auth">Sign in / Sign up</button>
-      `);
-    } else {
-      // Logged in but not verified -> DO NOT show sign-in button
-      setText(kicker, "Your account is signed in, but not verified yet. Complete vet verification to unlock prices.");
-      setHTML(actions, `
-        <button class="btn" type="button" data-go="#/verify">Start verification</button>
-        <button class="btn ghost" type="button" data-go="#/account">My account</button>
-      `);
-    }
-
-    // re-wire newly injected buttons
-    actions.querySelectorAll("[data-go]").forEach(btn => {
-      btn.addEventListener("click", () => navigateTo(btn.getAttribute("data-go")));
-    });
-  }
-
-  function renderProductsPage() {
-    const list = $("prodList");
-    const q = ($("prodSearch").value || "").trim().toLowerCase();
-
-    const showPrice = !!state.user && !!state.canPurchase;
-
-    renderProductsGate();
-
-    const filtered = state.products.filter(p => {
-      if (!q) return true;
-      return String(p.name || "").toLowerCase().includes(q) || String(p.sku || "").toLowerCase().includes(q);
-    });
-
-    if (!filtered.length) {
-      setHTML(list, `<div class="muted">No products found.</div>`);
-      return;
-    }
-
-    const html = filtered.map(p => {
-      const inStock = Number(p.stock_qty || 0);
-      const priceHtml = showPrice
-        ? `<span class="price">${Number(p.price || 0).toFixed(2)}</span>`
-        : `<span class="tag">Vet verification required</span>`;
-
-      const addDisabled = !showPrice;
-
-      return `
-        <div class="rowbar" style="padding:10px 0;border-bottom:1px solid rgba(141,158,199,.12)">
-          <div>
-            <div style="font-weight:900">${escapeHtml(p.name || "")}</div>
-            <div class="kicker">SKU: ${escapeHtml(p.sku)} · In stock: ${inStock}</div>
+<!-- CONTACT MODAL (same UI, i18n-ready) -->
+<div id="contactModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="sheet-head">
+      <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
+      <button class="close" type="button" onclick="closeContact()" data-i18n="contact.close">Close</button>
+    </div>
+    <div class="sheet-body">
+      <div class="pro-grid">
+        <form id="contactForm" onsubmit="return sendMailto(event)">
+          <div class="field">
+            <label for="topic" data-i18n="form.topic">Topic</label>
+            <select id="topic" name="topic" class="select">
+              <option value="product" data-i18n="form.topicProduct">Product question</option>
+              <option value="availability" data-i18n="form.topicAvailability">Availability / Where to buy</option>
+              <option value="order" data-i18n="form.topicOrder">Order / Delivery</option>
+              <option value="feedback" data-i18n="form.topicFeedback">Feedback</option>
+              <option value="other" data-i18n="form.topicOther">Other</option>
+            </select>
           </div>
-          <div class="row">
-            ${priceHtml}
-            <label class="hide" for="qty_${escapeHtml(p.sku)}">Quantity</label>
-            <input id="qty_${escapeHtml(p.sku)}" type="number" min="1" value="1" style="width:90px"
-                   data-qty="${escapeHtml(p.sku)}" ${addDisabled ? "disabled" : ""} />
-            <button class="btn" type="button" data-add="${escapeHtml(p.sku)}" ${addDisabled ? "disabled" : ""}>Add</button>
-          </div>
-        </div>
-      `;
-    }).join("");
 
-    setHTML(list, html);
-
-    list.querySelectorAll("button[data-add]").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const sku = btn.getAttribute("data-add");
-        const prod = state.products.find(x => x.sku === sku);
-        if (!prod) return;
-
-        // If user not signed in -> send to auth
-        if (!state.user) return navigateTo("#/auth");
-        // If signed in but not verified -> send to verification (NOT auth)
-        if (!state.canPurchase) return navigateTo("#/verify");
-
-        const qtyInput = list.querySelector(`input[data-qty="${CSS.escape(sku)}"]`);
-        const qty = Math.max(1, Number(qtyInput?.value || 1));
-
-        const cart = readLocalCart();
-        const i = cart.findIndex(x => x.sku === sku);
-        if (i >= 0) cart[i].qty = Number(cart[i].qty || 0) + qty;
-        else cart.push({ sku, name: prod.name || sku, qty });
-
-        writeLocalCart(cart);
-        await syncCartToDB();
-        navigateTo("#/cart");
-      });
-    });
-  }
-
-  /* =========================================================
-     CART UI
-  ========================================================= */
-  function renderCartPage() {
-    const box = $("cartBox");
-    const msg = $("cartMsg");
-    const checkoutBtn = $("checkoutBtn");
-
-    const showPrice = !!state.user && !!state.canPurchase;
-    show($("cartGateNotice"), !!state.user && !showPrice); // only show lock notice if logged in but unverified
-
-    if (!state.user) {
-      setHTML(box, `
-        <div class="muted">Please sign in to view your cart.</div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn" type="button" id="cartSignInBtn">Sign in</button>
-        </div>
-      `);
-      setText(msg, "");
-      checkoutBtn.disabled = true;
-      $("cartSignInBtn").onclick = () => navigateTo("#/auth");
-      return;
-    }
-
-    const cart = readLocalCart();
-    if (!cart.length) {
-      setHTML(box, `<div class="muted">Cart is empty.</div>`);
-      setText(msg, "");
-      checkoutBtn.disabled = true;
-      return;
-    }
-
-    checkoutBtn.disabled = !showPrice;
-
-    const lines = cart.map((it, idx) => {
-      const prod = state.products.find(p => p.sku === it.sku);
-      const unit = Number(prod?.price || 0);
-      const qty = Number(it.qty || 0);
-      const lineTotal = unit * qty;
-
-      const unitCell = showPrice ? `<span class="price">${unit.toFixed(2)}</span>` : `<span class="tag">Hidden</span>`;
-      const totalCell = showPrice ? `<span class="price">${lineTotal.toFixed(2)}</span>` : `<span class="tag">Hidden</span>`;
-
-      return `
-        <tr>
-          <td>
-            <div style="font-weight:900">${escapeHtml(it.name || it.sku)}</div>
-            <div class="kicker">SKU: ${escapeHtml(it.sku)}</div>
-          </td>
-          <td>
-            <div class="row" style="gap:6px">
-              <button class="btn ghost" type="button" data-dec="${idx}">−</button>
-              <span style="min-width:30px;text-align:center">${qty}</span>
-              <button class="btn ghost" type="button" data-inc="${idx}">+</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <div class="field">
+              <label for="name" data-i18n="form.name">Name</label>
+              <input id="name" name="name" class="input" autocomplete="name" required
+                     data-i18n="form.namePH" data-i18n-attr="placeholder" placeholder="Full name">
             </div>
-          </td>
-          <td>${unitCell}</td>
-          <td>${totalCell}</td>
-          <td><button class="btn danger" type="button" data-rem="${idx}">Remove</button></td>
-        </tr>
-      `;
-    }).join("");
+            <div class="field">
+              <label for="email2" data-i18n="form.email">Email</label>
+              <input id="email2" name="email" type="email" class="input" autocomplete="email" required
+                     inputmode="email" data-i18n="form.emailPH" data-i18n-attr="placeholder" placeholder="name@example.com">
+            </div>
+          </div>
 
-    setHTML(box, `
-      <table aria-label="Cart items">
-        <thead>
-          <tr><th>Product</th><th>Qty</th><th>Unit</th><th>Line</th><th>Action</th></tr>
-        </thead>
-        <tbody>${lines}</tbody>
-      </table>
-    `);
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+            <div class="field">
+              <label for="country" data-i18n="form.country">Country</label>
+              <input id="country" name="country" class="input"
+                     data-i18n="form.countryPH" data-i18n-attr="placeholder"
+                     placeholder="Country (optional)">
+            </div>
+            <div class="field">
+              <label for="phone" data-i18n="form.phone">Phone (optional)</label>
+              <input id="phone" name="phone" class="input" inputmode="tel"
+                     pattern="^[0-9+() -]{6,}$"
+                     data-i18n="form.phonePH" data-i18n-attr="placeholder"
+                     placeholder="+212 537742213">
+              <span class="hint" data-i18n="form.phoneHint">Digits, spaces and +() - allowed</span>
+            </div>
+          </div>
 
-    const total = cart.reduce((sum, it) => {
-      const prod = state.products.find(p => p.sku === it.sku);
-      return sum + (Number(prod?.price || 0) * Number(it.qty || 0));
-    }, 0);
+          <div class="field" style="margin-top:10px">
+            <label for="subject" data-i18n="form.subject">Subject</label>
+            <input id="subject" name="subject" class="input" maxlength="120" required
+                   data-i18n="form.subjectPH" data-i18n-attr="placeholder"
+                   placeholder="Question about a product…">
+          </div>
 
-    if (showPrice) setHTML(msg, `Items: <strong>${cartCount()}</strong> · Total: <strong>${total.toFixed(2)}</strong>`);
-    else setHTML(msg, `Items: <strong>${cartCount()}</strong> · <span class="tag">Totals hidden until verified</span>`);
+          <div class="field" style="margin-top:10px">
+            <label for="message" data-i18n="form.message">Message / Comments</label>
+            <textarea id="message" name="message" class="textarea" maxlength="1200" required
+                      data-i18n="form.messagePH" data-i18n-attr="placeholder"
+                      placeholder="Write your help request or comment…"></textarea>
+            <div class="hint"><span id="msgCount">0</span>/1200</div>
+          </div>
 
-    box.querySelectorAll("button[data-inc]").forEach(b => {
-      b.addEventListener("click", async () => {
-        const idx = Number(b.getAttribute("data-inc"));
-        const c = readLocalCart();
-        if (!c[idx]) return;
-        c[idx].qty = Number(c[idx].qty || 0) + 1;
-        writeLocalCart(c);
-        await syncCartToDB();
-        renderCartPage();
-      });
-    });
+          <div class="divider"></div>
 
-    box.querySelectorAll("button[data-dec]").forEach(b => {
-      b.addEventListener("click", async () => {
-        const idx = Number(b.getAttribute("data-dec"));
-        const c = readLocalCart();
-        if (!c[idx]) return;
-        c[idx].qty = Math.max(0, Number(c[idx].qty || 0) - 1);
-        if (c[idx].qty === 0) c.splice(idx, 1);
-        writeLocalCart(c);
-        await syncCartToDB();
-        renderCartPage();
-      });
-    });
+          <div class="field">
+            <label style="display:flex;gap:8px;align-items:flex-start">
+              <input type="checkbox" id="consent" required>
+              <span data-i18n="form.consent">I consent to VetoCos using my details to respond to this enquiry.</span>
+            </label>
+            <span class="hint" data-i18n="form.privacyNote">Your message is sent via your email app; we don't store it on this site.</span>
+          </div>
 
-    box.querySelectorAll("button[data-rem]").forEach(b => {
-      b.addEventListener("click", async () => {
-        const idx = Number(b.getAttribute("data-rem"));
-        const c = readLocalCart();
-        if (!c[idx]) return;
-        c.splice(idx, 1);
-        writeLocalCart(c);
-        await syncCartToDB();
-        renderCartPage();
-      });
-    });
+          <div class="actions-fw">
+            <button class="close" type="button" onclick="closeContact()" data-i18n="form.cancel">Cancel</button>
+            <button class="contact-btn" type="submit" data-i18n="form.send">Send</button>
+          </div>
+        </form>
 
-    checkoutBtn.onclick = () => {
-      if (!state.user) return navigateTo("#/auth");
-      if (!state.canPurchase) return navigateTo("#/verify");
-      alert("Checkout flow not included in this single file. I can add Orders + Stripe if you want.");
-    };
-  }
+        <div class="card" style="height:fit-content">
+          <h3 data-i18n="contact.reach">Reach us</h3>
+          <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
 
-  /* =========================================================
-     ACCOUNT UI
-  ========================================================= */
-  async function renderAccountPage() {
-    const box = $("accBox");
-
-    if (!state.user) {
-      setHTML(box, `
-        <div class="muted">Please sign in to view your account.</div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn" type="button" id="accSignInBtn">Sign in</button>
-        </div>
-      `);
-      $("accSignInBtn").onclick = () => navigateTo("#/auth");
-      return;
-    }
-
-    const badge = state.canPurchase ? `<span class="pill ok">Verified</span>` : `<span class="pill bad">Not verified</span>`;
-    const fn = state.profile?.first_name || "";
-    const ln = state.profile?.last_name || "";
-
-    setHTML(box, `
-      <div class="rowbar">
-        <div>
-          <div style="font-weight:900">${escapeHtml(state.user.email || "")}</div>
-          <div class="kicker">Purchase access: ${badge}</div>
-        </div>
-        <div class="row">
-          <button class="btn" type="button" id="accToVerifyBtn">Go to verification</button>
+          <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
+          <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
+          <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
+          <p><strong data-i18n="contact.hours">Hours:</strong> <span data-i18n="contact.hoursVal">Mon–Fri, 9:00–17:00</span></p>
         </div>
       </div>
+    </div>
+  </div>
+</div>
 
-      <div class="hr"></div>
+<!-- PRIVACY & POLICY MODAL -->
+<div id="policyModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+    <div class="sheet-head">
+      <h2 id="policyTitle" class="sheet-title" data-i18n="policy.title">Privacy & Policy</h2>
+      <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
+    </div>
+    <div class="sheet-body policy-body">
+      <h3 data-i18n="policy.overviewTitle">Overview</h3>
+      <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.</p>
+      <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
+      <ul>
+        <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
+        <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
+      </ul>
+      <h3 data-i18n="policy.useTitle">How we use data</h3>
+      <ul>
+        <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
+        <li data-i18n="policy.use2">We do not sell personal data.</li>
+      </ul>
+      <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
+      <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.</p>
+      <h3 data-i18n="policy.choiceTitle">Your choices</h3>
+      <ul>
+        <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
+        <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
+      </ul>
+      <h3 data-i18n="policy.contactTitle">Contact</h3>
+      <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
+      <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
+    </div>
+  </div>
+</div>
 
-      <h2>Profile</h2>
-      <div class="row">
-        <div class="field">
-          <label for="acc_first">First name</label>
-          <input id="acc_first" value="${escapeHtml(fn)}" />
-        </div>
-        <div class="field">
-          <label for="acc_last">Last name</label>
-          <input id="acc_last" value="${escapeHtml(ln)}" />
-        </div>
-      </div>
-      <div class="row">
-        <button class="btn" type="button" id="accSaveBtn">Save profile</button>
-        <div class="msg muted" id="acc_msg" role="status" aria-live="polite"></div>
-      </div>
+<script>
+/* ===== i18n (same keys used across site) ===== */
+const I18N = {
+  en:{ "nav.contact":"Contact","nav.home":"Home","footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact",
+       "contact.title":"Contact Us","contact.close":"Close","contact.reach":"Reach us","contact.reachText":"We’re happy to help with product questions, availability, or feedback.","contact.email":"Email:","contact.phone":"Phone:","contact.whatsapp":"WhatsApp:","contact.hours":"Hours:","contact.hoursVal":"Mon–Fri, 9:00–17:00",
+       "form.topic":"Topic","form.topicProduct":"Product question","form.topicAvailability":"Availability / Where to buy","form.topicOrder":"Order / Delivery","form.topicFeedback":"Feedback","form.topicOther":"Other","form.name":"Name","form.namePH":"Full name","form.email":"Email","form.emailPH":"name@example.com","form.country":"Country","form.countryPH":"Country (optional)","form.phone":"Phone (optional)","form.phonePH":"+212 537742213","form.phoneHint":"Digits, spaces and +() - allowed","form.subject":"Subject","form.subjectPH":"Question about a product…","form.message":"Message / Comments","form.messagePH":"Write your help request or comment…","form.consent":"I consent to VetoCos using my details to respond to this enquiry.","form.privacyNote":"Your message is sent via your email app; we don't store it on this site.","form.cancel":"Cancel","form.send":"Send",
+       "policy.title":"Privacy & Policy","policy.close":"Close","policy.overviewTitle":"Overview","policy.overviewText":"VetoCos provides complementary feed (alimentary) products. This website is designed to be compatible with both desktop and mobile devices. We do not collect personal data unless you choose to contact us.","policy.dataTitle":"Data we may receive","policy.data1":"Messages you send via the contact form (your name, email, and message content).","policy.data2":"Basic, anonymized analytics (page views, device type) to improve the site.","policy.useTitle":"How we use data","policy.use1":"To respond to your requests and improve our products and site experience.","policy.use2":"We do not sell personal data.","policy.cookiesTitle":"Cookies","policy.cookiesText":"We use minimal, essential cookies only if required for basic site functionality and anonymous analytics.","policy.choiceTitle":"Your choices","policy.choice1":"You can request that we delete your message and contact details at any time.","policy.choice2":"You can disable cookies in your browser settings.","policy.contactTitle":"Contact","policy.contactText":"For privacy questions, use the Contact link or email <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Last updated:",
+       "auth.title":"Sign in","auth.kicker":"Use your email and password. Leave password empty to receive a magic link.","auth.email":"Email","auth.emailPH":"you@example.com","auth.passwordLabel":"Password <span class='muted'>(optional for magic link)</span>","auth.passwordPH":"••••••••","auth.captchaPH":"Answer","auth.captchaRefresh":"Refresh","auth.captchaHint":"Basic captcha to reduce abuse. (Optional hCaptcha block is commented in code.)","auth.continue":"Continue","auth.forgot":"Forgot password","auth.switch":"Switch account","auth.serverCaptchaNote":"If CAPTCHA is enforced in Supabase, enable hCaptcha in code and verify tokens server-side."
+  },
+  fr:{ "nav.contact":"Contact","nav.home":"Accueil","footer.tag":"Aliment complémentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
+       "contact.title":"Nous contacter","contact.close":"Fermer","contact.reach":"Nous joindre","contact.reachText":"Nous aidons volontiers pour toute question produit, disponibilité ou avis.","contact.email":"E-mail :","contact.phone":"Téléphone :","contact.whatsapp":"WhatsApp :","contact.hours":"Horaires :","contact.hoursVal":"Lun–Ven, 9:00–17:00",
+       "form.topic":"Sujet","form.topicProduct":"Question produit","form.topicAvailability":"Disponibilité / Où acheter","form.topicOrder":"Commande / Livraison","form.topicFeedback":"Avis","form.topicOther":"Autre","form.name":"Nom","form.namePH":"Nom complet","form.email":"E-mail","form.emailPH":"nom@exemple.com","form.country":"Pays","form.countryPH":"Pays (facultatif)","form.phone":"Téléphone (facultatif)","form.phonePH":"+212 537742213","form.phoneHint":"Chiffres, espaces et +() - autorisés","form.subject":"Objet","form.subjectPH":"Question à propos d’un produit…","form.message":"Message / Commentaires","form.messagePH":"Écrivez votre demande…","form.consent":"J’autorise VetoCos à utiliser mes données pour répondre à cette demande.","form.privacyNote":"Votre message est envoyé via votre application e-mail ; il n’est pas stocké sur ce site.","form.cancel":"Annuler","form.send":"Envoyer",
+       "policy.title":"Confidentialité & Politique","policy.close":"Fermer","policy.overviewTitle":"Aperçu","policy.overviewText":"VetoCos fournit des compléments alimentaires. Site compatible ordinateur et mobile. Aucune donnée personnelle collectée sauf si vous nous contactez.","policy.dataTitle":"Données susceptibles d’être reçues","policy.data1":"Messages envoyés via le formulaire (nom, e-mail, contenu).","policy.data2":"Analyses anonymisées de base.","policy.useTitle":"Utilisation","policy.use1":"Répondre à vos demandes et améliorer l’expérience.","policy.use2":"Nous ne vendons pas de données.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies essentiels minimaux uniquement.","policy.choiceTitle":"Vos choix","policy.choice1":"Demander la suppression de vos messages/données.","policy.choice2":"Désactiver les cookies dans votre navigateur.","policy.contactTitle":"Contact","policy.contactText":"Questions confidentialité : <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Dernière mise à jour :",
+       "auth.title":"Se connecter","auth.kicker":"Utilisez votre e-mail et mot de passe. Laissez vide pour recevoir un lien magique.","auth.email":"E-mail","auth.emailPH":"vous@exemple.com","auth.passwordLabel":"Mot de passe <span class='muted'>(facultatif pour lien magique)</span>","auth.passwordPH":"••••••••","auth.captchaPH":"Réponse","auth.captchaRefresh":"Actualiser","auth.captchaHint":"Captcha basique contre l’abus. (Bloc hCaptcha en commentaire.)","auth.continue":"Continuer","auth.forgot":"Mot de passe oublié","auth.switch":"Changer de compte","auth.serverCaptchaNote":"Si CAPTCHA est activé dans Supabase, activez hCaptcha et vérifiez côté serveur."
+  },
+  es:{ "nav.contact":"Contacto","nav.home":"Inicio","footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
+       "contact.title":"Contáctanos","contact.close":"Cerrar","contact.reach":"Cómo contactarnos","contact.reachText":"Encantados de ayudarte con productos, disponibilidad o comentarios.","contact.email":"Correo:","contact.phone":"Teléfono:","contact.whatsapp":"WhatsApp:","contact.hours":"Horario:","contact.hoursVal":"Lun–Vie, 9:00–17:00",
+       "form.topic":"Tema","form.topicProduct":"Consulta de producto","form.topicAvailability":"Disponibilidad / Dónde comprar","form.topicOrder":"Pedido / Entrega","form.topicFeedback":"Comentarios","form.topicOther":"Otro","form.name":"Nombre","form.namePH":"Nombre completo","form.email":"Correo","form.emailPH":"nombre@ejemplo.com","form.country":"País","form.countryPH":"País (opcional)","form.phone":"Teléfono (opcional)","form.phonePH":"+212 537742213","form.phoneHint":"Se permiten dígitos, espacios y +() -","form.subject":"Asunto","form.subjectPH":"Consulta sobre un producto…","form.message":"Mensaje / Comentarios","form.messagePH":"Escribe tu solicitud…","form.consent":"Autorizo el uso de mis datos para responder esta consulta.","form.privacyNote":"El mensaje se envía con tu app de correo; no se guarda en este sitio.","form.cancel":"Cancelar","form.send":"Enviar",
+       "policy.title":"Privacidad y Política","policy.close":"Cerrar","policy.overviewTitle":"Resumen","policy.overviewText":"VetoCos ofrece alimentos complementarios. Web compatible con ordenador y móvil. Sin datos personales salvo que nos contactes.","policy.dataTitle":"Datos que podemos recibir","policy.data1":"Mensajes enviados (nombre, correo, contenido).","policy.data2":"Analítica básica y anónima.","policy.useTitle":"Uso de datos","policy.use1":"Responder y mejorar la experiencia.","policy.use2":"No vendemos datos.","policy.cookiesTitle":"Cookies","policy.cookiesText":"Cookies esenciales mínimas.","policy.choiceTitle":"Tus opciones","policy.choice1":"Solicitar eliminación de mensajes/datos.","policy.choice2":"Desactivar cookies en el navegador.","policy.contactTitle":"Contacto","policy.contactText":"Privacidad: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"Última actualización:",
+       "auth.title":"Iniciar sesión","auth.kicker":"Usa tu correo y contraseña. Déjala vacía para recibir un enlace mágico.","auth.email":"Correo","auth.emailPH":"tu@ejemplo.com","auth.passwordLabel":"Contraseña <span class='muted'>(opcional para enlace mágico)</span>","auth.passwordPH":"••••••••","auth.captchaPH":"Respuesta","auth.captchaRefresh":"Actualizar","auth.captchaHint":"Captcha básico para reducir abusos. (Bloque hCaptcha comentado.)","auth.continue":"Continuar","auth.forgot":"Olvidé mi contraseña","auth.switch":"Cambiar cuenta","auth.serverCaptchaNote":"Si Supabase exige CAPTCHA, habilita hCaptcha y verifica en tu servidor."
+  },
+  ar:{ "nav.contact":"اتصل بنا","nav.home":"الرئيسية","footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
+       "contact.title":"اتصل بنا","contact.close":"إغلاق","contact.reach":"تواصل معنا","contact.reachText":"نساعدك في الأسئلة حول المنتجات أو التوفر أو الملاحظات.","contact.email":"البريد:","contact.phone":"الهاتف:","contact.whatsapp":"واتساب:","contact.hours":"الدوام:","contact.hoursVal":"الاثنين–الجمعة، 9:00–17:00",
+       "form.topic":"الموضوع","form.topicProduct":"استفسار عن منتج","form.topicAvailability":"التوفر / أين أشتري","form.topicOrder":"طلب / توصيل","form.topicFeedback":"ملاحظات","form.topicOther":"أخرى","form.name":"الاسم","form.namePH":"الاسم الكامل","form.email":"البريد الإلكتروني","form.emailPH":"name@example.com","form.country":"البلد","form.countryPH":"البلد (اختياري)","form.phone":"الهاتف (اختياري)","form.phonePH":"+212 537742213","form.phoneHint":"مسموح بالأرقام والمسافات والرموز +() -","form.subject":"الموضوع","form.subjectPH":"سؤال حول منتج…","form.message":"الرسالة / التعليقات","form.messagePH":"اكتب طلبك…","form.consent":"أوافق على استخدام بياناتي للرد على هذا الاستفسار.","form.privacyNote":"يتم إرسال الرسالة عبر تطبيق بريدك؛ لا نخزنها في الموقع.","form.cancel":"إلغاء","form.send":"إرسال",
+       "policy.title":"الخصوصية والسياسة","policy.close":"إغلاق","policy.overviewTitle":"نظرة عامة","policy.overviewText":"تقدم VetoCos أغذية تكميلية. الموقع متوافق مع سطح المكتب والجوال. لا نجمع بيانات شخصية إلا إذا تواصلت معنا.","policy.dataTitle":"البيانات التي قد نستلمها","policy.data1":"رسائل نموذج الاتصال (الاسم، البريد، المحتوى).","policy.data2":"تحليلات أساسية مجهولة.","policy.useTitle":"كيفية الاستخدام","policy.use1":"للرد وتحسين التجربة.","policy.use2":"لا نبيع البيانات.","policy.cookiesTitle":"ملفات تعريف الارتباط","policy.cookiesText":"نستخدم الضروري فقط.","policy.choiceTitle":"خياراتك","policy.choice1":"يمكنك طلب حذف بياناتك.","policy.choice2":"يمكنك تعطيل الكوكيز.","policy.contactTitle":"تواصل","policy.contactText":"الخصوصية: <a href=\"mailto:vetocos.sahib@yahoo.ma\">vetocos.sahib@yahoo.ma</a>.","policy.updated":"آخر تحديث:",
+       "auth.title":"تسجيل الدخول","auth.kicker":"استخدم بريدك وكلمة المرور. اترك كلمة المرور فارغة لإرسال رابط دخول.","auth.email":"البريد الإلكتروني","auth.emailPH":"you@example.com","auth.passwordLabel":"كلمة المرور <span class='muted'>(اختياري للرابط السحري)</span>","auth.passwordPH":"••••••••","auth.captchaPH":"الإجابة","auth.captchaRefresh":"تحديث","auth.captchaHint":"اختبار بسيط لمنع الإساءة. (hCaptcha اختياري في الكود.)","auth.continue":"متابعة","auth.forgot":"نسيت كلمة المرور","auth.switch":"تبديل الحساب","auth.serverCaptchaNote":"إذا فُرض CAPTCHA في Supabase فعّل hCaptcha وتحقق في الخادم."
+  }
+};
+function t(k){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][k])||(I18N.en[k]||k); }
+function applyLang(lang){
+  const dict=I18N[lang]||I18N.en;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const k=el.getAttribute("data-i18n"); if(dict[k]!=null) el.innerHTML=dict[k];
+  });
+  document.querySelectorAll("[data-i18n-attr]").forEach(el=>{
+    const k=el.getAttribute("data-i18n"); const attrs=(el.getAttribute("data-i18n-attr")||"").split(",").map(s=>s.trim()).filter(Boolean);
+    if(dict[k]==null) return; attrs.forEach(a=>el.setAttribute(a, dict[k]));
+  });
+  const html=document.documentElement; html.lang=lang; if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); } else { html.dir="ltr"; document.body.classList.remove("rtl"); }
+  localStorage.setItem("lang",lang); const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  const initial=localStorage.getItem("lang")||"en"; applyLang(initial);
+  const sel=document.getElementById("lang-switch"); if(sel){ sel.value=initial; sel.addEventListener("change",e=>applyLang(e.target.value)); }
+});
+</script>
 
-      <div class="hr"></div>
+<script>
+  // mailto (unchanged)
+  const toAddress='info@vetocos.com';
+  function sendMailto(e){
+    e.preventDefault();
+    const topic=document.getElementById('topic').value;
+    const name=document.getElementById('name').value.trim();
+    const email=document.getElementById('email2').value.trim();
+    const country=document.getElementById('country').value.trim();
+    const phone=document.getElementById('phone').value.trim();
+    const subject=document.getElementById('subject').value.trim()||'Website enquiry';
+    const message=document.getElementById('message').value.trim();
+    if(!document.getElementById('consent').checked) return false;
 
-      <h2>Saved cart</h2>
-      <div class="kicker">Items: <strong>${cartCount()}</strong></div>
-    `);
-
-    $("accToVerifyBtn").onclick = () => navigateTo("#/verify");
-
-    $("accSaveBtn").onclick = async () => {
-      const m = $("acc_msg");
-      setMessage(m, "muted", "Saving…");
-
-      const first_name = ($("acc_first").value || "").trim() || null;
-      const last_name  = ($("acc_last").value || "").trim() || null;
-
-      const { error } = await supa.from("profiles").upsert(
-        { id: state.user.id, first_name, last_name, email: state.user.email || null },
-        { onConflict: "id" }
-      );
-
-      if (error) setMessage(m, "err", error.message);
-      else {
-        setMessage(m, "ok", "Saved.");
-        await ensureProfile();
-        renderGlobalStatus();
-      }
-    };
+    const lines=[`Topic: ${topic}`,`Name: ${name}`,`Email: ${email}`,country?`Country: ${country}`:null, phone?`Phone: ${phone}`:null,'',message].filter(Boolean).join('%0A');
+    window.location.href=`mailto:${encodeURIComponent(toAddress)}?subject=${encodeURIComponent(subject)}&body=${lines}`;
+    return false;
   }
 
-  /* =========================================================
-     ROUTE RENDER
-  ========================================================= */
-  async function renderRoute() {
-    const name = currentRouteName();
+  // Modals + counters
+  const contactModal=document.getElementById('contactModal');
+  const policyModal=document.getElementById('policyModal');
+  function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+  function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+  function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+  function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+  [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
 
-    const needsAuth = new Set(["verify", "account"]);
-    if (needsAuth.has(name) && !state.user) {
-      navigateTo("#/auth");
-      return;
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const y=document.getElementById('y'); if(y) y.textContent=new Date().getFullYear();
+    const d=new Date(); const month=d.toLocaleString('default',{month:'long'}); const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+    const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+  });
+</script>
+
+<script>
+/* ===== Supabase ===== */
+const SUPABASE_URL  = "https://qdepgviimbcdlozjpbhm.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0";
+const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+});
+
+/* ===== Config ===== */
+const ADMIN_EMAILS = ["anwar.moumenjamai19@gmail.com"].map(e=>e.toLowerCase());
+
+/* ===== DOM ===== */
+const email   = document.getElementById('email');
+const password= document.getElementById('password');
+const continueBtn = document.getElementById('continue');
+const msgEl   = document.getElementById('msg');
+const notAdminBox = document.getElementById('notAdminBox');
+const logoutBtn = document.getElementById('logout');
+
+/* ===== Helpers ===== */
+const params = new URLSearchParams(location.search);
+const wantAdmin = params.get('admin') === '1';
+const fallbackRedirect = params.get('redirect') || (wantAdmin ? 'admin.html' : 'Products.html');
+function setMsg(t, cls='muted'){ msgEl.textContent=t; msgEl.className=cls; }
+function lc(s){ return (s||'').toLowerCase(); }
+
+// Math captcha
+let A=0,B=0;
+function newCaptcha(){ A = 3+Math.floor(Math.random()*7); B = 3+Math.floor(Math.random()*7); document.getElementById('mathQ').textContent = `${A} + ${B} = ?`; document.getElementById('mathA').value=''; }
+function captchaOK(){ return String(Number(document.getElementById('mathA').value||NaN)) === String(A+B); }
+document.getElementById('refreshCaptcha').addEventListener('click', newCaptcha);
+
+/* ===== Admin check ===== */
+async function isAdminUser(uid, em){
+  try{
+    if (ADMIN_EMAILS.includes(lc(em))) return true;
+    const { data } = await supa.from('profiles').select('is_admin').eq('id', uid).maybeSingle();
+    return !!data?.is_admin;
+  }catch{ return false; }
+}
+
+async function redirectAfterLogin(){
+  const { data:{ session } } = await supa.auth.getSession();
+  if (!session?.user) return;
+  const uid = session.user.id;
+  const em  = lc(session.user.email || '');
+
+  if (!wantAdmin) { location.replace(fallbackRedirect); return; }
+
+  let ok=false;
+  try{
+    if (ADMIN_EMAILS.includes(em)) ok = true;
+    else {
+      const { data } = await supa.from('profiles').select('is_admin').eq('id', uid).maybeSingle();
+      ok = !!data?.is_admin;
     }
+  }catch{}
 
-    setRoute(`#/${name}`);
+  if (ok) location.replace('admin.html');
+  else {
+    notAdminBox.style.display='block';
+    notAdminBox.innerHTML = `
+      <div><strong>${t('auth.title')} —</strong> ${t('nav.home')}</div>
+      <div style="margin-top:6px">This account is not an admin.</div>
+      <div style="margin-top:8px">You can <a href="#" id="swap">switch to your admin account</a>.</div>
+    `;
+    const swap = document.getElementById('swap');
+    if (swap) swap.onclick = async (e)=>{ e.preventDefault(); await supa.auth.signOut(); location.reload(); };
+    logoutBtn.style.display='inline-block';
+  }
+}
 
-    if (name === "auth") {
-      setAuthMode(state.authMode);
-      return;
+/* ===== Handle magic-link return (PKCE) ===== */
+(async () => {
+  try {
+    const cameFromEmail = location.search.includes('code=') || location.hash.includes('access_token');
+    if (cameFromEmail) {
+      await supa.auth.exchangeCodeForSession(location.href);
+      const clean = new URL(location.href);
+      ['code','type','access_token','refresh_token','expires_in','token_type'].forEach(k=>clean.searchParams.delete(k));
+      history.replaceState({}, '', clean.toString());
     }
-
-    if (name === "verify") { await renderVerifyPage(); return; }
-
-    if (name === "products") {
-      $("prodSearch").oninput = () => renderProductsPage();
-      renderProductsPage();
-      return;
-    }
-
-    if (name === "cart") { renderCartPage(); return; }
-
-    if (name === "account") { await renderAccountPage(); return; }
+  } catch (e) {
+    console.error('exchangeCodeForSession failed:', e);
+    setMsg(e?.message || 'Sign-in link error', 'alert');
   }
-
-  /* =========================================================
-     REALTIME
-  ========================================================= */
-  function setupRealtime() {
-    if (!state.user) return;
-
-    supa.channel(`rt_profile_${state.user.id}`)
-      .on("postgres_changes",
-        { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${state.user.id}` },
-        async () => {
-          await ensureProfile();
-          state.canPurchase = !!state.profile?.can_purchase;
-          renderGlobalStatus();
-          renderRoute();
-        }
-      ).subscribe();
-
-    supa.channel(`rt_vetapp_${state.user.id}`)
-      .on("postgres_changes",
-        { event: "*", schema: "public", table: "vet_applications", filter: `user_id=eq.${state.user.id}` },
-        async () => {
-          await loadLatestVetApplication();
-          renderRoute();
-        }
-      ).subscribe();
-  }
-
-  /* =========================================================
-     INIT
-  ========================================================= */
-  async function init() {
-    $("y").textContent = String(new Date().getFullYear());
-
-    setupNavButtons();
-    wireHeaderAuthButtons();
-    wireAuthPage();
-
-    await refreshAll();
-
-    if (!location.hash) location.hash = "#/products";
-    window.addEventListener("hashchange", renderRoute);
-
-    supa.auth.onAuthStateChange(async () => {
-      await refreshAll();
-      setupRealtime();
-      renderRoute();
-    });
-
-    setupRealtime();
-    renderRoute();
-  }
-
-  init();
 })();
+
+/* ===== Sign-in / Magic link ===== */
+continueBtn.onclick = async ()=>{
+  continueBtn.disabled = true; continueBtn.textContent = t('auth.continue')+'…';
+  setMsg(t('auth.continue')+'…'); notAdminBox.style.display='none';
+
+  const em = (email.value||'').trim().toLowerCase();
+  const pw = password.value;
+
+  if (!em){ setMsg(t('auth.email')+': ?', 'alert'); continueBtn.disabled=false; continueBtn.textContent=t('auth.continue'); return; }
+  if (!captchaOK()){ setMsg('Captcha incorrect. '+t('auth.captchaRefresh'), 'alert'); newCaptcha(); continueBtn.disabled=false; continueBtn.textContent=t('auth.continue'); return; }
+
+  try{
+    if (pw){
+      const { error } = await supa.auth.signInWithPassword({ email: em, password: pw });
+      if (error) throw error;
+      location.replace(fallbackRedirect); // instant redirect
+    }else{
+      const { error } = await supa.auth.signInWithOtp({
+        email: em,
+        options:{ emailRedirectTo: `${location.origin}/login.html${location.search || ''}` }
+      });
+      if (error) throw error;
+      setMsg('Magic link sent. Check your inbox.', 'ok');
+    }
+  }catch(err){
+    console.error(err);
+    const m = (err?.message||'').toLowerCase();
+    if (m.includes('invalid login credentials')) setMsg('Incorrect email or password.','alert');
+    else if (m.includes('email not confirmed')) setMsg('Please confirm your email first (check inbox/spam).','alert');
+    else if (m.includes('captcha')) setMsg('CAPTCHA required by server. Enable hCaptcha or disable in Supabase Auth settings.','alert');
+    else setMsg(err?.message || 'Sign-in failed.','alert');
+  }finally{
+    continueBtn.disabled = false; continueBtn.textContent = t('auth.continue');
+  }
+};
+
+// on auth change (magic link)
+supa.auth.onAuthStateChange((_ev, session)=>{ if (session?.user) redirectAfterLogin(); });
+document.addEventListener('DOMContentLoaded', async ()=>{ newCaptcha(); const { data:{ session } } = await supa.auth.getSession(); if (session?.user) redirectAfterLogin(); });
+
+/* ===== Forgot password -> send reset email ===== */
+document.getElementById('forgotBtn').onclick = async ()=>{
+  const em = (email.value||'').trim().toLowerCase();
+  if (!em){ setMsg('Enter your email above first.','alert'); return; }
+  if (!captchaOK()){ setMsg('Captcha incorrect. '+t('auth.captchaRefresh'), 'alert'); newCaptcha(); return; }
+
+  try{
+    const { error } = await supa.auth.resetPasswordForEmail(em, {
+      redirectTo: `${location.origin}/update-password.html?redirect=${encodeURIComponent(fallbackRedirect)}`
+    });
+    if (error) throw error;
+    setMsg('Password reset email sent. Check your inbox.', 'ok');
+  }catch(err){
+    setMsg(err?.message || 'Could not send reset email.','alert');
+  }
+};
 </script>
 </body>
 </html>
