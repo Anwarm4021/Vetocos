@@ -24,6 +24,7 @@
       background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12));color:var(--text);font-weight:600;cursor:pointer
     }
     #lang-switch{background:rgba(255,255,255,.04);min-width:120px}
+    a{ color:#6dd5ff; text-decoration:none }
 
     /* Main */
     main{ max-width:1100px; margin:40px auto; padding:0 18px }
@@ -37,7 +38,7 @@
     .qty-btn{ padding:4px 8px; border:none; border-radius:6px; background:rgba(255,255,255,.1); color:white; cursor:pointer }
     .qty-btn:disabled{ opacity:.6; cursor:not-allowed }
     .summary{ margin-top:14px; text-align:right; font-weight:600 }
-    .btn.primary{ margin-top:14px; display:inline-block; padding:12px 18px; border-radius:10px; border:1px solid rgba(141,158,199,.25); background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12)); color:#f6f7fb; font-weight:600; cursor:pointer }
+    .btn.primary{ display:inline-block; padding:12px 18px; border-radius:10px; border:1px solid rgba(141,158,199,.25); background:linear-gradient(135deg,rgba(109,213,255,.15),rgba(131,240,165,.12)); color:#f6f7fb; font-weight:600; cursor:pointer }
     .btn.secondary{ background:rgba(255,255,255,.04) }
     .btn[disabled]{ opacity:.6; cursor:not-allowed }
     .empty{ text-align:center; padding:36px; background:var(--card); border:1px solid rgba(141,158,199,.18); border-radius:10px; color:var(--muted) }
@@ -50,8 +51,6 @@
     .badge.ok{ background:rgba(131,240,165,.12) }
     .badge.warn{ background:rgba(255,200,120,.12) }
     .badge.bad{ background:rgba(255,120,120,.12) }
-    a{ color:#6dd5ff; text-decoration:none }
-    .hint{ font-size:.92rem }
     .note{ font-size:.88rem; color:var(--muted) }
     .namecell{ display:flex; flex-direction:column; gap:4px }
 
@@ -94,7 +93,7 @@
         <span>VetoCos</span>
       </div>
       <nav class="links">
-        <a class="btn" href="Products.html" data-i18n="nav.products">Products</a>
+        <a class="btn" href="index.html#products" data-i18n="nav.products">Products</a>
         <a class="btn" href="vet-verify.html" data-i18n="nav.verify">Verification</a>
         <a class="btn" href="account.html" data-i18n="nav.account">My Account</a>
         <button class="contact-btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
@@ -116,7 +115,11 @@
     <section class="orders">
       <div class="row">
         <h2 style="margin:0" data-i18n="orders.title">Your Purchases</h2>
-        <div id="ordersHint" class="muted hint" data-i18n="orders.hint">Sign in to see your purchase history.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn secondary" type="button" onclick="toggleOrders()">Hide/Show</button>
+          <button class="btn secondary" type="button" onclick="clearHiddenOrders()">Clear hidden</button>
+        </div>
+        <div id="ordersHint" class="muted" data-i18n="orders.hint">Sign in to see your purchase history.</div>
       </div>
       <div id="ordersBox" class="card" style="margin-top:10px;display:none"></div>
     </section>
@@ -157,26 +160,22 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
               <div class="field">
                 <label for="name" data-i18n="form.name">Name</label>
-                <input id="name" name="name" class="input" autocomplete="name" required
-                       data-i18n="form.namePH" data-i18n-attr="placeholder" placeholder="Full name">
+                <input id="name" name="name" class="input" autocomplete="name" required placeholder="Full name">
               </div>
               <div class="field">
                 <label for="email2" data-i18n="form.email">Email</label>
-                <input id="email2" name="email" type="email" class="input" autocomplete="email" required
-                       inputmode="email" data-i18n="form.emailPH" data-i18n-attr="placeholder" placeholder="name@example.com">
+                <input id="email2" name="email" type="email" class="input" autocomplete="email" required placeholder="name@example.com">
               </div>
             </div>
 
             <div class="field" style="margin-top:10px">
               <label for="subject" data-i18n="form.subject">Subject</label>
-              <input id="subject" name="subject" class="input" maxlength="120" required
-                     data-i18n="form.subjectPH" data-i18n-attr="placeholder" placeholder="Question about a product…">
+              <input id="subject" name="subject" class="input" maxlength="120" required placeholder="Question about a product…">
             </div>
 
             <div class="field" style="margin-top:10px">
               <label for="message" data-i18n="form.message">Message / Comments</label>
-              <textarea id="message" name="message" class="textarea" maxlength="1200" required
-                        data-i18n="form.messagePH" data-i18n-attr="placeholder" placeholder="Write your help request or comment…"></textarea>
+              <textarea id="message" name="message" class="textarea" maxlength="1200" required placeholder="Write your help request or comment…"></textarea>
               <div class="hint12"><span id="msgCount">0</span>/1200</div>
             </div>
 
@@ -217,28 +216,8 @@
         <button class="close" type="button" onclick="closePolicy()" data-i18n="policy.close">Close</button>
       </div>
       <div class="sheet-body">
-        <h3 data-i18n="policy.overviewTitle">Overview</h3>
-        <p data-i18n="policy.overviewText">VetoCos provides complementary feed (alimentary) products. We do not collect personal data unless you choose to contact us.</p>
-        <h3 data-i18n="policy.dataTitle">Data we may receive</h3>
-        <ul>
-          <li data-i18n="policy.data1">Messages you send via the contact form (your name, email, and message content).</li>
-          <li data-i18n="policy.data2">Basic, anonymized analytics (page views, device type) to improve the site.</li>
-        </ul>
-        <h3 data-i18n="policy.useTitle">How we use data</h3>
-        <ul>
-          <li data-i18n="policy.use1">To respond to your requests and improve our products and site experience.</li>
-          <li data-i18n="policy.use2">We do not sell personal data.</li>
-        </ul>
-        <h3 data-i18n="policy.cookiesTitle">Cookies</h3>
-        <p data-i18n="policy.cookiesText">We use minimal, essential cookies only if required for functionality and anonymous analytics.</p>
-        <h3 data-i18n="policy.choiceTitle">Your choices</h3>
-        <ul>
-          <li data-i18n="policy.choice1">You can request that we delete your message and contact details at any time.</li>
-          <li data-i18n="policy.choice2">You can disable cookies in your browser settings.</li>
-        </ul>
-        <h3 data-i18n="policy.contactTitle">Contact</h3>
-        <p data-i18n="policy.contactText">For privacy questions, use the Contact link or email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
-        <p class="muted" style="margin-top:8px"><span data-i18n="policy.updated">Last updated:</span> <span id="policyDate"></span></p>
+        <p>We provide complementary feed and collect no personal data unless you contact us. For privacy questions, email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
+        <p class="muted">Last updated: <span id="policyDate"></span></p>
       </div>
     </div>
   </div>
@@ -246,50 +225,91 @@
   <script>
     /* ======================= i18n ======================= */
     const I18N = {
-      en:{ "nav.products":"Products","nav.verify":"Verification","nav.account":"My Account","nav.contact":"Contact",
-           "page.title":"Your Cart",
-           "orders.title":"Your Purchases","orders.hint":"Sign in to see your purchase history.","orders.signed":"You are signed in. Your recent purchases are below.","orders.none":"No purchases yet.","orders.loading":"Loading your orders…",
-           "footer.tag":"Complementary feed for companion animals.","footer.policy":"Privacy & Policy","footer.contact":"Contact",
-           "cart.empty":"Your cart is empty","cart.total":"Total items:","cart.clear":"Clear cart","cart.stockNote":"Stock limits enforced automatically.","cart.proceed":"Proceed","cart.product":"Product","cart.qty":"Quantity","cart.action":"Action","cart.remove":"Remove","cart.ok":"OK","cart.unavailable":"Unavailable","cart.onlyLeft":"Only {n} left",
-           "cart.unit":"Unit price","cart.line":"Line total","cart.sum":"Cart total","cart.currencyMixed":"*Prices show per line currency","cart.pay":"Pay now"
+      en:{
+        "nav.products":"Products","nav.verify":"Verification","nav.account":"My Account","nav.contact":"Contact",
+        "page.title":"Your Cart",
+        "orders.title":"Your Purchases","orders.hint":"Sign in to see your purchase history.","orders.signed":"You are signed in. Your recent purchases are below.","orders.none":"No purchases yet.","orders.loading":"Loading your orders…",
+        "footer.tag":"Complementary feed for companion animals.","footer.policy":"Privacy & Policy","footer.contact":"Contact",
+        "cart.empty":"Your cart is empty",
+        "cart.total":"Total items:",
+        "cart.clear":"Clear cart",
+        "cart.stockNote":"Stock limits enforced automatically.",
+        "cart.product":"Product","cart.qty":"Quantity","cart.action":"Action",
+        "cart.remove":"Remove",
+        "cart.ok":"OK","cart.unavailable":"Unavailable","cart.onlyLeft":"Only {n} left",
+        "cart.unit":"Unit price","cart.line":"Line total","cart.sum":"Cart total",
+        "cart.currencyMixed":"*Prices show per line currency",
+        "cart.pay":"Pay now",
+        "cart.priceMissing":"Price not available"
       },
-      fr:{ "nav.products":"Produits","nav.verify":"Vérification","nav.account":"Mon compte","nav.contact":"Contact",
-           "page.title":"Votre panier",
-           "orders.title":"Vos achats","orders.hint":"Connectez-vous pour voir votre historique d’achats.","orders.signed":"Vous êtes connecté. Vos achats récents ci-dessous.","orders.none":"Aucun achat pour le moment.","orders.loading":"Chargement de vos commandes…",
-           "footer.tag":"Complément alimentaire pour animaux de compagnie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
-           "cart.empty":"Votre panier est vide","cart.total":"Articles au total :","cart.clear":"Vider le panier","cart.stockNote":"Limites de stock appliquées automatiquement.","cart.proceed":"Continuer","cart.product":"Produit","cart.qty":"Qté","cart.action":"Action","cart.remove":"Supprimer","cart.ok":"OK","cart.unavailable":"Indisponible","cart.onlyLeft":"Plus que {n}",
-           "cart.unit":"Prix unitaire","cart.line":"Total ligne","cart.sum":"Total panier","cart.currencyMixed":"*Prix par devise de la ligne","cart.pay":"Payer maintenant"
+      fr:{
+        "nav.products":"Produits","nav.verify":"Vérification","nav.account":"Mon compte","nav.contact":"Contact",
+        "page.title":"Votre panier",
+        "orders.title":"Vos achats","orders.hint":"Connectez-vous pour voir votre historique d’achats.","orders.signed":"Vous êtes connecté. Vos achats récents ci-dessous.","orders.none":"Aucun achat pour le moment.","orders.loading":"Chargement de vos commandes…",
+        "footer.tag":"Complément alimentaire pour animaux de compagnie.","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
+        "cart.empty":"Votre panier est vide",
+        "cart.total":"Articles au total :",
+        "cart.clear":"Vider le panier",
+        "cart.stockNote":"Limites de stock appliquées automatiquement.",
+        "cart.product":"Produit","cart.qty":"Qté","cart.action":"Action",
+        "cart.remove":"Supprimer",
+        "cart.ok":"OK","cart.unavailable":"Indisponible","cart.onlyLeft":"Plus que {n}",
+        "cart.unit":"Prix unitaire","cart.line":"Total ligne","cart.sum":"Total panier",
+        "cart.currencyMixed":"*Prix par devise de la ligne",
+        "cart.pay":"Payer maintenant",
+        "cart.priceMissing":"Prix indisponible"
       },
-      es:{ "nav.products":"Productos","nav.verify":"Verificación","nav.account":"Mi cuenta","nav.contact":"Contacto",
-           "page.title":"Tu carrito",
-           "orders.title":"Tus compras","orders.hint":"Inicia sesión para ver tu historial.","orders.signed":"Has iniciado sesión. Compras recientes abajo.","orders.none":"Sin compras aún.","orders.loading":"Cargando tus pedidos…",
-           "footer.tag":"Alimento complementario para animales de compañía.","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
-           "cart.empty":"Tu carrito está vacío","cart.total":"Artículos totales:","cart.clear":"Vaciar carrito","cart.stockNote":"Límites de stock aplicados automáticamente.","cart.proceed":"Continuar","cart.product":"Producto","cart.qty":"Cantidad","cart.action":"Acción","cart.remove":"Quitar","cart.ok":"OK","cart.unavailable":"No disponible","cart.onlyLeft":"Solo quedan {n}",
-           "cart.unit":"Precio unitario","cart.line":"Total de línea","cart.sum":"Total del carrito","cart.currencyMixed":"*Precios por moneda de la línea","cart.pay":"Pagar ahora"
+      es:{
+        "nav.products":"Productos","nav.verify":"Verificación","nav.account":"Mi cuenta","nav.contact":"Contacto",
+        "page.title":"Tu carrito",
+        "orders.title":"Tus compras","orders.hint":"Inicia sesión para ver tu historial.","orders.signed":"Has iniciado sesión. Compras recientes abajo.","orders.none":"Sin compras aún.","orders.loading":"Cargando tus pedidos…",
+        "footer.tag":"Alimento complementario para animales de compañía.","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
+        "cart.empty":"Tu carrito está vacío",
+        "cart.total":"Artículos totales:",
+        "cart.clear":"Vaciar carrito",
+        "cart.stockNote":"Límites de stock aplicados automáticamente.",
+        "cart.product":"Producto","cart.qty":"Cantidad","cart.action":"Acción",
+        "cart.remove":"Quitar",
+        "cart.ok":"OK","cart.unavailable":"No disponible","cart.onlyLeft":"Solo quedan {n}",
+        "cart.unit":"Precio unitario","cart.line":"Total de línea","cart.sum":"Total del carrito",
+        "cart.currencyMixed":"*Precios por moneda de la línea",
+        "cart.pay":"Pagar ahora",
+        "cart.priceMissing":"Precio no disponible"
       },
-      ar:{ "nav.products":"المنتجات","nav.verify":"التحقق","nav.account":"حسابي","nav.contact":"اتصل بنا",
-           "page.title":"سلة التسوق",
-           "orders.title":"مشترياتك","orders.hint":"سجّل الدخول لعرض سجل المشتريات.","orders.signed":"تم تسجيل الدخول. تظهر المشتريات الأخيرة أدناه.","orders.none":"لا توجد مشتريات بعد.","orders.loading":"جارٍ تحميل الطلبات…",
-           "footer.tag":"غذاء تكميلي للحيوانات الأليفة.","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
-           "cart.empty":"سلة التسوق فارغة","cart.total":"إجمالي العناصر:","cart.clear":"تفريغ السلة","cart.stockNote":"تُطبّق حدود المخزون تلقائيًا.","cart.proceed":"متابعة","cart.product":"المنتج","cart.qty":"الكمية","cart.action":"إجراء","cart.remove":"إزالة","cart.ok":"جيد","cart.unavailable":"غير متاح","cart.onlyLeft":"المتبقي {n}",
-           "cart.unit":"سعر الوحدة","cart.line":"إجمالي السطر","cart.sum":"إجمالي السلة","cart.currencyMixed":"*الأسعار حسب عملة كل سطر","cart.pay":"ادفع الآن"
+      ar:{
+        "nav.products":"المنتجات","nav.verify":"التحقق","nav.account":"حسابي","nav.contact":"اتصل بنا",
+        "page.title":"سلة التسوق",
+        "orders.title":"مشترياتك","orders.hint":"سجّل الدخول لعرض سجل المشتريات.","orders.signed":"تم تسجيل الدخول. تظهر المشتريات الأخيرة أدناه.","orders.none":"لا توجد مشتريات بعد.","orders.loading":"جارٍ تحميل الطلبات…",
+        "footer.tag":"غذاء تكميلي للحيوانات الأليفة.","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
+        "cart.empty":"سلة التسوق فارغة",
+        "cart.total":"إجمالي العناصر:",
+        "cart.clear":"تفريغ السلة",
+        "cart.stockNote":"تُطبّق حدود المخزون تلقائيًا.",
+        "cart.product":"المنتج","cart.qty":"الكمية","cart.action":"إجراء",
+        "cart.remove":"إزالة",
+        "cart.ok":"جيد","cart.unavailable":"غير متاح","cart.onlyLeft":"المتبقي {n}",
+        "cart.unit":"سعر الوحدة","cart.line":"إجمالي السطر","cart.sum":"إجمالي السلة",
+        "cart.currencyMixed":"*الأسعار حسب عملة كل سطر",
+        "cart.pay":"ادفع الآن",
+        "cart.priceMissing":"السعر غير متاح"
       }
     };
+
     function applyLang(lang){
       const dict=I18N[lang]||I18N.en;
       document.querySelectorAll("[data-i18n]").forEach(el=>{
         const k=el.getAttribute("data-i18n"); if(dict[k]!=null) el.innerHTML=dict[k];
       });
-      document.querySelectorAll("[data-i18n-attr]").forEach(el=>{
-        const k=el.getAttribute("data-i18n"); const attrs=(el.getAttribute("data-i18n-attr")||"").split(",").map(s=>s.trim()).filter(Boolean);
-        if(dict[k]==null) return; attrs.forEach(a=>el.setAttribute(a, dict[k]));
-      });
-      const html=document.documentElement; html.lang=lang; if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); } else { html.dir="ltr"; document.body.classList.remove("rtl"); }
-      localStorage.setItem("lang",lang); const sel=document.getElementById('lang-switch'); if(sel) sel.value=lang;
+      const html=document.documentElement;
+      html.lang=lang;
+      if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
+      else { html.dir="ltr"; document.body.classList.remove("rtl"); }
+      localStorage.setItem("lang",lang);
+      const sel=document.getElementById('lang-switch'); if(sel) sel.value=lang;
     }
     function t(k){ const L=localStorage.getItem("lang")||"en"; return (I18N[L]&&I18N[L][k])||(I18N.en[k]||k); }
 
-    /* Contact / Policy modals & helpers */
+    /* Contact / Policy modals */
     const contactModal=document.getElementById('contactModal');
     const policyModal=document.getElementById('policyModal');
     function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
@@ -322,11 +342,12 @@
         sel.value=initial;
         sel.addEventListener('change', async e=>{
           applyLang(e.target.value);
-          await renderCart();        // live refresh texts
+          await renderCart();
           await renderOrders();
         });
       }
-      const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount'); if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
+      const msg=document.getElementById('message'); const cnt=document.getElementById('msgCount');
+      if(msg&&cnt){ const upd=()=>cnt.textContent=String(msg.value.length); msg.addEventListener('input',upd); upd(); }
     });
   </script>
 
@@ -338,200 +359,212 @@
       { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
 
-    /* ======================= Cart + stock + price state ======================= */
+    /* ======================= Cart state ======================= */
     const CART_KEY = 'cart';
     const CART_UPDATED_KEY = 'cart_updated_at';
-    const CART_RESTORED_KEY = 'cart_restored_v2';
+    const CART_RESTORED_KEY = 'cart_restored_v3';
     const DEFAULT_CURRENCY = 'MAD';
 
-    // sku -> { sku, name?, stock_qty, available, price_ppv, price_pv_minus10, price_pv_plus10, currency? }
+    // PRODUCTS keyed by lowercase sku
     let PRODUCTS = Object.create(null);
 
-    function normalizeSku(s){ return String(s||'').trim().toLowerCase(); }
+    // Keep SKU case as-is for display & DB querying
+    function normalizeSku(s){ return String(s||'').trim(); }
+    function skuKey(s){ return String(s||'').trim().toLowerCase(); }
+
+    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]) ); }
+    function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
+
+    function itemKey(it){
+      // if index.html uses key = "SKU:VARIANT"
+      if (it?.key) return String(it.key).trim().toLowerCase();
+      const sku = skuKey(it?.sku);
+      const v = (it?.variant || '').toString().trim().toLowerCase();
+      return v ? `${sku}:${v}` : sku;
+    }
 
     function getLocalBundle() {
       try {
         const items = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
         const updated_at = localStorage.getItem(CART_UPDATED_KEY) || null;
-        // normalize SKUs on read
-        const norm = (Array.isArray(items)?items:[]).map(it=>({ sku:normalizeSku(it.sku), name:String(it.name||it.sku||''), qty:Number(it.qty||0) }));
+        const norm = (Array.isArray(items)?items:[]).map(it=>({
+          key: it.key || null,
+          sku: normalizeSku(it.sku),
+          variant: it.variant || null,
+          name: String(it.name||it.sku||''),
+          qty: Number(it.qty||0)
+        }));
         return { items: norm.filter(x=>x.sku && x.qty>0), updated_at };
       } catch {
         return { items: [], updated_at: null };
       }
     }
+
     function setLocalBundle(items, updatedAt = null) {
       const stamp = updatedAt || new Date().toISOString();
       const cleaned = (items || [])
         .filter(it => it && it.sku && Number(it.qty) > 0)
-        .map(it => ({ sku:normalizeSku(it.sku), name:String(it.name || it.sku), qty:Number(it.qty) }));
+        .map(it => ({
+          key: it.key || null,
+          sku: normalizeSku(it.sku),
+          variant: it.variant || null,
+          name: String(it.name || it.sku),
+          qty: Number(it.qty)
+        }));
       localStorage.setItem(CART_KEY, JSON.stringify(cleaned));
       localStorage.setItem(CART_UPDATED_KEY, stamp);
-      // notify other tabs
       try { localStorage.setItem('cart_ping', String(Date.now())); } catch {}
     }
+
     function readCart(){ return getLocalBundle().items; }
+
+    function overlayByKey(baseArr, incomingArr){
+      const map = {};
+      (baseArr || []).forEach(it => { const k=itemKey(it); if (k) map[k] = { ...it, qty:Number(it.qty||0) }; });
+      (incomingArr || []).forEach(it => { const k=itemKey(it); if (k) map[k] = { ...map[k], ...it, qty:Number(it.qty||0) }; });
+      return Object.values(map).filter(x => x.qty > 0);
+    }
+
+    /* ======================= Stock + clamp ======================= */
+    function getMaxForSKU(sku){
+      const p = PRODUCTS[skuKey(sku)] || {};
+      if (p.available === false) return 0;
+      if (typeof p.stock_qty === 'number' && p.stock_qty >= 0) return p.stock_qty;
+      return Infinity;
+    }
+
+    function clampCartToStock(items){
+      return (items||[]).map(it=>{
+        const max = getMaxForSKU(it.sku);
+        const newQty = Math.max(0, Math.min(Number(it.qty||0), Number.isFinite(max)?max:Number(it.qty||0)));
+        return { ...it, qty:newQty };
+      }).filter(x=>x.qty>0);
+    }
+
     async function writeCart(items){
       const updated_at = new Date().toISOString();
       const clamped = clampCartToStock(items);
       setLocalBundle(clamped, updated_at);
       renderCart();
+
       const { data:{ user } } = await supa.auth.getUser();
-      if (user) { await supa.from('carts').upsert({ user_id:user.id, items:clamped, updated_at }); }
-    }
-
-    function overlayBySku(baseArr, incomingArr){
-      const map = {};
-      (baseArr || []).forEach(it => { const k=normalizeSku(it.sku); if (k) map[k] = { ...it, sku:k, qty:Number(it.qty||0) }; });
-      (incomingArr || []).forEach(it => { const k=normalizeSku(it.sku); if (k) map[k] = { ...map[k], ...it, sku:k, qty:Number(it.qty||0) }; });
-      return Object.values(map).filter(x => x.qty > 0);
-    }
-
-    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]) ); }
-    function escapeAttr(s=''){ return String(s).replace(/['"\\]/g, m=>({"'":"&#39;",'"':"&quot;","\\":"\\\\"}[m])); }
-
-    /* ======================= Stock helpers ======================= */
-    function getMaxForSKU(sku){
-      const p = PRODUCTS[normalizeSku(sku)] || {};
-      if (p.available === false) return 0;
-      if (typeof p.stock_qty === 'number' && p.stock_qty >= 0) return p.stock_qty;
-      return Infinity;
-    }
-    function clampCartToStock(items){
-      return (items||[]).map(it=>{
-        const max = getMaxForSKU(it.sku);
-        const newQty = Math.max(0, Math.min(Number(it.qty||0), Number.isFinite(max)?max:it.qty));
-        return { ...it, sku:normalizeSku(it.sku), qty:newQty };
-      }).filter(x=>x.qty>0);
-    }
-
-    /* ======================= Load products (with prices) ======================= */
-    async function loadProductsForCart(){
-      const skus = [...new Set(readCart().map(x=>normalizeSku(x.sku)))];
-      if (!skus.length){ PRODUCTS = {}; return; }
-      const { data, error } = await supa
-        .from('products')
-        .select('sku,name,stock_qty,available,price_ppv,price_pv_minus10,price_pv_plus10,currency')
-        .in('sku', skus);
-
-      if (!error && Array.isArray(data)){
-        PRODUCTS = {};
-        data.forEach(p => { PRODUCTS[normalizeSku(p.sku)] = p; });
-      } else {
-        console.warn('Product load error', error?.message);
+      if (user) {
+        // Store cart cross-device (optional): same structure {sku, variant, qty, name, key}
+        await supa.from('carts').upsert({ user_id:user.id, items:clamped, updated_at });
       }
-
-      // Fill missing names and clamp immediately
-      const nameMap = Object.fromEntries((data||[]).map(p => [normalizeSku(p.sku), p.name]));
-      const withNames = readCart().map(i => ({ ...i, sku:normalizeSku(i.sku), name: i.name || nameMap[normalizeSku(i.sku)] || i.sku }));
-      await writeCart(withNames);
     }
 
-    /* ======================= Price helpers ======================= */
-    function priceForQtyRow(p, qty){
+    /* ======================= Price helpers (variant-aware) ======================= */
+    function toNumOrNull(x){
+      if (x === 0 || x === '0') return 0;
+      const n = Number(x);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function findVariant(product, variantCode){
+      if (!product || !variantCode) return null;
+      const list = Array.isArray(product.variants) ? product.variants : [];
+      const code = String(variantCode).trim().toLowerCase();
+      return list.find(v => String(v.code ?? v.variant_code ?? v.name ?? v.label ?? '').trim().toLowerCase() === code) || null;
+    }
+
+    function tierForQty(priceObj, qty){
       const q = Math.max(1, Number(qty||1));
-      const cur = p.currency || DEFAULT_CURRENCY;
-      if (q === 1)  return { label:'PPV', unit:Number(p.price_ppv||0), cur };
-      if (q >= 10)  return { label:'PV+10U', unit:Number(p.price_pv_plus10||0), cur };
-      return { label:'PV-10U', unit:Number(p.price_pv_minus10||0), cur };
+      const cur = priceObj.currency || DEFAULT_CURRENCY;
+
+      const ppv  = toNumOrNull(priceObj.price_ppv ?? priceObj.ppv);
+      const pv_m = toNumOrNull(priceObj.price_pv_minus10 ?? priceObj.pv_minus_10u);
+      const pv_p = toNumOrNull(priceObj.price_pv_plus10  ?? priceObj.pv_plus_10u);
+
+      if (q === 1)  return { label:'PPV', unit: ppv,  cur };
+      if (q >= 10)  return { label:'PV+10U', unit: pv_p, cur };
+      return         { label:'PV-10U', unit: pv_m, cur };
     }
 
     function computeItemPrice(item){
-      const p = PRODUCTS[normalizeSku(item.sku)];
+      const p = PRODUCTS[skuKey(item.sku)];
       if (!p) return null;
-      const tier = priceForQtyRow(p, item.qty);
-      // allow 0.00 prices; just guard NaN
-      if (!tier || Number.isNaN(tier.unit)) return null;
+
+      const v = findVariant(p, item.variant);
+      const priceSource = v
+        ? { ...v, currency: v.currency || p.currency || DEFAULT_CURRENCY }
+        : { ...p, currency: p.currency || DEFAULT_CURRENCY };
+
+      const tier = tierForQty(priceSource, item.qty);
+      if (!tier || tier.unit == null) return null;
+
       const unit = Number(tier.unit);
       const line = unit * Number(item.qty||0);
+      if (!Number.isFinite(unit) || !Number.isFinite(line)) return null;
+
       return { unit, line, cur:tier.cur, label:tier.label };
     }
 
-    function currencyGroups(totals){
+    function currencyGroups(lineTotals){
       const out = {};
-      totals.forEach(x=>{
-        out[x.cur] = (out[x.cur] || 0) + x.amount;
-      });
+      lineTotals.forEach(x => { out[x.cur] = (out[x.cur] || 0) + x.amount; });
       return out;
     }
 
-    /* ======================= Adopt cart once ======================= */
+    /* ======================= Load products for SKUs (includes variants) ======================= */
+    function expandSkuCandidates(sku){
+      const s = normalizeSku(sku);
+      const set = new Set([s]);
+      set.add(s.toUpperCase());
+      set.add(s.toLowerCase());
+      return [...set].filter(Boolean);
+    }
+
+    async function loadProductsForCart(){
+      const cart = readCart();
+      const rawSkus = [...new Set(cart.map(x=>normalizeSku(x.sku)).filter(Boolean))];
+      if (!rawSkus.length){ PRODUCTS = {}; return; }
+
+      // Query multiple-case candidates so it works even if cart SKU case differs from DB
+      const candidates = [...new Set(rawSkus.flatMap(expandSkuCandidates))];
+
+      const { data, error } = await supa
+        .from('products')
+        .select('sku,name,stock_qty,available,currency,price_ppv,price_pv_minus10,price_pv_plus10,variants')
+        .in('sku', candidates);
+
+      if (error) console.warn('Product load error', error.message);
+
+      PRODUCTS = {};
+      (Array.isArray(data)?data:[]).forEach(p => { PRODUCTS[skuKey(p.sku)] = p; });
+
+      // Update cart names from DB when missing, but keep current item.variant/key
+      const nameMap = Object.fromEntries((Array.isArray(data)?data:[]).map(p => [skuKey(p.sku), p.name]));
+      const withNames = readCart().map(i => ({
+        ...i,
+        name: (i.name && i.name.trim()) ? i.name : (nameMap[skuKey(i.sku)] || i.sku)
+      }));
+
+      // Clamp to stock immediately
+      await writeCart(withNames);
+    }
+
+    /* ======================= Restore cart from URL once ======================= */
     function adoptQueryCartOnce(){
       if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
       const qs = new URLSearchParams(location.search);
       const raw = qs.get('cart');
       if (!raw) return;
+
       try {
         const incoming = JSON.parse(decodeURIComponent(raw));
-        const merged = overlayBySku(readCart(), Array.isArray(incoming) ? incoming : []);
+        const merged = overlayByKey(readCart(), Array.isArray(incoming) ? incoming : []);
         setLocalBundle(merged, new Date().toISOString());
-      } catch(e){ console.warn('cart restore from URL failed', e); }
-      finally {
+      } catch(e){
+        console.warn('cart restore from URL failed', e);
+      } finally {
         qs.delete('cart');
         const newUrl = location.pathname + (qs.toString() ? '?' + qs.toString() : '');
         history.replaceState({}, '', newUrl);
         sessionStorage.setItem(CART_RESTORED_KEY, '1');
       }
     }
-    function adoptBackupCartOnce(){
-      if (sessionStorage.getItem(CART_RESTORED_KEY)) return;
-      const backup = localStorage.getItem('cart_backup');
-      if (!backup) return;
-      try {
-        const incoming = JSON.parse(backup);
-        const merged = overlayBySku(readCart(), Array.isArray(incoming) ? incoming : []);
-        setLocalBundle(merged, new Date().toISOString());
-      } catch(e){ console.warn('backup restore failed', e); }
-      finally {
-        localStorage.removeItem('cart_backup');
-        sessionStorage.setItem(CART_RESTORED_KEY, '1');
-      }
-    }
 
-    /* ======================= Cross-device sync ======================= */
-    async function syncCartFromDB() {
-      const { data:{ user } } = await supa.auth.getUser();
-      if (!user) return;
-
-      const { data: row, error } = await supa
-        .from('carts')
-        .select('items, updated_at')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (error) { console.error('carts select error:', error); return; }
-
-      const local = getLocalBundle();
-      const serverItems = Array.isArray(row?.items) ? row.items : null;
-      const serverUpdated = row?.updated_at || null;
-
-      let chosenItems = [];
-      let chosenUpdatedAt = new Date().toISOString();
-
-      if (serverItems && (!local.items || local.items.length === 0)) {
-        chosenItems = serverItems; chosenUpdatedAt = serverUpdated || chosenUpdatedAt;
-        setLocalBundle(chosenItems, chosenUpdatedAt);
-      } else if ((!serverItems || serverItems.length === 0) && local.items.length > 0) {
-        chosenItems = local.items; chosenUpdatedAt = local.updated_at || chosenUpdatedAt;
-        await supa.from('carts').upsert({ user_id:user.id, items:chosenItems, updated_at:chosenUpdatedAt });
-      } else if (serverItems && local.items.length > 0) {
-        const localTime = local.updated_at ? Date.parse(local.updated_at) : 0;
-        const serverTime = serverUpdated ? Date.parse(serverUpdated) : 0;
-        if (serverTime >= localTime) {
-          chosenItems = serverItems; chosenUpdatedAt = serverUpdated || chosenUpdatedAt;
-          setLocalBundle(chosenItems, chosenUpdatedAt);
-        } else {
-          chosenItems = local.items; chosenUpdatedAt = local.updated_at || chosenUpdatedAt;
-          await supa.from('carts').upsert({ user_id:user.id, items:chosenItems, updated_at:chosenUpdatedAt });
-        }
-      } else {
-        chosenItems = []; setLocalBundle([], chosenUpdatedAt);
-      }
-
-      await loadProductsForCart();
-      await renderCart();
-    }
-
-    /* ======================= UI render (with prices) ======================= */
     function badgeHTML(max, qty){
       if (max === 0) return `<span class="badge bad">${t('cart.unavailable')}</span>`;
       if (Number.isFinite(max) && max >= 0){
@@ -542,63 +575,85 @@
       return `<span class="badge ok">${t('cart.ok')}</span>`;
     }
 
-    async function renderCart() {
+    /* ======================= Cart UI ======================= */
+    async function renderCart(){
       const cart = readCart();
       const box = document.getElementById("cartBox");
 
-      if (cart.length === 0) {
+      if (!cart.length){
         box.innerHTML = `<div class="empty">${t('cart.empty')}</div>`;
         return;
       }
 
-      const missing = cart.some(it => !(normalizeSku(it.sku) in PRODUCTS));
+      // If any SKU missing in PRODUCTS, load them
+      const missing = cart.some(it => !(skuKey(it.sku) in PRODUCTS));
       if (missing) await loadProductsForCart();
 
       const current = readCart();
-      const lineInfos = current.map(it=>{
-        const p = computeItemPrice(it);
-        return { sku:normalizeSku(it.sku), qty:Number(it.qty||0), name:it.name||it.sku, price:p };
+
+      // Line prices (per item, includes variant and qty tier)
+      const lineInfos = current.map(it => {
+        const price = computeItemPrice(it);
+        return { key:itemKey(it), sku:it.sku, variant:it.variant || null, qty:Number(it.qty||0), name:it.name||it.sku, price };
       });
 
-      const rows = current.map(item => {
+      const rowsHtml = current.map(item=>{
         const sku = normalizeSku(item.sku);
         const max = getMaxForSKU(sku);
         const qty = Number(item.qty || 0);
+
         const plusDisabled = !(max === Infinity || qty < max);
         const minusDisabled = qty <= 1;
         const badge = badgeHTML(max, qty);
 
-        const priceInfo = lineInfos.find(x=>x.sku===sku)?.price;
-        const unitHTML = priceInfo ? `${(priceInfo.cur||DEFAULT_CURRENCY)} ${Number(priceInfo.unit||0).toFixed(2)} <span class="note">(${priceInfo.label})</span>` : '-';
-        const lineHTML = priceInfo ? `${(priceInfo.cur||DEFAULT_CURRENCY)} ${Number(priceInfo.line||0).toFixed(2)}` : '-';
+        const p = lineInfos.find(x => x.key === itemKey(item))?.price;
+
+        const unitHTML = p
+          ? `${escapeHtml(p.cur || DEFAULT_CURRENCY)} ${Number(p.unit).toFixed(2)} <span class="note">(${escapeHtml(p.label)})</span>`
+          : `<span class="note">${t('cart.priceMissing')}</span>`;
+
+        const lineHTML = p
+          ? `${escapeHtml(p.cur || DEFAULT_CURRENCY)} ${Number(p.line).toFixed(2)}`
+          : `—`;
+
+        const variantTxt = item.variant ? `· Variant: ${escapeHtml(item.variant)}` : '';
 
         return `
           <tr>
             <td class="namecell">
               <strong>${escapeHtml(item.name || sku)}</strong>
-              <span class="note">${escapeHtml(sku)}</span>
+              <span class="note">${escapeHtml(sku)} ${variantTxt}</span>
               <span>${badge}</span>
             </td>
+
             <td>
-              <button class="qty-btn" aria-label="Decrease ${escapeAttr(item.name||sku)} quantity" onclick="changeQty('${escapeAttr(sku)}', -1)" ${minusDisabled?'disabled':''}>-</button>
+              <button class="qty-btn" aria-label="Decrease quantity" onclick="changeQty('${escapeAttr(itemKey(item))}', -1)" ${minusDisabled?'disabled':''}>-</button>
               ${qty}
-              <button class="qty-btn" aria-label="Increase ${escapeAttr(item.name||sku)} quantity" onclick="changeQty('${escapeAttr(sku)}', 1)" ${plusDisabled?'disabled':''}>+</button>
+              <button class="qty-btn" aria-label="Increase quantity" onclick="changeQty('${escapeAttr(itemKey(item))}', 1)" ${plusDisabled?'disabled':''}>+</button>
             </td>
+
             <td>${unitHTML}</td>
             <td>${lineHTML}</td>
-            <td><button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)" onclick="removeItem('${escapeAttr(sku)}')">${t('cart.remove')}</button></td>
+
+            <td>
+              <button class="qty-btn" style="background:transparent;border:1px solid rgba(255,128,128,.4)"
+                      onclick="removeItem('${escapeAttr(itemKey(item))}')">${t('cart.remove')}</button>
+            </td>
           </tr>
         `;
       }).join("");
 
+      // Cart totals (grouped by currency)
       const totals = lineInfos
-        .filter(x=>x.price)
-        .map(x=>({ cur:x.price.cur||DEFAULT_CURRENCY, amount: x.price.line }));
+        .filter(x => x.price)
+        .map(x => ({ cur:x.price.cur || DEFAULT_CURRENCY, amount:Number(x.price.line || 0) }));
 
       const grouped = currencyGroups(totals);
       const totalsHTML = Object.keys(grouped).length
-        ? Object.entries(grouped).map(([cur,amt])=>`${cur} ${Number(amt||0).toFixed(2)}`).join(' · ')
-        : '-';
+        ? Object.entries(grouped).map(([cur,amt]) => `${escapeHtml(cur)} ${Number(amt||0).toFixed(2)}`).join(' · ')
+        : '—';
+
+      const totalQty = current.reduce((n,x)=> n + Number(x.qty||0), 0);
 
       box.innerHTML = `
         <div class="card">
@@ -610,10 +665,12 @@
               <th>${t('cart.line')}</th>
               <th>${t('cart.action')}</th>
             </tr>
-            ${rows}
+            ${rowsHtml}
           </table>
-          <div class="summary">${t('cart.total')} ${current.reduce((n, x) => n + Number(x.qty || 0), 0)}</div>
+
+          <div class="summary">${t('cart.total')} ${totalQty}</div>
           <div class="summary">${t('cart.sum')}: ${totalsHTML} ${Object.keys(grouped).length>1?`<span class="note">(${t('cart.currencyMixed')})</span>`:''}</div>
+
           <div class="row" style="margin-top:10px">
             <button class="btn secondary" onclick="clearCart()">${t('cart.clear')}</button>
             <span class="muted">${t('cart.stockNote')}</span>
@@ -623,42 +680,43 @@
       `;
     }
 
-    /* ======================= Cart ops ======================= */
-    async function changeQty(sku, delta) {
-      const k = normalizeSku(sku);
+    /* ======================= Cart operations (key-aware) ======================= */
+    async function changeQty(itemKeyStr, delta){
+      const k = String(itemKeyStr||'').toLowerCase();
       const cart = readCart();
-      const i = cart.findIndex(x => normalizeSku(x.sku) === k);
-      if (i === -1) return;
+      const idx = cart.findIndex(it => itemKey(it) === k);
+      if (idx === -1) return;
 
-      const max = getMaxForSKU(k);
+      const sku = cart[idx].sku;
+      const max = getMaxForSKU(sku);
 
-      if (delta > 0) {
-        if (!Number.isFinite(max) ? false : (max <= 0)) return;
-        const next = Number(cart[i].qty || 0) + 1;
+      if (delta > 0){
+        if (Number.isFinite(max) && max <= 0) return;
+        const next = Number(cart[idx].qty || 0) + 1;
         if (Number.isFinite(max) && next > max) return;
-        cart[i].qty = next;
-      } else if (delta < 0) {
-        const next = Number(cart[i].qty || 0) - 1;
-        if (next <= 0) {
-          cart.splice(i, 1);
-        } else {
-          cart[i].qty = next;
-        }
+        cart[idx].qty = next;
+      } else if (delta < 0){
+        const next = Number(cart[idx].qty || 0) - 1;
+        if (next <= 0) cart.splice(idx, 1);
+        else cart[idx].qty = next;
       }
+
       await writeCart(cart);
     }
 
-    async function removeItem(sku) { 
-      const k = normalizeSku(sku);
-      await writeCart(readCart().filter(x => normalizeSku(x.sku) !== k)); 
+    async function removeItem(itemKeyStr){
+      const k = String(itemKeyStr||'').toLowerCase();
+      await writeCart(readCart().filter(it => itemKey(it) !== k));
     }
-    async function clearCart() { await writeCart([]); }
+
+    async function clearCart(){ await writeCart([]); }
 
     /* ======================= Proceed flow ======================= */
     async function proceedCheckout(){
       const cart = readCart();
       if (!cart.length) return;
 
+      // Optional backup
       localStorage.setItem('cart_backup', JSON.stringify(cart));
 
       const { data:{ session } } = await supa.auth.getSession();
@@ -671,7 +729,61 @@
       }
     }
 
-    /* ======================= Orders (fix: no receipt_url) ======================= */
+    /* ======================= Cross-device cart sync ======================= */
+    async function syncCartFromDB(){
+      const { data:{ user } } = await supa.auth.getUser();
+      if (!user) return;
+
+      const { data: row, error } = await supa
+        .from('carts')
+        .select('items, updated_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) { console.error('carts select error:', error); return; }
+
+      const local = getLocalBundle();
+      const serverItems = Array.isArray(row?.items) ? row.items : null;
+      const serverUpdated = row?.updated_at || null;
+
+      // Choose newest
+      const localTime  = local.updated_at ? Date.parse(local.updated_at) : 0;
+      const serverTime = serverUpdated ? Date.parse(serverUpdated) : 0;
+
+      if (serverItems && (!local.items.length || serverTime >= localTime)){
+        setLocalBundle(serverItems, serverUpdated || new Date().toISOString());
+      } else if (local.items.length && (!serverItems || localTime > serverTime)){
+        await supa.from('carts').upsert({ user_id:user.id, items:local.items, updated_at: local.updated_at || new Date().toISOString() });
+      }
+
+      await loadProductsForCart();
+      await renderCart();
+    }
+
+    /* ======================= Purchases view: hide/remove from view ======================= */
+    const HIDDEN_ORDERS_KEY = "hidden_orders_v1";
+    const ORDERS_HIDDEN_UI  = "orders_collapsed_v1";
+
+    function getHiddenOrders(){
+      try { return new Set(JSON.parse(localStorage.getItem(HIDDEN_ORDERS_KEY)||"[]")); }
+      catch { return new Set(); }
+    }
+    function hideOrder(id){
+      const s = getHiddenOrders();
+      s.add(String(id));
+      localStorage.setItem(HIDDEN_ORDERS_KEY, JSON.stringify([...s]));
+      renderOrders();
+    }
+    function clearHiddenOrders(){
+      localStorage.removeItem(HIDDEN_ORDERS_KEY);
+      renderOrders();
+    }
+    function toggleOrders(){
+      const cur = localStorage.getItem(ORDERS_HIDDEN_UI) === "1";
+      localStorage.setItem(ORDERS_HIDDEN_UI, cur ? "0" : "1");
+      renderOrders();
+    }
+
     async function renderOrders(){
       const ordersBox = document.getElementById('ordersBox');
       const hint = document.getElementById('ordersHint');
@@ -682,7 +794,15 @@
         hint.textContent = t('orders.hint');
         return;
       }
+
       hint.textContent = t('orders.signed');
+
+      const collapsed = localStorage.getItem(ORDERS_HIDDEN_UI) === "1";
+      if (collapsed){
+        ordersBox.style.display = 'none';
+        return;
+      }
+
       ordersBox.style.display = 'block';
       ordersBox.innerHTML = `<div class="muted">${t('orders.loading')}</div>`;
 
@@ -697,12 +817,16 @@
         ordersBox.innerHTML = `<div class="muted">Could not load orders: ${escapeHtml(error.message)}</div>`;
         return;
       }
-      if (!orders || !orders.length){
+
+      const hidden = getHiddenOrders();
+      const visibleOrders = (orders || []).filter(o => !hidden.has(String(o.id)));
+
+      if (!visibleOrders.length){
         ordersBox.innerHTML = `<div class="muted">${t('orders.none')}</div>`;
         return;
       }
 
-      ordersBox.innerHTML = orders.map(o=>{
+      ordersBox.innerHTML = visibleOrders.map(o=>{
         const d = new Date(o.created_at);
         const badgeCls = (o.status||'').toLowerCase()==='paid' ? 'ok' : 'warn';
         const amountTxt = (o.total_amount!=null) ? ` · Amount: ${Number(o.total_amount).toFixed(2)}` : '';
@@ -711,7 +835,10 @@
           <div class="order">
             <div class="row">
               <div><strong>Order #${escapeHtml(o.id)}</strong> · <span class="muted">${d.toLocaleString()}</span></div>
-              <span class="badge ${badgeCls}">${escapeHtml(o.status || 'pending')}</span>
+              <div style="display:flex;gap:8px;align-items:center">
+                <span class="badge ${badgeCls}">${escapeHtml(o.status || 'pending')}</span>
+                <button class="qty-btn" type="button" onclick="hideOrder('${escapeAttr(o.id)}')">Hide</button>
+              </div>
             </div>
             <div class="muted">${qtyTxt}${amountTxt}</div>
           </div>
@@ -722,8 +849,7 @@
     /* ======================= Boot ======================= */
     document.addEventListener('DOMContentLoaded', async () => {
       adoptQueryCartOnce();
-      adoptBackupCartOnce();
-      await loadProductsForCart();     // loads stock + prices
+      await loadProductsForCart();  // loads stock + base + variants prices
       await renderCart();
       await syncCartFromDB();
       await renderOrders();
@@ -734,7 +860,6 @@
       else { renderOrders(); }
     });
 
-    // Live update if another tab/page modifies 'cart'
     window.addEventListener('storage', (e)=>{
       if (e.key === 'cart' || e.key === 'cart_ping') {
         renderCart();
