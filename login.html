@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>VetoCos | Vet-Only Pricing Store (Single File)</title>
+  <title>VetoCos | Vet-Only Pricing Store</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Single-file VetoCos web app with Supabase auth, vet verification, product listing, and cart." />
+  <meta name="description" content="VetoCos web app with Supabase auth, vet verification, product listing, and cart." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -98,8 +98,6 @@
     .btn[disabled]{ opacity:.6; cursor:not-allowed; }
 
     main{ padding:22px 0 40px; }
-
-    .grid{ display:grid; grid-template-columns:1fr; gap:14px; }
 
     .card{
       background:var(--card);
@@ -227,9 +225,7 @@
   <!-- Routes -->
   <section id="route-auth" class="card hide" aria-label="Authentication">
     <h1 id="authTitle">Sign in</h1>
-    <p class="muted" id="authKicker">
-      Sign in or create an account. Prices are hidden until vet verification is approved.
-    </p>
+    <p class="muted" id="authKicker">Sign in or create an account. Prices are hidden until vet verification is approved.</p>
 
     <div class="hr"></div>
 
@@ -299,10 +295,7 @@
 
   <section id="route-verify" class="card hide" aria-label="Vet verification">
     <h1>Vet verification</h1>
-    <p class="muted">
-      Submit your professional document to unlock prices and purchasing.
-      After admin approval, prices appear automatically.
-    </p>
+    <p class="muted">Submit your professional document to unlock prices and purchasing. After admin approval, prices appear automatically.</p>
 
     <div class="hr"></div>
 
@@ -339,9 +332,7 @@
 
     <div class="notice" style="margin-top:12px">
       <div class="kicker"><strong>Admin approval</strong></div>
-      <div class="kicker">
-        Admin must set your application to <em>approved</em> and set <code>profiles.can_purchase = true</code>.
-      </div>
+      <div class="kicker">Admin must set your application to <em>approved</em> and set <code>profiles.can_purchase = true</code>.</div>
     </div>
   </section>
 
@@ -357,13 +348,11 @@
 
     <div class="hr"></div>
 
+    <!-- FIXED: this notice never tells a logged-in user to sign in -->
     <div id="priceGateNotice" class="notice hide" role="note">
       <strong>Prices are hidden.</strong>
-      <div class="kicker">To see prices and purchase, complete vet verification.</div>
-      <div class="row" style="margin-top:10px">
-        <button class="btn" data-go="#/verify" type="button">Start verification</button>
-        <button class="btn ghost" data-go="#/auth" type="button">Sign in / Sign up</button>
-      </div>
+      <div class="kicker" id="priceGateKicker"></div>
+      <div class="row" style="margin-top:10px" id="priceGateActions"></div>
     </div>
 
     <div id="prodList" class="muted" aria-live="polite">Loading…</div>
@@ -407,9 +396,7 @@
 </main>
 
 <footer role="contentinfo">
-  <div class="wrap">
-    © <span id="y"></span> VetoCos · Complementary feed for companion animals
-  </div>
+  <div class="wrap">© <span id="y"></span> VetoCos · Complementary feed for companion animals</div>
 </footer>
 
 <script>
@@ -417,7 +404,7 @@
   "use strict";
 
   /* =========================================================
-     CONFIG (edit these)
+     CONFIG
   ========================================================= */
   const CONFIG = Object.freeze({
     supabaseUrl: "https://qdepgviimbcdlozjpbhm.supabase.co",
@@ -426,12 +413,11 @@
     cartStorageKey: "vetocos_cart_v1",
     maxUploadBytes: 10 * 1024 * 1024,
     allowedMimeTypes: new Set(["application/pdf", "image/jpeg", "image/png"]),
-    // Optional: only used if you seed profiles manually; safe to keep empty
     adminEmails: new Set(["anwar.moumenjamai19@gmail.com"].map(e => e.toLowerCase())),
   });
 
   /* =========================================================
-     SUPABASE CLIENT
+     SUPABASE
   ========================================================= */
   const supa = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
@@ -464,17 +450,17 @@
   }
 
   /* =========================================================
-     APP STATE
+     STATE
   ========================================================= */
   const state = {
     route: "#/products",
     user: null,
-    profile: null,    // profiles row
-    vetApp: null,     // latest vet_applications row
+    profile: null,
+    vetApp: null,
     products: [],
     cart: [],
     canPurchase: false,
-    authMode: "signin", // signin | signup
+    authMode: "signin",
   };
 
   /* =========================================================
@@ -498,7 +484,6 @@
   }
 
   async function syncCartToDB() {
-    // Requires table cart_items(user_id uuid, product_sku text, quantity int) with suitable RLS
     if (!state.user) return;
 
     const cart = readLocalCart();
@@ -512,7 +497,6 @@
       await supa.from("cart_items").upsert(payload, { onConflict: "user_id,product_sku" });
     }
 
-    // prune removed items
     const { data: rows } = await supa
       .from("cart_items")
       .select("product_sku,quantity")
@@ -543,7 +527,6 @@
       .filter(r => Number(r.quantity) > 0)
       .map(r => [r.product_sku, Number(r.quantity)]));
 
-    // Merge local -> db (keep the larger, or just ensure local not lost)
     const local = readLocalCart();
     for (const it of local) {
       if (!db.has(it.sku)) db.set(it.sku, Number(it.qty || 0));
@@ -559,7 +542,7 @@
   }
 
   /* =========================================================
-     DATA LOADERS
+     LOADERS
   ========================================================= */
   async function refreshUser() {
     const { data: { user } } = await supa.auth.getUser();
@@ -570,17 +553,14 @@
   async function ensureProfile() {
     state.profile = null;
     state.canPurchase = false;
-
     if (!state.user) return null;
 
-    // Try read
     let { data: p } = await supa
       .from("profiles")
       .select("id,email,first_name,last_name,dob,can_purchase,is_admin")
       .eq("id", state.user.id)
       .maybeSingle();
 
-    // Seed if missing (only if you haven't created via triggers)
     if (!p) {
       await supa.from("profiles").insert({
         id: state.user.id,
@@ -641,7 +621,6 @@
     await ensureProfile();
     await loadLatestVetApplication();
 
-    // If verified via profile, treat as verified (source of truth)
     state.canPurchase = !!state.profile?.can_purchase;
 
     await loadProducts();
@@ -686,7 +665,7 @@
   }
 
   /* =========================================================
-     GLOBAL HEADER STATUS
+     GLOBAL STATUS + HEADER
   ========================================================= */
   function renderGlobalStatus() {
     const authBtn = $("authBtn");
@@ -700,10 +679,8 @@
       return;
     }
 
-    const name = [
-      state.profile?.first_name,
-      state.profile?.last_name
-    ].filter(Boolean).join(" ") || (state.user.email || "").split("@")[0] || "User";
+    const name = [state.profile?.first_name, state.profile?.last_name]
+      .filter(Boolean).join(" ") || (state.user.email || "").split("@")[0] || "User";
 
     setText($("statusLine"), `Signed in as ${name} (${state.user.email || ""}).`);
     setPill($("purchasePill"), state.canPurchase ? "ok" : "bad", state.canPurchase ? "Verified" : "Not verified");
@@ -763,7 +740,7 @@
       }
 
       await refreshAll();
-      navigateTo(state.canPurchase ? "#/products" : "#/verify");
+      navigateTo("#/products"); // ALWAYS go to products; prices depend on verification
     });
 
     $("forgotBtn").addEventListener("click", async () => {
@@ -822,8 +799,7 @@
         return;
       }
 
-      msg.className = "msg ok";
-      msg.textContent = "Almost done! Check your email to confirm, then return and sign in.";
+      setMessage(msg, "ok", "Almost done! Check your email to confirm, then return and sign in.");
     });
 
     setAuthMode("signin");
@@ -870,7 +846,6 @@
     else if (state.vetApp) setMessage(msg, "muted", "Pending review. You can re-submit to update your document.");
     else setMessage(msg, "muted", "No submission yet. Fill the form and submit.");
 
-    // Preview signed URL
     show(previewLink, false);
     if (state.vetApp?.diploma_path) {
       const { data } = await supa.storage
@@ -883,7 +858,6 @@
       }
     }
 
-    // Withdraw
     show(withdrawBtn, !!state.vetApp && st !== "withdrawn");
     withdrawBtn.onclick = async () => {
       if (!state.vetApp) return;
@@ -901,7 +875,6 @@
       renderGlobalStatus();
     };
 
-    // Submit
     submitBtn.onclick = async () => {
       setMessage(msg, "muted", "Preparing submission…");
 
@@ -921,7 +894,6 @@
         return;
       }
 
-      // Upload
       setMessage(msg, "muted", "Uploading document…");
 
       const cleanName = (file.name || "document")
@@ -940,7 +912,6 @@
         return;
       }
 
-      // Insert or update application
       setMessage(msg, "muted", "Saving application…");
 
       if (!state.vetApp) {
@@ -972,14 +943,47 @@
   }
 
   /* =========================================================
-     PRODUCTS UI
+     PRODUCTS UI (fixed gating: never asks logged-in users to sign in)
   ========================================================= */
+  function renderProductsGate() {
+    const gate = $("priceGateNotice");
+    const kicker = $("priceGateKicker");
+    const actions = $("priceGateActions");
+
+    if (state.user && state.canPurchase) {
+      show(gate, false);
+      return;
+    }
+
+    show(gate, true);
+
+    if (!state.user) {
+      setText(kicker, "Please sign in to request vet verification and unlock pricing.");
+      setHTML(actions, `
+        <button class="btn" type="button" data-go="#/auth">Sign in / Sign up</button>
+      `);
+    } else {
+      // Logged in but not verified -> DO NOT show sign-in button
+      setText(kicker, "Your account is signed in, but not verified yet. Complete vet verification to unlock prices.");
+      setHTML(actions, `
+        <button class="btn" type="button" data-go="#/verify">Start verification</button>
+        <button class="btn ghost" type="button" data-go="#/account">My account</button>
+      `);
+    }
+
+    // re-wire newly injected buttons
+    actions.querySelectorAll("[data-go]").forEach(btn => {
+      btn.addEventListener("click", () => navigateTo(btn.getAttribute("data-go")));
+    });
+  }
+
   function renderProductsPage() {
     const list = $("prodList");
     const q = ($("prodSearch").value || "").trim().toLowerCase();
 
     const showPrice = !!state.user && !!state.canPurchase;
-    show($("priceGateNotice"), !showPrice);
+
+    renderProductsGate();
 
     const filtered = state.products.filter(p => {
       if (!q) return true;
@@ -1018,14 +1022,15 @@
 
     setHTML(list, html);
 
-    // Wire add buttons
     list.querySelectorAll("button[data-add]").forEach(btn => {
       btn.addEventListener("click", async () => {
         const sku = btn.getAttribute("data-add");
         const prod = state.products.find(x => x.sku === sku);
         if (!prod) return;
 
+        // If user not signed in -> send to auth
         if (!state.user) return navigateTo("#/auth");
+        // If signed in but not verified -> send to verification (NOT auth)
         if (!state.canPurchase) return navigateTo("#/verify");
 
         const qtyInput = list.querySelector(`input[data-qty="${CSS.escape(sku)}"]`);
@@ -1038,7 +1043,6 @@
 
         writeLocalCart(cart);
         await syncCartToDB();
-
         navigateTo("#/cart");
       });
     });
@@ -1053,7 +1057,7 @@
     const checkoutBtn = $("checkoutBtn");
 
     const showPrice = !!state.user && !!state.canPurchase;
-    show($("cartGateNotice"), !showPrice);
+    show($("cartGateNotice"), !!state.user && !showPrice); // only show lock notice if logged in but unverified
 
     if (!state.user) {
       setHTML(box, `
@@ -1084,13 +1088,8 @@
       const qty = Number(it.qty || 0);
       const lineTotal = unit * qty;
 
-      const unitCell = showPrice
-        ? `<span class="price">${unit.toFixed(2)}</span>`
-        : `<span class="tag">Hidden</span>`;
-
-      const totalCell = showPrice
-        ? `<span class="price">${lineTotal.toFixed(2)}</span>`
-        : `<span class="tag">Hidden</span>`;
+      const unitCell = showPrice ? `<span class="price">${unit.toFixed(2)}</span>` : `<span class="tag">Hidden</span>`;
+      const totalCell = showPrice ? `<span class="price">${lineTotal.toFixed(2)}</span>` : `<span class="tag">Hidden</span>`;
 
       return `
         <tr>
@@ -1126,13 +1125,9 @@
       return sum + (Number(prod?.price || 0) * Number(it.qty || 0));
     }, 0);
 
-    if (showPrice) {
-      setHTML(msg, `Items: <strong>${cartCount()}</strong> · Total: <strong>${total.toFixed(2)}</strong>`);
-    } else {
-      setHTML(msg, `Items: <strong>${cartCount()}</strong> · <span class="tag">Totals hidden until verified</span>`);
-    }
+    if (showPrice) setHTML(msg, `Items: <strong>${cartCount()}</strong> · Total: <strong>${total.toFixed(2)}</strong>`);
+    else setHTML(msg, `Items: <strong>${cartCount()}</strong> · <span class="tag">Totals hidden until verified</span>`);
 
-    // Wire buttons
     box.querySelectorAll("button[data-inc]").forEach(b => {
       b.addEventListener("click", async () => {
         const idx = Number(b.getAttribute("data-inc"));
@@ -1173,7 +1168,7 @@
     checkoutBtn.onclick = () => {
       if (!state.user) return navigateTo("#/auth");
       if (!state.canPurchase) return navigateTo("#/verify");
-      alert("Checkout flow not included in this single file. If you want, I can add Orders + Stripe later.");
+      alert("Checkout flow not included in this single file. I can add Orders + Stripe if you want.");
     };
   }
 
@@ -1194,10 +1189,7 @@
       return;
     }
 
-    const badge = state.canPurchase
-      ? `<span class="pill ok">Verified</span>`
-      : `<span class="pill bad">Not verified</span>`;
-
+    const badge = state.canPurchase ? `<span class="pill ok">Verified</span>` : `<span class="pill bad">Not verified</span>`;
     const fn = state.profile?.first_name || "";
     const ln = state.profile?.last_name || "";
 
@@ -1260,12 +1252,11 @@
   }
 
   /* =========================================================
-     ROUTE RENDERER
+     ROUTE RENDER
   ========================================================= */
   async function renderRoute() {
     const name = currentRouteName();
 
-    // Guard: routes that need auth
     const needsAuth = new Set(["verify", "account"]);
     if (needsAuth.has(name) && !state.user) {
       navigateTo("#/auth");
@@ -1275,15 +1266,11 @@
     setRoute(`#/${name}`);
 
     if (name === "auth") {
-      // UI already wired, just ensure mode visible
       setAuthMode(state.authMode);
       return;
     }
 
-    if (name === "verify") {
-      await renderVerifyPage();
-      return;
-    }
+    if (name === "verify") { await renderVerifyPage(); return; }
 
     if (name === "products") {
       $("prodSearch").oninput = () => renderProductsPage();
@@ -1291,24 +1278,17 @@
       return;
     }
 
-    if (name === "cart") {
-      renderCartPage();
-      return;
-    }
+    if (name === "cart") { renderCartPage(); return; }
 
-    if (name === "account") {
-      await renderAccountPage();
-      return;
-    }
+    if (name === "account") { await renderAccountPage(); return; }
   }
 
   /* =========================================================
-     REALTIME (optional, but nice)
+     REALTIME
   ========================================================= */
   function setupRealtime() {
     if (!state.user) return;
 
-    // Update UI when admin flips profiles.can_purchase
     supa.channel(`rt_profile_${state.user.id}`)
       .on("postgres_changes",
         { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${state.user.id}` },
@@ -1316,11 +1296,10 @@
           await ensureProfile();
           state.canPurchase = !!state.profile?.can_purchase;
           renderGlobalStatus();
-          renderRoute(); // refresh page (prices may appear)
+          renderRoute();
         }
       ).subscribe();
 
-    // Update verify page when application changes
     supa.channel(`rt_vetapp_${state.user.id}`)
       .on("postgres_changes",
         { event: "*", schema: "public", table: "vet_applications", filter: `user_id=eq.${state.user.id}` },
@@ -1341,14 +1320,11 @@
     wireHeaderAuthButtons();
     wireAuthPage();
 
-    // initial data
     await refreshAll();
 
-    // route handling
     if (!location.hash) location.hash = "#/products";
     window.addEventListener("hashchange", renderRoute);
 
-    // auth change handling
     supa.auth.onAuthStateChange(async () => {
       await refreshAll();
       setupRealtime();
