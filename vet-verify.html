@@ -1097,7 +1097,6 @@ async function placeOrder(){
     const order_id = orderRow.id;
 
     // Create order_items (variant saved if your table has column; if it doesn't, remove variant field)
-    // Insert order items
     const itemsPayload = eligibleItems.map(it=>{
       const p = computeItemPrice(it) || {};
       return {
@@ -1111,85 +1110,123 @@ async function placeOrder(){
         line_total: (p && !p.hidden) ? p.line : null
       };
     });
+    
     const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
-    if (itemsErr){ msgEl.textContent = itemsErr.message || 'Failed to add items.'; return; }
-
-    /* ✅ Consume approvals ONLY NOW (order + items successful) */
-    await consumeApprovalsForOrder(eligibleItems);
-
-    /* (Optional) keep the local APPROVALS cache in sync to avoid UI flicker */
-    eligibleItems.forEach(it=>{
-      if (CAN_PURCHASE) return;
-      const cur = Number(APPROVALS[it.sku]||0);
-      APPROVALS[it.sku] = Math.max(0, cur - Number(it.qty||0));
-    });
-
-    // Remove eligible SKUs from cart
-    const remaining = readCart().filter(x => !eligibleItems.some(e => e.sku===x.sku));
-    writeCart(remaining);
-    CART = remaining;
-    renderCart();
-
-    // Pass along for payment page
-    localStorage.setItem('checkout_lines', JSON.stringify(lines));
-    localStorage.setItem('checkout_totals', JSON.stringify(totals));
-    location.assign(`order-pay.html?order=${encodeURIComponent(order_id)}`);
-  }catch(e){
-    console.error(e);
-    msgEl.textContent = 'Something went wrong creating your order.';
-  }
-}
-
-/* ======== Boot ======== */
-async function refreshHeader(){
-  const { data:{ session } } = await supa.auth.getSession();
-  IS_LOGGED_IN = !!session?.user;
-  USER = session?.user || null;
-
-  if (!IS_LOGGED_IN){
-    if (signInBtn) signInBtn.style.display='inline-block';
-    if (signUpBtn) signUpBtn.style.display='inline-block';
-    if (acctBlock) acctBlock.style.display='none';
-    if (adminBtn) adminBtn.style.display='none';
-  } else {
-    if (signInBtn) signInBtn.style.display='none';
-    if (signUpBtn) signUpBtn.style.display='none';
-    if (acctBlock) acctBlock.style.display='inline-flex';
-  }
-  updateCartBadge();
-}
-
-document.addEventListener('DOMContentLoaded', async ()=>{
-  try{
-    await refreshHeader();
-
-    // Adopt cart from URL once
-    const qs=new URLSearchParams(location.search); const raw=qs.get('cart');
-    if (raw){
-      try{ const incoming = JSON.parse(decodeURIComponent(raw)); if (Array.isArray(incoming)) writeCart(incoming); }catch(_){}
-      finally{ qs.delete('cart'); history.replaceState({}, '', location.pathname + (qs.toString()?('?'+qs.toString()):'')); }
+    if (itemsErr){
+      // rollback order if items fail (optional)
+      await supa.from('orders').delete().eq('id', order_id);
+      throw new Error(itemsErr.message || 'Failed to add order items.');
     }
 
-    CART = (readCart()||[]).filter(it=>it && it.sku && Number(it.qty)>0);
+    // ✅ Consume approvals ONLY AFTER order+items succeed
+    await consumeApprovalsForOrder(eligible);
 
-    // Must be logged in to check out
-    await ensureLogin();
+    // Remove eligible items from cart, keep the rest
+    const eligibleSkuSet = new Set(eligible.map(x=>x.sku));
+    const remaining = cart.filter(it=>!eligibleSkuSet.has(it.sku));
+    writeCart(remaining);
 
-    // If local cart is empty, try to hydrate from DB (matches cart.html behavior)
-    await syncCartFromDBIfEmpty();
-    CART = (readCart()||[]).filter(it=>it && it.sku && Number(it.qty)>0);
+    // Refresh approval cache + UI
+    await primeMyApprovalsMap();
+    renderProducts();
+    renderMyApprovals();
+    await renderMiniCartAndCheckout();
+    await renderOrders();
 
-    await loadProfile();
-    await loadProductsForCart();   // pulls stock + prices
-    await loadApprovalsForCart();
+    placeMsg.textContent = (remaining.length)
+      ? 'Order placed for eligible items. Some items still need approval/stock (see checkout notes).'
+      : 'Order placed successfully.';
+    placeMsg.className='success';
 
-    const { ineligible, issues } = computeEligibility();
-    renderIssues(ineligible, issues);
-    renderCart();
-  }catch(e){ console.warn(e); }
-});
+  }catch(e){
+    console.error(e);
+    placeMsg.textContent = 'Something went wrong: ' + (e?.message || 'Unknown error');
+    placeMsg.className='error';
+  }finally{
+    placeOrderBtn.disabled = false;
+  }
+}
 
-document.getElementById('placeOrder').addEventListener('click', placeOrder);
+placeOrderBtn.addEventListener('click', placeOrder);
+
+/* ================= Boot ================= */
+async function boot(){
+  document.getElementById('y').textContent=new Date().getFullYear();
+
+  const { data:{ user } } = await supa.auth.getUser();
+  if (!user){
+    location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html'));
+    return;
+  }
+  USER=user;
+
+  await loadProfile();
+
+  // Load latest application
+  const { data: rows, error } = await supa.from('vet_applications')
+    .select('id,identity_number,diploma_path,status,created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending:false })
+    .limit(1);
+
+  if (!error && rows && rows[0]){
+    currentApp=rows[0];
+    statusBox.style.display='grid';
+    pill(currentApp.status);
+
+    if (currentApp.identity_number) idInput.value=currentApp.identity_number;
+
+    if (currentApp.diploma_path){
+      const { data: signed, error: sErr } = await supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300);
+      if (!sErr && signed?.signedUrl){
+        previewWrap.style.display='flex';
+        previewLink.href=signed.signedUrl;
+      }
+    }
+
+    maybeShowWithdraw();
+
+    if (currentApp.status === 'approved'){
+      idInput.disabled=true; fileInput.disabled=true; btn.disabled=true; btn.textContent='approved';
+      setMsg('Your account is approved. If admin also enables global purchasing, you won’t need per-product approvals.','success');
+    } else if (currentApp.status === 'rejected'){
+      setMsg('Your previous submission was rejected. Update your ID and upload a new file for review.','error');
+    } else if (currentApp.status === 'withdrawn'){
+      setMsg('Application withdrawn. You can submit a new one.','');
+    } else {
+      setMsg('Your application is pending.','');
+    }
+  } else {
+    setMsg('No submission yet. Please fill your details.','');
+  }
+
+  await loadProducts();
+  await renderMyApprovals();
+  await renderOrders();
+  await renderMiniCartAndCheckout();
+
+  // realtime: approvals change => update UI
+  supa.channel('appr-'+user.id)
+    .on('postgres_changes',
+      { event:'*', schema:'public', table:'vet_product_approvals', filter:`user_id=eq.${user.id}` },
+      async ()=>{
+        await primeMyApprovalsMap();
+        renderProducts();
+        renderMyApprovals();
+        await renderMiniCartAndCheckout();
+      }
+    )
+    .on('postgres_changes',
+      { event:'UPDATE', schema:'public', table:'profiles', filter:`id=eq.${user.id}` },
+      async ()=>{
+        await loadProfile();
+        await renderMiniCartAndCheckout();
+      }
+    )
+    .subscribe();
+}
+
+document.addEventListener('DOMContentLoaded', boot);
 </script>
 </body>
 </html>
