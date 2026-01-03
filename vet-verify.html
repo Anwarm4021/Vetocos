@@ -1098,18 +1098,17 @@ async function placeOrder(){
 
     // Create order_items (variant saved if your table has column; if it doesn't, remove variant field)
     const itemsPayload = lines.map(l=>({
-      order_id,
-      user_id: USER.id,                // keep if your order_items uses it (your old code sometimes had it)
-      product_sku: l.sku,
-      product_name: l.name,
-      quantity: l.qty,
-      unit_price: l.unit_price,
-      currency: l.currency,
-      price_tier: l.price_tier,
-      line_total: l.line_total,
-      variant: l.variant               // ✅ remove this line if column doesn't exist in DB
-    }));
-
+     order_id,
+     product_sku: l.sku,
+     product_name: l.name,
+     quantity: l.qty,
+     unit_price: l.unit_price,
+     currency: l.currency,
+     price_tier: l.price_tier,
+     line_total: l.line_total,
+     variant: l.variant   // ✅ keep ONLY if column exists
+  }));
+    
     const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
     if (itemsErr){
       // rollback order if items fail (optional)
