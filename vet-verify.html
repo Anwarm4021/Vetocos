@@ -78,7 +78,8 @@ footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18)
       <span>VetoCos</span>
     </div>
     <nav class="links">
-      <a class="btn" href="Products.html">Products</a>
+      <!-- ✅ FIX: use correct case for GitHub Pages (usually lowercase) -->
+      <a class="btn" href="products.html">Products</a>
       <a class="btn" href="cart.html">Cart</a>
       <a class="btn" href="account.html">My Account</a>
       <select id="lang-switch" aria-label="Language">
@@ -190,7 +191,8 @@ footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18)
   <div class="wrap">
     © <span id="y"></span> VetoCos
     <div class="footer-links">
-      <a href="Products.html">Products</a>
+      <!-- ✅ FIX: use correct case for GitHub Pages (usually lowercase) -->
+      <a href="products.html">Products</a>
       <a href="cart.html">Cart</a>
       <a href="account.html">My Account</a>
     </div>
@@ -203,7 +205,7 @@ footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18)
 /* ================= Supabase ================= */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
@@ -390,7 +392,6 @@ async function primeMyApprovalsMap(){
 
   if (error){ MY_APPROVALS=new Map(); return; }
 
-  // If admin wants "forever per product": set quantity = -1
   MY_APPROVALS = new Map((data||[]).map(r=>[
     r.product_sku,
     { status:r.status, quantity: (r.quantity==null?0:Number(r.quantity)) }
@@ -427,7 +428,7 @@ async function loadProducts(){
   renderProducts();
 }
 
-/* ================= Variant-aware pricing (works even if no variants) ================= */
+/* ================= Variant-aware pricing ================= */
 const DEFAULT_CURRENCY='MAD';
 
 function toNumOrNull(x){
@@ -456,7 +457,6 @@ function computeItemPrice(item){
   const p = PRODUCTS[skuKey(item.sku)];
   if (!p) return null;
 
-  // supports item.variant if you store it in cart (optional)
   const v = findVariant(p, item.variant);
   const priceSource = v
     ? { ...v, currency: v.currency || p.currency || DEFAULT_CURRENCY }
@@ -545,7 +545,8 @@ function renderMiniCartRow(it, i){
 
   return `<tr>
     <td>
-      <a class="link" href="Products.html#${encodeURIComponent(sku)}" target="_blank" rel="noopener">${escapeHtml(it.name||sku)}</a>
+      <!-- ✅ FIX: products.html (lowercase) -->
+      <a class="link" href="products.html#${encodeURIComponent(sku)}" target="_blank" rel="noopener">${escapeHtml(it.name||sku)}</a>
       <span class="kicker">(${escapeHtml(sku)})</span>${variantTxt}
       ${note}
     </td>
@@ -576,7 +577,6 @@ async function renderMiniCartAndCheckout(){
     </table>
     <div class="small muted" style="margin-top:8px">Total items: ${cart.reduce((n,x)=>n+Number(x.qty||0),0)}</div>`;
 
-    // +/- with approval cap (unless global or forever)
     box.querySelectorAll('button[data-cart]').forEach(b=>{
       b.onclick = ()=>{
         const idx=Number(b.dataset.cart);
@@ -604,7 +604,6 @@ async function renderMiniCartAndCheckout(){
       };
     });
 
-    // Remove
     box.querySelectorAll('button[data-rem]').forEach(b=>{
       b.onclick = ()=>{
         const idx=Number(b.dataset.rem);
@@ -616,7 +615,6 @@ async function renderMiniCartAndCheckout(){
       };
     });
 
-    // Verify -> scroll
     box.querySelectorAll('button[data-verify]').forEach(b=>{
       b.onclick = ()=>{
         const idx=Number(b.dataset.verify);
@@ -632,7 +630,6 @@ async function renderMiniCartAndCheckout(){
     });
   }
 
-  // Checkout render
   await renderCheckout();
 }
 
@@ -686,7 +683,8 @@ function productRow(p){
 
   return `<div class="row" style="justify-content:space-between;align-items:center;border-bottom:1px solid rgba(141,158,199,.12);padding:8px 0" data-sku="${escapeHtml(p.sku)}">
     <div>
-      <div><a class="link" href="Products.html#${encodeURIComponent(p.sku)}" target="_blank" rel="noopener">${escapeHtml(p.name)}</a> <span class="kicker">(${escapeHtml(p.sku)})</span></div>
+      <!-- ✅ FIX: products.html (lowercase) -->
+      <div><a class="link" href="products.html#${encodeURIComponent(p.sku)}" target="_blank" rel="noopener">${escapeHtml(p.name)}</a> <span class="kicker">(${escapeHtml(p.sku)})</span></div>
       <div class="small muted">In stock: ${Number(p.stock_qty||0)} · <span class="badge">Requires approval</span></div>
     </div>
     <div>${right}</div>
@@ -702,7 +700,6 @@ function renderProducts(){
 
   prodList.innerHTML = rows || `<div class="muted">No products found.</div>`;
 
-  // Wire actions
   prodList.querySelectorAll('[data-sku]').forEach(row=>{
     const sku=row.dataset.sku;
     const prod=PRODUCT_CACHE.find(x=>x.sku===sku);
@@ -753,14 +750,12 @@ function renderProducts(){
         return;
       }
 
-      // global access
       addToCart(sku, want, prod?.name);
       await renderMiniCartAndCheckout();
     });
 
     row.querySelector('[data-req-more]')?.addEventListener('click', async ()=>{
       const want=Math.max(1, Number(row.querySelector('.ap-add')?.value||1));
-      // request more by increasing desired quantity; simplest: set pending qty = current approved + want
       const ap = MY_APPROVALS.get(sku);
       const cur = (ap?.status==='approved' && ap.quantity>0) ? Number(ap.quantity) : 0;
       await requestApproval(sku, cur + want);
@@ -792,7 +787,8 @@ async function renderMyApprovals(){
         const cls = st==='approved'?'ok':st==='rejected'?'bad':st==='withdrawn'?'bad':'pend';
         const when=r.updated_at?new Date(r.updated_at).toLocaleString():'';
         return `<tr data-sku="${escapeHtml(r.product_sku)}">
-          <td><a class="link" href="Products.html#${encodeURIComponent(r.product_sku)}" target="_blank" rel="noopener">${escapeHtml(r.product_sku)}</a></td>
+          <!-- ✅ FIX: products.html (lowercase) -->
+          <td><a class="link" href="products.html#${encodeURIComponent(r.product_sku)}" target="_blank" rel="noopener">${escapeHtml(r.product_sku)}</a></td>
           <td>${qtyTxt}</td>
           <td><span class="badge ${cls}">${escapeHtml(st)}</span></td>
           <td class="small muted">${escapeHtml(when)}</td>
@@ -861,7 +857,6 @@ function eligibilityForCart(cart){
     const prod=PRODUCTS[skuKey(it.sku)];
     const qty=Number(it.qty||0);
 
-    // stock / available
     if (prod && prod.available === false){
       ineligible.push({ sku:it.sku, reason:'Unavailable' });
       return;
@@ -911,10 +906,8 @@ async function renderCheckout(){
     return;
   }
 
-  // Make sure product rows are available for pricing/stock
   const missing = cart.some(it => !PRODUCTS[skuKey(it.sku)]);
   if (missing){
-    // fetch only needed skus (case-flex)
     const skus=[...new Set(cart.map(x=>x.sku).filter(Boolean))];
     const candidates=[...new Set(skus.flatMap(s=>[s,String(s).toUpperCase(),String(s).toLowerCase()]))];
     const { data } = await supa.from('products')
@@ -925,7 +918,6 @@ async function renderCheckout(){
 
   const { eligible, ineligible, issues } = eligibilityForCart(cart);
 
-  // Issues UI
   if (issues.length || ineligible.length){
     const list=[
       ...issues.map(x=>`<li>${escapeHtml(x)}</li>`),
@@ -938,13 +930,11 @@ async function renderCheckout(){
     checkoutIssues.innerHTML='';
   }
 
-  // Eligibility badge + button
   const fullApproved = isCartFullyApproved();
   checkoutEligibility.textContent = fullApproved ? 'Eligibility: FULL' : (eligible.length ? 'Eligibility: PARTIAL' : 'Eligibility: NONE');
   checkoutEligibility.className = 'badge ' + (fullApproved ? 'ok' : (eligible.length ? 'pend' : 'bad'));
-  placeOrderBtn.disabled = (eligible.length === 0); // allow partial orders
+  placeOrderBtn.disabled = (eligible.length === 0);
 
-  // Table with prices
   const rows = cart.map(it=>{
     const prod = PRODUCTS[skuKey(it.sku)] || {};
     const qty = Number(it.qty||0);
@@ -983,7 +973,6 @@ async function renderCheckout(){
     <tbody>${rows}</tbody>
   </table>`;
 
-  // Summary
   sumItems.textContent = String(cart.reduce((n,x)=>n+Number(x.qty||0),0));
 
   const totals = cart.map(it=>{
@@ -1002,12 +991,7 @@ async function renderCheckout(){
   placeMsg.textContent = '';
 }
 
-/* ================= Consume approvals after successful order =================
-   Rules:
-   - If profiles.can_purchase = true => do NOT consume
-   - If approval.quantity = -1 => forever => do NOT consume
-   - Otherwise subtract purchased qty; if reaches 0 => delete approval row (approval disappears)
-*/
+/* ================= Consume approvals after successful order ================= */
 async function consumeApprovalsForOrder(eligibleItems){
   if (CAN_PURCHASE) return;
 
@@ -1034,7 +1018,6 @@ async function consumeApprovalsForOrder(eligibleItems){
         .eq('status','approved');
       if (error) console.warn('consume update error', sku, error.message);
     } else {
-      // delete => approval disappears until admin approves again
       const { error } = await supa.from('vet_product_approvals')
         .delete()
         .eq('user_id', USER.id)
@@ -1045,9 +1028,8 @@ async function consumeApprovalsForOrder(eligibleItems){
   }
 }
 
-/* ================= PLACE ORDER (CORRECTED) =================
-   ✅ Does NOT go to checkout.html
-   ✅ Redirects directly to order-pay.html with the created order_id
+/* ================= PLACE ORDER =================
+   ✅ Redirects directly to order-pay.html
 */
 async function placeOrder(){
   placeOrderBtn.disabled=true;
@@ -1059,11 +1041,9 @@ async function placeOrder(){
 
     if (!eligible.length){
       placeMsg.textContent='Nothing eligible to order yet.';
-      placeOrderBtn.disabled=false;
       return;
     }
 
-    // Build lines for eligible items (with current prices)
     const lines = eligible.map(it=>{
       const p = computeItemPrice(it);
       return {
@@ -1078,7 +1058,6 @@ async function placeOrder(){
       };
     });
 
-    // Totals (single currency => store total_amount; multi => store null)
     const totals = {};
     lines.forEach(l=>{
       if (!l.currency || l.line_total == null) return;
@@ -1086,7 +1065,6 @@ async function placeOrder(){
     });
     const total_amount = (Object.keys(totals).length===1) ? Object.values(totals)[0] : null;
 
-    // Create order
     const orderPayload = {
       user_id: USER.id,
       email: USER.email || PROFILE?.email || null,
@@ -1102,14 +1080,13 @@ async function placeOrder(){
 
     const order_id = orderRow.id;
 
-    // Create order_items
     const itemsPayload = lines.map(l => ({
       order_id,
-      user_id: USER.id,                 // ✅ your table has it
+      user_id: USER.id,
       product_sku: l.sku,
       product_name: l.name,
       quantity: l.qty,
-      variant_code: l.variant || null,  // ✅ store variant in the existing column you already have
+      variant_code: l.variant || null,  // store variant in existing column
       unit_price: l.unit_price,
       currency: l.currency,
       price_tier: l.price_tier,
@@ -1118,29 +1095,23 @@ async function placeOrder(){
 
     const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
     if (itemsErr) {
-      await supa.from('orders').delete().eq('id', order_id); // rollback
+      await supa.from('orders').delete().eq('id', order_id);
       throw new Error(itemsErr.message || 'Failed to add order items.');
     }
 
-    // ✅ Consume approvals ONLY AFTER order+items succeed
     await consumeApprovalsForOrder(eligible);
 
-    // Remove eligible items from cart, keep the rest
     const eligibleSkuSet = new Set(eligible.map(x=>x.sku));
     const remaining = cart.filter(it=>!eligibleSkuSet.has(it.sku));
     writeCart(remaining);
 
-    // Refresh approval cache + UI (optional)
     await primeMyApprovalsMap();
     renderProducts();
     renderMyApprovals();
     await renderMiniCartAndCheckout();
     await renderOrders();
 
-    // ✅ Redirect directly to payment page
     window.location.href = `order-pay.html?order=${encodeURIComponent(order_id)}`;
-    return;
-
   }catch(e){
     console.error(e);
     placeMsg.textContent = 'Something went wrong: ' + (e?.message || 'Unknown error');
@@ -1165,7 +1136,6 @@ async function boot(){
 
   await loadProfile();
 
-  // Load latest application
   const { data: rows, error } = await supa.from('vet_applications')
     .select('id,identity_number,diploma_path,status,created_at')
     .eq('user_id', user.id)
@@ -1208,7 +1178,6 @@ async function boot(){
   await renderOrders();
   await renderMiniCartAndCheckout();
 
-  // realtime: approvals change => update UI
   supa.channel('appr-'+user.id)
     .on('postgres_changes',
       { event:'*', schema:'public', table:'vet_product_approvals', filter:`user_id=eq.${user.id}` },
