@@ -958,7 +958,7 @@ async function renderCheckout(){
 
     const price = computeItemPrice(it);
     const unitHTML = price ? `${escapeHtml(price.cur)} ${price.unit.toFixed(2)} <span class="muted small">(${escapeHtml(price.label)})</span>` : '—';
-    const lineHTML = price ? `${escapeHtml(price.cur)} ${price.line.toFixed(2)}` : '—';
+    const lineHTML = price ? `${escapeHtml(price.cur)} ${escapeHtml(price.line.toFixed(2))}` : '—';
 
     const stockTag = (prod.available === false) ? `<span class="badge bad">Unavailable</span>`
       : (typeof prod.stock_qty === 'number' && prod.stock_qty < qty) ? `<span class="badge pend">Only ${prod.stock_qty|0}</span>`
@@ -1045,13 +1045,17 @@ async function consumeApprovalsForOrder(eligibleItems){
   }
 }
 
+/* ================= PLACE ORDER (CORRECTED) =================
+   ✅ Does NOT go to checkout.html
+   ✅ Redirects directly to order-pay.html with the created order_id
+*/
 async function placeOrder(){
   placeOrderBtn.disabled=true;
   placeMsg.textContent='Placing order…';
 
   try{
     const cart=readCart();
-    const { eligible, ineligible } = eligibilityForCart(cart);
+    const { eligible } = eligibilityForCart(cart);
 
     if (!eligible.length){
       placeMsg.textContent='Nothing eligible to order yet.';
@@ -1074,7 +1078,7 @@ async function placeOrder(){
       };
     });
 
-    // Totals (single currency => store total_amount; multi => store null like your checkout)
+    // Totals (single currency => store total_amount; multi => store null)
     const totals = {};
     lines.forEach(l=>{
       if (!l.currency || l.line_total == null) return;
@@ -1091,30 +1095,32 @@ async function placeOrder(){
       total_amount
     };
 
-    const { data: orderRow, error: orderErr } = await supa.from('orders').insert([orderPayload]).select('id').single();
+    const { data: orderRow, error: orderErr } =
+      await supa.from('orders').insert([orderPayload]).select('id').single();
+
     if (orderErr) throw new Error(orderErr.message || 'Failed to create order.');
 
     const order_id = orderRow.id;
 
-    // Create order_items (variant saved if your table has column; if it doesn't, remove variant field)
-const itemsPayload = lines.map(l => ({
-  order_id,
-  user_id: USER.id,                 // ✅ your table has it
-  product_sku: l.sku,
-  product_name: l.name,
-  quantity: l.qty,
-  variant_code: l.variant || null,  // ✅ store variant in the column you already have
-  unit_price: l.unit_price,
-  currency: l.currency,
-  price_tier: l.price_tier,
-  line_total: l.line_total
-}));
+    // Create order_items
+    const itemsPayload = lines.map(l => ({
+      order_id,
+      user_id: USER.id,                 // ✅ your table has it
+      product_sku: l.sku,
+      product_name: l.name,
+      quantity: l.qty,
+      variant_code: l.variant || null,  // ✅ store variant in the existing column you already have
+      unit_price: l.unit_price,
+      currency: l.currency,
+      price_tier: l.price_tier,
+      line_total: l.line_total
+    }));
 
-const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
-if (itemsErr) {
-  await supa.from('orders').delete().eq('id', order_id); // rollback
-  throw new Error(itemsErr.message || 'Failed to add order items.');
-}
+    const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
+    if (itemsErr) {
+      await supa.from('orders').delete().eq('id', order_id); // rollback
+      throw new Error(itemsErr.message || 'Failed to add order items.');
+    }
 
     // ✅ Consume approvals ONLY AFTER order+items succeed
     await consumeApprovalsForOrder(eligible);
@@ -1124,17 +1130,16 @@ if (itemsErr) {
     const remaining = cart.filter(it=>!eligibleSkuSet.has(it.sku));
     writeCart(remaining);
 
-    // Refresh approval cache + UI
+    // Refresh approval cache + UI (optional)
     await primeMyApprovalsMap();
     renderProducts();
     renderMyApprovals();
     await renderMiniCartAndCheckout();
     await renderOrders();
 
-    placeMsg.textContent = (remaining.length)
-      ? 'Order placed for eligible items. Some items still need approval/stock (see checkout notes).'
-      : 'Order placed successfully.';
-    placeMsg.className='success';
+    // ✅ Redirect directly to payment page
+    window.location.href = `order-pay.html?order=${encodeURIComponent(order_id)}`;
+    return;
 
   }catch(e){
     console.error(e);
