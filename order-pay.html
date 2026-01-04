@@ -68,7 +68,8 @@
         <div class="row" style="margin-top:16px">
           <button class="btn" id="btnCancel" type="button">Cancel order</button>
           <div>
-            <button class="btn" id="btnBack" type="button">Back to cart</button>
+            <!-- ✅ go back to your combined page, not checkout.html -->
+            <button class="btn" id="btnBack" type="button">Back</button>
             <button class="btn" id="btnContinue" type="button">Continue</button>
           </div>
         </div>
@@ -99,7 +100,11 @@
     /* ========= DOM ========= */
     const qs = new URLSearchParams(location.search);
     const ORDER_ID = qs.get('order');
-    if(!ORDER_ID){ location.replace('checkout.html'); }
+
+    // ✅ If no order id => go back to vet-verify (your combined checkout page)
+    if(!ORDER_ID){
+      location.replace('vet-verify.html');
+    }
 
     const els = {
       items: document.getElementById('items'),
@@ -166,7 +171,11 @@
         .eq('user_id', CURRENT_USER.id)
         .maybeSingle();
 
-      if(oErr || !o){ location.replace('checkout.html'); return; }
+      // ✅ If order not found / not yours => back to vet-verify
+      if(oErr || !o){
+        location.replace('vet-verify.html');
+        return;
+      }
       ORDER = o;
 
       els.meta.textContent = `Order ${String(ORDER_ID).slice(0,8)} • Status: ${o.status}`;
@@ -197,8 +206,7 @@
       els.sumAmt.textContent = Object.entries(totalsByCur).map(([cur,amt])=>fmtPrice(cur, amt)).join(' · ');
 
       // Prefill contact
-      const { data: ses } = await supa.auth.getUser();
-      els.email.value = o.email || ses?.user?.email || '';
+      els.email.value = o.email || CURRENT_USER?.email || '';
       els.full.value = o.full_name || '';
       els.phone.value = o.phone_number || '';
 
@@ -263,7 +271,8 @@
     }
 
     /* ========= Cancel / Continue ========= */
-    els.btnBack.addEventListener('click', ()=> location.assign('cart.html'));
+    // ✅ Back should go to vet-verify (your combined checkout)
+    els.btnBack.addEventListener('click', ()=> location.assign('vet-verify.html'));
 
     els.btnCancel.addEventListener('click', () => withBusy(els.btnCancel, async ()=>{
       const { data: o } = await supa.from('orders').select('status').eq('id', ORDER_ID).eq('user_id', CURRENT_USER.id).single();
@@ -277,20 +286,20 @@
       const ok = await saveDetails();
       if(!ok) return;
 
-      // update order status to pending (placed)
+      // keep order status pending (or set it if you want)
       const { error: upErr } = await supa.from('orders')
         .update({ status:'pending' })
         .eq('id', ORDER_ID)
         .eq('user_id', CURRENT_USER.id);
       if (upErr){ els.msg.textContent = upErr.message; return; }
 
-      // fire emails via Edge Function
+      // fire emails via Edge Function (optional)
       try{
         const payload = {
           kind: 'order_placed',
           order_id: ORDER_ID,
-          order: ORDER,                 // basic order meta (may be stale by 1 step, that’s ok)
-          items: ORDER_ITEMS,           // array of items
+          order: ORDER,
+          items: ORDER_ITEMS,
           customer: {
             id: CURRENT_USER.id,
             email: els.email.value.trim(),
@@ -306,17 +315,15 @@
             postal: els.postal.value.trim() || null,
           },
           payment_method: els.method.value,
-          // recipients (the function can send to both)
           to_customer: els.email.value.trim(),
           to_admin: ADMIN_EMAIL
         };
 
-        // This requires a deployed Edge Function named "send-order-email"
         const { error: fnErr } = await supa.functions.invoke('send-order-email', { body: payload });
-        if (fnErr){ console.warn('email function error:', fnErr); /* don’t block checkout */ }
+        if (fnErr){ console.warn('email function error:', fnErr); }
       }catch(err){ console.warn('email invoke failed:', err); }
 
-      // go to thank you
+      // ✅ keep your thank-you page
       const method = els.method.value;
       const way = els.delivery.value;
       location.assign(`thank-you.html?order=${encodeURIComponent(ORDER_ID)}&m=${method}&way=${way}`);
