@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>VetoCos | Vet verification & Checkout</title>
+  <title>VetoCos | Complementary feed for dogs & cats</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Vet verification + checkout in one page." />
+  <meta name="description" content="Professional complementary feed for companion animals. Urinary, liver, mobility, renal and overall wellness.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -19,6 +19,11 @@
     img{display:block;max-width:100%}
     .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
 
+    /* ✅ anchor offset for sticky header */
+    #top{scroll-margin-top:90px}
+    #products{scroll-margin-top:90px}
+
+    /* Header */
     header.site{position:sticky;top:0;z-index:60;background:rgba(11,16,32,.7);backdrop-filter:blur(10px);border-bottom:1px solid rgba(141,158,199,.15)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
     .brand{display:flex;align-items:center;gap:10px;font-weight:700}
@@ -26,7 +31,7 @@
     .links{display:flex;gap:18px;align-items:center}
     .links a{padding:8px 12px;border-radius:10px}
     .links a.active,.links a:hover{background:rgba(141,158,199,.15)}
-    .btn,.chip,.contact-btn, .qtybtn{
+    .btn,.chip,.contact-btn{
       padding:10px 14px;border-radius:12px;border:1px solid rgba(141,158,199,.25);
       background:linear-gradient(135deg,rgba(109,213,255,.16),rgba(131,240,165,.12));color:var(--text);cursor:pointer;font-weight:600
     }
@@ -49,64 +54,148 @@
     .menu a,.menu button{display:block;width:100%;text-align:left;padding:10px 12px;background:transparent;border:0;color:var(--text);cursor:pointer}
     .menu a:hover,.menu button:hover{background:rgba(141,158,199,.15)}
 
-    main{padding:22px 0 40px}
-    h1,h2{margin:0 0 10px}
+    /* Hero */
+    .hero{padding:56px 0 24px;display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:center}
+    .kicker{display:inline-flex;gap:8px;align-items:center;background:rgba(141,158,199,.15);border:1px solid rgba(141,158,199,.25);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
+    h1{font-size:clamp(28px,5vw,46px);margin:14px 0}
+    .lead{font-size:clamp(15px,2vw,18px);color:var(--muted);max-width:680px;margin:0 0 16px}
+    .hero-cta{display:flex;gap:10px;flex-wrap:wrap}
+    .hero-card{background:radial-gradient(1200px 400px at 100% -100%, rgba(109,213,255,.12), transparent), var(--card);border:1px solid rgba(141,158,199,.18);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+    .hero-card img{border-radius:12px;border:1px solid rgba(141,158,199,.18)}
+
+    /* Trust row */
+    .trust{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:22px 0;color:var(--muted);font-size:14px}
+    .trust .chip{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.2);font-weight:500}
+
+    /* Sections */
+    .section{padding:34px 0}
+    .section h2{font-size:clamp(22px,3.6vw,32px);margin:0 0 10px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    @media(max-width:900px){.grid-3{grid-template-columns:1fr}}
+    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;padding:16px}
+    .card h3{margin:.2rem 0 .3rem;font-size:1.05rem}
     .muted{color:var(--muted)}
-    .small{font-size:.92rem}
-    .card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    @media(max-width:900px){.grid2{grid-template-columns:1fr}}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .rowbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-    .hr{height:1px;background:rgba(141,158,199,.15);margin:12px 0}
+
+    /* CTA rows */
+    .cta{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:880px){.cta{grid-template-columns:1fr}}
+    .cta .panel{background:linear-gradient(135deg,rgba(109,213,255,.12),rgba(131,240,165,.10));border:1px solid rgba(141,158,199,.22);border-radius:18px;padding:16px}
+
+    /* FAQ */
+    .faq-item{border:1px solid rgba(141,158,199,.18);border-radius:14px;margin-bottom:10px;overflow:hidden;background:rgba(255,255,255,.03)}
+    .faq-q{width:100%;text-align:left;background:transparent;border:0;color:var(--text);padding:12px;font-weight:600;cursor:pointer}
+    .faq-a{display:none;padding:0 12px 12px;color:var(--muted)}
+    .faq-item.open .faq-a{display:block}
+
+    /* Footer */
+    footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
+    .footer-links{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+
+    /* Modals */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,18,.6);backdrop-filter:blur(6px);z-index:80}
+    .modal.open{display:flex}
+    .sheet{width:min(780px,100%);background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(141,158,199,.12)}
+    .sheet-title{margin:0;font-size:1.1rem}
+    .close{background:transparent;border:1px solid rgba(141,158,199,.25);border-radius:10px;color:var(--text);padding:6px 10px;cursor:pointer}
+    .sheet-body{padding:16px}
+
+    /* Products section */
+    .products-hero{padding:18px 0 6px;text-align:center}
     .badge{display:inline-flex;gap:8px;align-items:center;background:rgba(141,158,199,.15);border:1px solid rgba(141,158,199,.25);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
-    .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.9rem}
-    .pill.ok{background:rgba(131,240,165,.12)}
-    .pill.pend{background:rgba(109,213,255,.12)}
-    .pill.bad{background:rgba(255,120,120,.12)}
-    label{display:block;margin:10px 0 6px}
-    input[type="text"], input[type="file"], input[type="number"], select{
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:28px}
+    @media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:820px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.grid{grid-template-columns:1fr}}
+    .p-card{background:var(--card);border:1px solid rgba(141,158,199,.18);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;transition:.2s;cursor:pointer}
+    .p-card:hover{transform:translateY(-3px);border-color:rgba(131,240,165,.3)}
+    .p-card img{width:100%;height:170px;object-fit:cover}
+    .px{padding:12px}
+    .px h4{margin:.2rem 0 .1rem}
+    .p-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+    .status{font-size:12px;border-radius:999px;padding:2px 8px;border:1px solid rgba(141,158,199,.25)}
+    .status.ok{background:rgba(131,240,165,.14)}
+    .status.bad{background:rgba(255,120,120,.14)}
+    .qty{font-size:12px;color:var(--muted)}
+    .variant-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .variant-row label{font-size:12px;color:var(--muted)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+    /* Product details modal */
+    .pd-cols{display:grid;grid-template-columns:220px 1fr;gap:16px}
+    @media(max-width:720px){.pd-cols{grid-template-columns:1fr}}
+    .pd-img{width:100%;height:220px;object-fit:cover;border-radius:12px;border:1px solid rgba(141,158,199,.18)}
+    .specs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:720px){.specs{grid-template-columns:1fr}}
+    .spec{background:rgba(255,255,255,.03);border:1px solid rgba(141,158,199,.18);border-radius:12px;padding:12px}
+    .spec h5{margin:.2rem 0 .3rem;font-size:0.95rem}
+    .sheet-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+
+    /* Inputs */
+    .input, .select, .textarea{
       width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(141,158,199,.25);
       background:rgba(255,255,255,.03);color:var(--text);outline:none
     }
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;border-bottom:1px solid rgba(141,158,199,.18);text-align:left;vertical-align:middle}
-    .notice{padding:10px;border:1px dashed rgba(141,158,199,.35);border-radius:12px;background:rgba(255,255,255,.03);margin:10px 0}
-    .link{color:var(--brand);text-decoration:none}
+    .textarea{min-height:140px;resize:vertical}
 
-    #toast{position:fixed;right:16px;bottom:16px;background:#18203e;border:1px solid rgba(141,158,199,.25);
-          border-radius:12px;padding:10px 14px;color:#fff;max-width:70vw;display:none;z-index:9999}
-    footer{margin:48px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18);color:var(--muted);font-size:14px;text-align:center}
+    /* Contact modal layout */
+    .pro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+    @media(max-width:860px){.pro-grid{grid-template-columns:1fr}}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .hint{font-size:12px;color:var(--muted)}
+    .actions-fw{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+    .divider{height:1px;background:rgba(141,158,199,.12);margin:8px 0}
+
+    /* Admin editor */
+    .price-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-block;padding:3px 8px;border-radius:999px;border:1px solid rgba(141,158,199,.25);font-size:.85rem}
+    .pill.info{background:rgba(109,213,255,.12)}
+    .pill.ok{background:rgba(131,240,165,.12)}
+    .admin-box{margin-top:10px;border:1px dashed rgba(141,158,199,.35);border-radius:12px;padding:10px}
+    .admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    @media(max-width:720px){.admin-grid{grid-template-columns:1fr 1fr}}
+
+    /* Reveal animation */
+    .reveal{opacity:0;transform:translateY(14px);transition:opacity .55s ease,transform .55s ease}
+    .reveal.in{opacity:1;transform:none}
+
+    /* RTL */
+    body.rtl .hero, body.rtl .cta{direction:rtl}
+    body.rtl .links a{text-align:right}
+    body.rtl .pd-cols, body.rtl .pro-grid{direction:rtl}
+    body.rtl label{text-align:right}
   </style>
 </head>
 
 <body>
-  <!-- Header (same style as products page) -->
+  <!-- Header -->
   <header class="site" role="banner">
     <div class="wrap nav">
       <div class="brand">
-        <a href="index.html#top" aria-label="VetoCos home">
+        <a href="#top" aria-label="VetoCos home">
           <img class="brand-logo" src="images/logo.png" alt="VetoCos logo">
         </a>
         <span aria-hidden="true">VetoCos</span>
       </div>
 
       <nav class="links" id="navlinks" aria-label="Primary">
-        <a href="index.html#top">Home</a>
-        <a href="index.html#products">Products</a>
-        <a href="World Wide.html">World Wide</a>
-        <a href="news.html">News</a>
+        <!-- ✅ single page anchors -->
+        <a class="active" href="#top" data-i18n="nav.home">Home</a>
+        <a href="#products" data-i18n="nav.products">Products</a>
+
+        <!-- keep your other pages as they are -->
+        <a href="World Wide.html" data-i18n="nav.worldwide">World Wide</a>
+        <a href="news.html" data-i18n="nav.news">News</a>
 
         <a class="cart-link" id="cartLink" href="cart.html" style="display:none" aria-label="Cart">
-          <span>Cart</span>
+          <span data-i18n="nav.cart">Cart</span>
           <span id="cartCount" class="cart-badge" style="display:none">0</span>
         </a>
 
-        <a class="btn ghost active" href="vet-verify.html">Vet verification</a>
-
+        <button class="btn" type="button" onclick="openContact()" data-i18n="nav.contact">Contact</button>
         <a class="btn" id="adminBtn" href="admin.html" style="display:none">Admin</a>
-        <button class="btn" id="signInBtn" type="button">Sign in</button>
-        <button class="btn" id="signUpBtn" type="button">Sign up</button>
+        <button class="btn" id="signInBtn" type="button" data-i18n="auth.login">Sign in</button>
+        <button class="btn" id="signUpBtn" type="button" data-i18n="auth.signup">Sign up</button>
 
         <div class="acct" id="acctBlock" style="display:none">
           <button class="btn" id="accountBtn" type="button" aria-haspopup="menu" aria-expanded="false">
@@ -115,20 +204,18 @@
           </button>
           <div class="menu" id="accountMenu" role="menu" aria-hidden="true">
             <div id="accountHeader" class="muted" style="padding:8px 12px; border-bottom:1px solid rgba(141,158,199,.12)"></div>
-            <a href="account.html" role="menuitem">Account settings</a>
-            <a href="my-order.html" role="menuitem">My orders</a>
-            <a href="cart.html" role="menuitem">Cart</a>
-            <a href="checkout.html" role="menuitem">Checkout</a>
-            <a href="vet-verify.html" role="menuitem">Vet verification</a>
-            <button type="button" role="menuitem" id="logoutBtn">Sign out</button>
+            <a href="account.html" role="menuitem" data-i18n="nav.account">Account settings</a>
+            <a href="my-order.html" role="menuitem" data-i18n="orders.myOrders">My orders</a>
+            <a href="cart.html" role="menuitem" data-i18n="nav.cart">Cart</a>
+            <a href="checkout.html" role="menuitem" data-i18n="nav.checkout">Checkout</a>
+            <a href="vet-verify.html" role="menuitem" data-i18n="auth.vetVerify">Vet verification</a>
+            <button type="button" role="menuitem" id="logoutBtn" data-i18n="auth.logout">Sign out</button>
           </div>
         </div>
 
         <select class="btn" id="lang-switch" aria-label="Language">
-          <option value="en">English</option>
-          <option value="fr">Français</option>
-          <option value="es">Español</option>
-          <option value="ar">العربية</option>
+          <option value="en">English</option><option value="fr">Français</option>
+          <option value="es">Español</option><option value="ar">العربية</option>
         </select>
       </nav>
 
@@ -136,127 +223,611 @@
     </div>
   </header>
 
-  <main class="wrap" role="main">
-    <div class="rowbar" style="margin:10px 0 14px">
-      <div>
-        <h1>Vet verification & Checkout</h1>
-        <div class="muted small">Verify your vet status (admin review) and place orders from the same page.</div>
-      </div>
-      <div class="row">
-        <span id="purchaseModeBadge" class="badge">Mode: —</span>
-      </div>
-    </div>
-
-    <!-- Not logged in -->
-    <div id="signedOutBox" class="card" style="display:none">
-      <h2 style="margin:0 0 6px">Sign in required</h2>
-      <p class="muted" style="margin:0 0 12px">
-        To submit vet verification and checkout, please sign in.
-      </p>
-      <div class="row">
-        <button class="btn" id="goSignIn" type="button">Sign in</button>
-        <button class="btn ghost" id="goSignUp" type="button">Sign up</button>
-      </div>
-    </div>
-
-    <!-- Logged in content -->
-    <div id="signedInContent" style="display:none">
-      <div class="grid2">
-        <!-- Verification -->
-        <section class="card" aria-labelledby="vvTitle">
-          <div class="rowbar">
-            <h2 id="vvTitle" style="margin:0">Vet verification</h2>
-            <span id="statusPill" class="pill pend">—</span>
-          </div>
-
-          <div id="statusInfo" class="notice small" style="display:none"></div>
-
-          <div class="hr"></div>
-
-          <label for="idnum">Identity number</label>
-          <input id="idnum" type="text" autocomplete="off" placeholder="License / Registration / ID">
-
-          <label for="file">Diploma / Professional card (PDF/JPG/PNG, max 10 MB)</label>
-          <input id="file" type="file" accept=".pdf,.png,.jpg,.jpeg">
-
-          <div class="row" style="margin-top:10px">
-            <button class="btn" id="submitVV" type="button">Submit for review</button>
-            <button class="btn ghost" id="replaceBtn" type="button" style="display:none">Update / Replace</button>
-            <a class="btn ghost" id="previewLink" target="_blank" rel="noopener" style="display:none">Open uploaded file</a>
-            <button class="btn ghost" id="withdrawBtn" type="button" style="display:none">Withdraw</button>
-          </div>
-
-          <p id="vvMsg" class="muted small" style="margin:10px 0 0" aria-live="polite"></p>
-        </section>
-
-        <!-- Checkout summary -->
-        <section class="card" aria-labelledby="coTitle">
-          <div class="rowbar">
-            <h2 id="coTitle" style="margin:0">Checkout</h2>
-            <span id="checkoutEligibility" class="pill pend">Eligibility: —</span>
-          </div>
-
-          <div id="checkoutIssues" class="notice small" style="display:none"></div>
-
-          <div id="checkoutCart" class="muted" style="margin-top:10px">Loading…</div>
-
-          <div class="hr"></div>
-
-          <div class="row small"><span>Items</span><strong id="sumItems">0</strong></div>
-          <div class="row small"><span>Estimated total</span><strong id="sumTotal">—</strong></div>
-
-          <button id="placeOrder" class="btn" style="width:100%;margin-top:12px" disabled>Place order</button>
-          <div id="placeMsg" class="muted small" style="margin-top:8px" aria-live="polite"></div>
-
-          <div class="small muted" style="margin-top:10px">
-            After a successful order, your approved quantity is reduced (or removed). If admin sets approval quantity = <strong>-1</strong>, it never expires for that product.
-          </div>
-        </section>
-      </div>
-
-      <!-- Cart quick edit -->
-      <h2 style="margin:18px 0 10px">My Cart (quick edit)</h2>
-      <div class="card" id="cartBox">Loading…</div>
-
-      <!-- Product browser -->
-      <h2 style="margin:18px 0 10px">Add products</h2>
-      <div class="card">
-        <div class="rowbar" style="margin-bottom:10px">
-          <input id="prodSearch" style="min-width:260px" placeholder="Search products by name or SKU">
-          <span class="muted small">Available items only. Stock limits apply.</span>
+  <!-- Main -->
+  <main id="main" role="main">
+    <!-- Home / Top -->
+    <section id="top" class="wrap hero">
+      <div class="reveal">
+        <span class="kicker" data-i18n="hero.badge">Complementary feed — not medicine</span>
+        <h1 data-i18n="home.h1">Science-guided complementary feed for dogs & cats</h1>
+        <p class="lead" data-i18n="home.lead">Targeted nutritional support for urinary, liver, mobility, renal and overall wellness — developed with veterinarians and made with high-quality ingredients.</p>
+        <div class="hero-cta">
+          <a class="btn" href="#products" data-i18n="home.ctaBrowse">Browse products</a>
+          <a class="btn ghost" href="vet-verify.html" data-i18n="home.ctaVet">I’m a veterinarian</a>
+          <button class="btn" type="button" onclick="openContact()" data-i18n="home.ctaContact">Contact</button>
         </div>
-        <div id="prodList" class="muted">Loading…</div>
+        <div class="trust">
+          <span class="chip" data-i18n="home.tag1">No prescription • Complementary feed</span>
+          <span class="chip" data-i18n="home.tag2">Mobile-friendly site</span>
+          <span class="chip" data-i18n="home.tag3">Secure checkout</span>
+        </div>
+      </div>
+      <div class="hero-card reveal">
+        <img src="images/hero-products.jpg" alt="Selection of VetoCos complementary feeds">
+        <p class="muted" style="margin:8px 0 0" data-i18n="pd.note">Complementary feed — not a medicine. Always follow your vet’s advice.</p>
+      </div>
+    </section>
+
+    <!-- Value props -->
+    <section class="wrap section" aria-labelledby="valuesTitle">
+      <h2 id="valuesTitle" class="reveal" data-i18n="home.valuesTitle">Why choose VetoCos</h2>
+      <div class="grid-3">
+        <div class="card reveal">
+          <h3 data-i18n="home.v1h">Targeted formulations</h3>
+          <p class="muted" data-i18n="home.v1t">Designed for specific needs: urinary, liver, mobility, renal, calming and more.</p>
+        </div>
+        <div class="card reveal">
+          <h3 data-i18n="home.v2h">Quality ingredients</h3>
+          <p class="muted" data-i18n="home.v2t">Evidence-informed actives with consistent sourcing and batch oversight.</p>
+        </div>
+        <div class="card reveal">
+          <h3 data-i18n="home.v3h">Vet-aligned guidance</h3>
+          <p class="muted" data-i18n="home.v3t">Clear feeding guidance and materials to support professional advice.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dual CTA -->
+    <section class="wrap section cta">
+      <div class="panel reveal">
+        <h3 data-i18n="home.ctaLearnH">New here?</h3>
+        <p class="muted" data-i18n="home.ctaLearnT">Explore our range and read concise product sheets to find the best fit for your companion.</p>
+        <a class="btn" href="#products" data-i18n="home.ctaLearnB">Explore products</a>
+      </div>
+      <div class="panel reveal">
+        <h3 data-i18n="home.ctaVetH">For veterinarians</h3>
+        <p class="muted" data-i18n="home.ctaVetT">Verify your vet status for professional pricing and clinic-level support materials.</p>
+        <a class="btn" href="vet-verify.html" data-i18n="home.ctaVetB">Verify vet status</a>
+      </div>
+    </section>
+
+    <!-- FAQ (✅ removed "What clients say") -->
+    <section class="wrap section" aria-labelledby="faqTitle">
+      <h2 id="faqTitle" class="reveal" data-i18n="home.faqTitle">Frequently asked questions</h2>
+      <div class="faq reveal">
+        <div class="faq-item">
+          <button class="faq-q">Are these medicines?</button>
+          <div class="faq-a">No. Our products are complementary feed. Always follow your veterinarian’s advice.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">Where can I buy VetoCos?</button>
+          <div class="faq-a">Browse our products and purchase online, or contact us for a nearby distributor.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">How do I see professional pricing?</button>
+          <div class="faq-a">Verify your vet status on the “Vet verification” page. Once verified, prices show after sign-in.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ✅ Products section (single page) -->
+    <section id="products" class="wrap section" aria-labelledby="productsTitle">
+      <div class="products-hero reveal">
+        <span class="badge" data-i18n="hero.badge">Complementary feed — not medicine</span>
+        <h2 id="productsTitle" style="margin:12px 0 6px" data-i18n="products.title">Our Product Range</h2>
+        <p class="muted" style="max-width:760px;margin:0 auto" data-i18n="products.lead">
+          Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.
+        </p>
       </div>
 
-      <!-- Approvals -->
-      <h2 style="margin:18px 0 10px">My approval requests</h2>
-      <div class="card" id="myApprovalsBox">Loading…</div>
-
-      <!-- Orders -->
-      <h2 style="margin:18px 0 10px">My Orders</h2>
-      <div class="card" id="ordersBox">Loading…</div>
-    </div>
+      <div class="grid" id="productGrid" aria-live="polite"></div>
+      <p class="muted reveal" style="margin-top:14px" data-i18n="pd.note">Complementary feed — not a medicine. Always follow your vet’s advice.</p>
+    </section>
   </main>
 
+  <!-- Footer -->
   <footer role="contentinfo">
-    © <span id="y"></span> VetoCos · Complementary feed for companion animals
+    © <span id="y"></span> VetoCos · <span data-i18n="footer.tag">Complementary feed for companion animals</span>
+    <div class="footer-links">
+      <a href="#" onclick="openPolicy();return false;" data-i18n="footer.policy">Privacy & Policy</a>
+      <a href="#" onclick="openContact();return false;" data-i18n="footer.contact">Contact</a>
+    </div>
   </footer>
 
-  <div id="toast"></div>
+  <!-- CONTACT MODAL -->
+  <div id="contactModal" class="modal" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+      <div class="sheet-head">
+        <h2 id="contactTitle" class="sheet-title" data-i18n="contact.title">Contact Us</h2>
+        <button class="close" type="button" onclick="closeContact()" aria-label="Close">Close</button>
+      </div>
+      <div class="sheet-body">
+        <div class="pro-grid">
+          <form id="contactForm" onsubmit="return sendMailto(event)">
+            <div class="field">
+              <label for="topic" data-i18n="form.topic">Topic</label>
+              <select id="topic" name="topic" class="select">
+                <option value="product" data-i18n="form.topicProduct">Product question</option>
+                <option value="availability" data-i18n="form.topicAvailability">Availability / Where to buy</option>
+                <option value="order" data-i18n="form.topicOrder">Order / Delivery</option>
+                <option value="feedback" data-i18n="form.topicFeedback">Feedback</option>
+                <option value="other" data-i18n="form.topicOther">Other</option>
+              </select>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+              <div class="field">
+                <label for="name" data-i18n="form.name">Name</label>
+                <input id="name" name="name" class="input" autocomplete="name" required placeholder="Full name">
+              </div>
+              <div class="field">
+                <label for="email" data-i18n="form.email">Email</label>
+                <input id="email" name="email" type="email" class="input" autocomplete="email" required placeholder="name@example.com">
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+              <div class="field">
+                <label for="country" data-i18n="form.country">Country</label>
+                <input id="country" name="country" class="input" placeholder="Country (optional)">
+              </div>
+              <div class="field">
+                <label for="phone" data-i18n="form.phone">Phone (optional)</label>
+                <input id="phone" name="phone" class="input" inputmode="tel" pattern="^[0-9+() -]{6,}$" placeholder="+212 537742213">
+                <span class="hint" data-i18n="form.phoneHint">Digits, spaces and +() - allowed</span>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:10px">
+              <label for="subject" data-i18n="form.subject">Subject</label>
+              <input id="subject" name="subject" class="input" maxlength="120" required placeholder="Question about a product…">
+            </div>
+
+            <div class="field" style="margin-top:10px">
+              <label for="message" data-i18n="form.message">Message / Comments</label>
+              <textarea id="message" name="message" class="textarea" maxlength="1200" required placeholder="Write your help request or comment…"></textarea>
+              <div class="hint"><span id="msgCount">0</span>/1200</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="field">
+              <label style="display:flex;gap:8px;align-items:flex-start">
+                <input type="checkbox" id="consent" required>
+                <span data-i18n="form.consent">I consent to VetoCos using my details to respond to this enquiry.</span>
+              </label>
+              <span class="hint" data-i18n="form.privacyNote">Your message is sent via your email app; we don't store it on this site.</span>
+            </div>
+
+            <div class="actions-fw">
+              <button class="close" type="button" onclick="closeContact()">Cancel</button>
+              <button class="btn" type="submit">Send</button>
+            </div>
+          </form>
+
+          <div class="card" style="height:fit-content">
+            <h3 data-i18n="contact.reach">Reach us</h3>
+            <p class="muted" style="margin:4px 0 10px" data-i18n="contact.reachText">We’re happy to help with product questions, availability, or feedback.</p>
+            <p><strong data-i18n="contact.email">Email:</strong> <a href="mailto:info@vetocos.com">info@vetocos.com</a></p>
+            <p><strong data-i18n="contact.phone">Phone:</strong> <a href="tel:+212537742213">+212 537742213</a></p>
+            <p><strong data-i18n="contact.whatsapp">WhatsApp:</strong> <a href="https://wa.me/212537742213" target="_blank" rel="noopener">+212 537742213</a></p>
+            <p><strong data-i18n="contact.hours">Hours:</strong> <span data-i18n="contact.hoursVal">Mon–Fri, 9:00–17:00</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVACY MODAL -->
+  <div id="policyModal" class="modal" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+      <div class="sheet-head">
+        <h2 id="policyTitle" class="sheet-title">Privacy & Policy</h2>
+        <button class="close" type="button" onclick="closePolicy()" aria-label="Close">Close</button>
+      </div>
+      <div class="sheet-body">
+        <p>We provide complementary feed and collect no personal data unless you contact us. For privacy questions, email <a href="mailto:vetocos.sahib@yahoo.ma">vetocos.sahib@yahoo.ma</a>.</p>
+        <p class="muted">Last updated: <span id="policyDate"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCT DETAILS MODAL (✅ removed View full page) -->
+  <div id="productDetailsModal" class="modal" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pdTitle">
+      <div class="sheet-head">
+        <h2 id="pdTitle" class="sheet-title">Product details</h2>
+        <button class="close" type="button" onclick="closePD()">Close</button>
+      </div>
+      <div class="sheet-body">
+        <div class="pd-cols">
+          <img id="pdImg" class="pd-img" alt="">
+          <div>
+            <h3 id="pdName" style="margin:0 0 6px"></h3>
+            <p class="muted" id="pdCategory" style="margin:0 0 10px"></p>
+            <div class="specs">
+              <div class="spec"><h5 data-i18n="pd.form">Form</h5><div id="pdForm" class="muted"></div></div>
+              <div class="spec"><h5 data-i18n="pd.size">Pack size</h5><div id="pdSize" class="muted"></div></div>
+              <div class="spec"><h5 data-i18n="pd.ingr">Key ingredients</h5><div id="pdIngredients" class="muted"></div></div>
+              <div class="spec"><h5 data-i18n="pd.use">Feeding guidance</h5><div id="pdUsage" class="muted"></div></div>
+            </div>
+            <p id="pdDesc" class="muted" style="margin-top:10px"></p>
+
+            <div class="spec" style="margin-top:10px">
+              <div class="price-row">
+                <label class="muted" style="min-width:80px" data-i18n="pd.variant">Variant</label>
+                <select id="pdVariantSel" class="select" style="min-width:140px"></select>
+
+                <label class="muted" style="min-width:60px" data-i18n="pd.quantity">Qty</label>
+                <input id="pdQtyInp" class="input" type="number" min="1" step="1" value="1" style="max-width:100px">
+
+                <span class="pill ok" style="margin-left:auto" data-i18n="pd.price">Price</span>
+              </div>
+              <div class="price-row" style="margin-top:8px">
+                <strong id="pdPrice"></strong>
+                <span id="pdPriceNote" class="muted"></span>
+              </div>
+            </div>
+
+            <div class="sheet-actions">
+              <button class="btn" id="pdAddBtn" type="button" data-i18n="grid.add">Add to Cart</button>
+              <button class="btn ghost" id="pdBuyBtn" type="button" data-i18n="grid.buy">Buy Now</button>
+              <a class="btn" id="pdPdfBtn" href="#" target="_blank" rel="noopener" data-i18n="pd.pdf">Download PDF</a>
+              <span class="muted" id="pdSku" style="margin-left:auto"></span>
+            </div>
+
+            <div id="pdAdminBox" class="admin-box" style="display:none">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+                <strong>Admin</strong>
+                <button id="pdEditBtn" class="btn" type="button" data-i18n="pd.editPrices">Edit prices</button>
+              </div>
+              <form id="pdAdminForm" style="display:none;margin-top:10px"></form>
+            </div>
+          </div>
+        </div>
+        <p class="muted" style="margin-top:12px" data-i18n="pd.note">Complementary feed — not a medicine. Always follow your vet’s advice.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- i18n dictionary -->
+  <script>
+    window.I18N = {
+      en: {
+        "ui.loading":"Loading…",
+        "nav.home":"Home","nav.products":"Products","nav.worldwide":"World Wide","nav.news":"News","nav.cart":"Cart",
+        "nav.account":"Account settings","nav.checkout":"Checkout",
+        "nav.contact":"Contact",
+        "auth.login":"Sign in","auth.signup":"Sign up","auth.logout":"Sign out","auth.vetVerify":"Vet verification",
+        "orders.myOrders":"My orders",
+        "footer.tag":"Complementary feed for companion animals","footer.policy":"Privacy & Policy","footer.contact":"Contact",
+        "hero.badge":"Complementary feed — not medicine",
+
+        "home.h1":"Science-guided complementary feed for dogs & cats",
+        "home.lead":"Targeted nutritional support for urinary, liver, mobility, renal and overall wellness — developed with veterinarians and made with high-quality ingredients.",
+        "home.ctaBrowse":"Browse products","home.ctaVet":"I’m a veterinarian","home.ctaContact":"Contact",
+        "home.tag1":"No prescription • Complementary feed","home.tag2":"Mobile-friendly site","home.tag3":"Secure checkout",
+        "home.valuesTitle":"Why choose VetoCos",
+        "home.v1h":"Targeted formulations","home.v1t":"Designed for specific needs: urinary, liver, mobility, renal, calming and more.",
+        "home.v2h":"Quality ingredients","home.v2t":"Evidence-informed actives with consistent sourcing and batch oversight.",
+        "home.v3h":"Vet-aligned guidance","home.v3t":"Clear feeding guidance and materials to support professional advice.",
+        "home.ctaLearnH":"New here?","home.ctaLearnT":"Explore our range and read concise product sheets to find the best fit for your companion.","home.ctaLearnB":"Explore products",
+        "home.ctaVetH":"For veterinarians","home.ctaVetT":"Verify your vet status for professional pricing and clinic-level support materials.","home.ctaVetB":"Verify vet status",
+        "home.faqTitle":"Frequently asked questions",
+
+        "products.title":"Our Product Range",
+        "products.lead":"Explore our full selection of complementary alimentary products designed to support urinary, liver, mobility, renal, and overall well-being for dogs and cats.",
+
+        "grid.available":"Available","grid.unavailable":"Unavailable","grid.instock":" in stock","grid.out":"Out of stock",
+        "grid.add":"Add to Cart","grid.buy":"Buy Now","grid.more":"More details",
+
+        "pd.title":"Product details",
+        "pd.form":"Form","pd.size":"Pack size","pd.ingr":"Key ingredients","pd.use":"Feeding guidance",
+        "pd.variant":"Variant","pd.quantity":"Qty","pd.price":"Price","pd.pdf":"Download PDF",
+        "pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U",
+        "pd.signInToSeePrice":"Sign in to see price","pd.vetOnly":"Verify vet status to see price",
+        "pd.variantMissing":"No variants","pd.notAvailable":"Not available",
+        "pd.editPrices":"Edit prices","pd.save":"Save","pd.cancel":"Cancel",
+        "pd.note":"Complementary feed — not a medicine. Always follow your vet’s advice.",
+        "ui.sku":"SKU: "
+      },
+      fr: {
+        "ui.loading":"Chargement…",
+        "nav.home":"Accueil","nav.products":"Produits","nav.worldwide":"Dans le monde","nav.news":"Actualités","nav.cart":"Panier",
+        "nav.account":"Paramètres du compte","nav.checkout":"Commander",
+        "nav.contact":"Contact",
+        "auth.login":"Se connecter","auth.signup":"Créer un compte","auth.logout":"Se déconnecter","auth.vetVerify":"Vérification vétérinaire",
+        "orders.myOrders":"Mes commandes",
+        "footer.tag":"Aliment complémentaire pour animaux de compagnie","footer.policy":"Confidentialité & Politique","footer.contact":"Contact",
+        "hero.badge":"Aliment complémentaire — pas un médicament",
+
+        "home.h1":"Aliments complémentaires guidés par la science pour chiens et chats",
+        "home.lead":"Soutien nutritionnel ciblé (urinaire, foie, mobilité, rénal, bien-être global) — développés avec des vétérinaires et des ingrédients de qualité.",
+        "home.ctaBrowse":"Voir les produits","home.ctaVet":"Je suis vétérinaire","home.ctaContact":"Contact",
+        "home.tag1":"Sans ordonnance • Aliment complémentaire","home.tag2":"Site adapté au mobile","home.tag3":"Paiement sécurisé",
+        "home.valuesTitle":"Pourquoi choisir VetoCos",
+        "home.v1h":"Formulations ciblées","home.v1t":"Conçues pour des besoins spécifiques : urinaire, foie, mobilité, rénal, apaisement…",
+        "home.v2h":"Ingrédients de qualité","home.v2t":"Actifs fondés sur les preuves, approvisionnement constant et contrôle des lots.",
+        "home.v3h":"Aligné aux pratiques vétérinaires","home.v3t":"Conseils d’utilisation clairs et supports professionnels.",
+        "home.ctaLearnH":"Nouveau ici ?","home.ctaLearnT":"Parcourez notre gamme et lisez des fiches concises pour trouver la meilleure option.","home.ctaLearnB":"Explorer les produits",
+        "home.ctaVetH":"Pour les vétérinaires","home.ctaVetT":"Vérifiez votre statut vétérinaire pour les tarifs pro et supports.","home.ctaVetB":"Vérifier le statut",
+        "home.faqTitle":"Questions fréquentes",
+
+        "products.title":"Notre gamme de produits",
+        "products.lead":"Découvrez notre sélection complète de produits alimentaires complémentaires pour soutenir l’appareil urinaire, le foie, la mobilité, la fonction rénale et le bien-être général.",
+
+        "grid.available":"Disponible","grid.unavailable":"Indisponible","grid.instock":" en stock","grid.out":"Rupture de stock",
+        "grid.add":"Ajouter au panier","grid.buy":"Acheter maintenant","grid.more":"Plus de détails",
+
+        "pd.title":"Détails du produit",
+        "pd.form":"Forme","pd.size":"Conditionnement","pd.ingr":"Ingrédients clés","pd.use":"Conseils d’utilisation",
+        "pd.variant":"Variante","pd.quantity":"Qté","pd.price":"Prix","pd.pdf":"Télécharger le PDF",
+        "pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U",
+        "pd.signInToSeePrice":"Connectez-vous pour voir le prix","pd.vetOnly":"Vérifiez le statut vétérinaire pour voir le prix",
+        "pd.variantMissing":"Aucune variante","pd.notAvailable":"Non disponible",
+        "pd.editPrices":"Modifier les prix","pd.save":"Enregistrer","pd.cancel":"Annuler",
+        "pd.note":"Aliment complémentaire — pas un médicament. Suivez toujours l’avis de votre vétérinaire.",
+        "ui.sku":"SKU : "
+      },
+      es: {
+        "ui.loading":"Cargando…",
+        "nav.home":"Inicio","nav.products":"Productos","nav.worldwide":"Mundo","nav.news":"Noticias","nav.cart":"Carrito",
+        "nav.account":"Configuración de cuenta","nav.checkout":"Pagar",
+        "nav.contact":"Contacto",
+        "auth.login":"Iniciar sesión","auth.signup":"Registrarse","auth.logout":"Cerrar sesión","auth.vetVerify":"Verificación veterinaria",
+        "orders.myOrders":"Mis pedidos",
+        "footer.tag":"Alimento complementario para animales de compañía","footer.policy":"Privacidad y Política","footer.contact":"Contacto",
+        "hero.badge":"Alimento complementario — no medicamento",
+
+        "home.h1":"Alimentos complementarios guiados por la ciencia para perros y gatos",
+        "home.lead":"Apoyo nutricional dirigido: urinario, hígado, movilidad, renal y bienestar general — desarrollado con veterinarios e ingredientes de calidad.",
+        "home.ctaBrowse":"Ver productos","home.ctaVet":"Soy veterinario","home.ctaContact":"Contacto",
+        "home.tag1":"Sin receta • Alimento complementario","home.tag2":"Sitio móvil","home.tag3":"Pago seguro",
+        "home.valuesTitle":"Por qué elegir VetoCos",
+        "home.v1h":"Formulaciones específicas","home.v1t":"Diseñadas para necesidades concretas: urinario, hígado, movilidad, renal, calma…",
+        "home.v2h":"Ingredientes de calidad","home.v2t":"Activos basados en evidencia con suministro constante.",
+        "home.v3h":"Alineado con veterinarios","home.v3t":"Guías claras y materiales de apoyo.",
+        "home.ctaLearnH":"¿Nuevo aquí?","home.ctaLearnT":"Explora nuestra gama y fichas para elegir mejor.","home.ctaLearnB":"Explorar productos",
+        "home.ctaVetH":"Para veterinarios","home.ctaVetT":"Verifica tu condición profesional para precios pro.","home.ctaVetB":"Verificar estado",
+        "home.faqTitle":"Preguntas frecuentes",
+
+        "products.title":"Nuestra gama de productos",
+        "products.lead":"Explora nuestra selección completa de productos alimentarios complementarios para apoyar el sistema urinario, el hígado, la movilidad, la función renal y el bienestar general.",
+
+        "grid.available":"Disponible","grid.unavailable":"No disponible","grid.instock":" en stock","grid.out":"Agotado",
+        "grid.add":"Añadir al carrito","grid.buy":"Comprar ahora","grid.more":"Más detalles",
+
+        "pd.title":"Detalles del producto",
+        "pd.form":"Forma","pd.size":"Tamaño del paquete","pd.ingr":"Ingredientes clave","pd.use":"Guía de uso",
+        "pd.variant":"Variante","pd.quantity":"Cant.","pd.price":"Precio","pd.pdf":"Descargar PDF",
+        "pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U",
+        "pd.signInToSeePrice":"Inicia sesión para ver el precio","pd.vetOnly":"Verifica el estado veterinario para ver el precio",
+        "pd.variantMissing":"Sin variantes","pd.notAvailable":"No disponible",
+        "pd.editPrices":"Editar precios","pd.save":"Guardar","pd.cancel":"Cancelar",
+        "pd.note":"Alimento complementario — no es un medicamento. Sigue siempre el consejo de tu veterinario.",
+        "ui.sku":"SKU: "
+      },
+      ar: {
+        "ui.loading":"جارٍ التحميل…",
+        "nav.home":"الرئيسية","nav.products":"المنتجات","nav.worldwide":"حول العالم","nav.news":"الأخبار","nav.cart":"السلة",
+        "nav.account":"إعدادات الحساب","nav.checkout":"الدفع",
+        "nav.contact":"اتصل بنا",
+        "auth.login":"تسجيل الدخول","auth.signup":"إنشاء حساب","auth.logout":"تسجيل الخروج","auth.vetVerify":"توثيق الطبيب البيطري",
+        "orders.myOrders":"طلباتي",
+        "footer.tag":"غذاء تكميلي للحيوانات الأليفة","footer.policy":"الخصوصية والسياسة","footer.contact":"اتصل بنا",
+        "hero.badge":"غذاء تكميلي — ليس دواءً",
+
+        "home.h1":"غذاء تكميلي مبني على العلم للكلاب والقطط",
+        "home.lead":"دعم غذائي موجه للمسالك البولية والكبد والحركة والكلية والصحة العامة — بالتعاون مع الأطباء البيطريين.",
+        "home.ctaBrowse":"تصفح المنتجات","home.ctaVet":"أنا طبيب بيطري","home.ctaContact":"اتصل بنا",
+        "home.tag1":"بدون وصفة • غذاء تكميلي","home.tag2":"مناسب للجوال","home.tag3":"دفع آمن",
+        "home.valuesTitle":"لماذا VetoCos",
+        "home.v1h":"تركيبات موجهة","home.v1t":"مصممة لاحتياجات محددة: بولية، كبد، حركة، كلوية، تهدئة…",
+        "home.v2h":"مكونات عالية الجودة","home.v2t":"مواد فعالة مدروسة بمصادر موثوقة.",
+        "home.v3h":"إرشادات متوافقة مع الأطباء","home.v3t":"إرشادات واضحة ومواد داعمة.",
+        "home.ctaLearnH":"هل أنت جديد؟","home.ctaLearnT":"استكشف مجموعتنا واقرأ النشرات المختصرة.","home.ctaLearnB":"استكشاف المنتجات",
+        "home.ctaVetH":"للأطباء البيطريين","home.ctaVetT":"تحقق للحصول على أسعار مهنية.","home.ctaVetB":"تحقق الآن",
+        "home.faqTitle":"الأسئلة الشائعة",
+
+        "products.title":"مجموعة منتجاتنا",
+        "products.lead":"استكشف مجموعتنا الكاملة من المنتجات الغذائية التكميلية لدعم المسالك البولية والكبد والحركة ووظائف الكلى والصحة العامة.",
+
+        "grid.available":"متوفر","grid.unavailable":"غير متوفر","grid.instock":" متوفر بالمخزون","grid.out":"غير متوفر",
+        "grid.add":"أضف إلى السلة","grid.buy":"اشترِ الآن","grid.more":"مزيد من التفاصيل",
+
+        "pd.title":"تفاصيل المنتج",
+        "pd.form":"الشكل","pd.size":"حجم العبوة","pd.ingr":"المكونات الرئيسية","pd.use":"إرشادات التغذية",
+        "pd.variant":"النوع","pd.quantity":"الكمية","pd.price":"السعر","pd.pdf":"تحميل PDF",
+        "pd.ppv":"PPV","pd.pv10m":"PV-10U","pd.pv10p":"PV+10U",
+        "pd.signInToSeePrice":"سجّل الدخول لعرض السعر","pd.vetOnly":"تحقق من صفتك البيطرية لعرض السعر",
+        "pd.variantMissing":"لا توجد أنواع","pd.notAvailable":"غير متاح",
+        "pd.editPrices":"تعديل الأسعار","pd.save":"حفظ","pd.cancel":"إلغاء",
+        "pd.note":"غذاء تكميلي — ليس دواءً. اتبع دائمًا نصيحة الطبيب البيطري.",
+        "ui.sku":"SKU: "
+      }
+    };
+
+    function t(key){
+      try{
+        const lang = localStorage.getItem("lang") || "en";
+        const dict = (window.I18N?.[lang]) || (window.I18N?.en) || {};
+        return (dict?.[key] ?? key);
+      }catch(_){ return key; }
+    }
+
+    function applyLang(lang){
+      const dict = window.I18N?.[lang] || window.I18N?.en || {};
+      document.querySelectorAll("[data-i18n]").forEach(el=>{
+        const k = el.getAttribute("data-i18n");
+        if (dict && dict[k] != null) el.innerHTML = dict[k];
+      });
+      const html=document.documentElement; html.lang=lang;
+      if(lang==="ar"){ html.dir="rtl"; document.body.classList.add("rtl"); }
+      else { html.dir="ltr"; document.body.classList.remove("rtl"); }
+      localStorage.setItem("lang", lang);
+      const sel=document.getElementById("lang-switch"); if(sel) sel.value=lang;
+    }
+  </script>
+
+  <!-- Core helpers -->
+  <script>
+    const contactModal = document.getElementById('contactModal');
+    const policyModal  = document.getElementById('policyModal');
+
+    function openContact(){ contactModal.classList.add('open'); contactModal.setAttribute('aria-hidden','false'); }
+    function closeContact(){ contactModal.classList.remove('open'); contactModal.setAttribute('aria-hidden','true'); }
+    function openPolicy(){ policyModal.classList.add('open'); policyModal.setAttribute('aria-hidden','false'); }
+    function closePolicy(){ policyModal.classList.remove('open'); policyModal.setAttribute('aria-hidden','true'); }
+
+    [contactModal,policyModal].forEach(m=>m&&m.addEventListener('click',ev=>{ if(ev.target===m) m.classList.remove('open'); }));
+
+    const TO_ADDRESS='info@vetocos.com';
+    function sendMailto(e){
+      e.preventDefault();
+      if(!document.getElementById('consent').checked) return false;
+
+      const topic=document.getElementById('topic').value||'General';
+      const name=(document.getElementById('name')?.value||'').trim();
+      const email=document.getElementById('email').value.trim();
+      const country=(document.getElementById('country')?.value||'').trim();
+      const phone=(document.getElementById('phone')?.value||'').trim();
+      const subject=(document.getElementById('subject').value||'Website enquiry').trim();
+      const message=document.getElementById('message').value.trim();
+
+      const lines=[
+        `Topic: ${topic}`,
+        name ? `Name: ${name}` : null,
+        `Email: ${email}`,
+        country ? `Country: ${country}` : null,
+        phone ? `Phone: ${phone}` : null,
+        '',
+        message
+      ].filter(Boolean).join('\n');
+
+      const href=`mailto:${encodeURIComponent(TO_ADDRESS)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines)}`;
+      window.location.href=href;
+      return false;
+    }
+
+    // FAQ
+    document.addEventListener('click', (e)=>{
+      const q=e.target.closest('.faq-q'); if(!q) return;
+      const item=q.closest('.faq-item'); item.classList.toggle('open');
+    });
+
+    // footer dates + i18n init
+    document.addEventListener('DOMContentLoaded', ()=>{
+      document.getElementById('y').textContent=new Date().getFullYear();
+      const d=new Date(); const month=d.toLocaleString('default',{month:'long'});
+      const pd=document.getElementById('policyDate'); if(pd) pd.textContent=month+' '+d.getFullYear();
+
+      const initial = localStorage.getItem("lang") || "en";
+      applyLang(initial);
+
+      const sel = document.getElementById("lang-switch");
+      if (sel){
+        sel.value = initial;
+        sel.addEventListener("change", async (e)=>{
+          applyLang(e.target.value);
+          await renderProducts();
+          await refreshHeader();
+        });
+      }
+
+      const msg = document.getElementById('message');
+      const cnt = document.getElementById('msgCount');
+      if (msg && cnt){
+        const upd=()=>{ cnt.textContent=String(msg.value.length); };
+        msg.addEventListener('input', upd); upd();
+      }
+    });
+  </script>
+
+  <!-- ✅ Smooth anchor scrolling + active nav -->
+  <script>
+    function scrollToHash(hash) {
+      const el = document.querySelector(hash);
+      if (!el) return;
+
+      const nav = document.getElementById('navlinks');
+      if (nav) nav.classList.remove('open');
+
+      const header = document.querySelector('header.site');
+      const headerH = header ? header.offsetHeight : 0;
+
+      const y = el.getBoundingClientRect().top + window.pageYOffset - (headerH + 14);
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a) return;
+
+      const hash = a.getAttribute('href');
+      if (!hash || hash === '#') return;
+
+      e.preventDefault();
+      history.pushState(null, '', hash);
+      scrollToHash(hash);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (location.hash) scrollToHash(location.hash);
+    });
+
+    function setActiveNav() {
+      const links = document.querySelectorAll('.links a[href^="#"]');
+      links.forEach(x => x.classList.remove('active'));
+
+      const header = document.querySelector('header.site');
+      const headerH = header ? header.offsetHeight : 0;
+
+      const products = document.querySelector('#products');
+      const y = window.scrollY + headerH + 40;
+
+      let active = '#top';
+      if (products){
+        const pTop = products.offsetTop;
+        const pBot = products.offsetTop + products.offsetHeight;
+        if (y >= pTop && y <= pBot) active = '#products';
+      }
+
+      const activeLink = document.querySelector(`.links a[href="${active}"]`);
+      if (activeLink) activeLink.classList.add('active');
+    }
+
+    window.addEventListener('scroll', setActiveNav, { passive: true });
+    window.addEventListener('DOMContentLoaded', setActiveNav);
+  </script>
+
+  <!-- ✅ Reveal animation (works for products added later) -->
+  <script>
+    let REVEAL_IO = null;
+
+    function observeReveals(scope = document) {
+      const els = Array.from(scope.querySelectorAll('.reveal:not(.in)'));
+      if (!els.length) return;
+
+      if (!('IntersectionObserver' in window)) {
+        els.forEach(el => el.classList.add('in'));
+        return;
+      }
+
+      if (!REVEAL_IO) {
+        REVEAL_IO = new IntersectionObserver((entries) => {
+          entries.forEach(en => {
+            if (en.isIntersecting) {
+              en.target.classList.add('in');
+              REVEAL_IO.unobserve(en.target);
+            }
+          });
+        }, { threshold: 0.12, rootMargin: "0px 0px -10% 0px" });
+      }
+
+      els.forEach(el => REVEAL_IO.observe(el));
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=> observeReveals(document));
+  </script>
 
   <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
-    // ✅ Important change to stop "refresh loop":
-    // We DO NOT auto-redirect to login on page load.
-    // We wait for getSession() and react to auth state changes, then show either signed-out or signed-in UI.
-
     const supa = supabase.createClient(
       "https://qdepgviimbcdlozjpbhm.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
       { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
     );
-
     const SUPER_ADMINS=["Anwar.moumenjamai19@gmail.com"];
 
     // Header elements
@@ -272,8 +843,8 @@
     const cartLink=document.getElementById('cartLink');
     const cartCount=document.getElementById('cartCount');
 
-    if (signInBtn) signInBtn.addEventListener('click', ()=>{ location.href='login.html?redirect=' + encodeURIComponent('vet-verify.html'); });
-    if (signUpBtn) signUpBtn.addEventListener('click', ()=>{ location.href='signup.html?redirect=' + encodeURIComponent('vet-verify.html'); });
+    if (signInBtn) signInBtn.addEventListener('click', ()=>{ location.href='login.html?redirect=' + encodeURIComponent('index.html#products'); });
+    if (signUpBtn) signUpBtn.addEventListener('click', ()=>{ location.href='signup.html?redirect=' + encodeURIComponent('index.html#products'); });
 
     if (accountBtn) accountBtn.addEventListener('click', ()=>{
       const open = accountMenu.classList.toggle('open');
@@ -284,30 +855,46 @@
         setTimeout(()=>document.addEventListener('click', onDoc),0);
       }
     });
-    if (logoutBtn) logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); toast('Signed out'); });
+    if (logoutBtn) logoutBtn.addEventListener('click', async ()=>{ await supa.auth.signOut(); location.reload(); });
 
-    // Page blocks
-    const signedOutBox = document.getElementById('signedOutBox');
-    const signedInContent = document.getElementById('signedInContent');
-    const goSignIn = document.getElementById('goSignIn');
-    const goSignUp = document.getElementById('goSignUp');
-    if (goSignIn) goSignIn.onclick = ()=> location.href='login.html?redirect=' + encodeURIComponent('vet-verify.html');
-    if (goSignUp) goSignUp.onclick = ()=> location.href='signup.html?redirect=' + encodeURIComponent('vet-verify.html');
+    let IS_LOGGED_IN=false, IS_ADMIN=false, IS_VET=false;
 
-    // Toast
-    const toastEl=document.getElementById('toast');
-    function toast(m, err=false){
-      toastEl.textContent=m;
-      toastEl.style.display='block';
-      toastEl.style.borderColor = err?'rgba(255,120,120,.4)':'rgba(141,158,199,.25)';
-      clearTimeout(toast._t);
-      toast._t=setTimeout(()=>toastEl.style.display='none',2200);
+    async function refreshHeader(){
+      const { data:{ session } } = await supa.auth.getSession();
+      if (!session?.user){
+        IS_LOGGED_IN=false; IS_ADMIN=false; IS_VET=false;
+        if (signInBtn) signInBtn.style.display='inline-block';
+        if (signUpBtn) signUpBtn.style.display='inline-block';
+        if (acctBlock) acctBlock.style.display='none';
+        if (adminBtn) adminBtn.style.display='none';
+        if (cartLink) cartLink.style.display='none';
+        return;
+      }
+      IS_LOGGED_IN=true;
+
+      let display=session.user.email||'';
+      try{
+        const { data:p } = await supa.from('profiles')
+          .select('first_name,last_name,is_admin,is_vet_verified')
+          .eq('id', session.user.id).maybeSingle();
+        const full=[p?.first_name,p?.last_name].filter(Boolean).join(' ').trim();
+        if (full) display=full;
+        IS_ADMIN=!!p?.is_admin || (session.user.email && SUPER_ADMINS.includes(session.user.email));
+        IS_VET=!!p?.is_vet_verified;
+      }catch(_){}
+
+      if (helloName) helloName.textContent=display;
+      if (accountHeader) accountHeader.innerHTML=`<div><strong>${display}</strong><div class="muted">${session.user.email||''}</div></div>`;
+      if (signInBtn) signInBtn.style.display='none';
+      if (signUpBtn) signUpBtn.style.display='none';
+      if (acctBlock) acctBlock.style.display='inline-flex';
+      if (cartLink) cartLink.style.display='inline-flex';
+      if (adminBtn) adminBtn.style.display=IS_ADMIN ? 'inline-block':'none';
     }
-    function escapeHtml(s=''){ return String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
-    // Cart helpers (same as products page)
+    /* Cart */
     function readCart(){ try { return JSON.parse(localStorage.getItem("cart")||"[]"); } catch { return []; } }
-    function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items||[])); updateCartBadge(); }
+    function writeCart(items){ localStorage.setItem("cart", JSON.stringify(items)); updateCartBadge(); }
     function countCart(){ return readCart().reduce((n,x)=>n + Number(x.qty||0), 0); }
     function updateCartBadge(){
       const n=countCart();
@@ -315,913 +902,574 @@
       if (n>0){ cartCount.style.display='inline-grid'; cartCount.textContent=n; }
       else { cartCount.style.display='none'; }
     }
-    window.addEventListener('storage', (ev)=>{ if(ev.key==='cart') updateCartBadge(); });
-
-    // ====== Auth / header refresh ======
-    let USER=null, PROFILE=null, IS_ADMIN=false, CAN_PURCHASE=false;
-
-    async function refreshHeader(){
-      const { data:{ session } } = await supa.auth.getSession();
-
-      if (!session?.user){
-        USER=null; PROFILE=null; IS_ADMIN=false; CAN_PURCHASE=false;
-
-        if (signInBtn) signInBtn.style.display='inline-block';
-        if (signUpBtn) signUpBtn.style.display='inline-block';
-        if (acctBlock) acctBlock.style.display='none';
-        if (adminBtn) adminBtn.style.display='none';
-        if (cartLink) cartLink.style.display='none';
-
-        return false;
-      }
-
-      USER=session.user;
-
-      let display=session.user.email||'';
-      try{
-        const { data:p } = await supa.from('profiles')
-          .select('first_name,last_name,is_admin,is_vet_verified,can_purchase')
-          .eq('id', session.user.id).maybeSingle();
-
-        PROFILE = p || null;
-
-        const full=[p?.first_name,p?.last_name].filter(Boolean).join(' ').trim();
-        if (full) display=full;
-
-        IS_ADMIN=!!p?.is_admin || (session.user.email && SUPER_ADMINS.includes(session.user.email));
-        CAN_PURCHASE=!!p?.can_purchase;
-      }catch(_){}
-
-      if (helloName) helloName.textContent=display;
-      if (accountHeader) accountHeader.innerHTML=`<div><strong>${escapeHtml(display)}</strong><div class="muted">${escapeHtml(session.user.email||'')}</div></div>`;
-
-      if (signInBtn) signInBtn.style.display='none';
-      if (signUpBtn) signUpBtn.style.display='none';
-      if (acctBlock) acctBlock.style.display='inline-flex';
-      if (cartLink) cartLink.style.display='inline-flex';
-      if (adminBtn) adminBtn.style.display=IS_ADMIN ? 'inline-block':'none';
-
-      return true;
-    }
-
-    // ====== Vet verification + approvals + checkout ======
-    const BUCKET = 'Documents';
-
-    const purchaseModeBadge = document.getElementById('purchaseModeBadge');
-
-    const statusPill = document.getElementById('statusPill');
-    const statusInfo = document.getElementById('statusInfo');
-    const previewLink = document.getElementById('previewLink');
-    const replaceBtn = document.getElementById('replaceBtn');
-    const withdrawBtn = document.getElementById('withdrawBtn');
-    const submitVV = document.getElementById('submitVV');
-    const vvMsg = document.getElementById('vvMsg');
-    const idInput = document.getElementById('idnum');
-    const fileInput = document.getElementById('file');
-
-    function setStatus(status){
-      const s = (status || 'pending').toLowerCase();
-      statusPill.textContent = s;
-      statusPill.className = 'pill ' + (s==='approved'?'ok':(s==='rejected'?'bad':'pend'));
-    }
-
-    function setVVMsg(m, kind=''){
-      vvMsg.textContent = m || '';
-      vvMsg.style.color = kind==='error' ? '#ffb4b4' : (kind==='success' ? '#83f0a5' : '');
-    }
-
-    // Approval + products + pricing
-    let PRODUCTS_BY_SKU = {};       // skuLower -> product
-    let PRODUCT_LIST = [];          // available
-    let MY_APPROVALS = new Map();   // sku -> {status, quantity}
-    let currentApp = null;
-
-    function skuKey(s){ return String(s||'').trim().toLowerCase(); }
-    function toNumOrNull(x){ if (x===0||x==='0') return 0; const n=Number(x); return Number.isFinite(n)?n:null; }
-
-    async function primeMyApprovalsMap(){
-      if (!USER){ MY_APPROVALS=new Map(); return; }
-      const { data, error } = await supa
-        .from('vet_product_approvals')
-        .select('product_sku,status,quantity,updated_at')
-        .eq('user_id', USER.id);
-
-      if (error){ MY_APPROVALS=new Map(); return; }
-      MY_APPROVALS = new Map((data||[]).map(r=>[
-        r.product_sku,
-        { status:r.status, quantity:(r.quantity==null?0:Number(r.quantity)) }
-      ]));
-    }
-
-    function approvedQtyForSku(sku){
-      const ap = MY_APPROVALS.get(sku);
-      if (!ap || ap.status !== 'approved') return 0;
-      const q = Number(ap.quantity||0);
-      if (q < 0) return Infinity; // -1 forever
-      return Math.max(0, q);
-    }
-
-    function isCartFullyApproved(){
-      if (CAN_PURCHASE) return true;
-      const cart=readCart();
-      if (!cart.length) return false;
-      for (const it of cart){
-        const apQ = approvedQtyForSku(it.sku);
-        const need = Number(it.qty||0);
-        if (apQ === Infinity) continue;
-        if (apQ < need) return false;
-      }
-      return true;
-    }
-
-    function findVariant(product, variantCode){
-      if (!product || !variantCode) return null;
-      const list = Array.isArray(product.variants) ? product.variants : [];
-      const code = String(variantCode).trim().toLowerCase();
-      return list.find(v => String(v.code ?? v.variant_code ?? v.name ?? v.label ?? '').trim().toLowerCase() === code) || null;
-    }
-
-    function tierForQty(priceObj, qty){
-      const q = Math.max(1, Number(qty||1));
-      const cur = priceObj.currency || 'MAD';
-      const ppv  = toNumOrNull(priceObj.price_ppv ?? priceObj.ppv);
-      const pv_m = toNumOrNull(priceObj.price_pv_minus10 ?? priceObj.pv_minus_10u);
-      const pv_p = toNumOrNull(priceObj.price_pv_plus10  ?? priceObj.pv_plus_10u);
-
-      if (q === 1) return { label:'PPV', unit: ppv, cur };
-      if (q >= 10) return { label:'PV+10U', unit: pv_p, cur };
-      return { label:'PV-10U', unit: pv_m, cur };
-    }
-
-    function computeItemPrice(it){
-      const p = PRODUCTS_BY_SKU[skuKey(it.sku)];
-      if (!p) return null;
-
-      const v = findVariant(p, it.variant);
-      const source = v
-        ? { ...v, currency: v.currency || p.currency || 'MAD' }
-        : { ...p, currency: p.currency || 'MAD' };
-
-      const tier = tierForQty(source, it.qty);
-      if (!tier || tier.unit == null) return null;
-
-      const unit = Number(tier.unit);
-      const line = unit * Number(it.qty||0);
-      if (!Number.isFinite(unit) || !Number.isFinite(line)) return null;
-
-      return { unit, line, cur:tier.cur, label:tier.label };
-    }
-
-    function groupTotals(lines){
-      const out={};
-      lines.forEach(x=>{ out[x.cur]=(out[x.cur]||0)+x.amount; });
-      return out;
-    }
-
-    // ====== UI: cart quick edit ======
-    const cartBox = document.getElementById('cartBox');
-
-    function renderMiniCartRow(it, i){
-      const prod = PRODUCTS_BY_SKU[skuKey(it.sku)];
-      const name = it.name || prod?.name || it.sku;
-      return `<tr>
-        <td>
-          <strong>${escapeHtml(name)}</strong>
-          <div class="muted small">SKU: ${escapeHtml(it.sku)}${it.variant ? ` · Variant: ${escapeHtml(it.variant)}` : ''}</div>
-        </td>
-        <td class="row" style="gap:6px">
-          <button class="qtybtn" data-cart="${i}" data-d="-1" type="button">−</button>
-          <span style="display:inline-block;width:34px;text-align:center">${Number(it.qty||0)}</span>
-          <button class="qtybtn" data-cart="${i}" data-d="1" type="button">+</button>
-        </td>
-        <td><button class="qtybtn" data-rem="${i}" type="button">Remove</button></td>
-      </tr>`;
-    }
-
-    async function renderMiniCart(){
-      const cart = readCart();
-
-      if (!cart.length){
-        cartBox.innerHTML = `<div class="muted">Cart is empty.</div>`;
-        return;
-      }
-
-      cartBox.innerHTML = `<table>
-        <thead><tr><th>Product</th><th>Qty</th><th>Action</th></tr></thead>
-        <tbody>${cart.map(renderMiniCartRow).join('')}</tbody>
-      </table>`;
-
-      cartBox.querySelectorAll('button[data-cart]').forEach(b=>{
-        b.onclick = ()=>{
-          const idx=Number(b.dataset.cart);
-          const d=Number(b.dataset.d);
-          const c=readCart();
-          if (!c[idx]) return;
-
-          c[idx].qty = Math.max(0, Number(c[idx].qty||0) + d);
-          if (c[idx].qty === 0) c.splice(idx,1);
-          writeCart(c);
-          renderAllAfterCartChange();
-        };
-      });
-
-      cartBox.querySelectorAll('button[data-rem]').forEach(b=>{
-        b.onclick = ()=>{
-          const idx=Number(b.dataset.rem);
-          const c=readCart();
-          if (!c[idx]) return;
-          c.splice(idx,1);
-          writeCart(c);
-          renderAllAfterCartChange();
-        };
-      });
-    }
-
-    // ====== Product browser (request approvals + add) ======
-    const prodSearch = document.getElementById('prodSearch');
-    const prodList = document.getElementById('prodList');
-
-    prodSearch.addEventListener('input', ()=>renderProductsBrowser());
-
-    async function requestApproval(sku, qty){
-      if (!USER){ toast('Please sign in.', true); return; }
-      const q = Math.max(1, Number(qty||1));
-      const payload = { user_id:USER.id, product_sku:sku, quantity:q, status:'pending' };
-      const { error } = await supa.from('vet_product_approvals').upsert(payload, { onConflict:'user_id,product_sku' });
-      if (error){ toast(error.message,true); return; }
-      await primeMyApprovalsMap();
-      await renderMyApprovals();
-      await renderCheckout();
-      renderProductsBrowser();
-      toast('Approval request submitted');
-    }
-
     function addToCartBySKU(sku, name, qty=1, variant_code=null){
       const items = readCart();
-      const key = variant_code ? `${sku}:${variant_code}` : (sku);
+      const key = variant_code ? `${sku}:${variant_code}` : sku;
       const i = items.findIndex(x=> (x.key||x.sku) === key );
       if(i>-1) items[i].qty += qty;
       else items.push({ key, sku, variant: variant_code, name, qty });
       writeCart(items);
     }
+    window.addEventListener('storage', (ev)=>{ if(ev.key==='cart') updateCartBadge(); });
 
-    function productRow(p){
-      const ap = MY_APPROVALS.get(p.sku);
-      const st = (ap?.status || '').toLowerCase();
-      const qty = (ap?.quantity==null?0:Number(ap.quantity));
-      const approved = st==='approved' && (qty>0 || qty<0);
-
-      const avail = !!(p.available && Number(p.stock_qty||0)>0);
-
-      const badge = CAN_PURCHASE
-        ? `<span class="pill ok">Global</span>`
-        : approved
-          ? (qty<0 ? `<span class="pill ok">Approved forever</span>` : `<span class="pill ok">Approved: ${qty}</span>`)
-          : st==='pending'
-            ? `<span class="pill pend">Pending</span>`
-            : st==='rejected'
-              ? `<span class="pill bad">Rejected</span>`
-              : `<span class="pill pend">Needs approval</span>`;
-
-      const action = CAN_PURCHASE || approved
-        ? `<button class="btn" data-add>Add</button>`
-        : `<button class="btn" data-req>Request</button>`;
-
-      return `<div class="rowbar" style="border-bottom:1px solid rgba(141,158,199,.12);padding:10px 0" data-sku="${escapeHtml(p.sku)}">
-        <div>
-          <div><strong>${escapeHtml(p.name || p.sku)}</strong> <span class="muted small">(${escapeHtml(p.sku)})</span></div>
-          <div class="muted small">In stock: ${Number(p.stock_qty||0)} ${avail ? '' : '· Unavailable'}</div>
-        </div>
-        <div class="row" style="gap:8px">
-          ${badge}
-          <input class="qtyInp" type="number" min="1" value="1" style="width:90px">
-          ${action}
-        </div>
-      </div>`;
+    /* Storage URLs */
+    const PRODUCT_BUCKET="ProductFiles";
+    function filePublicUrl(path){
+      if(!path) return null;
+      const p=String(path).replace(/^ProductFiles\//,'');
+      return "https://qdepgviimbcdlozjpbhm.supabase.co/storage/v1/object/public/" + PRODUCT_BUCKET + "/" + encodeURI(p);
     }
 
-    function renderProductsBrowser(){
-      const q = (prodSearch.value||'').toLowerCase().trim();
-      const rows = PRODUCT_LIST.filter(p=>{
-        if (!q) return true;
-        return (p.name||'').toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q);
+    /* Helpers */
+    function slugifyName(name=''){ return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
+    function nextSrcOnError(img){
+      const left=(img.dataset.candidates||'').split('|').filter(Boolean);
+      const next=left.shift();
+      img.dataset.candidates=left.join('|');
+      img.src=next||'images/placeholder.png';
+    }
+
+    /* FALLBACK catalog (local images + local PDFs) */
+    const FALLBACK = {
+      "URO-CHIEN": { name:"Urocline Chien", image:"images/Product1.jpg", category:"Urinary care", form:"Chewable tablets", size:"30 tablets", ingredients:"Cranberry extract, D-mannose, DL-methionine, Vitamin C", usage:"1 tablet / 10 kg daily or as advised by the veterinarian", pdf:"pdf/Product1.pdf", description:"Complementary feed supporting lower urinary tract function in dogs." },
+      "HEP-AT":    { name:"Hepatiale", image:"images/Product2.jpg", category:"Liver support", form:"Capsules", size:"30 or 60 caps", ingredients:"Silybin-phospholipid complex, SAMe, Vitamin E", usage:"1 capsule / 10 kg daily for 4–8 weeks, or as recommended", pdf:"pdf/Product2.pdf", description:"Supports liver function in dogs and cats in case of chronic liver insufficiency." },
+      "NEU-VIEW":  { name:"Neuroview", image:"images/Product3.jpg", category:"Cognitive", form:"Soft chews", size:"60 chews", ingredients:"Phosphatidylserine, DHA, L-theanine, B-vitamins", usage:"1 chew / 10 kg once daily", pdf:"pdf/Product3.pdf", description:"Complementary feed to support cognitive function and mental sharpness." },
+      "MUNI-SAN":  { name:"Munisan", image:"images/Product4.jpg", category:"Immune support", form:"Powder", size:"120 g", ingredients:"Beta-glucans, Colostrum, Zinc, Vitamin C", usage:"Mix with food once daily for 2–4 weeks", pdf:"pdf/Product4.pdf", description:"Supports the natural immunity of dogs and cats." },
+      "PILO-SAN":  { name:"Pilosan", image:"images/Product5.jpg", category:"Skin & coat", form:"Twist-off capsules", size:"60 / 90 twist-off", ingredients:"Biotin, Omega-3 & 6 fatty acids, Zinc", usage:"1 capsule / 5 kg daily", pdf:"pdf/Product5.pdf", description:"For healthy skin and shiny coat; supports dermal function." },
+      "HEMO-VET":  { name:"HemoVet", image:"images/Product6.jpg", category:"Vitamins & minerals", form:"Tablets", size:"60 tabs", ingredients:"Iron, Vitamin B12, Folic acid, Copper", usage:"As directed by the veterinarian", pdf:"pdf/Product6.pdf", description:"Complementary feed to support haematopoiesis and vitality." },
+      "URO-STONES":{ name:"Urocline Stones", image:"images/Product7.jpg", category:"Urinary care", form:"Tablets", size:"45 tablets", ingredients:"DL-methionine, Potassium citrate, Cranberry", usage:"Supports urinary environment to reduce crystal formation", pdf:"pdf/Product7.pdf", description:"For dogs and cats prone to urinary stones or crystals." },
+      "VIT-MIN":   { name:"Vit&Min", image:"images/Product8.jpg", category:"Vitamins & minerals", form:"Powder", size:"200 g", ingredients:"Balanced vitamins and trace minerals", usage:"Daily multivitamin per body weight", pdf:"pdf/Product8.pdf", description:"Daily complementary feeding stuff for overall well-being." },
+      "ART-ASUH":  { name:"Art-Asuh", image:"images/Product9.jpg", category:"Mobility / joints", form:"Chewable tablets / twist-off", size:"S / XL", ingredients:"Glucosamine, Chondroitin, MSM, Hyaluronic acid", usage:"Initial 4–6 weeks, then maintenance dose", pdf:"pdf/Product9.pdf", description:"Supports joint function in dogs and cats." },
+      "CARBO-DIG": { name:"Carbo Digest", image:"images/Product10.jpg", category:"Digestive comfort", form:"Capsules", size:"30 caps", ingredients:"Activated charcoal, Prebiotics", usage:"Short-term digestive comfort, 1–2 times daily", pdf:"pdf/Product10.pdf", description:"Helps digestive balance and reduces flatulence." },
+      "RENO-SAN":  { name:"Renosan", image:"images/Product11.jpg", category:"Renal support", form:"Powder", size:"150 g", ingredients:"Calcium carbonate, Chitosan, Omega-3", usage:"Add to food daily to support renal function", pdf:"pdf/Product11.pdf", description:"Complementary feed to support kidney function." },
+      "QAL-MIL":   { name:"Qalmil", image:"images/Product12.jpg", category:"Calming", form:"Soft chews", size:"60 chews", ingredients:"L-tryptophan, L-theanine, Lemon balm", usage:"Use before stressful events or daily", pdf:"pdf/Product12.pdf", description:"Helps dogs and cats to cope in stressful situations." }
+    };
+
+    function fallbackBySkuOrName(r){
+      if (r?.sku && FALLBACK[r.sku]) return FALLBACK[r.sku];
+      const nm = (r?.name || '').toLowerCase().trim();
+      const hit = Object.values(FALLBACK).find(x => (x.name || '').toLowerCase().trim() === nm);
+      return hit || null;
+    }
+
+    const VARIANT_HINTS = {
+      "ART-ASUH": { "S":{label:"S — 60 twist-off",size:"60 twist-off"}, "XL":{label:"XL — 90 comprimés",size:"90 comprimés"} },
+      "PILO-SAN": { "60":{label:"60 twist-off",size:"60 twist-off"}, "90":{label:"90 twist-off",size:"90 twist-off"} },
+      "URO-STONES": { "45":{label:"Stones — 45 comp.",size:"45 comp."} },
+      "URO-CHIEN": { "30":{label:"Chien — 30 comp.",size:"30 comp."} },
+      "HEP-AT": { "S":{label:"Small — 30 caps",size:"30 caps"}, "XL":{label:"Large — 60 caps",size:"60 caps"} }
+    };
+
+    function prettyVariantLabel(sku, variantCode, rawLabel){
+      const bySku = VARIANT_HINTS[sku] || {};
+      const hint  = bySku[variantCode] || null;
+      if (hint?.label) return hint.label;
+      const code = String(variantCode || rawLabel || '').trim();
+      if (!code) return rawLabel || variantCode || "";
+      if (/^xl$/i.test(code)) return "XL";
+      if (/^s$/i.test(code))  return "S";
+      if (/^\d{2,3}$/.test(code)) {
+        if (sku === 'URO-CHIEN')  return `${code} comp.`;
+        if (sku === 'URO-STONES') return `${code} comp.`;
+        if (sku === 'PILO-SAN')   return `${code} twist-off`;
+        return code;
+      }
+      return rawLabel || code;
+    }
+
+    function sizeFromVariant(sku, variantCode, rawLabel){
+      const bySku = VARIANT_HINTS[sku] || {};
+      const hint  = bySku[variantCode] || null;
+      if (hint?.size) return hint.size;
+      const s = String(rawLabel || variantCode || '').toLowerCase();
+      const m = s.match(/\b(\d{2,3})\b/);
+      if (m) {
+        if (/(twist|off)/.test(s) || sku === 'PILO-SAN') return `${m[1]} twist-off`;
+        if (sku === 'URO-CHIEN' || sku === 'URO-STONES')  return `${m[1]} comp.`;
+        if (sku === 'HEP-AT') return `${m[1]} caps`;
+        return m[1];
+      }
+      if (/^xl$/.test(s) && sku==='ART-ASUH') return '90 comprimés';
+      if (/^s$/.test(s)  && sku==='ART-ASUH') return '60 twist-off';
+      return '';
+    }
+
+    let pdModal=null,pdImg=null,pdName=null,pdCat=null,pdForm=null,pdSize=null,pdIngr=null,pdUse=null,pdSku=null,pdAdd=null,pdBuy=null,pdPdf=null,pdDesc=null;
+    let pdVariantSel=null, pdQtyInp=null, pdPriceBox=null, pdPriceNote=null, pdAdminBox=null, pdEditBtn=null, pdAdminForm=null;
+    let CURRENT_SKU = null;
+    let CURRENT_VARIANTS = [];
+    let PRODUCT_CACHE = {};
+    const VARIANTS_CACHE = {};
+
+    function ensurePDRefs(){
+      if (pdModal) return;
+      pdModal = document.getElementById('productDetailsModal');
+      pdImg   = document.getElementById('pdImg');
+      pdName  = document.getElementById('pdName');
+      pdCat   = document.getElementById('pdCategory');
+      pdForm  = document.getElementById('pdForm');
+      pdSize  = document.getElementById('pdSize');
+      pdIngr  = document.getElementById('pdIngredients');
+      pdUse   = document.getElementById('pdUsage');
+      pdSku   = document.getElementById('pdSku');
+      pdAdd   = document.getElementById('pdAddBtn');
+      pdBuy   = document.getElementById('pdBuyBtn');
+      pdPdf   = document.getElementById('pdPdfBtn');
+      pdDesc  = document.getElementById('pdDesc');
+
+      pdVariantSel = document.getElementById('pdVariantSel');
+      pdQtyInp     = document.getElementById('pdQtyInp');
+      pdPriceBox   = document.getElementById('pdPrice');
+      pdPriceNote  = document.getElementById('pdPriceNote');
+      pdAdminBox   = document.getElementById('pdAdminBox');
+      pdEditBtn    = document.getElementById('pdEditBtn');
+      pdAdminForm  = document.getElementById('pdAdminForm');
+
+      pdModal.addEventListener('click', (ev)=>{ if(ev.target === pdModal) closePD(); });
+
+      pdAdd.addEventListener('click', ()=>{
+        if(!CURRENT_SKU) return;
+        if(!IS_LOGGED_IN){
+          location.href = 'login.html?redirect=' + encodeURIComponent('index.html#products');
+          return;
+        }
+        const v = currentVariant();
+        const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
+        addToCartBySKU(
+          CURRENT_SKU,
+          (spec.name || CURRENT_SKU) + (v?.label?` (${v.label})`:''), 
+          Math.max(1, Number(pdQtyInp.value||1)),
+          v?.variant_code||null
+        );
+        alert((spec.name || CURRENT_SKU) + " added");
       });
 
-      prodList.innerHTML = rows.length
-        ? rows.map(productRow).join('')
-        : `<div class="muted">No products found.</div>`;
+      pdBuy.addEventListener('click', ()=>{
+        if(!CURRENT_SKU) return;
+        if(!IS_LOGGED_IN){
+          location.href = 'login.html?redirect=' + encodeURIComponent('cart.html');
+          return;
+        }
+        const v = currentVariant();
+        const spec = PRODUCT_CACHE[CURRENT_SKU] || {};
+        addToCartBySKU(
+          CURRENT_SKU,
+          (spec.name || CURRENT_SKU) + (v?.label?` (${v.label})`:''), 
+          Math.max(1, Number(pdQtyInp.value||1)),
+          v?.variant_code||null
+        );
+        location.href = 'cart.html';
+      });
 
-      prodList.querySelectorAll('[data-sku]').forEach(row=>{
-        const sku = row.getAttribute('data-sku');
-        const p = PRODUCT_LIST.find(x=>x.sku===sku);
-        const qtyInp = row.querySelector('.qtyInp');
+      pdVariantSel.addEventListener('change', ()=>{
+        updatePriceUI();
+        const v = currentVariant();
+        const newSize = sizeFromVariant(CURRENT_SKU, v?.variant_code||'', v?.label||'');
+        if (newSize) pdSize.textContent = newSize;
+      });
+      pdQtyInp.addEventListener('input', updatePriceUI);
 
-        row.querySelector('[data-req]')?.addEventListener('click', async ()=>{
-          const qty = Math.max(1, Number(qtyInp?.value||1));
-          await requestApproval(sku, qty);
+      if (pdEditBtn){
+        pdEditBtn.addEventListener('click', ()=> {
+          pdAdminForm.style.display = pdAdminForm.style.display === 'none' ? 'block' : 'none';
         });
-
-        row.querySelector('[data-add]')?.addEventListener('click', async ()=>{
-          const qty = Math.max(1, Number(qtyInp?.value||1));
-          addToCartBySKU(sku, p?.name || sku, qty, null);
-          toast('Added to cart');
-          renderAllAfterCartChange();
-        });
-      });
+      }
     }
 
-    // ====== My approvals box ======
-    const myApprovalsBox=document.getElementById('myApprovalsBox');
-
-    async function renderMyApprovals(){
-      if (!USER){ myApprovalsBox.innerHTML=`<div class="muted">Please sign in.</div>`; return; }
-
-      const { data, error } = await supa.from('vet_product_approvals')
-        .select('product_sku,quantity,status,updated_at')
-        .eq('user_id', USER.id)
-        .order('updated_at', { ascending:false });
-
-      if (error){ myApprovalsBox.textContent=error.message; return; }
-      if (!data?.length){ myApprovalsBox.innerHTML=`<div class="muted">No approval requests.</div>`; return; }
-
-      myApprovalsBox.innerHTML = `<table>
-        <thead><tr><th>SKU</th><th>Qty</th><th>Status</th><th>Updated</th><th>Action</th></tr></thead>
-        <tbody>
-          ${data.map(r=>{
-            const st=(r.status||'pending').toLowerCase();
-            const q=Number(r.quantity||0);
-            const qtyTxt = (q<0) ? 'Forever (-1)' : String(q);
-            const cls = st==='approved'?'ok':st==='rejected'?'bad':st==='withdrawn'?'bad':'pend';
-            const when=r.updated_at?new Date(r.updated_at).toLocaleString():'';
-            return `<tr data-sku="${escapeHtml(r.product_sku)}">
-              <td><strong>${escapeHtml(r.product_sku)}</strong></td>
-              <td>${qtyTxt}</td>
-              <td><span class="pill ${cls}">${escapeHtml(st)}</span></td>
-              <td class="muted small">${escapeHtml(when)}</td>
-              <td>${st==='pending'?`<button class="btn ghost" data-withdraw type="button">Withdraw</button>`:''}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>`;
-
-      myApprovalsBox.querySelectorAll('button[data-withdraw]').forEach(b=>{
-        b.onclick = async ()=>{
-          const tr=b.closest('tr'); const sku=tr.dataset.sku;
-          const { error } = await supa.from('vet_product_approvals')
-            .update({ status:'withdrawn' })
-            .eq('user_id', USER.id).eq('product_sku', sku).eq('status','pending');
-          if (error){ toast(error.message,true); return; }
-          await primeMyApprovalsMap();
-          renderProductsBrowser();
-          renderMyApprovals();
-          renderCheckout();
-          toast('Request withdrawn');
-        };
-      });
+    function currentVariant(){
+      const code = pdVariantSel.value || null;
+      return CURRENT_VARIANTS.find(v=>v.variant_code===code) || CURRENT_VARIANTS[0] || null;
     }
 
-    // ====== Orders ======
-    const ordersBox=document.getElementById('ordersBox');
-    async function renderOrders(){
-      if (!USER){ ordersBox.innerHTML=`<div class="muted">Please sign in.</div>`; return; }
+    function priceForQty(variant, qty){
+      if (!variant) return null;
+      const q = Math.max(1, Number(qty||1));
+      const ppv   = (variant.ppv ?? variant.price_ppv);
+      const pv_m  = (variant.pv_minus_10u ?? variant.price_pv_minus10);
+      const pv_p  = (variant.pv_plus_10u  ?? variant.price_pv_plus10);
+      const cur   = variant.currency || 'MAD';
+      if (q === 1)  return { label: t('pd.ppv'),   value: ppv,  currency: cur };
+      if (q >= 10)  return { label: t('pd.pv10p'), value: pv_p, currency: cur };
+      return         { label: t('pd.pv10m'), value: pv_m,  currency: cur };
+    }
 
-      const { data: rows, error } = await supa.from('orders')
-        .select('id,created_at,status,total_qty,total_amount')
-        .eq('user_id', USER.id)
-        .order('created_at', { ascending:false })
-        .limit(20);
+    function updatePriceUI(){
+      const variant = currentVariant();
+      const qty = Math.max(1, Number(pdQtyInp.value||1));
 
-      if (error){ ordersBox.innerHTML=`<div class="muted">Could not load orders: ${escapeHtml(error.message)}</div>`; return; }
-      if (!rows?.length){ ordersBox.innerHTML=`<div class="muted">No purchases yet.</div>`; return; }
+      if (!IS_LOGGED_IN){
+        pdPriceBox.textContent = t('pd.signInToSeePrice');
+        pdPriceNote.textContent = '';
+        return;
+      }
+      if (!IS_VET){
+        pdPriceBox.textContent = t('pd.vetOnly');
+        pdPriceNote.innerHTML = `<a class="pill info" href="vet-verify.html">${t('auth.vetVerify')}</a>`;
+        return;
+      }
+      if (!variant){
+        pdPriceBox.textContent = t('pd.variantMissing');
+        pdPriceNote.textContent = '';
+        return;
+      }
+      const tier = priceForQty(variant, qty);
+      if (!tier || tier.value==null){
+        pdPriceBox.textContent = t('pd.notAvailable');
+        pdPriceNote.textContent = '';
+        return;
+      }
+      const total = (Number(tier.value)||0)*qty;
+      pdPriceBox.textContent = `${tier.currency||'MAD'} ${Number(tier.value).toFixed(2)} — ${tier.label}`;
+      pdPriceNote.textContent = `Total: ${tier.currency||'MAD'} ${total.toFixed(2)} (${qty} × ${Number(tier.value).toFixed(2)})`;
+    }
 
-      ordersBox.innerHTML = rows.map(o=>{
-        const d=new Date(o.created_at);
-        const cls=(o.status||'').toLowerCase()==='paid'?'ok':'pend';
-        return `<div class="rowbar" style="border-top:1px solid rgba(141,158,199,.18);padding:10px 0">
-          <div style="flex:1 1 auto">
-            <strong>Order #${o.id}</strong> · <span class="muted">${d.toLocaleString()}</span>
-            <div class="muted small">Items: ${o.total_qty||0} · Amount: ${o.total_amount!=null?Number(o.total_amount).toFixed(2):'-'}</div>
+    function buildVariantSelector(pre=null){
+      if (!pdVariantSel) return;
+      if (!CURRENT_VARIANTS.length){
+        pdVariantSel.innerHTML = `<option value="">${t('pd.variantMissing')}</option>`;
+        pdVariantSel.disabled = true;
+        return;
+      }
+      pdVariantSel.disabled = false;
+      pdVariantSel.innerHTML = CURRENT_VARIANTS
+        .map(v=>`<option value="${v.variant_code}">${v._uiLabel || v.label || v.variant_code}</option>`)
+        .join('');
+      pdVariantSel.value = (pre && CURRENT_VARIANTS.some(v=>v.variant_code===pre))
+        ? pre
+        : CURRENT_VARIANTS[0].variant_code;
+    }
+
+    function buildAdminForm(){
+      if (!pdAdminBox) return;
+      pdAdminBox.style.display = IS_ADMIN ? 'block':'none';
+      if (!IS_ADMIN) return;
+
+      const rows = Array.isArray(CURRENT_VARIANTS) ? CURRENT_VARIANTS : [];
+      pdAdminForm.style.display = 'none';
+
+      if (!rows.length){
+        pdAdminForm.innerHTML = `<div class="muted">${t('pd.variantMissing')}</div>`;
+        return;
+      }
+
+      pdAdminForm.innerHTML = rows.map((v, i)=>`
+        <div class="admin-grid" data-vid="${v.variant_code || `v${i}`}">
+          <div>
+            <label class="muted">${t('pd.variant')}</label>
+            <input class="input" value="${(v._uiLabel || v.label || v.variant_code || '')}" disabled>
           </div>
-          <div><span class="pill ${cls}">${escapeHtml(o.status||'pending')}</span></div>
-        </div>`;
-      }).join('');
+          <div>
+            <label class="muted">${t('pd.ppv')}</label>
+            <input name="price_ppv" class="input" type="number" step="0.01" value="${(v.price_ppv ?? v.ppv ?? '')}">
+          </div>
+          <div>
+            <label class="muted">${t('pd.pv10m')}</label>
+            <input name="price_pv_minus10" class="input" type="number" step="0.01" value="${(v.price_pv_minus10 ?? v.pv_minus_10u ?? '')}">
+          </div>
+          <div>
+            <label class="muted">${t('pd.pv10p')}</label>
+            <input name="price_pv_plus10" class="input" type="number" step="0.01" value="${(v.price_pv_plus10 ?? v.pv_plus_10u ?? '')}">
+          </div>
+        </div>
+        <div style="height:8px"></div>
+      `).join('') + `
+        <div class="sheet-actions" style="justify-content:flex-end">
+          <button class="close" type="button" onclick="(function(f){ f.style.display='none'; })(document.getElementById('pdAdminForm'))">${t('pd.cancel')}</button>
+          <button class="btn" type="submit">${t('pd.save')}</button>
+        </div>
+      `;
     }
 
-    // ====== Checkout ======
-    const checkoutCart=document.getElementById('checkoutCart');
-    const checkoutIssues=document.getElementById('checkoutIssues');
-    const checkoutEligibility=document.getElementById('checkoutEligibility');
-    const sumItems=document.getElementById('sumItems');
-    const sumTotal=document.getElementById('sumTotal');
-    const placeOrderBtn=document.getElementById('placeOrder');
-    const placeMsg=document.getElementById('placeMsg');
-
-    function eligibilityForCart(cart){
-      const issues=[];
-      const eligible=[];
-      const ineligible=[];
-
-      cart.forEach(it=>{
-        const prod=PRODUCTS_BY_SKU[skuKey(it.sku)];
-        const qty=Number(it.qty||0);
-
-        if (prod && prod.available === false){
-          ineligible.push({ sku:it.sku, reason:'Unavailable' });
-          return;
-        }
-        if (prod && typeof prod.stock_qty === 'number' && prod.stock_qty < qty){
-          ineligible.push({ sku:it.sku, reason:`Only ${prod.stock_qty|0} in stock` });
-          return;
-        }
-
-        if (CAN_PURCHASE){
-          eligible.push(it);
-          return;
-        }
-
-        const apQ=approvedQtyForSku(it.sku);
-        if (apQ === Infinity || apQ >= qty){
-          eligible.push(it);
-          return;
-        }
-
-        const need = qty - apQ;
-        ineligible.push({ sku:it.sku, reason: apQ>0 ? `Approval short by ${need}` : 'Approval required' });
-      });
-
-      if (!CAN_PURCHASE){
-        if (ineligible.some(x=>/Approval/.test(x.reason))) issues.push('Some items still need admin approval.');
+    async function loadVariants(sku){
+      const prod = PRODUCT_CACHE[sku] || {};
+      let list = Array.isArray(prod.variants) ? prod.variants : [];
+      if (!list.length){
+        CURRENT_VARIANTS = [{
+          variant_code: 'default',
+          _uiLabel: 'Default',
+          label: 'Default',
+          price_ppv:        prod.price_ppv ?? null,
+          price_pv_minus10: prod.price_pv_minus10 ?? null,
+          price_pv_plus10:  prod.price_pv_plus10 ?? null,
+          currency: 'MAD'
+        }];
+        return CURRENT_VARIANTS;
       }
-      if (ineligible.some(x=>/stock|Unavailable|Only/i.test(x.reason))) issues.push('Some items are unavailable or exceed stock.');
-
-      return { eligible, ineligible, issues };
-    }
-
-    async function renderCheckout(){
-      const cart = readCart();
-      if (!cart.length){
-        checkoutCart.innerHTML=`<div class="muted">Cart is empty.</div>`;
-        checkoutIssues.style.display='none';
-        checkoutEligibility.textContent='Eligibility: —';
-        checkoutEligibility.className='pill pend';
-        sumItems.textContent='0';
-        sumTotal.textContent='—';
-        placeOrderBtn.disabled=true;
-        placeMsg.textContent='';
-        return;
-      }
-
-      const { eligible, ineligible, issues } = eligibilityForCart(cart);
-
-      if (issues.length || ineligible.length){
-        const list=[
-          ...issues.map(x=>`<li>${escapeHtml(x)}</li>`),
-          ...ineligible.map(x=>`<li><strong>${escapeHtml(x.sku)}</strong>: ${escapeHtml(x.reason)}</li>`)
-        ];
-        checkoutIssues.innerHTML=`<ul style="margin:0;padding-left:18px">${list.join('')}</ul>`;
-        checkoutIssues.style.display='block';
-      } else {
-        checkoutIssues.style.display='none';
-        checkoutIssues.innerHTML='';
-      }
-
-      const fullApproved = isCartFullyApproved();
-      checkoutEligibility.textContent = fullApproved ? 'Eligibility: FULL' : (eligible.length ? 'Eligibility: PARTIAL' : 'Eligibility: NONE');
-      checkoutEligibility.className = 'pill ' + (fullApproved ? 'ok' : (eligible.length ? 'pend' : 'bad'));
-      placeOrderBtn.disabled = (eligible.length === 0);
-
-      const rows = cart.map(it=>{
-        const prod = PRODUCTS_BY_SKU[skuKey(it.sku)] || {};
-        const qty = Number(it.qty||0);
-
-        const apQ = CAN_PURCHASE ? Infinity : approvedQtyForSku(it.sku);
-        const approvalTag = CAN_PURCHASE ? `<span class="pill ok">Global</span>`
-          : apQ===Infinity ? `<span class="pill ok">Forever</span>`
-          : apQ>=qty ? `<span class="pill ok">Approved</span>`
-          : apQ>0 ? `<span class="pill pend">Approved ${apQ}</span>`
-          : `<span class="pill bad">Needs approval</span>`;
-
-        const price = computeItemPrice(it);
-        const unitHTML = price ? `${escapeHtml(price.cur)} ${price.unit.toFixed(2)} <span class="muted small">(${escapeHtml(price.label)})</span>` : '—';
-        const lineHTML = price ? `${escapeHtml(price.cur)} ${escapeHtml(price.line.toFixed(2))}` : '—';
-
-        return `<tr>
-          <td>
-            <strong>${escapeHtml(it.name || prod.name || it.sku)}</strong>
-            <div class="muted small">SKU: ${escapeHtml(it.sku)}${it.variant ? ` · Variant: ${escapeHtml(it.variant)}` : ''}</div>
-          </td>
-          <td>${qty}</td>
-          <td>${unitHTML}</td>
-          <td>${lineHTML}</td>
-          <td>${approvalTag}</td>
-        </tr>`;
-      }).join('');
-
-      checkoutCart.innerHTML = `<table>
-        <thead><tr><th>Product</th><th>Qty</th><th>Unit</th><th>Line</th><th>Status</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`;
-
-      sumItems.textContent = String(cart.reduce((n,x)=>n+Number(x.qty||0),0));
-
-      const totals = cart.map(it=>{
-        const p = computeItemPrice(it);
-        return p ? { cur:p.cur, amount:p.line } : null;
-      }).filter(Boolean);
-
-      if (!totals.length){
-        sumTotal.textContent = '—';
-      } else {
-        const grouped = groupTotals(totals);
-        const txt = Object.entries(grouped).map(([cur,amt])=>`${cur} ${amt.toFixed(2)}`).join(' · ');
-        sumTotal.textContent = txt + (Object.keys(grouped).length>1 ? '  (grouped by currency)' : '');
-      }
-
-      placeMsg.textContent = '';
-    }
-
-    async function consumeApprovalsForOrder(eligibleItems){
-      if (CAN_PURCHASE) return;
-
-      const need={};
-      eligibleItems.forEach(it=>{
-        need[it.sku] = (need[it.sku]||0) + Number(it.qty||0);
-      });
-
-      for (const [sku, toUse] of Object.entries(need)){
-        if (!toUse) continue;
-
-        const ap = MY_APPROVALS.get(sku);
-        if (!ap || ap.status !== 'approved') continue;
-
-        const curQty = Number(ap.quantity||0);
-        if (curQty < 0) continue; // forever
-
-        const next = curQty - toUse;
-
-        if (next > 0){
-          await supa.from('vet_product_approvals')
-            .update({ quantity: next })
-            .eq('user_id', USER.id).eq('product_sku', sku).eq('status','approved');
-        } else {
-          await supa.from('vet_product_approvals')
-            .delete()
-            .eq('user_id', USER.id).eq('product_sku', sku).eq('status','approved');
-        }
-      }
-    }
-
-    async function placeOrder(){
-      placeOrderBtn.disabled=true;
-      placeMsg.textContent='Placing order…';
-
-      try{
-        const cart=readCart();
-        const { eligible } = eligibilityForCart(cart);
-
-        if (!eligible.length){
-          placeMsg.textContent='Nothing eligible to order yet.';
-          return;
-        }
-
-        const lines = eligible.map(it=>{
-          const p = computeItemPrice(it);
-          return {
-            sku: it.sku,
-            name: it.name || it.sku,
-            qty: Number(it.qty||0),
-            unit_price: p ? p.unit : null,
-            currency: p ? p.cur : null,
-            price_tier: p ? p.label : null,
-            line_total: p ? p.line : null,
-            variant: it.variant || null
-          };
-        });
-
-        const totals = {};
-        lines.forEach(l=>{
-          if (!l.currency || l.line_total == null) return;
-          totals[l.currency] = (totals[l.currency]||0) + Number(l.line_total||0);
-        });
-        const total_amount = (Object.keys(totals).length===1) ? Object.values(totals)[0] : null;
-
-        const orderPayload = {
-          user_id: USER.id,
-          email: USER.email || null,
-          status: 'pending',
-          total_qty: eligible.reduce((n,x)=>n+Number(x.qty||0),0),
-          total_amount
+      CURRENT_VARIANTS = list.map((v, i) => {
+        const code = String(v.code ?? v.variant_code ?? v.name ?? `v${i}`);
+        return {
+          variant_code: code,
+          _uiLabel: prettyVariantLabel(sku, code, v.name || v.label || ''),
+          label: v.name || v.label || '',
+          price_ppv:        (v.price_ppv        ?? v.ppv        ?? null),
+          price_pv_minus10: (v.price_pv_minus10 ?? v.pv_minus_10u ?? null),
+          price_pv_plus10:  (v.price_pv_plus10  ?? v.pv_plus_10u  ?? null),
+          currency: v.currency || 'MAD'
         };
-
-        const { data: orderRow, error: orderErr } =
-          await supa.from('orders').insert([orderPayload]).select('id').single();
-        if (orderErr) throw new Error(orderErr.message || 'Failed to create order.');
-
-        const order_id = orderRow.id;
-
-        const itemsPayload = lines.map(l => ({
-          order_id,
-          user_id: USER.id,
-          product_sku: l.sku,
-          product_name: l.name,
-          quantity: l.qty,
-          variant_code: l.variant || null,
-          unit_price: l.unit_price,
-          currency: l.currency,
-          price_tier: l.price_tier,
-          line_total: l.line_total
-        }));
-
-        const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
-        if (itemsErr) {
-          await supa.from('orders').delete().eq('id', order_id);
-          throw new Error(itemsErr.message || 'Failed to add order items.');
-        }
-
-        await consumeApprovalsForOrder(eligible);
-
-        const eligibleSkuSet = new Set(eligible.map(x=>x.sku));
-        const remaining = cart.filter(it=>!eligibleSkuSet.has(it.sku));
-        writeCart(remaining);
-
-        await primeMyApprovalsMap();
-        renderProductsBrowser();
-        await renderMyApprovals();
-        await renderMiniCart();
-        await renderCheckout();
-        await renderOrders();
-
-        // ✅ Redirect to payment page
-        window.location.href = `order-pay.html?order=${encodeURIComponent(order_id)}`;
-      }catch(e){
-        console.error(e);
-        placeMsg.textContent = 'Something went wrong: ' + (e?.message || 'Unknown error');
-        placeMsg.style.color = '#ffb4b4';
-      }finally{
-        placeOrderBtn.disabled=false;
-      }
-    }
-    placeOrderBtn.addEventListener('click', placeOrder);
-
-    // ====== Vet application ======
-    function uiForApplication(app){
-      currentApp = app || null;
-      const st = (currentApp?.status || 'none').toLowerCase();
-
-      if (!currentApp){
-        setStatus('pending');
-        statusInfo.style.display='none';
-        previewLink.style.display='none';
-        replaceBtn.style.display='none';
-        withdrawBtn.style.display='none';
-        submitVV.style.display='inline-block';
-        submitVV.disabled=false;
-        idInput.disabled=false;
-        fileInput.disabled=false;
-        setVVMsg('No submission yet. Please fill your details.');
-        return;
-      }
-
-      setStatus(st);
-      statusInfo.style.display='block';
-
-      if (st === 'approved'){
-        statusInfo.innerHTML = `<strong>Approved.</strong> Your account is verified.`;
-        submitVV.disabled=true;
-        idInput.disabled=true;
-        fileInput.disabled=true;
-        submitVV.textContent='Approved';
-        replaceBtn.style.display='inline-block';
-        withdrawBtn.style.display='inline-block';
-      } else if (st === 'rejected'){
-        statusInfo.innerHTML = `<strong>Rejected.</strong> Please update your ID and upload a new file.`;
-        submitVV.disabled=false;
-        idInput.disabled=false;
-        fileInput.disabled=false;
-        submitVV.textContent='Submit for review';
-        replaceBtn.style.display='none';
-        withdrawBtn.style.display='inline-block';
-      } else if (st === 'withdrawn'){
-        statusInfo.innerHTML = `<strong>Withdrawn.</strong> You can submit a new application.`;
-        submitVV.disabled=false;
-        idInput.disabled=false;
-        fileInput.disabled=false;
-        submitVV.textContent='Submit for review';
-        replaceBtn.style.display='none';
-        withdrawBtn.style.display='none';
-      } else {
-        statusInfo.innerHTML = `<strong>Pending.</strong> We will review your submission.`;
-        submitVV.disabled=true;
-        idInput.disabled=true;
-        fileInput.disabled=true;
-        submitVV.textContent='Pending';
-        replaceBtn.style.display='inline-block';
-        withdrawBtn.style.display='inline-block';
-      }
-
-      if (currentApp.identity_number) idInput.value = currentApp.identity_number;
-
-      // preview link
-      if (currentApp.diploma_path){
-        previewLink.style.display='inline-block';
-        supa.storage.from(BUCKET).createSignedUrl(currentApp.diploma_path, 300)
-          .then(({data, error})=>{
-            if (!error && data?.signedUrl) previewLink.href=data.signedUrl;
-            else previewLink.style.display='none';
-          });
-      } else {
-        previewLink.style.display='none';
-      }
-
-      setVVMsg('');
+      });
+      return CURRENT_VARIANTS;
     }
 
-    replaceBtn.addEventListener('click', ()=>{
-      submitVV.style.display='inline-block';
-      submitVV.disabled=false;
-      submitVV.textContent='Submit for review';
-      idInput.disabled=false;
-      fileInput.disabled=false;
-      setVVMsg('Update ID and/or replace file. Status will become pending again.');
-    });
+    // ✅ Image candidates: storage -> image_url -> local by sku/name -> fallback image -> placeholder
+    function imageCandidates(spec){
+      const out=[];
+      if (spec.image_path) out.push(filePublicUrl(spec.image_path));
+      if (spec.image_url)  out.push(spec.image_url);
 
-    withdrawBtn.addEventListener('click', async ()=>{
-      if (!currentApp) return;
-      if (!confirm('Withdraw your verification application?')) return;
-      const { error } = await supa.from('vet_applications')
-        .update({ status:'withdrawn' })
-        .eq('id', currentApp.id);
-      if (error){ toast(error.message,true); return; }
-      await loadVetApplication();
-      toast('Application withdrawn');
-    });
+      const sku=(spec.sku||'').toLowerCase();
+      const nm=slugifyName(spec.name||'');
+      [`images/${sku}.jpg`,`images/${sku}.png`,`images/${nm}.jpg`,`images/${nm}.png`].forEach(u=>out.push(u));
 
-    submitVV.addEventListener('click', async ()=>{
-      if (!USER) return;
+      if (spec.image) out.push(spec.image);
+      out.push('images/placeholder.png');
 
-      submitVV.disabled=true;
-      setVVMsg('Preparing submission…');
-
-      const idnum = (idInput.value||'').trim();
-      const f = fileInput.files?.[0] || null;
-
-      if (!currentApp){
-        if (!idnum || !f){
-          setVVMsg('Please enter ID number and choose a file.','error');
-          submitVV.disabled=false;
-          return;
-        }
-      } else {
-        if (!idnum && !f){
-          setVVMsg('Nothing to update. Change ID and/or choose a new file.','error');
-          submitVV.disabled=false;
-          return;
-        }
-      }
-
-      let newPath = currentApp?.diploma_path || null;
-
-      if (f){
-        if (f.size > 10*1024*1024){
-          setVVMsg('File too large (max 10 MB).','error');
-          submitVV.disabled=false; return;
-        }
-        const okTypes=['application/pdf','image/jpeg','image/png'];
-        if (f.type && !okTypes.includes(f.type)){
-          setVVMsg('Unsupported file type.','error');
-          submitVV.disabled=false; return;
-        }
-
-        const cleanName=f.name.replace(/\s+/g,'_').replace(/[^\w.\-]/g,'').slice(-120);
-        const path=`${USER.id}/${Date.now()}_${cleanName || 'diploma'}`;
-        setVVMsg('Uploading document…');
-
-        const up = await supa.storage.from(BUCKET).upload(path, f, {
-          upsert:false,
-          contentType: f.type || 'application/octet-stream',
-          cacheControl:'3600'
-        });
-        if (up.error){
-          setVVMsg(up.error.message,'error');
-          submitVV.disabled=false; return;
-        }
-        newPath = up.data.path;
-      }
-
-      if (!currentApp){
-        setVVMsg('Saving application…');
-        const ins = await supa.from('vet_applications').insert({
-          user_id:USER.id,
-          identity_number:idnum,
-          diploma_path:newPath,
-          status:'pending'
-        }).select().single();
-
-        if (ins.error){
-          setVVMsg(ins.error.message,'error');
-          submitVV.disabled=false; return;
-        }
-      } else {
-        setVVMsg('Updating application…');
-        const upd = await supa.from('vet_applications').update({
-          identity_number: idnum || currentApp.identity_number,
-          diploma_path: f ? newPath : currentApp.diploma_path,
-          status:'pending'
-        }).eq('id', currentApp.id).select().single();
-
-        if (upd.error){
-          setVVMsg(upd.error.message,'error');
-          submitVV.disabled=false; return;
-        }
-      }
-
-      await loadVetApplication();
-      setVVMsg('Submitted. We will review and approve your account.','success');
-      toast('Submitted for review');
-      submitVV.disabled=false;
-    });
-
-    async function loadVetApplication(){
-      if (!USER) return;
-      const { data: rows, error } = await supa.from('vet_applications')
-        .select('id,identity_number,diploma_path,status,created_at')
-        .eq('user_id', USER.id)
-        .order('created_at', { ascending:false })
-        .limit(1);
-
-      if (!error && rows && rows[0]) uiForApplication(rows[0]);
-      else uiForApplication(null);
+      return Array.from(new Set(out.filter(Boolean)));
     }
 
-    // ====== Data loaders ======
-    async function loadProducts(){
-      prodList.textContent='Loading…';
+    async function openPD(sku, preselectVariant=null){
+      ensurePDRefs();
+      const spec = PRODUCT_CACHE[sku] || {};
+      CURRENT_SKU = sku;
+
+      document.getElementById('pdTitle').textContent = t("pd.title");
+      pdName.textContent = spec.name || sku;
+      pdCat.textContent  = spec.category || '';
+      pdForm.textContent = spec.form || '—';
+      pdSize.textContent = spec.size || '—';
+      pdIngr.textContent = spec.ingredients || '—';
+      pdUse.textContent  = spec.usage || '—';
+      pdDesc.textContent = spec.description || '';
+      pdSku.textContent  = t("ui.sku") + sku;
+
+      const cands = imageCandidates(spec);
+      pdImg.alt = spec.name || sku;
+      pdImg.style.visibility = 'hidden';
+      pdImg.onload = () => { pdImg.style.visibility = 'visible'; };
+      pdImg.onerror = () => nextSrcOnError(pdImg);
+      pdImg.setAttribute('data-candidates', cands.slice(1).join('|'));
+      pdImg.src = cands[0];
+
+      pdPdf.textContent = t("pd.pdf");
+      pdPdf.href = (spec.pdf_path ? filePublicUrl(spec.pdf_path) : (spec.pdf || '#')) || '#';
+
+      const isAvail = !!(spec.available && (Number(spec.stock_qty||0) > 0));
+      if (!IS_LOGGED_IN){
+        pdAdd.disabled = true;
+        pdBuy.disabled = true;
+      } else {
+        pdAdd.disabled = !isAvail;
+        pdBuy.disabled = !isAvail;
+      }
+
+      loadVariants(sku).then(()=>{
+        buildVariantSelector(preselectVariant);
+        buildAdminForm();
+        updatePriceUI();
+        const v = currentVariant();
+        const newSize = sizeFromVariant(CURRENT_SKU, v?.variant_code||'', v?.label||'');
+        if (newSize) pdSize.textContent = newSize;
+        pdModal.classList.add('open'); pdModal.setAttribute('aria-hidden','false');
+      }).catch(_=>{
+        pdVariantSel.innerHTML = `<option value="">${t('pd.variantMissing')}</option>`;
+        pdPriceBox.textContent = t('pd.notAvailable');
+        pdPriceNote.textContent = '';
+        pdModal.classList.add('open'); pdModal.setAttribute('aria-hidden','false');
+      });
+    }
+
+    function closePD(){ const m=document.getElementById('productDetailsModal'); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); } }
+
+    async function fetchProducts(){
+      let rows=[];
       const { data, error } = await supa
         .from('products')
-        .select('sku,name,stock_qty,available,currency,price_ppv,price_pv_minus10,price_pv_plus10,variants')
+        .select('sku,name,description,stock_qty,available,image_path,image_url,pdf_path,sort_order,price_ppv,price_pv_minus10,price_pv_plus10,variants')
+        .order('sort_order', { ascending:true, nullsFirst:false })
         .order('name', { ascending:true });
 
-      if (error){ prodList.textContent=error.message; return; }
+      if (!error && Array.isArray(data)) rows=data;
 
-      PRODUCTS_BY_SKU = {};
-      (data||[]).forEach(p=>{ PRODUCTS_BY_SKU[skuKey(p.sku)] = p; });
-
-      PRODUCT_LIST = (data||[]).filter(p=>p.available && Number(p.stock_qty||0)>0);
-    }
-
-    async function renderAllAfterCartChange(){
-      updateCartBadge();
-      await primeMyApprovalsMap();
-      await renderMiniCart();
-      await renderCheckout();
-    }
-
-    // ====== Page state ======
-    async function showSignedOut(){
-      signedOutBox.style.display='block';
-      signedInContent.style.display='none';
-    }
-
-    async function showSignedIn(){
-      signedOutBox.style.display='none';
-      signedInContent.style.display='block';
-
-      purchaseModeBadge.textContent = CAN_PURCHASE ? 'Mode: approved forever (global)' : 'Mode: per-item approvals';
-
-      await loadProducts();
-      await primeMyApprovalsMap();
-
-      await loadVetApplication();
-      renderProductsBrowser();
-      await renderMiniCart();
-      await renderMyApprovals();
-      await renderCheckout();
-      await renderOrders();
-    }
-
-    async function init(){
-      document.getElementById('y').textContent=new Date().getFullYear();
-      updateCartBadge();
-
-      const loggedIn = await refreshHeader();
-
-      if (!loggedIn){
-        showSignedOut();
-      } else {
-        showSignedIn();
+      if (!rows.length){
+        rows = Object.keys(FALLBACK).map((sku,i)=>({
+          sku, name:FALLBACK[sku].name, description:FALLBACK[sku].description||'',
+          stock_qty:999, available:true,
+          image_path:null, image_url:null, pdf_path:null, sort_order:i+1,
+          price_ppv:null, price_pv_minus10:null, price_pv_plus10:null, variants:[]
+        }));
       }
+
+      PRODUCT_CACHE={};
+      rows.forEach(r=>{
+        const f = fallbackBySkuOrName(r) || {};
+        PRODUCT_CACHE[r.sku]={
+          sku:r.sku,
+          name:r.name || f.name || r.sku,
+          description:r.description || f.description || '',
+          stock_qty:Number(r.stock_qty||0),
+          available:r.available ?? true,
+
+          image_path:r.image_path || null,
+          image_url:r.image_url || null,
+          pdf_path:r.pdf_path || null,
+
+          category:f.category || '',
+          form:f.form || '',
+          size:f.size || '',
+          ingredients:f.ingredients || '',
+          usage:f.usage || '',
+
+          image:f.image || '',
+          pdf:f.pdf || '',
+
+          price_ppv:r.price_ppv ?? null,
+          price_pv_minus10:r.price_pv_minus10 ?? null,
+          price_pv_plus10:r.price_pv_plus10 ?? null,
+          variants:Array.isArray(r.variants) ? r.variants : []
+        };
+      });
+
+      return rows;
     }
 
-    // ✅ React to auth changes without reloading the page (prevents refresh loop)
-    supa.auth.onAuthStateChange(async (_event, session)=>{
-      updateCartBadge();
-      const loggedIn = !!session?.user;
-      await refreshHeader();
-      if (!loggedIn) await showSignedOut();
-      else await showSignedIn();
-    });
+    function toNumOrNull(x){
+      if (x === 0 || x === '0') return 0;
+      const n = Number(x);
+      return Number.isFinite(n) ? n : null;
+    }
 
-    document.addEventListener('DOMContentLoaded', init);
+    async function getVariantsForSku(sku){
+      const prod = PRODUCT_CACHE[sku] || {};
+      const list = Array.isArray(prod.variants) ? prod.variants : [];
+
+      if (!list.length) {
+        return VARIANTS_CACHE[sku] = [{
+          variant_code:'default',
+          _uiLabel:'Default',
+          label:'Default',
+          price_ppv: toNumOrNull(prod.price_ppv),
+          price_pv_minus10: toNumOrNull(prod.price_pv_minus10),
+          price_pv_plus10: toNumOrNull(prod.price_pv_plus10),
+          currency:'MAD'
+        }];
+      }
+
+      const normalized = list.map((v,i)=>({
+        variant_code:(v.code || v.variant_code || v.name || `v${i}`).toString(),
+        _uiLabel:prettyVariantLabel(sku,(v.code||v.variant_code||v.name||'').toString(), v.name || v.label || ''),
+        label:v.name || v.label || '',
+        price_ppv:toNumOrNull(v.price_ppv),
+        price_pv_minus10:toNumOrNull(v.price_pv_minus10),
+        price_pv_plus10:toNumOrNull(v.price_pv_plus10),
+        currency:v.currency || 'MAD'
+      }));
+
+      VARIANTS_CACHE[sku]=normalized;
+      return normalized;
+    }
+
+    async function renderProducts(){
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = `<div class="muted">${t("ui.loading")}</div>`;
+
+      // refresh session/vet quickly for price UI inside modal
+      const { data:{ session } } = await supa.auth.getSession();
+      IS_LOGGED_IN = !!session?.user;
+      IS_VET = false;
+
+      if (session?.user){
+        try{
+          const { data:p } = await supa.from('profiles').select('is_vet_verified').eq('id', session.user.id).maybeSingle();
+          IS_VET = !!p?.is_vet_verified;
+        }catch(_){}
+      }
+
+      const rows = await fetchProducts();
+      grid.innerHTML = '';
+
+      for (const r of rows){
+        const p = PRODUCT_CACHE[r.sku];
+
+        const cands = imageCandidates(p);
+        const imgTag = `
+          <img alt="${p.name}"
+               style="width:100%;height:170px;object-fit:cover;visibility:hidden"
+               onload="this.style.visibility='visible'"
+               onerror="nextSrcOnError(this)"
+               src="${cands[0]}"
+               data-candidates="${cands.slice(1).join('|')}">
+        `;
+
+        const isAvail = p.available && (p.stock_qty > 0);
+        const statusHtml = isAvail ? `<span class="status ok">${t("grid.available")}</span>`
+                                   : `<span class="status bad">${t("grid.unavailable")}</span>`;
+        const qtyHtml = `<span class="qty">${p.stock_qty>0 ? (p.stock_qty + t("grid.instock")) : t("grid.out")}</span>`;
+
+        const card = document.createElement('div');
+        card.className = 'p-card reveal';
+        card.setAttribute('data-sku', r.sku);
+
+        const variantRowHtml = `
+          <div class="variant-row">
+            <label>${t('pd.variant')}</label>
+            <select class="select card-variant" data-sku="${r.sku}" style="min-width:140px">
+              <option>${t('ui.loading')}</option>
+            </select>
+          </div>`;
+
+        const actionsLoggedOut = `<button class="btn ghost more-btn" type="button">${t("grid.more")}</button>`;
+        const actionsLoggedIn = `
+          <button class="btn add-btn" type="button" ${!isAvail ? 'disabled' : ''}>${t("grid.add")}</button>
+          <button class="btn ghost buy-btn" type="button" ${!isAvail ? 'disabled' : ''}>${t("grid.buy")}</button>
+          <button class="btn ghost more-btn" type="button">${t("grid.more")}</button>
+        `;
+
+        card.innerHTML = imgTag +
+          `<div class="px">
+            <h4>${p.name}</h4>
+            <div class="p-meta">${statusHtml}<span>•</span>${qtyHtml}</div>
+            ${variantRowHtml}
+            <div class="actions">${IS_LOGGED_IN ? actionsLoggedIn : actionsLoggedOut}</div>
+          </div>`;
+
+        const selectEl = card.querySelector('.card-variant');
+        getVariantsForSku(r.sku).then(list=>{
+          if (!list.length){
+            selectEl.innerHTML = `<option value="">${t('pd.variantMissing')}</option>`;
+            selectEl.disabled = true;
+          } else {
+            selectEl.disabled = false;
+            selectEl.innerHTML = list.map(v=>`<option value="${v.variant_code}">${v._uiLabel || v.label || v.variant_code}</option>`).join('');
+          }
+        });
+
+        card.querySelector('.add-btn')?.addEventListener('click', (ev)=>{
+          ev.stopPropagation();
+          openPD(r.sku, selectEl?.value || null);
+        });
+        card.querySelector('.buy-btn')?.addEventListener('click', (ev)=>{
+          ev.stopPropagation();
+          openPD(r.sku, selectEl?.value || null);
+        });
+        card.querySelector('.more-btn')?.addEventListener('click', (ev)=>{
+          ev.stopPropagation();
+          openPD(r.sku, selectEl?.value || null);
+        });
+        card.addEventListener('click', (e)=>{
+          if (!e.target.closest('.actions')) openPD(r.sku, selectEl?.value || null);
+        });
+
+        grid.appendChild(card);
+      }
+
+      // ✅ reveal newly added product cards when they enter view
+      observeReveals(document.getElementById('productGrid'));
+    }
+
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      await refreshHeader();
+      updateCartBadge();
+      await renderProducts();
+    });
   </script>
 </body>
 </html>
