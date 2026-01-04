@@ -1097,26 +1097,24 @@ async function placeOrder(){
     const order_id = orderRow.id;
 
     // Create order_items (variant saved if your table has column; if it doesn't, remove variant field)
-    const itemsPayload = eligibleItems.map(it=>{
-      const p = computeItemPrice(it) || {};
-      return {
-        order_id,
-        product_sku: it.sku,
-        product_name: it.name || it.sku,
-        quantity: Number(it.qty||0),
-        unit_price: (p && !p.hidden) ? p.unit : null,
-        currency: (p && !p.hidden) ? p.cur : null,
-        price_tier: (p && !p.hidden) ? p.label : null,
-        line_total: (p && !p.hidden) ? p.line : null
-      };
-    });
-    
-    const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
-    if (itemsErr){
-      // rollback order if items fail (optional)
-      await supa.from('orders').delete().eq('id', order_id);
-      throw new Error(itemsErr.message || 'Failed to add order items.');
-    }
+const itemsPayload = lines.map(l => ({
+  order_id,
+  user_id: USER.id,                 // ✅ your table has it
+  product_sku: l.sku,
+  product_name: l.name,
+  quantity: l.qty,
+  variant_code: l.variant || null,  // ✅ store variant in the column you already have
+  unit_price: l.unit_price,
+  currency: l.currency,
+  price_tier: l.price_tier,
+  line_total: l.line_total
+}));
+
+const { error: itemsErr } = await supa.from('order_items').insert(itemsPayload);
+if (itemsErr) {
+  await supa.from('orders').delete().eq('id', order_id); // rollback
+  throw new Error(itemsErr.message || 'Failed to add order items.');
+}
 
     // ✅ Consume approvals ONLY AFTER order+items succeed
     await consumeApprovalsForOrder(eligible);
