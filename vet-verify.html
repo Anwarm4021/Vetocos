@@ -245,9 +245,21 @@ let CAN_PURCHASE=false; // global forever
 const purchaseModeBadge=document.getElementById('purchaseModeBadge');
 
 async function loadProfile(){
-  const { data:{ user } } = await supa.auth.getUser();
-  if (!user) throw new Error('No session');
-  USER=user;
+  // Wait for session to fully load (avoids redirect flicker)
+const { data:{ session } } = await supa.auth.getSession();
+if (!session?.user){
+  // Don't redirect — show a sign-in prompt instead (prevents loop)
+  document.querySelector('main').innerHTML =
+    '<div class="card" style="text-align:center;padding:40px">' +
+    '<h2>Please sign in</h2>' +
+    '<p class="muted">You need to be signed in to access vet verification.</p>' +
+    '<p style="margin-top:18px"><a class="btn" href="login.html?redirect=' +
+    encodeURIComponent('vet-verify.html') + '">Sign in</a> ' +
+    '<a class="btn ghost" href="index.html">Back to home</a></p>' +
+    '</div>';
+  return;
+}
+USER = session.user;
 
   const { data } = await supa.from('profiles')
     .select('id,email,can_purchase')
