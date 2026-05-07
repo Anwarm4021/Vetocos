@@ -205,7 +205,7 @@ footer{margin:40px 0 0;padding:28px 0;border-top:1px solid rgba(141,158,199,.18)
 /* ================= Supabase ================= */
 const supa = supabase.createClient(
   "https://qdepgviimbcdlozjpbhm.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkZXBndmlpbWJjZGxvempwYmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk0OTgwOTAsImV4cCI6MjA3NTA3NDA5MH0.-F95mmQw-pnsD-K8FIUtbj3oWeiPCSE0Pmuco9lYo_0",
   { auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }
 );
 
@@ -245,30 +245,17 @@ let CAN_PURCHASE=false; // global forever
 const purchaseModeBadge=document.getElementById('purchaseModeBadge');
 
 async function loadProfile(){
-  // Wait for session to fully load (avoids redirect flicker)
-const { data:{ session } } = await supa.auth.getSession();
-if (!session?.user){
-  // Don't redirect — show a sign-in prompt instead (prevents loop)
-  document.querySelector('main').innerHTML =
-    '<div class="card" style="text-align:center;padding:40px">' +
-    '<h2>Please sign in</h2>' +
-    '<p class="muted">You need to be signed in to access vet verification.</p>' +
-    '<p style="margin-top:18px"><a class="btn" href="login.html?redirect=' +
-    encodeURIComponent('vet-verify.html') + '">Sign in</a> ' +
-    '<a class="btn ghost" href="index.html">Back to home</a></p>' +
-    '</div>';
-  return;
-}
-USER = session.user;
-
-  const { data } = await supa.from('profiles')
-    .select('id,email,can_purchase')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  PROFILE = data || { id:user.id, email:user.email, can_purchase:false };
-  CAN_PURCHASE = !!PROFILE.can_purchase;
-
+  try {
+    const { data } = await supa.from('profiles')
+      .select('id,email,can_purchase')
+      .eq('id', USER.id)
+      .maybeSingle();
+    PROFILE = data || { id:USER.id, email:USER.email, can_purchase:false };
+    CAN_PURCHASE = !!PROFILE.can_purchase;
+  } catch(e){
+    PROFILE = { id:USER.id, email:USER.email, can_purchase:false };
+    CAN_PURCHASE = false;
+  }
   purchaseModeBadge.textContent = CAN_PURCHASE ? 'Mode: approved forever (global)' : 'Mode: per-item approvals';
 }
 
@@ -1139,12 +1126,17 @@ placeOrderBtn.addEventListener('click', placeOrder);
 async function boot(){
   document.getElementById('y').textContent=new Date().getFullYear();
 
-  const { data:{ user } } = await supa.auth.getUser();
-  if (!user){
-    location.replace('login.html?redirect='+encodeURIComponent('vet-verify.html'));
+  const { data:{ session } } = await supa.auth.getSession();
+  if (!session?.user){
+    document.querySelector('main').innerHTML =
+      '<div class="card" style="text-align:center;padding:40px;max-width:520px;margin:6vh auto">' +
+      '<h2>Please sign in</h2><p class="muted">You need to be signed in to access vet verification.</p>' +
+      '<p style="margin-top:18px"><a class="btn" href="login.html?redirect=' +
+      encodeURIComponent('vet-verify.html') + '">Sign in</a> ' +
+      '<a class="btn ghost" href="index.html">Back to home</a></p></div>';
     return;
   }
-  USER=user;
+  USER = session.user;
 
   await loadProfile();
 
